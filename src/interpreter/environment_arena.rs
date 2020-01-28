@@ -1,6 +1,6 @@
 use crate::interpreter::environment::{
     LexicalEnvironment,
-    ContestantId
+    EnvironmentId
 };
 use crate::interpreter::value::Value;
 
@@ -9,11 +9,11 @@ pub struct Arena {
 }
 
 impl Arena {
-    fn get(&self, id: ContestantId) -> Option<&LexicalEnvironment> {
+    fn get(&self, id: EnvironmentId) -> Option<&LexicalEnvironment> {
         self.contestants.get(id.get_index())
     }
 
-    fn get_mut(&mut self, id: ContestantId) -> Option<&mut LexicalEnvironment> {
+    fn get_mut(&mut self, id: EnvironmentId) -> Option<&mut LexicalEnvironment> {
         self.contestants.get_mut(id.get_index())
     }
 }
@@ -25,17 +25,17 @@ impl Arena {
         }
     }
 
-    pub fn alloc(&mut self) -> ContestantId {
+    pub fn alloc(&mut self) -> EnvironmentId {
         let env = LexicalEnvironment::new();
         self.contestants.push(env);
 
         let index = self.contestants.len() - 1;
-        let id = ContestantId::new(index);
+        let id = EnvironmentId::new(index);
 
         id
     }
 
-    pub fn alloc_child(&mut self, parent_id: ContestantId) -> ContestantId {
+    pub fn alloc_child(&mut self, parent_id: EnvironmentId) -> EnvironmentId {
         let child_id = self.alloc();
 
         if let Some(parent) = self.get_mut(parent_id) {
@@ -53,19 +53,19 @@ impl Arena {
         child_id
     }
 
-    pub fn has_variable(&self, id: ContestantId, name: &str) -> bool {
+    pub fn has_variable(&self, id: EnvironmentId, name: &str) -> bool {
         let env = self.get(id).unwrap();
 
         env.has_variable(name)
     }
 
-    pub fn has_function(&self, id: ContestantId, name: &str) -> bool {
+    pub fn has_function(&self, id: EnvironmentId, name: &str) -> bool {
         let env = self.get(id).unwrap();
 
         env.has_function(name)
     }
 
-    pub fn lookup_variable(&self, id: ContestantId, name: &str) -> Option<&Value>{
+    pub fn lookup_variable(&self, id: EnvironmentId, name: &str) -> Option<&Value>{
         let env = self.get(id).unwrap();
 
         match env.lookup_variable(name) {
@@ -79,7 +79,7 @@ impl Arena {
         }
     }
 
-    pub fn lookup_function(&self, id: ContestantId, name: &str) -> Option<&Value> {
+    pub fn lookup_function(&self, id: EnvironmentId, name: &str) -> Option<&Value> {
         let env = self.get(id).unwrap();
 
         match env.lookup_function(name) {
@@ -93,19 +93,19 @@ impl Arena {
         }
     }
 
-    pub fn define_variable(&mut self, id: ContestantId, name: &str, value: Value) -> Result<(), ()> {
+    pub fn define_variable(&mut self, id: EnvironmentId, name: &str, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         env.define_variable(name, value)
     }
 
-    pub fn define_function(&mut self, id: ContestantId, name: &str, value: Value) -> Result<(), ()> {
+    pub fn define_function(&mut self, id: EnvironmentId, name: &str, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         env.define_function(name, value)
     }
 
-    pub fn set_variable(&mut self, id: ContestantId, name: &str, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, id: EnvironmentId, name: &str, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_variable(name) {
@@ -118,7 +118,7 @@ impl Arena {
         }
     }
 
-    pub fn set_function(&mut self, id: ContestantId, name: &str, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, id: EnvironmentId, name: &str, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_function(name) {

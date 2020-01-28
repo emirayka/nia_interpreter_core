@@ -48,13 +48,13 @@ impl PartialEq for Element {
 }
 
 #[derive(Debug)]
-pub struct Program {
+pub struct Code {
     elements: Vec<Element>
 }
 
-impl Program {
-    pub fn new(elements: Vec<Element>) -> Program {
-        Program {
+impl Code {
+    pub fn new(elements: Vec<Element>) -> Code {
+        Code {
             elements
         }
     }
@@ -119,11 +119,11 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
     parser(s)
 }
 
-fn make_program(elements: Vec<Element>) -> Result<Program, String> {
-    Ok(Program::new(elements))
+fn make_program(elements: Vec<Element>) -> Result<Code, String> {
+    Ok(Code::new(elements))
 }
 
-pub fn parse_program(s: &str) -> Result<(&str, Program), nom::Err<(&str, nom::error::ErrorKind)>> {
+pub fn parse_code(s: &str) -> Result<(&str, Code), nom::Err<(&str, nom::error::ErrorKind)>> {
     let parse_element_spaced = preceded(space0, parse_element);
     let parse = many0(parse_element_spaced);
 
@@ -165,7 +165,7 @@ mod tests {
 //        assert_is_ok!(parse_program("() () ()"));
 //        assert_is_ok!(parse_program("() () ("));
 
-        println!("{:?}", parse_program("(plus 1 2)"));
+        println!("{:?}", parse_code("(plus 1 2)"));
     }
 
 }

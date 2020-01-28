@@ -1,9 +1,5 @@
 use crate::interpreter::cons::Cons;
-
-#[derive(Debug, Clone)]
-pub struct Function {
-    // environment: LexicalEnvironment
-}
+use crate::interpreter::function::{Function};
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -14,7 +10,7 @@ pub enum Value {
     Symbol(String),
     String(String),
     Cons(Cons),
-    Function(Function)
+    Function(Function),
 }
 
 impl PartialEq for Value {

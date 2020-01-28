@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use crate::interpreter::value::Value;
 
 #[derive(Debug, Clone, Copy)]
-pub struct ContestantId {
+pub struct EnvironmentId {
     index: usize
 }
 
-impl ContestantId {
-    pub fn new(index: usize) -> ContestantId {
-        ContestantId {
+impl EnvironmentId {
+    pub fn new(index: usize) -> EnvironmentId {
+        EnvironmentId {
             index,
         }
     }
@@ -23,8 +23,8 @@ impl ContestantId {
 pub struct LexicalEnvironment {
     variables: HashMap<String, Value>,
     functions: HashMap<String, Value>,
-    parent: Option<ContestantId>,
-    children: Vec<ContestantId>,
+    parent: Option<EnvironmentId>,
+    children: Vec<EnvironmentId>,
 }
 
 impl LexicalEnvironment {
@@ -64,15 +64,15 @@ fn has_value(map: &HashMap<String, Value>, name: &str) -> bool {
 }
 
 impl LexicalEnvironment {
-    pub fn get_parent(&self) -> Option<ContestantId> {
+    pub fn get_parent(&self) -> Option<EnvironmentId> {
         self.parent
     }
 
-    pub fn set_parent(&mut self, parent_id: ContestantId) {
+    pub fn set_parent(&mut self, parent_id: EnvironmentId) {
         self.parent = Some(parent_id)
     }
 
-    pub fn add_child(&mut self, child_id: ContestantId) {
+    pub fn add_child(&mut self, child_id: EnvironmentId) {
         self.children.push(child_id)
     }
 
@@ -215,8 +215,8 @@ mod tests {
         let mut env1 = LexicalEnvironment::new();
         let mut env2 = LexicalEnvironment::new();
 
-        let id1 = ContestantId::new(1);
-        let id2 = ContestantId::new(2);
+        let id1 = EnvironmentId::new(1);
+        let id2 = EnvironmentId::new(2);
 
         env1.children.push(id2);
         env2.set_parent(id1);
