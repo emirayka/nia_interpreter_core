@@ -1,8 +1,9 @@
 use std::fmt;
 
 use crate::interpreter::value::Value;
+use crate::interpreter::error::Error;
 
-pub type BuiltinFunctionType = fn(argument_values: Vec<Value>) -> Result<Value, ()>;
+pub type BuiltinFunctionType = fn(argument_values: Vec<Value>) -> Result<Value, Error>;
 
 #[derive(Clone)]
 pub struct BuiltinFunction {

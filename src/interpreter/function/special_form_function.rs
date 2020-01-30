@@ -3,12 +3,13 @@ use std::fmt;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
+use crate::interpreter::error::Error;
 
 pub type SpecialFormFunctionType = fn(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     argument_values: Vec<Value>
-) -> Result<Value, ()>;
+) -> Result<Value, Error>;
 
 #[derive(Clone)]
 pub struct SpecialFormFunction {

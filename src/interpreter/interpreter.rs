@@ -10,6 +10,7 @@ use crate::interpreter::function::builtin_function::BuiltinFunction;
 use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::function::macro_function::MacroFunction;
+use crate::interpreter::error::Error;
 
 pub struct Interpreter {
     arena: Arena,
@@ -33,16 +34,16 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn evaluate_symbol(&mut self, environment: EnvironmentId, symbol: &Symbol) -> Result<Value, ()> {
+    fn evaluate_symbol(&mut self, environment: EnvironmentId, symbol: &Symbol) -> Result<Value, Error> {
         let result = self.lookup_variable(environment, symbol);
 
         match result {
-            Some(value) => Ok(value.clone()),
-            None => Err(())
+            Ok(value) => Ok(value.clone()),
+            Err(error) => Err(error)
         }
     }
 
-    fn extract_arguments(&mut self, cons: &Cons) -> Result<Vec<Value>, ()> {
+    fn extract_arguments(&mut self, cons: &Cons) -> Result<Vec<Value>, Error> {
         let mut extracted_arguments = Vec::new();
         let mut current_cdr = match cons.get_cdr() {
             Value::Cons(cons) => cons,
@@ -50,10 +51,10 @@ impl Interpreter {
                 if symbol.is_nil() {
                     return Ok(extracted_arguments);
                 } else {
-                    return Err(());
+                    return Err(Error::empty());
                 }
             }
-            _ => return Err(())
+            _ => return Err(Error::empty())
         };
 
         loop {
@@ -65,23 +66,23 @@ impl Interpreter {
                     if symbol.is_nil() {
                         break;
                     } else {
-                        return Err(());
+                        return Err(Error::empty());
                     }
                 }
-                _ => return Err(())
+                _ => return Err(Error::empty())
             };
         }
 
         Ok(extracted_arguments)
     }
 
-    fn evaluate_arguments(&mut self, environment: EnvironmentId, arguments: Vec<Value>)  -> Result<Vec<Value>, ()> {
+    fn evaluate_arguments(&mut self, environment: EnvironmentId, arguments: Vec<Value>)  -> Result<Vec<Value>, Error> {
         let mut evaluated_arguments = Vec::new();
 
         for argument in arguments {
             match self.evaluate_value(environment, &argument) {
                 Ok(evaluated_argument) => evaluated_arguments.push(evaluated_argument),
-                Err(_) => return Err(())
+                Err(_) => return Err(Error::empty())
             }
         }
 
@@ -104,13 +105,13 @@ impl Interpreter {
         }
     }
 
-    fn execute_code(&mut self, execution_environment:EnvironmentId, code: &Vec<Value>) -> Result<Option<Value>, ()> {
+    fn execute_code(&mut self, execution_environment:EnvironmentId, code: &Vec<Value>) -> Result<Option<Value>, Error> {
         let mut last_result = None;
 
         for value in code {
             last_result = match self.evaluate_value(execution_environment, value) {
                 Ok(value) => Some(value),
-                _ => return Err(())
+                _ => return Err(Error::empty())
             };
         }
 
@@ -121,9 +122,9 @@ impl Interpreter {
         &mut self,
         func: &InterpretedFunction,
         evaluated_arguments: Vec<Value>
-    ) -> Result<Value, ()> {
+    ) -> Result<Value, Error> {
         if func.get_argument_names().len() != evaluated_arguments.len() {
-            return Err(());
+            return Err(Error::empty());
         }
 
         // 1) make new environment
@@ -139,7 +140,7 @@ impl Interpreter {
         // 3) execute code
         let execution_result = match self.execute_code(execution_environment, func.get_code()) {
             Ok(value) => value,
-            Err(()) => return Err(())
+            Err(error) => return Err(error)
         };
 
         // 4) return result
@@ -155,7 +156,7 @@ impl Interpreter {
         &mut self,
         builtin_function: &BuiltinFunction,
         evaluated_arguments: Vec<Value>
-    ) -> Result<Value, ()> {
+    ) -> Result<Value, Error> {
         (builtin_function.get_func())(evaluated_arguments)
     }
 
@@ -164,7 +165,7 @@ impl Interpreter {
         execution_environment: EnvironmentId,
         special_form: &SpecialFormFunction,
         arguments: Vec<Value>
-    ) -> Result<Value, ()> {
+    ) -> Result<Value, Error> {
         (special_form.get_func())(self, execution_environment, arguments)
     }
 
@@ -172,9 +173,9 @@ impl Interpreter {
         &mut self,
         func: &MacroFunction,
         arguments: Vec<Value>
-    ) -> Result<Value, ()> {
+    ) -> Result<Value, Error> {
         if func.get_argument_names().len() != arguments.len() {
-            return Err(());
+            return Err(Error::empty());
         }
 
         // 1) make new environment
@@ -190,7 +191,7 @@ impl Interpreter {
         // 3) execute code
         let execution_result = match self.execute_code(execution_environment, func.get_code()) {
             Ok(value) => value,
-            Err(()) => return Err(())
+            Err(error) => return Err(error)
         };
 
         // 4) return result
@@ -202,23 +203,23 @@ impl Interpreter {
         Ok(value_to_return)
     }
 
-    fn evaluate_s_expression(&mut self, environment: EnvironmentId, cons: &Cons) -> Result<Value, ()> {
+    fn evaluate_s_expression(&mut self, environment: EnvironmentId, cons: &Cons) -> Result<Value, Error> {
         // 1) evaluate first symbol
         let car_value = cons.get_car();
 
         let function = match car_value {
             Value::Symbol(func_name) => match self.lookup_function(environment, func_name) {
-                Some(Value::Function(func)) => func.clone(),
-                Some(_) => return Err(()),
-                _ => return Err(())
+                Ok(Value::Function(func)) => func.clone(),
+                Ok(_) => return Err(Error::empty()),
+                Err(error) => return Err(error)
             },
             Value::Function(func) => func.clone(),
             Value::Cons(cons) => match self.evaluate_s_expression(environment, cons) {
                 Ok(Value::Function(func)) => func,
-                Ok(_) => return Err(()),
-                _ => return Err(())
+                Ok(_) => return Err(Error::empty()),
+                Err(error) => return Err(error)
             },
-            _ => return Err(())
+            _ => return Err(Error::empty())
         };
 
         match &function {
@@ -226,12 +227,12 @@ impl Interpreter {
                 // 2) evaluate arguments
                 let arguments = match self.extract_arguments(cons) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 let evaluated_arguments = match self.evaluate_arguments(environment, arguments) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 // 3) apply function from step 1 to arguments from step 2
@@ -241,12 +242,12 @@ impl Interpreter {
                 // 2) evaluate arguments
                 let arguments = match self.extract_arguments(cons) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 let evaluated_arguments = match self.evaluate_arguments(environment, arguments) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 // 3) apply function from step 1 to arguments from step 2
@@ -255,7 +256,7 @@ impl Interpreter {
             Function::SpecialForm(special_form) => {
                 let arguments = match self.extract_arguments(cons) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 self.evaluate_special_form_invocation(
@@ -267,18 +268,18 @@ impl Interpreter {
             Function::Macro(macro_function) => {
                 let arguments = match self.extract_arguments(cons) {
                     Ok(arguments) => arguments,
-                    _ => return Err(())
+                    Err(error) => return Err(error)
                 };
 
                 match self.evaluate_macro_invocation(macro_function, arguments) {
                     Ok(value) => self.evaluate_value(environment, &value),
-                    Err(()) => return Err(())
+                    Err(error) => return Err(error)
                 }
             }
         }
     }
 
-    pub fn evaluate_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, ()> {
+    pub fn evaluate_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, Error> {
         match value {
             Value::Symbol(symbol_name) => self.evaluate_symbol(environment, symbol_name),
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
@@ -288,23 +289,23 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn execute_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, ()> {
+    pub fn execute_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, Error> {
         self.evaluate_value(environment, value)
     }
 
-    pub fn execute(&mut self, code: &str) -> Result<Value, ()> {
+    pub fn execute(&mut self, code: &str) -> Result<Value, Error> {
         // first step: parse code
         let parsed = parse_code(code);
 
         if parsed.is_err() {
-            return Err(());
+            return Err(Error::empty());
         }
 
         // second step: read forms
         let values = if let Ok((_, code)) = parsed {
             preread_elements(code.get_elements())
         } else {
-            return Err(());
+            return Err(Error::empty());
         };
 
         // third step: evaluate
@@ -313,7 +314,7 @@ impl Interpreter {
         for value in values {
             match self.execute_value(self.root_env_id, &value) {
                 Ok(result) => results.push(result),
-                Err(_) => return Err(())
+                Err(_) => return Err(Error::empty())
             }
         }
 
@@ -322,28 +323,34 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn define_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         self.arena.define_variable(environment, symbol, value)
     }
 
-    pub fn define_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         self.arena.define_function(environment, symbol, value)
     }
 
-    pub fn set_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         self.arena.set_variable(environment, symbol, value)
     }
 
-    pub fn set_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         self.arena.set_function(environment, symbol, value)
     }
 
-    pub fn lookup_variable(&self, environment: EnvironmentId, symbol: &Symbol) -> Option<&Value> {
-        self.arena.lookup_variable(environment, symbol)
+    pub fn lookup_variable(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+        match self.arena.lookup_variable(environment, symbol) {
+            Some(value) => Ok(value),
+            None => Err(Error::empty())
+        }
     }
 
-    pub fn lookup_function(&self, environment: EnvironmentId, symbol: &Symbol) -> Option<&Value> {
-        self.arena.lookup_function(environment, symbol)
+    pub fn lookup_function(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+        match self.arena.lookup_function(environment, symbol) {
+            Some(value) => Ok(value),
+            None => Err(Error::empty())
+        }
     }
 
     pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> EnvironmentId {
@@ -370,7 +377,7 @@ mod tests {
                 $interpreter_id.root_env_id,
                 &Symbol::from("+"),
                 Value::Function(Function::Builtin(BuiltinFunction::new(
-                    |values: Vec<Value>| -> Result<Value, ()> {
+                    |values: Vec<Value>| -> Result<Value, Error> {
                         let first = &values[0];
                         let second= &values[1];
 
@@ -482,7 +489,7 @@ mod tests {
             interpreter.root_env_id,
             &Symbol::from("testif"),
             Value::Function(Function::SpecialForm(SpecialFormFunction::new(
-                |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, ()> {
+                |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
                     let condition = &values[0];
                     let then_clause = &values[1];
                     let else_clause = &values[2];
@@ -492,7 +499,7 @@ mod tests {
                     match evaluated_condition {
                         Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
                         Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => Err(())
+                        _ => Err(Error::empty())
                     }
                 }
             )))

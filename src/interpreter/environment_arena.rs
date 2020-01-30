@@ -4,6 +4,7 @@ use crate::interpreter::environment::{
 };
 use crate::interpreter::value::Value;
 use crate::interpreter::symbol::Symbol;
+use crate::interpreter::error::Error;
 
 pub struct Arena {
     contestants: Vec<LexicalEnvironment>,
@@ -94,19 +95,19 @@ impl Arena {
         }
     }
 
-    pub fn define_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         let env = self.get_mut(id).unwrap();
 
         env.define_variable(symbol, value)
     }
 
-    pub fn define_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         let env = self.get_mut(id).unwrap();
 
         env.define_function(symbol, value)
     }
 
-    pub fn set_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_variable(symbol) {
@@ -115,11 +116,11 @@ impl Arena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_variable(parent_id, symbol, value)
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 
-    pub fn set_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_function(symbol) {
@@ -128,7 +129,7 @@ impl Arena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_function(parent_id, symbol, value)
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 }

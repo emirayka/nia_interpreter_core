@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::value::Value;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy)]
 pub struct EnvironmentId {
@@ -98,39 +99,39 @@ impl LexicalEnvironment {
         }
     }
 
-    pub fn define_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), Error> {
         if !self.has_variable(symbol) {
             set_value(&mut self.variables, symbol, value);
             Ok(())
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 
-    pub fn define_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), Error> {
         if !self.has_function(symbol) {
             set_value(&mut self.functions, symbol, value);
             Ok(())
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 
-    pub fn set_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), Error> {
         if self.has_variable(symbol) {
             set_value(&mut self.variables, symbol, value);
             Ok(())
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 
-    pub fn set_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), Error> {
         if self.has_function(symbol) {
             set_value(&mut self.functions, symbol, value);
             Ok(())
         } else {
-            Err(())
+            Err(Error::empty())
         }
     }
 }
