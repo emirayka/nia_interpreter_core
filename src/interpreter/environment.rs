@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::interpreter::symbol::Symbol;
 use crate::interpreter::value::Value;
 
 #[derive(Debug, Clone, Copy)]
@@ -19,10 +20,9 @@ impl EnvironmentId {
     }
 }
 
-// todo: change HashMap<String, Value> to HashMap<Symbol, Value>
 pub struct LexicalEnvironment {
-    variables: HashMap<String, Value>,
-    functions: HashMap<String, Value>,
+    variables: HashMap<Symbol, Value>,
+    functions: HashMap<Symbol, Value>,
     parent: Option<EnvironmentId>,
     children: Vec<EnvironmentId>,
 }
@@ -38,29 +38,23 @@ impl LexicalEnvironment {
     }
 }
 
-fn lookup_value<'a, 'b>(map: &'a HashMap<String, Value>, name: &'b str) -> Option<&'a Value> {
-    for (value_name, value) in map {
-        if value_name == name {
-            return Some(value);
-        }
-    }
-
-    None
+fn lookup_value<'a, 'b>(map: &'a HashMap<Symbol, Value>, symbol: &'b Symbol) -> Option<&'a Value> {
+    map.get(symbol)
 }
 
-fn set_value(map: &mut HashMap<String, Value>, name: &str, value: Value) {
-    match map.get_mut(name) {
+fn set_value(map: &mut HashMap<Symbol, Value>, symbol: &Symbol, value: Value) {
+    match map.get_mut(symbol) {
         Some(value_ref) => {
             *value_ref = value;
         },
         None => {
-            map.insert(name.to_string(), value);
+            map.insert(symbol.clone(), value);
         }
     };
 }
 
-fn has_value(map: &HashMap<String, Value>, name: &str) -> bool {
-    map.contains_key(name)
+fn has_value(map: &HashMap<Symbol, Value>, symbol: &Symbol) -> bool {
+    map.contains_key(symbol)
 }
 
 impl LexicalEnvironment {
@@ -76,16 +70,16 @@ impl LexicalEnvironment {
         self.children.push(child_id)
     }
 
-    pub fn has_variable(&self, name: &str) -> bool {
-        has_value(&self.variables, name)
+    pub fn has_variable(&self, symbol: &Symbol) -> bool {
+        has_value(&self.variables, symbol)
     }
 
-    pub fn has_function(&self, name: &str) -> bool {
-        has_value(&self.functions, name)
+    pub fn has_function(&self, symbol: &Symbol) -> bool {
+        has_value(&self.functions, symbol)
     }
 
-    pub fn lookup_variable(&self, name: &str) -> Option<&Value> {
-        let result = lookup_value(&self.variables, name);
+    pub fn lookup_variable(&self, symbol: &Symbol) -> Option<&Value> {
+        let result = lookup_value(&self.variables, symbol);
 
         if let Some(found_value) = result {
             Some(found_value)
@@ -94,8 +88,8 @@ impl LexicalEnvironment {
         }
     }
 
-    pub fn lookup_function(&self, name: &str) -> Option<&Value> {
-        let result = lookup_value(&self.functions, name);
+    pub fn lookup_function(&self, symbol: &Symbol) -> Option<&Value> {
+        let result = lookup_value(&self.functions, symbol);
 
         if let Some(found_value) = result {
             Some(found_value)
@@ -104,36 +98,36 @@ impl LexicalEnvironment {
         }
     }
 
-    pub fn define_variable(&mut self, name: &str, value: Value) -> Result<(), ()> {
-        if !self.has_variable(name) {
-            set_value(&mut self.variables, name, value);
+    pub fn define_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+        if !self.has_variable(symbol) {
+            set_value(&mut self.variables, symbol, value);
             Ok(())
         } else {
             Err(())
         }
     }
 
-    pub fn define_function(&mut self, name: &str, value: Value) -> Result<(), ()> {
-        if !self.has_function(name) {
-            set_value(&mut self.functions, name, value);
+    pub fn define_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+        if !self.has_function(symbol) {
+            set_value(&mut self.functions, symbol, value);
             Ok(())
         } else {
             Err(())
         }
     }
 
-    pub fn set_variable(&mut self, name: &str, value: Value) -> Result<(), ()> {
-        if self.has_variable(name) {
-            set_value(&mut self.variables, name, value);
+    pub fn set_variable(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+        if self.has_variable(symbol) {
+            set_value(&mut self.variables, symbol, value);
             Ok(())
         } else {
             Err(())
         }
     }
 
-    pub fn set_function(&mut self, name: &str, value: Value) -> Result<(), ()> {
-        if self.has_function(name) {
-            set_value(&mut self.functions, name, value);
+    pub fn set_function(&mut self, symbol: &Symbol, value: Value) -> Result<(), ()> {
+        if self.has_function(symbol) {
+            set_value(&mut self.functions, symbol, value);
             Ok(())
         } else {
             Err(())
@@ -148,7 +142,7 @@ mod tests {
     #[test]
     fn test_makes_new_bindings() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("test");
 
         assert!(!env.has_variable(&key));
         env.define_variable(&key, Value::Integer(1));
@@ -164,7 +158,7 @@ mod tests {
     #[test]
     fn test_makes_updates_bindings() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("key");
 
         env.define_variable(&key, Value::Integer(1));
         env.define_function(&key, Value::Integer(1));
@@ -179,7 +173,7 @@ mod tests {
     #[test]
     fn test_cannot_set_to_not_defined_variable() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("key");
 
         assert!(env.set_variable(&key, Value::Integer(2)).is_err());
     }
@@ -187,7 +181,7 @@ mod tests {
     #[test]
     fn test_cannot_set_to_not_defined_function() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("key");
 
        assert!(env.set_function(&key, Value::Integer(2)).is_err()) ;
     }
@@ -195,7 +189,7 @@ mod tests {
     #[test]
     fn test_cannot_define_variable_twice() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("key");
 
         env.define_variable(&key, Value::Integer(1));
         assert!(env.define_variable(&key, Value::Integer(1)).is_err());
@@ -204,7 +198,7 @@ mod tests {
     #[test]
     fn test_cannot_define_function_twice() {
         let mut env = LexicalEnvironment::new();
-        let key = String::from("key");
+        let key = Symbol::from("key");
 
         env.define_function(&key, Value::Integer(1));
         assert!(env.define_function(&key, Value::Integer(1)).is_err());

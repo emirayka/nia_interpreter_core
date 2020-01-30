@@ -10,6 +10,9 @@ use nom::{
     },
     error::ErrorKind
 };
+use nom::sequence::terminated;
+use nom::combinator::peek;
+use nom::character::complete::space1;
 
 #[derive(Debug)]
 pub struct IntegerElement {
@@ -43,7 +46,12 @@ pub fn parse_integer_element(s: &str) -> Result<(&str, IntegerElement), nom::Err
     let parse_minus_sign = tag::<_, _, (&str, ErrorKind)>("-");
     let parse_sign = alt((parse_plus_sign, parse_minus_sign));
 
-    let parse_integer = recognize(pair(opt(parse_sign), digit1));
+    let parse_integer = recognize(
+        pair(
+            opt(parse_sign),
+            digit1
+        )
+    );
 
     let parse_i64 = map_res(parse_integer, |s: &str| s.parse::<i64>());
     let parse_integer_element = map_res(parse_i64, make_integer_element);

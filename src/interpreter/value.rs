@@ -1,5 +1,6 @@
+use crate::interpreter::symbol::Symbol;
 use crate::interpreter::cons::Cons;
-use crate::interpreter::function::{Function};
+use crate::interpreter::function::Function;
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -7,7 +8,7 @@ pub enum Value {
     Float(f64),
     Boolean(bool),
     Keyword(String),
-    Symbol(String),
+    Symbol(Symbol),
     String(String),
     Cons(Cons),
     Function(Function),

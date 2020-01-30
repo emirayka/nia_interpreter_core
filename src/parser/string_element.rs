@@ -1,6 +1,7 @@
 use nom::{
     character::complete::{
         none_of,
+        one_of,
     },
     bytes::complete::{
         tag,
@@ -18,7 +19,6 @@ use nom::{
     },
     error::ErrorKind
 };
-use nom::character::complete::one_of;
 
 #[derive(Debug)]
 pub struct StringElement {
@@ -84,4 +84,15 @@ mod tests {
         assert_eq!(Ok(("", StringElement{value: r#"""#.to_string()})), parse_string_element(r#""\"""#));
         assert_eq!(Ok(("", StringElement{value: r#"knock"knockknock"#.to_string()})), parse_string_element(r#""knock\"knockknock""#));
     }
+
+//    #[test]
+//    fn test_makes_terminated_trash_symbols_incorrect() {
+//        assert!(parse_string_element(r#""a"1"#).is_err());
+//        assert!(parse_string_element(r#""a"1.0"#).is_err());
+//        assert!(parse_string_element(r##""a"#t"##).is_err());
+//        assert!(parse_string_element(r##""a"#f"##).is_err());
+//        assert!(parse_string_element(r#""a"cutesym"#).is_err());
+//        assert!(parse_string_element(r#""a":cutekey"#).is_err());
+//        assert!(parse_string_element(r#""a""b""#).is_err());
+//    }
 }

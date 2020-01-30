@@ -3,19 +3,20 @@ use crate::interpreter::cons::Cons;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
 use crate::parser::Element;
+use crate::interpreter::symbol::Symbol;
 
 fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
     let values = sexp_element.get_values();
 
     if values.len() == 0 {
-        return Value::Symbol("nil".to_string());
+        return Value::Symbol(Symbol::from("nil"));
     }
 
     // todo: make symbol arena
 
     let mut root_cons = Cons::new(
-        Value::Symbol("nil".to_string()),
-        Value::Symbol("nil".to_string())
+        Value::Symbol(Symbol::from("nil")),
+        Value::Symbol(Symbol::from("nil"))
     );
 
     let values = sexp_element.get_values();
@@ -31,8 +32,8 @@ fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
         }
 
         let next_cons = Cons::new(
-            Value::Symbol("nil".to_string()),
-            Value::Symbol("nil".to_string())
+            Value::Symbol(Symbol::from("nil")),
+            Value::Symbol(Symbol::from("nil"))
         );
 
         current_cons.set_cdr(Value::Cons(next_cons));
@@ -51,10 +52,10 @@ fn preread_quote_prefix_element(element: &Element) -> Value {
     let value = preread_element(element);
 
     let cons = Cons::new(
-        Value::Symbol("quote".to_string()),
+        Value::Symbol(Symbol::from("quote")),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol("nil".to_string())
+            Value::Symbol(Symbol::from("nil"))
         ))
     );
 
@@ -65,10 +66,10 @@ fn preread_graveaccent_prefix_element(element: &Element) -> Value {
     let value = preread_element(element);
 
     let cons = Cons::new(
-        Value::Symbol("`".to_string()),
+        Value::Symbol(Symbol::from("`")),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol("nil".to_string())
+            Value::Symbol(Symbol::from("nil"))
         ))
     );
 
@@ -79,10 +80,10 @@ fn preread_comma_prefix_element(element: &Element) -> Value {
     let value = preread_element(element);
 
     let cons = Cons::new(
-        Value::Symbol(",".to_string()),
+        Value::Symbol(Symbol::from(",")),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol("nil".to_string())
+            Value::Symbol(Symbol::from("nil"))
         ))
     );
 
@@ -93,10 +94,10 @@ fn preread_commadog_prefix_element(element: &Element) -> Value {
     let value = preread_element(element);
 
     let cons = Cons::new(
-        Value::Symbol(",@".to_string()),
+        Value::Symbol(Symbol::from(",@")),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol("nil".to_string())
+            Value::Symbol(Symbol::from("nil"))
         ))
     );
 
@@ -113,17 +114,15 @@ fn preread_prefix_element(prefix_element: &PrefixElement) -> Value {
 }
 
 pub fn preread_element(element: &Element) -> Value {
-    use Element::*;
-
     match element {
-        Integer(integer_element) => Value::Integer(integer_element.get_value()),
-        Float(float_element) => Value::Float(float_element.get_value()),
-        Boolean(boolean_element) => Value::Boolean(boolean_element.get_value().clone()),
-        String(string_element) => Value::String(string_element.get_value().clone()),
-        Symbol(symbol_element) => Value::Symbol(symbol_element.get_value().clone()),
-        Keyword(keyword_element) => Value::Keyword(keyword_element.get_value().clone()),
-        SExpression(sexp_element) => preread_s_expression(sexp_element),
-        Prefix(prefix_element) => preread_prefix_element(prefix_element)
+        Element::Integer(integer_element) => Value::Integer(integer_element.get_value()),
+        Element::Float(float_element) => Value::Float(float_element.get_value()),
+        Element::Boolean(boolean_element) => Value::Boolean(boolean_element.get_value().clone()),
+        Element::String(string_element) => Value::String(string_element.get_value().clone()),
+        Element::Symbol(symbol_element) => Value::Symbol(Symbol::from(symbol_element.get_value())),
+        Element::Keyword(keyword_element) => Value::Keyword(keyword_element.get_value().clone()),
+        Element::SExpression(sexp_element) => preread_s_expression(sexp_element),
+        Element::Prefix(prefix_element) => preread_prefix_element(prefix_element)
     }
 }
 
@@ -142,7 +141,6 @@ mod tests {
 
             if let Ok((_, program)) = parse_code($code) {
                 let result = preread_elements(program.get_elements());
-                println!("{:#?}", result);
 
                 let len = expected.len();
 
@@ -232,15 +230,15 @@ mod tests {
     pub fn test_prereads_symbol_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol("cutesymbol".to_string())
+                Value::Symbol(Symbol::from("cutesymbol"))
             ),
             r#"cutesymbol"#
         );
 
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol("cutesymbol1".to_string()),
-                Value::Symbol("cutesymbol2".to_string())
+                Value::Symbol(Symbol::from("cutesymbol1")),
+                Value::Symbol(Symbol::from("cutesymbol2"))
             ),
             r#"cutesymbol1 cutesymbol2"#
         );
@@ -268,7 +266,7 @@ mod tests {
     pub fn test_prereads_s_expression_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol("nil".to_string())
+                Value::Symbol(Symbol::from("nil"))
             ),
             "()"
         );
@@ -277,8 +275,8 @@ mod tests {
             vec!(
                 Value::Cons(
                     Cons::new(
-                        Value::Symbol("a".to_string()),
-                        Value::Symbol("nil".to_string())
+                        Value::Symbol(Symbol::from("a")),
+                        Value::Symbol(Symbol::from("nil"))
                     )
                 )
             ),
@@ -289,11 +287,11 @@ mod tests {
             vec!(
                 Value::Cons(
                     Cons::new(
-                        Value::Symbol("a".to_string()),
+                        Value::Symbol(Symbol::from("a")),
                         Value::Cons(
                             Cons::new(
-                                Value::Symbol("b".to_string()),
-                                Value::Symbol("nil".to_string())
+                                Value::Symbol(Symbol::from("b")),
+                                Value::Symbol(Symbol::from("nil"))
                             )
                         )
                     )
@@ -309,10 +307,10 @@ mod tests {
                 let expected = preread_elements(&program.get_elements())[0].clone();
 
                 let expected = Value::Cons(Cons::new(
-                    Value::Symbol($prefix_after.to_string()),
+                    Value::Symbol(Symbol::from($prefix_after)),
                     Value::Cons(Cons::new(
                         expected,
-                        Value::Symbol("nil".to_string())
+                        Value::Symbol(Symbol::from("nil"))
                     ))
                 ));
 
@@ -354,7 +352,7 @@ mod tests {
         assert_prereading_result_equal!(
             vec!(
                 Value::Cons(Cons::new(
-                    Value::Symbol("a".to_string()),
+                    Value::Symbol(Symbol::from("a")),
                     Value::Cons(Cons::new(
                         Value::Integer(1),
                         Value::Cons(Cons::new(
@@ -366,12 +364,12 @@ mod tests {
                                         Value::Integer(3),
                                         Value::Cons(Cons::new(
                                             Value::Integer(4),
-                                            Value::Symbol("nil".to_string())
+                                            Value::Symbol(Symbol::from("nil"))
                                         ))
                                     )),
                                     Value::Cons(Cons::new(
                                         Value::Boolean(false),
-                                        Value::Symbol("nil".to_string())
+                                        Value::Symbol(Symbol::from("nil"))
                                     ))
                                 ))
                             ))

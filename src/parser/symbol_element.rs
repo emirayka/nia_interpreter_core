@@ -1,14 +1,11 @@
 use nom::{
-    character::complete::{
-        alpha1,
-        alphanumeric0
-    },
-    sequence::pair,
     combinator::{
         recognize,
         map_res
-    }
+    },
+    multi::many1,
 };
+use crate::parser::lib::parse_symbol_character;
 
 #[derive(Debug)]
 pub struct SymbolElement {
@@ -38,7 +35,7 @@ fn make_symbol_element(value: &str) -> Result<SymbolElement, String> {
 }
 
 pub fn parse_symbol_element(s: &str) -> Result<(&str, SymbolElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_symbol = recognize(pair(alpha1, alphanumeric0));
+    let parse_symbol = recognize(many1(parse_symbol_character()));
     let parse_symbol_element = map_res(parse_symbol, make_symbol_element);
 
     parse_symbol_element(s)
@@ -47,7 +44,6 @@ pub fn parse_symbol_element(s: &str) -> Result<(&str, SymbolElement), nom::Err<(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nom::error::ErrorKind;
 
     #[test]
     fn test_works_on_simple_value() {
@@ -55,8 +51,21 @@ mod tests {
     }
 
     #[test]
+    fn test_able_to_parse_all_fine_symbols() {
+        let example = "test1-_^v=+?<>./&*%$@!~{}";
+        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
+    }
+
+    //todo: test for escaped
+    #[test]
+    fn test_able_to_parse_all_fine_escaped_symbols() {
+        let example = r##""test1\#\,\`\ \(\)\:\\"##;
+        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
+    }
+
+    #[test]
     fn test_allows_numbers_not_at_the_first_position() {
-        assert_eq!(Ok(("", SymbolElement {value: "test1".to_string()})), parse_symbol_element("test1"));
-        assert_eq!(Err(nom::Err::Error(("1test", ErrorKind::Alpha))), parse_symbol_element("1test"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("test1")})), parse_symbol_element("test1"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("1test")})), parse_symbol_element("1test"));
     }
 }

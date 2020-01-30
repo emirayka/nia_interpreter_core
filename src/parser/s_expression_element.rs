@@ -12,7 +12,7 @@ use nom::{
 };
 
 use crate::parser::{Element, parse_element};
-use nom::sequence::{preceded, terminated};
+use nom::sequence::{preceded, terminated, pair};
 
 #[derive(Debug)]
 pub struct SExpressionElement {
@@ -54,10 +54,11 @@ fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement,
 }
 
 pub fn parse_s_expression_element(s: &str) -> Result<(&str, SExpressionElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_element_spaced = terminated(parse_element, space0);
-    let parse_expressions = many0(parse_element_spaced);
+    let parse_expressions = many0(preceded(space0, parse_element));
+
     let opening_brace = terminated(tag("("), space0);
-    let closing_brace = tag(")");
+    let closing_brace = preceded(space0, tag(")"));
+
     let parse_s_expression = preceded(
         opening_brace,
         terminated(
