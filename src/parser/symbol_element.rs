@@ -1,8 +1,5 @@
 use nom::{
-    combinator::{
-        recognize,
-        map_res
-    },
+    combinator::map_res,
     multi::many1,
 };
 use crate::parser::lib::parse_symbol_character;
@@ -30,12 +27,16 @@ impl PartialEq for SymbolElement {
     }
 }
 
-fn make_symbol_element(value: &str) -> Result<SymbolElement, String> {
-    Ok(SymbolElement::new(value.to_string()))
+fn join(chars: Vec<char>) -> Result<String, String> {
+    Ok(chars.iter().collect())
+}
+
+fn make_symbol_element(value: String) -> Result<SymbolElement, String> {
+    Ok(SymbolElement::new(value))
 }
 
 pub fn parse_symbol_element(s: &str) -> Result<(&str, SymbolElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_symbol = recognize(many1(parse_symbol_character()));
+    let parse_symbol = map_res( many1(parse_symbol_character()), join);
     let parse_symbol_element = map_res(parse_symbol, make_symbol_element);
 
     parse_symbol_element(s)
@@ -56,11 +57,12 @@ mod tests {
         assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
     }
 
-    //todo: test for escaped
     #[test]
     fn test_able_to_parse_all_fine_escaped_symbols() {
-        let example = r##""test1\#\,\`\ \(\)\:\\"##;
-        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
+        let text = r##"test\"\#\,\`\ \(\)\:\\"##;
+        let expected = r##"test"#,` ():\"##;
+
+        assert_eq!(Ok(("", SymbolElement {value: String::from(expected)})), parse_symbol_element(text));
     }
 
     #[test]

@@ -17,6 +17,7 @@ pub fn parse_symbol_character() -> fn(&str) -> Result<(&str, char), nom::Err<(&s
                 Some(' ') => Ok((&next_input[' '.len_utf8()..], ' ')),
                 Some(':') => Ok((&next_input[':'.len_utf8()..], ':')),
                 Some('#') => Ok((&next_input['#'.len_utf8()..], '#')),
+                Some('"') => Ok((&next_input['"'.len_utf8()..], '"')),
                 None => Err(nom::Err::Error((input, nom::error::ErrorKind::Eof))),
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsA))),
             }
@@ -31,6 +32,7 @@ pub fn parse_symbol_character() -> fn(&str) -> Result<(&str, char), nom::Err<(&s
                 ' ' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 ':' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 '#' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
+                '"' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 cc if !cc.is_whitespace() => Ok((&input[c.len_utf8()..], c)),
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot)))
             }
@@ -54,6 +56,7 @@ pub fn parse_keyword_character() -> fn(&str) -> Result<(&str, char), nom::Err<(&
                 Some('\'') => Ok((&next_input['\''.len_utf8()..], '\'')),
                 Some(' ') => Ok((&next_input[' '.len_utf8()..], ' ')),
                 Some('#') => Ok((&next_input['#'.len_utf8()..], '#')),
+                Some('"') => Ok((&next_input['"'.len_utf8()..], '"')),
                 None => Err(nom::Err::Error((input, nom::error::ErrorKind::Eof))),
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsA))),
             }
@@ -67,6 +70,7 @@ pub fn parse_keyword_character() -> fn(&str) -> Result<(&str, char), nom::Err<(&
                 '\'' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 ' ' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 '#' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
+                '"' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
                 cc if !cc.is_whitespace() => Ok((&input[c.len_utf8()..], c)),
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot)))
             }

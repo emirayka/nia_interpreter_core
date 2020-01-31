@@ -99,22 +99,46 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
     );
 
     let boolean_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
-        boolean_element::parse_boolean_element,
+        terminated(
+            boolean_element::parse_boolean_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                all_consuming(tag(""))
+            ))),
         |el| Ok(Element::Boolean(el))
     );
 
     let symbol_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
-        symbol_element::parse_symbol_element,
+        terminated(
+            symbol_element::parse_symbol_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                all_consuming(tag(""))
+            ))),
         |el| Ok(Element::Symbol(el))
     );
 
     let keyword_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
-        keyword_element::parse_keyword_element,
+        terminated(
+            keyword_element::parse_keyword_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                all_consuming(tag(""))
+            ))),
         |el| Ok(Element::Keyword(el))
     );
 
     let string_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
-        string_element::parse_string_element,
+        terminated(
+            string_element::parse_string_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                all_consuming(tag(""))
+            ))),
         |el| Ok(Element::String(el))
     );
 
@@ -222,6 +246,12 @@ mod tests {
     #[test]
     fn test_parses_symbol_correctly() {
         assert_eq!(Ok(("", Element::Symbol(symbol_element::SymbolElement::new(String::from("1+"))))), parse_element("1+"));
+    }
+
+    #[test]
+    fn test_parses_boolean_correctly() {
+        println!("{:?}", parse_element("t#t"));
+//        assert_eq!(Ok(("", Element::Symbol(symbol_element::SymbolElement::new(String::from("1+"))))), parse_element("1+"));
     }
 
 //    #[test]

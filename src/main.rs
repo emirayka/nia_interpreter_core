@@ -11,9 +11,10 @@ extern crate nom;
 // todo: Implement keyboard listening
 // todo: Get rid of unnecessary .clone()
 // todo: add error tests for parser
+// todo: exceptions
 
 fn main() {
     let mut interpreter = interpreter::interpreter::Interpreter::new();
 
-    interpreter.execute("#t").unwrap();
+    println!("{:?}", interpreter.execute("'test#huest"));
 }

@@ -37,13 +37,18 @@ impl PartialEq for KeywordElement {
     }
 }
 
-fn make_keyword_element(value: &str) -> Result<KeywordElement, String> {
-    Ok(KeywordElement::new(value.to_string()))
+fn join(chars: Vec<char>) -> Result<String, String> {
+    Ok(chars.iter().collect())
+}
+
+fn make_keyword_element(value: String) -> Result<KeywordElement, String> {
+    Ok(KeywordElement::new(value))
 }
 
 pub fn parse_keyword_element(s: &str) -> Result<(&str, KeywordElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let one_colon = tag(":");
-    let parse_keyword = preceded(one_colon, recognize(many1(parse_keyword_character())));
+    let parse_keyword = map_res(
+        preceded(tag(":"), many1(parse_keyword_character())),
+        join);
     let parse_keyword_element = map_res(parse_keyword, make_keyword_element);
 
     parse_keyword_element(s)
@@ -84,10 +89,14 @@ mod tests {
         assert_keyword_parsing_is_ok!(example);
     }
 
-    //todo: test for escaped
     #[test]
     fn test_able_to_parse_all_fine_escaped_symbols() {
-        let example = r##":::test1\#\,\`\ \(\)\\"##;
-        assert_keyword_parsing_is_ok!(example);
+        let example = r##":::test1\"\#\,\`\ \(\)\\"##;
+        let expected = r##"::test1"#,` ()\"##;
+
+        assert_eq!(
+            Ok(("", KeywordElement {value: String::from(expected)})),
+            parse_keyword_element(example)
+        );
     }
 }
