@@ -143,7 +143,14 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
     );
 
     let s_expression_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
-        s_expression_element::parse_s_expression_element,
+        terminated(
+            s_expression_element::parse_s_expression_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                peek(tag("(")),
+                all_consuming(tag(""))
+            ))),
         |el| Ok(Element::SExpression(el))
     );
 
@@ -175,7 +182,18 @@ pub fn parse_code(s: &str) -> Result<(&str, Code), nom::Err<(&str, nom::error::E
 
     let parse = map_res(parse, make_program);
 
-    parse(s)
+    let result = parse(s);
+
+    match result {
+        Ok((rest, parse_result)) => {
+            if rest.len() != 0 {
+                return Err(nom::Err::Failure((rest, nom::error::ErrorKind::NonEmpty)))
+            }
+
+            Ok((rest, parse_result))
+        },
+        x => x
+    }
 }
 
 #[cfg(test)]
@@ -191,28 +209,16 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_simple_s_expressions() {
-        assert_is_ok!(parse_code("20"));
-        assert_is_ok!(parse_code("20.0"));
-        assert_is_ok!(parse_code("#t"));
-        assert_is_ok!(parse_code("#f"));
-        assert_is_ok!(parse_code("imacutesymbol"));
-        assert_is_ok!(parse_code(":imacutekeyword"));
-        assert_is_ok!(parse_code(r#""imacutestring""#));
-        assert_is_ok!(parse_code("'imaquotedsymbol"));
-        assert_is_ok!(parse_code("`imaquotedsymboltoo"));
-        assert_is_ok!(parse_code(",imanexecutedsymbol"));
-        assert_is_ok!(parse_code(",@imanexecutedsymbolthatexpandstolist"));
+    macro_rules! assert_is_err {
+        ($exp:expr) => {
+            assert!(match $exp {
+                Err(_) => true,
+                _ => false
+            });
+        }
     }
 
-    #[test]
-    fn test_simple_program() {
-//        assert_is_ok!(parse_code("(+ 1 2)"));
-//        assert_is_ok!(parse_code("(1+ 1)"));
-    }
-
-    macro_rules! assert_code {
+    macro_rules! assert_code_eq {
         ($expected:expr, $code:expr) => {
             {
                 let expected = $expected;
@@ -235,27 +241,269 @@ mod tests {
     }
 
     #[test]
+    fn test_parses_atoms_correctly() {
+        assert_is_ok!(parse_code("20"));
+        assert_is_ok!(parse_code("20.0"));
+        assert_is_ok!(parse_code("#t"));
+        assert_is_ok!(parse_code("#f"));
+        assert_is_ok!(parse_code("imacutesymbol"));
+        assert_is_ok!(parse_code(":imacutekeyword"));
+        assert_is_ok!(parse_code(r#""imacutestring""#));
+        assert_is_ok!(parse_code("'imaquotedsymbol"));
+        assert_is_ok!(parse_code("`imaquotedsymboltoo"));
+        assert_is_ok!(parse_code(",imanexecutedsymbol"));
+        assert_is_ok!(parse_code(",@imanexecutedsymbolthatexpandstolist"));
+    }
+
+    #[test]
+    fn test_parses_simple_s_expression_correctly() {
+        assert_is_ok!(parse_code("(+ 1 2)"));
+        assert_is_ok!(parse_code("(1+ 1)"));
+    }
+
+    #[test]
+    fn test_parses_complex_s_expression_correctly() {
+        assert_code_eq!(
+            vec!(
+                Element::SExpression(s_expression_element::SExpressionElement::new(vec!(
+                    Element::Integer(integer_element::IntegerElement::new(1)),
+                    Element::Float(float_element::FloatElement::new(1.1)),
+                    Element::Boolean(boolean_element::BooleanElement::new(true)),
+                    Element::Boolean(boolean_element::BooleanElement::new(false)),
+                    Element::Keyword(keyword_element::KeywordElement::new(String::from("keyword"))),
+                    Element::String(string_element::StringElement::new(String::from("string"))),
+                    Element::Symbol(symbol_element::SymbolElement::new(String::from("symbol"))),
+                    Element::SExpression(s_expression_element::SExpressionElement::new(vec!(
+                        Element::Integer(integer_element::IntegerElement::new(1)),
+                        Element::Float(float_element::FloatElement::new(1.1)),
+                        Element::Boolean(boolean_element::BooleanElement::new(true)),
+                        Element::Boolean(boolean_element::BooleanElement::new(false)),
+                        Element::Keyword(keyword_element::KeywordElement::new(String::from("nested-keyword"))),
+                        Element::String(string_element::StringElement::new(String::from("nested-string"))),
+                        Element::Symbol(symbol_element::SymbolElement::new(String::from("nested-symbol"))),
+                    ))),
+                )))
+            ),
+            "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol))"
+        );
+    }
+
+    #[test]
     fn test_distinguishes_between_symbols_and_numbers() {
-        assert_code!(vec!(Element::Float(float_element::FloatElement::new(1.1))), "1.1");
-        assert_code!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1.1t".to_string()))), "1.1t");
+        assert_code_eq!(vec!(Element::Float(float_element::FloatElement::new(1.1))), "1.1");
+        assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1.1t".to_string()))), "1.1t");
 
-        assert_code!(vec!(Element::Integer(integer_element::IntegerElement::new(1))), "1");
-        assert_code!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1t".to_string()))), "1t");
+        assert_code_eq!(vec!(Element::Integer(integer_element::IntegerElement::new(1))), "1");
+        assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1t".to_string()))), "1t");
     }
 
     #[test]
-    fn test_parses_symbol_correctly() {
-        assert_eq!(Ok(("", Element::Symbol(symbol_element::SymbolElement::new(String::from("1+"))))), parse_element("1+"));
+    fn test_respects_spaces_between_forms_after_integer() {
+        assert_is_ok!(parse_code("1 1"));
+        assert_is_ok!(parse_code("11"));
+
+        assert_is_ok!(parse_code("1 1.1"));
+        assert_is_ok!(parse_code("11.1"));
+
+        assert_is_ok!(parse_code("1 #t"));
+        assert_is_err!(parse_code("1#t"));
+        assert_is_ok!(parse_code("1 #f"));
+        assert_is_err!(parse_code("1#f"));
+
+        assert_is_ok!(parse_code("1 :t"));
+        assert_is_err!(parse_code("1:t")); // because, "1:t" is not a valid symbol, nor keyword
+
+        assert_is_ok!(parse_code("1 t"));
+        assert_is_ok!(parse_code("1t")); // because, "1t" is a valid symbol
+
+        assert_is_ok!(parse_code("1 \"\""));
+        assert_is_err!(parse_code("1\"\""));
+
+        assert_is_ok!(parse_code("1 ()"));
+        assert_is_err!(parse_code("1()"));
     }
 
     #[test]
-    fn test_parses_boolean_correctly() {
-        println!("{:?}", parse_element("t#t"));
-//        assert_eq!(Ok(("", Element::Symbol(symbol_element::SymbolElement::new(String::from("1+"))))), parse_element("1+"));
+    fn test_respects_spaces_between_forms_after_float() {
+        assert_is_ok!(parse_code("1.1 1"));
+        assert_is_ok!(parse_code("1.11"));
+
+        assert_is_ok!(parse_code("1.1 1.1"));
+        assert_is_ok!(parse_code("1.11.1"));
+
+        assert_is_ok!(parse_code("1.1 #t"));
+        assert_is_err!(parse_code("1.1#t"));
+        assert_is_ok!(parse_code("1.1 #f"));
+        assert_is_err!(parse_code("1.1#f"));
+
+        assert_is_ok!(parse_code("1.1 :t"));
+        assert_is_err!(parse_code("1.1:t")); // because, "1:t" is not a valid symbol, nor keyword
+
+        assert_is_ok!(parse_code("1.1 t"));
+        assert_is_ok!(parse_code("1.1t")); // because, "1t" is a valid symbol
+
+        assert_is_ok!(parse_code("1.1 \"\""));
+        assert_is_err!(parse_code("1.1\"\""));
+
+        assert_is_ok!(parse_code("1.1 ()"));
+        assert_is_err!(parse_code("1.1()"));
     }
 
-//    #[test]
-//    fn test_escapes_behave_correctlrry() {
-//        println!("{:?}", parse_code(r#""a""b""#));
-//    }
+    #[test]
+    fn test_respects_spaces_between_forms_after_boolean_true() {
+        assert_is_ok!(parse_code("#t 1"));
+        assert_is_err!(parse_code("#t1"));
+
+        assert_is_ok!(parse_code("#t 1.1"));
+        assert_is_err!(parse_code("#t1.1"));
+
+        assert_is_ok!(parse_code("#t #t"));
+        assert_is_err!(parse_code("#t#t"));
+        assert_is_ok!(parse_code("#t #f"));
+        assert_is_err!(parse_code("#t#f"));
+
+        assert_is_ok!(parse_code("#t :t"));
+        assert_is_err!(parse_code("#t:t"));
+
+        assert_is_ok!(parse_code("#t t"));
+        assert_is_err!(parse_code("#tt"));
+
+        assert_is_ok!(parse_code("#t \"\""));
+        assert_is_err!(parse_code("#t\"\""));
+
+        assert_is_ok!(parse_code("#t ()"));
+        assert_is_err!(parse_code("#t()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_boolean_false() {
+        assert_is_ok!(parse_code("#f 1"));
+        assert_is_err!(parse_code("#f1"));
+
+        assert_is_ok!(parse_code("#f 1.1"));
+        assert_is_err!(parse_code("#f1.1"));
+
+        assert_is_ok!(parse_code("#f #t"));
+        assert_is_err!(parse_code("#f#t"));
+        assert_is_ok!(parse_code("#f #f"));
+        assert_is_err!(parse_code("#f#f"));
+
+        assert_is_ok!(parse_code("#f :t"));
+        assert_is_err!(parse_code("#f:t"));
+
+        assert_is_ok!(parse_code("#f t"));
+        assert_is_err!(parse_code("#ft"));
+
+        assert_is_ok!(parse_code("#f \"\""));
+        assert_is_err!(parse_code("#f\"\""));
+
+        assert_is_ok!(parse_code("#f ()"));
+        assert_is_err!(parse_code("#f()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_keyword() {
+        assert_is_ok!(parse_code(":key 1"));
+        assert_is_ok!(parse_code(":key1"));
+
+        assert_is_ok!(parse_code(":key 1.1"));
+        assert_is_ok!(parse_code(":key1.1"));
+
+        assert_is_ok!(parse_code(":key #t"));
+        assert_is_err!(parse_code(":key#t"));
+        assert_is_ok!(parse_code(":key #f"));
+        assert_is_err!(parse_code(":key#f"));
+
+        assert_is_ok!(parse_code(":key :t"));
+        assert_is_ok!(parse_code(":key:t"));
+
+        assert_is_ok!(parse_code(":key t"));
+        assert_is_ok!(parse_code(":keyt"));
+
+        assert_is_ok!(parse_code(":key \"\""));
+        assert_is_err!(parse_code(":key\"\""));
+
+        assert_is_ok!(parse_code(":key ()"));
+        assert_is_err!(parse_code(":key()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_string() {
+        assert_is_ok!(parse_code("\"str\" 1"));
+        assert_is_err!(parse_code("\"str\"1"));
+
+        assert_is_ok!(parse_code("\"str\" 1.1"));
+        assert_is_err!(parse_code("\"str\"1.1"));
+
+        assert_is_ok!(parse_code("\"str\" #t"));
+        assert_is_err!(parse_code("\"str\"#t"));
+        assert_is_ok!(parse_code("\"str\" #f"));
+        assert_is_err!(parse_code("\"str\"#f"));
+
+        assert_is_ok!(parse_code("\"str\" :t"));
+        assert_is_err!(parse_code("\"str\":t"));
+
+        assert_is_ok!(parse_code("\"str\" t"));
+        assert_is_err!(parse_code("\"str\"t"));
+
+        assert_is_ok!(parse_code("\"str\" \"\""));
+        assert_is_err!(parse_code("\"str\"\"\""));
+
+        assert_is_ok!(parse_code("\"str\" ()"));
+        assert_is_err!(parse_code("\"str\"()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_symbol() {
+        assert_is_ok!(parse_code("sym 1"));
+        assert_is_ok!(parse_code("sym1"));
+
+        assert_is_ok!(parse_code("sym 1.1"));
+        assert_is_ok!(parse_code("sym1.1"));
+
+        assert_is_ok!(parse_code("sym #t"));
+        assert_is_err!(parse_code("sym#t"));
+        assert_is_ok!(parse_code("sym #f"));
+        assert_is_err!(parse_code("sym#f"));
+
+        assert_is_ok!(parse_code("sym :t"));
+        assert_is_err!(parse_code("sym:t"));
+
+        assert_is_ok!(parse_code("sym t"));
+        assert_is_ok!(parse_code("symt"));
+
+        assert_is_ok!(parse_code("sym \"\""));
+        assert_is_err!(parse_code("sym\"\""));
+
+        assert_is_ok!(parse_code("sym ()"));
+        assert_is_err!(parse_code("sym()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_s_expresion() {
+        assert_is_ok!(parse_code("() 1"));
+        assert_is_err!(parse_code("()1"));
+
+        assert_is_ok!(parse_code("() 1.1"));
+        assert_is_err!(parse_code("()1.1"));
+
+        assert_is_ok!(parse_code("() #t"));
+        assert_is_err!(parse_code("()#t"));
+        assert_is_ok!(parse_code("() #f"));
+        assert_is_err!(parse_code("()#f"));
+
+        assert_is_ok!(parse_code("() :t"));
+        assert_is_err!(parse_code("():t"));
+
+        assert_is_ok!(parse_code("() t"));
+        assert_is_err!(parse_code("()t"));
+
+        assert_is_ok!(parse_code("() \"\""));
+        assert_is_err!(parse_code("()\"\""));
+
+        assert_is_ok!(parse_code("() ()"));
+        assert_is_ok!(parse_code("()()"));
+    }
+
+    // todo: add tests when input is not complete
 }
