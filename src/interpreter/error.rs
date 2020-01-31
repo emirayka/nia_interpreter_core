@@ -16,13 +16,15 @@ pub enum ErrorKind {
 pub struct Error {
     kind: ErrorKind,
     message: String,
+    caused_by: Option<Error>,
 }
 
 impl Error {
-    pub fn from(kind: ErrorKind, message: String) -> Error {
+    pub fn from(caused_by: Option<Error>, kind: ErrorKind, message: String) -> Error {
         Error {
             kind,
             message,
+            caused_by,
         }
     }
 
@@ -30,6 +32,7 @@ impl Error {
         Error {
             kind: ErrorKind::Empty,
             message: String::from(""),
+            caused_by: None,
         }
     }
 }
