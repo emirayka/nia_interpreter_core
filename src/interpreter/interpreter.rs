@@ -15,7 +15,7 @@ use crate::interpreter::error::Error;
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
     symbol_arena: SymbolArena,
-    root_env_id: EnvironmentId,
+    root_environment: EnvironmentId,
     call_stack: (),
 }
 
@@ -29,7 +29,7 @@ impl Interpreter {
         Interpreter {
             environment_arena,
             symbol_arena,
-            root_env_id,
+            root_environment: root_env_id,
             call_stack: (),
         }
     }
@@ -88,6 +88,10 @@ impl Interpreter {
 
     pub fn intern_symbol_nil(&mut self, symbol_name: &str) -> Symbol {
         self.symbol_arena.intern(symbol_name)
+    }
+
+    pub fn get_root_environment(&self) -> EnvironmentId {
+        self.root_environment
     }
 }
 
@@ -371,7 +375,7 @@ impl Interpreter {
         let mut results: Vec<Value> = Vec::new();
 
         for value in values {
-            match self.execute_value(self.root_env_id, &value) {
+            match self.execute_value(self.root_environment, &value) {
                 Ok(result) => results.push(result),
                 Err(_) => return Err(Error::empty())
             }
@@ -399,7 +403,7 @@ mod tests {
         ($interpreter_id:ident) => {
             let name = $interpreter_id.intern_symbol("+");
             $interpreter_id.environment_arena.define_function(
-                $interpreter_id.root_env_id,
+                $interpreter_id.root_environment,
                 &name,
                 Value::Function(Function::Builtin(BuiltinFunction::new(
                     |interpreter: &mut Interpreter, values: Vec<Value>| -> Result<Value, Error> {
@@ -446,7 +450,7 @@ mod tests {
         let name = interpreter.intern_symbol("test");
 
         interpreter.environment_arena.define_variable(
-            interpreter.root_env_id,
+            interpreter.root_environment,
             &name,
             Value::Integer(1)
         );
@@ -501,10 +505,10 @@ mod tests {
         let name = interpreter.intern_symbol("test");
 
         interpreter.environment_arena.define_function(
-            interpreter.root_env_id,
+            interpreter.root_environment,
             &name,
             Value::Function(Function::Interpreted(InterpretedFunction::new(
-                interpreter.root_env_id,
+                interpreter.root_environment,
                 vec!("a".to_string(), "b".to_string()),
                 code
             )))
@@ -520,7 +524,7 @@ mod tests {
         let name = interpreter.intern_symbol("testif");
 
         interpreter.environment_arena.define_function(
-            interpreter.root_env_id,
+            interpreter.root_environment,
             &name,
             Value::Function(Function::SpecialForm(SpecialFormFunction::new(
                 |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
