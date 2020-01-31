@@ -1,5 +1,5 @@
-use std::hash::{Hash, Hasher};
-use nom::lib::std::collections::HashMap;
+use std::hash::Hash;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Symbol {
@@ -49,9 +49,9 @@ impl SymbolArena {
 
     fn ensure_symbol_defined(&mut self, symbol_name: &str) {
         match self.symbols.get_mut(symbol_name) {
-            Some(vector) => (),
+            Some(_) => (),
             None => {
-                let mut vector = Vec::new();
+                let vector = Vec::new();
 
                 self.symbols.insert(String::from(symbol_name), vector);
             }
@@ -62,7 +62,7 @@ impl SymbolArena {
         match self.symbols.get_mut(symbol_name) {
             Some(vector) => {
                 match vector.get(0) {
-                    Some(symbol) => (),
+                    Some(_) => (),
                     None => {
                         let symbol = Symbol::from(symbol_name);
 

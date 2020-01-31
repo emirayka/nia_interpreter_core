@@ -3,7 +3,6 @@ use crate::interpreter::cons::Cons;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
 use crate::parser::Element;
-use crate::interpreter::symbol::Symbol;
 use crate::interpreter::interpreter::Interpreter;
 
 fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressionElement) -> Value {
@@ -135,7 +134,7 @@ pub fn preread_elements(interpreter: &mut Interpreter, elements: &Vec<Element>) 
 mod tests {
     use super::*;
     use crate::parser::parse_code;
-    use crate::interpreter::symbol::SymbolArena;
+    use crate::interpreter::symbol::{SymbolArena, Symbol};
 
     fn new_symbol(name: &str) -> Symbol {
         let mut symbol_arena = SymbolArena::new();

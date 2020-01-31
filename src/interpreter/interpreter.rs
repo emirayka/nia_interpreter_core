@@ -11,6 +11,7 @@ use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
+use crate::interpreter::stdlib::infect_interpreter;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -20,7 +21,7 @@ pub struct Interpreter {
 }
 
 impl Interpreter {
-    pub fn new() -> Interpreter {
+    pub fn raw() -> Interpreter {
         let mut environment_arena = EnvironmentArena::new();
         let root_env_id = environment_arena.alloc();
 
@@ -31,6 +32,15 @@ impl Interpreter {
             symbol_arena,
             root_environment: root_env_id,
             call_stack: (),
+        }
+    }
+
+    pub fn new() -> Interpreter {
+        let mut interpreter = Interpreter::raw();
+
+        match infect_interpreter(&mut interpreter) {
+            Ok(()) => interpreter,
+            Err(_error) => panic!("Cannot construct interpreter")
         }
     }
 }
@@ -156,7 +166,7 @@ impl Interpreter {
         execution_environment: EnvironmentId,
         names: &Vec<String>,
         variables: Vec<Value>
-    ) {
+    ) -> Result<(), Error> {
         let len = names.len();
 
         for i in 0..len {
@@ -164,8 +174,13 @@ impl Interpreter {
             let name = self.intern_symbol(name);
             let variable = &variables[i];
 
-            self.define_variable(execution_environment, &name, variable.clone());
+            match self.define_variable(execution_environment, &name, variable.clone()) {
+                Ok(()) => (),
+                Err(error) => return Err(error)
+            };
         }
+
+        Ok(())
     }
 
     fn execute_code(&mut self, execution_environment:EnvironmentId, code: &Vec<Value>) -> Result<Option<Value>, Error> {
@@ -194,11 +209,14 @@ impl Interpreter {
         let execution_environment = self.make_environment(func.get_environment());
 
         // 2) set arguments in that environment
-        self.define_environment_variables(
+        match self.define_environment_variables(
             execution_environment,
             func.get_argument_names(),
             evaluated_arguments
-        );
+        ) {
+            Ok(()) => (),
+            Err(error) => return Err(error)
+        };
 
         // 3) execute code
         let execution_result = match self.execute_code(execution_environment, func.get_code()) {
@@ -245,11 +263,14 @@ impl Interpreter {
         let execution_environment = self.make_environment(func.get_environment());
 
         // 2) set arguments in that environment
-        self.define_environment_variables(
+        match self.define_environment_variables(
             execution_environment,
             func.get_argument_names(),
             arguments
-        );
+        ) {
+            Ok(()) => (),
+            Err(error) => return Err(error)
+        };
 
         // 3) execute code
         let execution_result = match self.execute_code(execution_environment, func.get_code()) {
@@ -419,7 +440,7 @@ mod tests {
                         Ok(value)
                     }
                 )))
-            );
+            ).unwrap();
         }
     }
 
@@ -446,14 +467,14 @@ mod tests {
 
     #[test]
     pub fn test_executes_symbol_correctly() {
-        let mut interpreter = Interpreter::new();
+        let mut interpreter = Interpreter::raw();
         let name = interpreter.intern_symbol("test");
 
         interpreter.environment_arena.define_variable(
             interpreter.root_environment,
             &name,
             Value::Integer(1)
-        );
+        ).unwrap();
 
         let result = interpreter.execute("test");
 
@@ -467,7 +488,7 @@ mod tests {
 
     #[test]
     pub fn test_builtin_function_works_correctly() {
-        let mut interpreter = Interpreter::new();
+        let mut interpreter = Interpreter::raw();
 
         define_sum_function!(interpreter);
 
@@ -486,7 +507,7 @@ mod tests {
 
     #[test]
     pub fn test_interpreted_function_works_correctly() {
-        let mut interpreter = Interpreter::new();
+        let mut interpreter = Interpreter::raw();
 
         define_sum_function!(interpreter);
         let code = vec!(
@@ -512,7 +533,7 @@ mod tests {
                 vec!("a".to_string(), "b".to_string()),
                 code
             )))
-        );
+        ).unwrap();
 
         let result = interpreter.execute("(test 3 2)");
         assert_eq!(Value::Integer(5), result.unwrap());
@@ -520,7 +541,7 @@ mod tests {
 
     #[test]
     pub fn test_special_form_invocation_evaluates_correctly() {
-        let mut interpreter = Interpreter::new();
+        let mut interpreter = Interpreter::raw();
         let name = interpreter.intern_symbol("testif");
 
         interpreter.environment_arena.define_function(
@@ -541,7 +562,7 @@ mod tests {
                     }
                 }
             )))
-        );
+        ).unwrap();
 
         let result = interpreter.execute("(testif #t 1 2)");
         assert_eq!(Value::Integer(1), result.unwrap());
@@ -556,8 +577,29 @@ mod tests {
         assert_eq!(Value::Integer(2), result.unwrap());
     }
 
-//    #[test]
-//    pub fn test_macro_invocation_evaluates_correctly() {
+    #[test]
+    pub fn test_macro_invocation_evaluates_correctly() {
+//        use crate::interpreter::stdlib::infect_interpreter;
+//
 //        let mut interpreter = Interpreter::new();
-//    }
+//
+//        infect_interpreter(&mut interpreter);
+//
+//        let macro_name = interpreter.intern_symbol("if");
+//        let argument_names = vec!(
+//            String::from("condition"),
+//            String::from("then-clause"),
+//            String::from("else-clause"),
+//        );
+//
+//        interpreter.define_function(
+//            interpreter.get_root_environment(),
+//            macro_name,
+//            Value::Function(Function::Macro(MacroFunction::new(
+//                interpreter.root_environment,
+//                argument_names,
+//
+//            )))
+//        )
+    }
 }

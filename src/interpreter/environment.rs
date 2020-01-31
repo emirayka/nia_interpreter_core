@@ -153,12 +153,12 @@ mod tests {
         let key = new_symbol("test");
 
         assert!(!env.has_variable(&key));
-        env.define_variable(&key, Value::Integer(1));
+        env.define_variable(&key, Value::Integer(1)).unwrap();
         assert!(env.has_variable(&key));
         assert_eq!(&Value::Integer(1), env.lookup_variable(&key).unwrap());
 
         assert!(!env.has_function(&key));
-        env.define_function(&key, Value::Integer(1));
+        env.define_function(&key, Value::Integer(1)).unwrap();
         assert!(env.has_function(&key));
         assert_eq!(&Value::Integer(1), env.lookup_function(&key).unwrap());
     }
@@ -168,11 +168,11 @@ mod tests {
         let mut env = LexicalEnvironment::new();
         let key = new_symbol("key");
 
-        env.define_variable(&key, Value::Integer(1));
-        env.define_function(&key, Value::Integer(1));
+        env.define_variable(&key, Value::Integer(1)).unwrap();
+        env.define_function(&key, Value::Integer(1)).unwrap();
 
-        env.set_variable(&key, Value::Integer(2));
-        env.set_function(&key, Value::Integer(2));
+        env.set_variable(&key, Value::Integer(2)).unwrap();
+        env.set_function(&key, Value::Integer(2)).unwrap();
 
         assert_eq!(&Value::Integer(2), env.lookup_variable(&key).unwrap());
         assert_eq!(&Value::Integer(2), env.lookup_function(&key).unwrap());
@@ -199,7 +199,7 @@ mod tests {
         let mut env = LexicalEnvironment::new();
         let key = new_symbol("key");
 
-        env.define_variable(&key, Value::Integer(1));
+        env.define_variable(&key, Value::Integer(1)).unwrap();
         assert!(env.define_variable(&key, Value::Integer(1)).is_err());
     }
 
@@ -208,7 +208,7 @@ mod tests {
         let mut env = LexicalEnvironment::new();
         let key = new_symbol("key");
 
-        env.define_function(&key, Value::Integer(1));
+        env.define_function(&key, Value::Integer(1)).unwrap();
         assert!(env.define_function(&key, Value::Integer(1)).is_err());
     }
 

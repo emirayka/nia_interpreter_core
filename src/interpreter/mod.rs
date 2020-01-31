@@ -7,4 +7,4 @@ mod environment;
 mod environment_arena;
 mod pre_reader;
 mod stdlib;
-mod interpreter;
+pub mod interpreter;

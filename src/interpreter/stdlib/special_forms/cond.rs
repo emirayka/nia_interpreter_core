@@ -61,7 +61,7 @@ fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<V
     result
 }
 
-pub fn infect_cond(interpreter: &mut Interpreter) -> Result<(), Error> {
+pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let name = interpreter.intern_symbol("cond");
 
     let result = interpreter.define_function(
@@ -81,9 +81,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_works_correctly() {
-        let mut interpreter = Interpreter::new();
-        infect_cond(&mut interpreter);
+    fn test_cond_works_correctly() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
 
         assert_eq!(Value::Integer(1), interpreter.execute("(cond (#t 1) (#t 2) (#t 3))").unwrap());
         assert_eq!(Value::Integer(2), interpreter.execute("(cond (#f 1) (#t 2) (#t 3))").unwrap());

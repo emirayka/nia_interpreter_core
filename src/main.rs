@@ -13,4 +13,7 @@ extern crate nom;
 // todo: add error tests for parser
 
 fn main() {
+    let mut interpreter = interpreter::interpreter::Interpreter::new();
+
+    interpreter.execute("#t").unwrap();
 }

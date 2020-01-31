@@ -64,12 +64,8 @@ impl PartialEq for PrefixElement {
     }
 }
 
-fn make_prefixed_element(pair: (Prefix, Element)) -> Result<PrefixElement, String> {
-    if let(prefix, value) = pair {
-        Ok(PrefixElement::new(prefix, value))
-    } else {
-        unreachable!()
-    }
+fn make_prefixed_element(pair: (Prefix, Element)) -> Result<PrefixElement, ()> {
+    Ok(PrefixElement::new(pair.0, pair.1))
 }
 
 pub fn parse_prefixed_element(s: &str) -> Result<(&str, PrefixElement), nom::Err<(&str, nom::error::ErrorKind)>> {
