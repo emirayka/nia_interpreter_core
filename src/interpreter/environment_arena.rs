@@ -6,11 +6,11 @@ use crate::interpreter::value::Value;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::error::Error;
 
-pub struct Arena {
+pub struct EnvironmentArena {
     contestants: Vec<LexicalEnvironment>,
 }
 
-impl Arena {
+impl EnvironmentArena {
     fn get(&self, id: EnvironmentId) -> Option<&LexicalEnvironment> {
         self.contestants.get(id.get_index())
     }
@@ -20,9 +20,9 @@ impl Arena {
     }
 }
 
-impl Arena {
-    pub fn new() -> Arena {
-        Arena {
+impl EnvironmentArena {
+    pub fn new() -> EnvironmentArena {
+        EnvironmentArena {
             contestants: Vec::new(),
         }
     }
@@ -137,29 +137,36 @@ impl Arena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::symbol::SymbolArena;
+
+    fn new_symbol(name: &str) -> Symbol {
+        let mut symbol_arena = SymbolArena::new();
+
+        symbol_arena.intern(name)
+    }
 
     #[test]
     fn test_define_works_correctly_for_a_single_environment() {
-        let mut arena = Arena::new();
-        let key = &Symbol::from("test");
+        let mut arena = EnvironmentArena::new();
+        let key = new_symbol("test");
 
         let parent_id = arena.alloc();
 
-        assert!(!arena.has_variable(parent_id, key));
-        arena.define_variable(parent_id, key, Value::Integer(1));
-        assert!(arena.has_variable(parent_id, key));
-        assert_eq!(&Value::Integer(1), arena.lookup_variable(parent_id, key).unwrap());
+        assert!(!arena.has_variable(parent_id, &key));
+        arena.define_variable(parent_id, &key, Value::Integer(1));
+        assert!(arena.has_variable(parent_id, &key));
+        assert_eq!(&Value::Integer(1), arena.lookup_variable(parent_id, &key).unwrap());
 
-        assert!(!arena.has_function(parent_id, key));
-        arena.define_function(parent_id, key, Value::Integer(1));
-        assert!(arena.has_function(parent_id, key));
-        assert_eq!(&Value::Integer(1), arena.lookup_function(parent_id, key).unwrap());
+        assert!(!arena.has_function(parent_id, &key));
+        arena.define_function(parent_id, &key, Value::Integer(1));
+        assert!(arena.has_function(parent_id, &key));
+        assert_eq!(&Value::Integer(1), arena.lookup_function(parent_id, &key).unwrap());
     }
 
     #[test]
     fn test_set_works_correctly_for_a_single_environment() {
-        let mut arena = Arena::new();
-        let key = Symbol::from("test");
+        let mut arena = EnvironmentArena::new();
+        let key = new_symbol("test");
 
         let parent_id = arena.alloc();
 
@@ -176,30 +183,30 @@ mod tests {
 
     #[test]
     fn test_cannot_set_to_not_defined_variable() {
-        let mut arena = Arena::new();
+        let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         assert!(arena.set_variable(env_id, &key, Value::Integer(2)).is_err());
     }
 
     #[test]
     fn test_cannot_set_to_not_defined_function() {
-        let mut arena = Arena::new();
+        let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         assert!(arena.set_function(env_id, &key, Value::Integer(2)).is_err());
     }
 
     #[test]
     fn test_cannot_define_variable_twice() {
-        let mut arena = Arena::new();
+        let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         arena.define_variable(env_id, &key, Value::Integer(1));
         assert!(arena.define_variable(env_id, &key, Value::Integer(1)).is_err());
@@ -207,10 +214,10 @@ mod tests {
 
     #[test]
     fn test_cannot_define_function_twice() {
-        let mut arena = Arena::new();
+        let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         arena.define_function(env_id, &key, Value::Integer(1));
         assert!(arena.define_function(env_id, &key, Value::Integer(1)).is_err());
@@ -218,13 +225,13 @@ mod tests {
 
     #[test]
     fn test_lookups_from_parents_works_correctly() {
-        let mut arena = Arena::new();
+        let mut arena = EnvironmentArena::new();
 
         let parent_id = arena.alloc();
         let child_id = arena.alloc_child(parent_id);
 
-        let parent_key = Symbol::from("parent_test");
-        let child_key = Symbol::from("child_test");
+        let parent_key = new_symbol("parent_test");
+        let child_key = new_symbol("child_test");
 
         // variable
         arena.define_variable(parent_id, &parent_key, Value::String("parent".to_string()));
@@ -247,8 +254,8 @@ mod tests {
 
     #[test]
     fn test_when_defined_only_in_parent_set_only_in_parent() {
-        let mut arena = Arena::new();
-        let key = Symbol::from("test");
+        let mut arena = EnvironmentArena::new();
+        let key = new_symbol("test");
 
         let parent_id = arena.alloc();
         let child_id = arena.alloc_child(parent_id);

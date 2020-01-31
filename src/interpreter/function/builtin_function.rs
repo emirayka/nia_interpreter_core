@@ -2,8 +2,12 @@ use std::fmt;
 
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::interpreter::Interpreter;
 
-pub type BuiltinFunctionType = fn(argument_values: Vec<Value>) -> Result<Value, Error>;
+pub type BuiltinFunctionType = fn(
+    interpreter: &mut Interpreter,
+    argument_values: Vec<Value>) -> Result<Value, Error>;
 
 #[derive(Clone)]
 pub struct BuiltinFunction {

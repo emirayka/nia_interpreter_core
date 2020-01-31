@@ -16,7 +16,7 @@ pub enum ErrorKind {
 pub struct Error {
     kind: ErrorKind,
     message: String,
-    caused_by: Option<Error>,
+    caused_by: Option<Box<Error>>,
 }
 
 impl Error {
@@ -24,7 +24,10 @@ impl Error {
         Error {
             kind,
             message,
-            caused_by,
+            caused_by: match caused_by {
+                Some(error) => Some(Box::new(error)),
+                None => None
+            },
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::interpreter::environment_arena::Arena;
+use crate::interpreter::environment_arena::EnvironmentArena;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::parser::parse_code;
@@ -8,28 +8,86 @@ use crate::interpreter::function::{Function};
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::builtin_function::BuiltinFunction;
 use crate::interpreter::function::special_form_function::SpecialFormFunction;
-use crate::interpreter::symbol::Symbol;
+use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 
 pub struct Interpreter {
-    arena: Arena,
+    environment_arena: EnvironmentArena,
+    symbol_arena: SymbolArena,
     root_env_id: EnvironmentId,
-    current_env_id: EnvironmentId,
     call_stack: (),
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        let mut arena = Arena::new();
-        let root_env_id = arena.alloc();
+        let mut environment_arena = EnvironmentArena::new();
+        let root_env_id = environment_arena.alloc();
+
+        let symbol_arena = SymbolArena::new();
 
         Interpreter {
-            arena,
+            environment_arena,
+            symbol_arena,
             root_env_id,
-            current_env_id: root_env_id,
             call_stack: (),
         }
+    }
+}
+
+impl Interpreter {
+    pub fn define_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+        self.environment_arena.define_variable(environment, symbol, value)
+    }
+
+    pub fn define_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+        self.environment_arena.define_function(environment, symbol, value)
+    }
+
+    pub fn set_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+        self.environment_arena.set_variable(environment, symbol, value)
+    }
+
+    pub fn set_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+        self.environment_arena.set_function(environment, symbol, value)
+    }
+
+    pub fn lookup_variable(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+        match self.environment_arena.lookup_variable(environment, symbol) {
+            Some(value) => Ok(value),
+            None => Err(Error::empty())
+        }
+    }
+
+    pub fn lookup_function(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+        match self.environment_arena.lookup_function(environment, symbol) {
+            Some(value) => Ok(value),
+            None => Err(Error::empty())
+        }
+    }
+
+    pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> EnvironmentId {
+        self.environment_arena.alloc_child(parent_environment)
+    }
+
+    pub fn intern_nil(&mut self) -> Value {
+        Value::Symbol(self.symbol_arena.intern("nil"))
+    }
+
+    pub fn intern(&mut self, symbol_name: &str) -> Value {
+        Value::Symbol(self.symbol_arena.intern(symbol_name))
+    }
+
+    pub fn gensym(&mut self, symbol_name: &str) -> Symbol {
+        self.symbol_arena.gensym(symbol_name)
+    }
+
+    pub fn intern_symbol(&mut self, symbol_name: &str) -> Symbol {
+        self.symbol_arena.intern(symbol_name)
+    }
+
+    pub fn intern_symbol_nil(&mut self, symbol_name: &str) -> Symbol {
+        self.symbol_arena.intern(symbol_name)
     }
 }
 
@@ -99,9 +157,10 @@ impl Interpreter {
 
         for i in 0..len {
             let name = &names[i];
+            let name = self.intern_symbol(name);
             let variable = &variables[i];
 
-            self.define_variable(execution_environment, &Symbol::from(name), variable.clone());
+            self.define_variable(execution_environment, &name, variable.clone());
         }
     }
 
@@ -146,7 +205,7 @@ impl Interpreter {
         // 4) return result
         let value_to_return = match execution_result {
             Some(value) => value,
-            None => Value::Symbol(Symbol::from("nil"))
+            None => self.intern_nil()
         };
 
         Ok(value_to_return)
@@ -157,7 +216,7 @@ impl Interpreter {
         builtin_function: &BuiltinFunction,
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        (builtin_function.get_func())(evaluated_arguments)
+        (builtin_function.get_func())(self, evaluated_arguments)
     }
 
     fn evaluate_special_form_invocation(
@@ -197,7 +256,7 @@ impl Interpreter {
         // 4) return result
         let value_to_return = match execution_result {
             Some(value) => value,
-            None => Value::Symbol(Symbol::from("nil"))
+            None => self.intern_nil()
         };
 
         Ok(value_to_return)
@@ -303,7 +362,7 @@ impl Interpreter {
 
         // second step: read forms
         let values = if let Ok((_, code)) = parsed {
-            preread_elements(code.get_elements())
+            preread_elements(self, code.get_elements())
         } else {
             return Err(Error::empty());
         };
@@ -322,41 +381,6 @@ impl Interpreter {
     }
 }
 
-impl Interpreter {
-    pub fn define_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
-        self.arena.define_variable(environment, symbol, value)
-    }
-
-    pub fn define_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
-        self.arena.define_function(environment, symbol, value)
-    }
-
-    pub fn set_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
-        self.arena.set_variable(environment, symbol, value)
-    }
-
-    pub fn set_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
-        self.arena.set_function(environment, symbol, value)
-    }
-
-    pub fn lookup_variable(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
-        match self.arena.lookup_variable(environment, symbol) {
-            Some(value) => Ok(value),
-            None => Err(Error::empty())
-        }
-    }
-
-    pub fn lookup_function(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
-        match self.arena.lookup_function(environment, symbol) {
-            Some(value) => Ok(value),
-            None => Err(Error::empty())
-        }
-    }
-
-    pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> EnvironmentId {
-        self.arena.alloc_child(parent_environment)
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -373,18 +397,19 @@ mod tests {
 
     macro_rules! define_sum_function {
         ($interpreter_id:ident) => {
-            $interpreter_id.arena.define_function(
+            let name = $interpreter_id.intern_symbol("+");
+            $interpreter_id.environment_arena.define_function(
                 $interpreter_id.root_env_id,
-                &Symbol::from("+"),
+                &name,
                 Value::Function(Function::Builtin(BuiltinFunction::new(
-                    |values: Vec<Value>| -> Result<Value, Error> {
+                    |interpreter: &mut Interpreter, values: Vec<Value>| -> Result<Value, Error> {
                         let first = &values[0];
                         let second= &values[1];
 
                         let value = match (first, second) {
                             (Value::Integer(int1), Value::Integer(int2)) => Value::Integer(int1 + int2),
                             (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 + float2),
-                            _ => Value::Symbol(Symbol::from("nil"))
+                            _ => interpreter.intern_nil()
                         };
 
                         Ok(value)
@@ -418,8 +443,13 @@ mod tests {
     #[test]
     pub fn test_executes_symbol_correctly() {
         let mut interpreter = Interpreter::new();
+        let name = interpreter.intern_symbol("test");
 
-        interpreter.arena.define_variable(interpreter.root_env_id, &Symbol::from("test"), Value::Integer(1));
+        interpreter.environment_arena.define_variable(
+            interpreter.root_env_id,
+            &name,
+            Value::Integer(1)
+        );
 
         let result = interpreter.execute("test");
 
@@ -441,7 +471,7 @@ mod tests {
         assert_eq!(Value::Integer(3), result.unwrap());
 
         let result = interpreter.execute("(+ 1 2.2)");
-        assert_eq!(Value::Symbol(Symbol::from("nil")), result.unwrap());
+        assert_eq!(interpreter.intern_nil(), result.unwrap());
 
         let result = interpreter.execute("(+ 1.1 2.4)");
         assert_eq!(Value::Float(3.5), result.unwrap());
@@ -455,25 +485,28 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         define_sum_function!(interpreter);
+        let code = vec!(
+            Value::Cons(Cons::new(
+                interpreter.intern("+"),
+                Value::Cons(Cons::new(
+                    interpreter.intern("a"),
+                    Value::Cons(Cons::new(
+                        interpreter.intern("b"),
+                        interpreter.intern("nil")
+                    ))
+                )),
+            ))
+        );
 
-        interpreter.arena.define_function(
+        let name = interpreter.intern_symbol("test");
+
+        interpreter.environment_arena.define_function(
             interpreter.root_env_id,
-            &Symbol::from("test"),
+            &name,
             Value::Function(Function::Interpreted(InterpretedFunction::new(
                 interpreter.root_env_id,
                 vec!("a".to_string(), "b".to_string()),
-                vec!(
-                    Value::Cons(Cons::new(
-                        Value::Symbol(Symbol::from("+")),
-                        Value::Cons(Cons::new(
-                            Value::Symbol(Symbol::from("a")),
-                            Value::Cons(Cons::new(
-                                Value::Symbol(Symbol::from("b")),
-                                Value::Symbol(Symbol::from("nil"))
-                            ))
-                        )),
-                    ))
-                )
+                code
             )))
         );
 
@@ -484,10 +517,11 @@ mod tests {
     #[test]
     pub fn test_special_form_invocation_evaluates_correctly() {
         let mut interpreter = Interpreter::new();
+        let name = interpreter.intern_symbol("testif");
 
-        interpreter.arena.define_function(
+        interpreter.environment_arena.define_function(
             interpreter.root_env_id,
-            &Symbol::from("testif"),
+            &name,
             Value::Function(Function::SpecialForm(SpecialFormFunction::new(
                 |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
                     let condition = &values[0];

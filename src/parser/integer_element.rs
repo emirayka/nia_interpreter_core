@@ -10,9 +10,6 @@ use nom::{
     },
     error::ErrorKind
 };
-use nom::sequence::terminated;
-use nom::combinator::peek;
-use nom::character::complete::space1;
 
 #[derive(Debug)]
 pub struct IntegerElement {

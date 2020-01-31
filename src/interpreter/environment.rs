@@ -139,11 +139,18 @@ impl LexicalEnvironment {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::symbol::SymbolArena;
+
+    fn new_symbol(name: &str) -> Symbol {
+        let mut symbol_arena = SymbolArena::new();
+
+        symbol_arena.intern(name)
+    }
 
     #[test]
     fn test_makes_new_bindings() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("test");
+        let key = new_symbol("test");
 
         assert!(!env.has_variable(&key));
         env.define_variable(&key, Value::Integer(1));
@@ -159,7 +166,7 @@ mod tests {
     #[test]
     fn test_makes_updates_bindings() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         env.define_variable(&key, Value::Integer(1));
         env.define_function(&key, Value::Integer(1));
@@ -174,7 +181,7 @@ mod tests {
     #[test]
     fn test_cannot_set_to_not_defined_variable() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         assert!(env.set_variable(&key, Value::Integer(2)).is_err());
     }
@@ -182,7 +189,7 @@ mod tests {
     #[test]
     fn test_cannot_set_to_not_defined_function() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
        assert!(env.set_function(&key, Value::Integer(2)).is_err()) ;
     }
@@ -190,7 +197,7 @@ mod tests {
     #[test]
     fn test_cannot_define_variable_twice() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         env.define_variable(&key, Value::Integer(1));
         assert!(env.define_variable(&key, Value::Integer(1)).is_err());
@@ -199,7 +206,7 @@ mod tests {
     #[test]
     fn test_cannot_define_function_twice() {
         let mut env = LexicalEnvironment::new();
-        let key = Symbol::from("key");
+        let key = new_symbol("key");
 
         env.define_function(&key, Value::Integer(1));
         assert!(env.define_function(&key, Value::Integer(1)).is_err());

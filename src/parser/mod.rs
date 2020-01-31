@@ -15,19 +15,18 @@ use nom::{
     multi::many0,
     combinator::{
         peek,
-        map_res
+        map_res,
+        all_consuming,
     },
     sequence::{
-        pair,
-        terminated
+        terminated,
+        preceded,
     },
     character::complete::{
         space0,
-        space1
-    }
+        space1,
+    },
 };
-use nom::sequence::preceded;
-use nom::combinator::all_consuming;
 
 #[derive(Debug)]
 pub enum Element {

@@ -12,7 +12,7 @@ use nom::{
 };
 
 use crate::parser::{Element, parse_element};
-use nom::sequence::{preceded, terminated, pair};
+use nom::sequence::{preceded, terminated};
 
 #[derive(Debug)]
 pub struct SExpressionElement {

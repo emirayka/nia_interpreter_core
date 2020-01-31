@@ -4,19 +4,20 @@ use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
 use crate::parser::Element;
 use crate::interpreter::symbol::Symbol;
+use crate::interpreter::interpreter::Interpreter;
 
-fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
+fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressionElement) -> Value {
     let values = sexp_element.get_values();
 
     if values.len() == 0 {
-        return Value::Symbol(Symbol::from("nil"));
+        return interpreter.intern_nil();
     }
 
     // todo: make symbol arena
 
     let mut root_cons = Cons::new(
-        Value::Symbol(Symbol::from("nil")),
-        Value::Symbol(Symbol::from("nil"))
+        interpreter.intern_nil(),
+        interpreter.intern_nil()
     );
 
     let values = sexp_element.get_values();
@@ -24,7 +25,7 @@ fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
     let mut current_cons = &mut root_cons;
 
     for (index, element) in values.iter().enumerate() {
-        let value = preread_element(element);
+        let value = preread_element(interpreter, element);
         current_cons.set_car(value);
 
         if index == len - 1 {
@@ -32,8 +33,8 @@ fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
         }
 
         let next_cons = Cons::new(
-            Value::Symbol(Symbol::from("nil")),
-            Value::Symbol(Symbol::from("nil"))
+            interpreter.intern_nil(),
+            interpreter.intern_nil()
         );
 
         current_cons.set_cdr(Value::Cons(next_cons));
@@ -48,99 +49,107 @@ fn preread_s_expression(sexp_element: &SExpressionElement) -> Value {
     Value::Cons(root_cons)
 }
 
-fn preread_quote_prefix_element(element: &Element) -> Value {
-    let value = preread_element(element);
+fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+    let value = preread_element(interpreter, element);
 
     let cons = Cons::new(
-        Value::Symbol(Symbol::from("quote")),
+        interpreter.intern("quote"),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol(Symbol::from("nil"))
+            interpreter.intern_nil()
         ))
     );
 
     Value::Cons(cons)
 }
 
-fn preread_graveaccent_prefix_element(element: &Element) -> Value {
-    let value = preread_element(element);
+fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+    let value = preread_element(interpreter, element);
 
     let cons = Cons::new(
-        Value::Symbol(Symbol::from("`")),
+        interpreter.intern("`"),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol(Symbol::from("nil"))
+            interpreter.intern_nil()
         ))
     );
 
     Value::Cons(cons)
 }
 
-fn preread_comma_prefix_element(element: &Element) -> Value {
-    let value = preread_element(element);
+fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+    let value = preread_element(interpreter, element);
 
     let cons = Cons::new(
-        Value::Symbol(Symbol::from(",")),
+        interpreter.intern(","),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol(Symbol::from("nil"))
+            interpreter.intern_nil()
         ))
     );
 
     Value::Cons(cons)
 }
 
-fn preread_commadog_prefix_element(element: &Element) -> Value {
-    let value = preread_element(element);
+fn preread_commadog_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+    let value = preread_element(interpreter, element);
 
     let cons = Cons::new(
-        Value::Symbol(Symbol::from(",@")),
+        interpreter.intern(",@"),
         Value::Cons(Cons::new(
             value,
-            Value::Symbol(Symbol::from("nil"))
+            interpreter.intern_nil()
         ))
     );
 
     Value::Cons(cons)
 }
 
-fn preread_prefix_element(prefix_element: &PrefixElement) -> Value {
+fn preread_prefix_element(interpreter: &mut Interpreter, prefix_element: &PrefixElement) -> Value {
     match prefix_element.get_prefix() {
-        Prefix::Quote => preread_quote_prefix_element(prefix_element.get_value()),
-        Prefix::GraveAccent => preread_graveaccent_prefix_element(prefix_element.get_value()),
-        Prefix::Comma => preread_comma_prefix_element(prefix_element.get_value()),
-        Prefix::CommaDog => preread_commadog_prefix_element(prefix_element.get_value()),
+        Prefix::Quote => preread_quote_prefix_element(interpreter, prefix_element.get_value()),
+        Prefix::GraveAccent => preread_graveaccent_prefix_element(interpreter, prefix_element.get_value()),
+        Prefix::Comma => preread_comma_prefix_element(interpreter, prefix_element.get_value()),
+        Prefix::CommaDog => preread_commadog_prefix_element(interpreter, prefix_element.get_value()),
     }
 }
 
-pub fn preread_element(element: &Element) -> Value {
+pub fn preread_element(interpreter: &mut Interpreter, element: &Element) -> Value {
     match element {
         Element::Integer(integer_element) => Value::Integer(integer_element.get_value()),
         Element::Float(float_element) => Value::Float(float_element.get_value()),
         Element::Boolean(boolean_element) => Value::Boolean(boolean_element.get_value().clone()),
         Element::String(string_element) => Value::String(string_element.get_value().clone()),
-        Element::Symbol(symbol_element) => Value::Symbol(Symbol::from(symbol_element.get_value())),
+        Element::Symbol(symbol_element) => interpreter.intern(symbol_element.get_value()),
         Element::Keyword(keyword_element) => Value::Keyword(keyword_element.get_value().clone()),
-        Element::SExpression(sexp_element) => preread_s_expression(sexp_element),
-        Element::Prefix(prefix_element) => preread_prefix_element(prefix_element)
+        Element::SExpression(sexp_element) => preread_s_expression(interpreter, sexp_element),
+        Element::Prefix(prefix_element) => preread_prefix_element(interpreter, prefix_element)
     }
 }
 
-pub fn preread_elements(elements: &Vec<Element>) -> Vec<Value> {
-    elements.into_iter().map(|e| preread_element(&e)).collect()
+pub fn preread_elements(interpreter: &mut Interpreter, elements: &Vec<Element>) -> Vec<Value> {
+    elements.into_iter().map(|e| preread_element(interpreter, &e)).collect()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::parse_code;
+    use crate::interpreter::symbol::SymbolArena;
+
+    fn new_symbol(name: &str) -> Symbol {
+        let mut symbol_arena = SymbolArena::new();
+
+        symbol_arena.intern(name)
+    }
 
     macro_rules! assert_prereading_result_equal {
         ($expected:expr, $code:expr) => {
+            let mut interpreter = Interpreter::new();
             let expected = $expected;
 
             if let Ok((_, program)) = parse_code($code) {
-                let result = preread_elements(program.get_elements());
+                let result = preread_elements(&mut interpreter, program.get_elements());
 
                 let len = expected.len();
 
@@ -230,15 +239,15 @@ mod tests {
     pub fn test_prereads_symbol_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol(Symbol::from("cutesymbol"))
+                Value::Symbol(new_symbol("cutesymbol"))
             ),
             r#"cutesymbol"#
         );
 
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol(Symbol::from("cutesymbol1")),
-                Value::Symbol(Symbol::from("cutesymbol2"))
+                Value::Symbol(new_symbol("cutesymbol1")),
+                Value::Symbol(new_symbol("cutesymbol2"))
             ),
             r#"cutesymbol1 cutesymbol2"#
         );
@@ -266,7 +275,7 @@ mod tests {
     pub fn test_prereads_s_expression_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol(Symbol::from("nil"))
+                Value::Symbol(new_symbol("nil"))
             ),
             "()"
         );
@@ -275,8 +284,8 @@ mod tests {
             vec!(
                 Value::Cons(
                     Cons::new(
-                        Value::Symbol(Symbol::from("a")),
-                        Value::Symbol(Symbol::from("nil"))
+                        Value::Symbol(new_symbol("a")),
+                        Value::Symbol(new_symbol("nil"))
                     )
                 )
             ),
@@ -287,11 +296,11 @@ mod tests {
             vec!(
                 Value::Cons(
                     Cons::new(
-                        Value::Symbol(Symbol::from("a")),
+                        Value::Symbol(new_symbol("a")),
                         Value::Cons(
                             Cons::new(
-                                Value::Symbol(Symbol::from("b")),
-                                Value::Symbol(Symbol::from("nil"))
+                                Value::Symbol(new_symbol("b")),
+                                Value::Symbol(new_symbol("nil"))
                             )
                         )
                     )
@@ -304,13 +313,14 @@ mod tests {
     macro_rules! assert_prefix_result_equal {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
             if let Ok((_, program)) = parse_code($code) {
-                let expected = preread_elements(&program.get_elements())[0].clone();
+                let mut interpreter = Interpreter::new();
+                let expected = preread_elements(&mut interpreter, &program.get_elements())[0].clone();
 
                 let expected = Value::Cons(Cons::new(
-                    Value::Symbol(Symbol::from($prefix_after)),
+                    Value::Symbol(new_symbol($prefix_after)),
                     Value::Cons(Cons::new(
                         expected,
-                        Value::Symbol(Symbol::from("nil"))
+                        Value::Symbol(new_symbol("nil"))
                     ))
                 ));
 
@@ -352,7 +362,7 @@ mod tests {
         assert_prereading_result_equal!(
             vec!(
                 Value::Cons(Cons::new(
-                    Value::Symbol(Symbol::from("a")),
+                    Value::Symbol(new_symbol("a")),
                     Value::Cons(Cons::new(
                         Value::Integer(1),
                         Value::Cons(Cons::new(
@@ -364,12 +374,12 @@ mod tests {
                                         Value::Integer(3),
                                         Value::Cons(Cons::new(
                                             Value::Integer(4),
-                                            Value::Symbol(Symbol::from("nil"))
+                                            Value::Symbol(new_symbol("nil"))
                                         ))
                                     )),
                                     Value::Cons(Cons::new(
                                         Value::Boolean(false),
-                                        Value::Symbol(Symbol::from("nil"))
+                                        Value::Symbol(new_symbol("nil"))
                                     ))
                                 ))
                             ))
