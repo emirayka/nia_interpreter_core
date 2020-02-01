@@ -505,5 +505,14 @@ mod tests {
         assert_is_ok!(parse_code("()()"));
     }
 
+    #[test]
+    fn test_does_not_allow_unfinished_s_expressions() {
+        assert_is_err!(parse_code("("));
+        assert_is_err!(parse_code("()("));
+        assert_is_err!(parse_code("(()"));
+        assert_is_err!(parse_code("\"string"));
+        assert_is_err!(parse_code("((\"string))"));
+    }
+
     // todo: add tests when input is not complete
 }

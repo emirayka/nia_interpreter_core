@@ -306,6 +306,7 @@ impl Interpreter {
             _ => return Err(Error::empty())
         };
 
+        // todo: add caused errors
         match &function {
             Function::Builtin(builtin_function) => {
                 // 2) evaluate arguments
@@ -398,7 +399,7 @@ impl Interpreter {
         for value in values {
             match self.execute_value(self.root_environment, &value) {
                 Ok(result) => results.push(result),
-                Err(_) => return Err(Error::empty())
+                Err(error) => return Err(error)
             }
         }
 
