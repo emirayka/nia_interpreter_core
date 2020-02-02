@@ -136,6 +136,20 @@ impl EnvironmentArena {
             Err(Error::empty())
         }
     }
+
+    pub fn lookup_environment_by_variable(
+        &self,
+        environment: EnvironmentId,
+        variable_name: &Symbol
+    ) -> Option<EnvironmentId > {
+        match self.has_variable(environment, variable_name) {
+            true => Some(environment),
+            false => match self.get(environment).unwrap().get_parent() {
+                Some(parent) => self.lookup_environment_by_variable(parent, variable_name),
+                None => None
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -271,6 +285,91 @@ mod tests {
         arena.define_function(parent_id, &key, Value::String("parent".to_string())).unwrap();
         arena.set_function(child_id, &key, Value::Integer(1)).unwrap();
         assert_eq!(&Value::Integer(1), arena.lookup_function(child_id,&key).unwrap());
+    }
+
+    #[cfg(test)]
+    mod lookup_environment_by_variable {
+        use super::*;
+
+        #[test]
+        fn test_returns_current_environment_when_variable_is_defined_here() {
+            let mut arena = EnvironmentArena::new();
+            let key = new_symbol("test");
+
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id);
+
+            let variable_name = new_symbol("test");
+
+            arena.define_variable(child_id, &variable_name, Value::Integer(1)).unwrap();
+
+            assert_eq!(
+                Some(child_id),
+                arena.lookup_environment_by_variable(
+                    child_id,
+                    &variable_name)
+            );
+        }
+
+        #[test]
+        fn test_returns_parent_environment_when_variable_is_defined_here() {
+            let mut arena = EnvironmentArena::new();
+            let key = new_symbol("test");
+
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id);
+
+            let variable_name = new_symbol("test");
+
+            arena.define_variable(parent_id, &variable_name, Value::Integer(1)).unwrap();
+
+            assert_eq!(
+                Some(parent_id),
+                arena.lookup_environment_by_variable(
+                    child_id,
+                    &variable_name)
+            );
+        }
+
+        #[test]
+        fn test_returns_parent_environment_when_variable_is_defined_2() {
+            let mut arena = EnvironmentArena::new();
+            let key = new_symbol("test");
+
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id);
+            let child_child_id = arena.alloc_child(child_id);
+
+            let variable_name = new_symbol("test");
+
+            arena.define_variable(parent_id, &variable_name, Value::Integer(1)).unwrap();
+
+            assert_eq!(
+                Some(parent_id),
+                arena.lookup_environment_by_variable(
+                    child_child_id,
+                    &variable_name)
+            );
+        }
+
+        #[test]
+        fn test_returns_none_when_variable_is_defined_nowhere() {
+            let mut arena = EnvironmentArena::new();
+            let key = new_symbol("test");
+
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id);
+            let child_child_id = arena.alloc_child(child_id);
+
+            let variable_name = new_symbol("test");
+
+            assert_eq!(
+                None,
+                arena.lookup_environment_by_variable(
+                    child_child_id,
+                    &variable_name)
+            );
+        }
     }
 
     // todo: add check of variable/function names?

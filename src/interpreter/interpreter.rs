@@ -12,6 +12,7 @@ use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::infect_interpreter;
+use std::env::var;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -69,7 +70,11 @@ impl Interpreter {
         }
     }
 
-    pub fn lookup_function(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+    pub fn lookup_function(
+        &self,
+        environment: EnvironmentId,
+        symbol: &Symbol
+    ) -> Result<&Value, Error> {
         match self.environment_arena.lookup_function(environment, symbol) {
             Some(value) => Ok(value),
             None => Err(Error::empty())
@@ -102,6 +107,14 @@ impl Interpreter {
 
     pub fn get_root_environment(&self) -> EnvironmentId {
         self.root_environment
+    }
+
+    pub fn lookup_environment_by_variable(
+        &self,
+        environment: EnvironmentId,
+        variable_name: &Symbol
+    ) -> Option<EnvironmentId> {
+        self.environment_arena.lookup_environment_by_variable(environment, variable_name)
     }
 }
 

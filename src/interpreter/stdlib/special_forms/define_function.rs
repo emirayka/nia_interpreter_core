@@ -5,7 +5,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::SpecialFormFunction;
 
-fn define_variable(
+fn define_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -15,7 +15,7 @@ fn define_variable(
     if values.len() < 1 || values.len() > 2 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Special form `define-variable' must be used with one or two forms."
+            "Special form `define-function' must be used with one or two forms."
         ));
     }
 
@@ -26,11 +26,11 @@ fn define_variable(
         None
     };
 
-    let variable_name = match first_argument {
+    let function_name = match first_argument {
         Value::Symbol(symbol) => symbol,
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "First form of `define-variable' must be a symbol."
+            "First form of `define-function' must be a symbol."
         ))
     };
 
@@ -43,20 +43,20 @@ fn define_variable(
         Ok(value) => value,
         Err(error) => return Err(Error::generic_execution_error_caused(
             interpreter,
-            "Cannot evaluate the second form of define-variable.",
+            "Cannot evaluate the second form of define-function.",
             error
         ))
     };
 
-    match interpreter.define_variable(
+    match interpreter.define_function(
         interpreter.get_root_environment(),
-        &variable_name,
+        &function_name,
         result
     ) {
         Ok(()) => Ok(Value::Boolean(true)),
         Err(error) => Err(Error::generic_execution_error_caused(
             interpreter,
-            &format!("Cannot define variable: {}.", variable_name.get_name()),
+            &format!("Cannot define function: {}.", function_name.get_name()),
             error
         ))
     }
@@ -64,12 +64,12 @@ fn define_variable(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let name = interpreter.intern_symbol("define-variable");
+    let name = interpreter.intern_symbol("define-function");
 
     let result = interpreter.define_function(
         interpreter.get_root_environment(),
         &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(define_variable)))
+        Value::Function(Function::SpecialForm(SpecialFormFunction::new(define_function)))
     );
 
     match result {
@@ -121,32 +121,32 @@ mod tests {
     }
 
     #[test]
-    fn test_defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
+    fn test_defines_function_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
-        interpreter.execute("(define-variable test 2)").unwrap();
+        interpreter.execute("(define-function test 2)").unwrap();
         let name = interpreter.intern_symbol("test");
 
         assert_eq!(
             &Value::Integer(2),
-            interpreter.lookup_variable(
+            interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 &name
             ).unwrap());
     }
 
     #[test]
-    fn test_defines_variable_with_nil_when_one_form_were_provided() {
+    fn test_defines_function_with_nil_when_one_form_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
-        interpreter.execute("(define-variable test)").unwrap();
+        interpreter.execute("(define-function test)").unwrap();
         let name = interpreter.intern_symbol("test");
 
         assert_eq!(
             &interpreter.intern_nil(),
-            interpreter.lookup_variable(
+            interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 &name
             ).unwrap());
@@ -159,15 +159,15 @@ mod tests {
 
         // todo: fix bug that will be in future
         // it should get the final cause of an error, instead of the top-most
-        let result = interpreter.execute("(define-variable)");
+        let result = interpreter.execute("(define-function)");
         assert_argument_error!(result.as_ref());
         assert_invalid_argument_count_error!(result.as_ref());
 
-        let result = interpreter.execute("(define-variable test 2 kek)");
+        let result = interpreter.execute("(define-function test 2 kek)");
         assert_argument_error!(result.as_ref());
         assert_invalid_argument_count_error!(result.as_ref());
 
-        let result = interpreter.execute("(define-variable 3 2)");
+        let result = interpreter.execute("(define-function 3 2)");
         assert_argument_error!(result.as_ref());
         assert_invalid_argument_error!(result.as_ref());
     }

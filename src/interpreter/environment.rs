@@ -4,7 +4,7 @@ use crate::interpreter::symbol::Symbol;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EnvironmentId {
     index: usize
 }
