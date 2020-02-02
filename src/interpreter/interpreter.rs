@@ -46,23 +46,47 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn define_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn define_variable(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol,
+        value: Value
+    ) -> Result<(), Error> {
         self.environment_arena.define_variable(environment, symbol, value)
     }
 
-    pub fn define_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn define_function(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol,
+        value: Value
+    ) -> Result<(), Error> {
         self.environment_arena.define_function(environment, symbol, value)
     }
 
-    pub fn set_variable(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn set_variable(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol,
+        value: Value
+    ) -> Result<(), Error> {
         self.environment_arena.set_variable(environment, symbol, value)
     }
 
-    pub fn set_function(&mut self, environment: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn set_function(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol,
+        value: Value
+    ) -> Result<(), Error> {
         self.environment_arena.set_function(environment, symbol, value)
     }
 
-    pub fn lookup_variable(&self, environment: EnvironmentId, symbol: &Symbol) -> Result<&Value, Error> {
+    pub fn lookup_variable(
+        &self,
+        environment: EnvironmentId,
+        symbol: &Symbol
+    ) -> Result<&Value, Error> {
         match self.environment_arena.lookup_variable(environment, symbol) {
             Some(value) => Ok(value),
             None => Err(Error::empty())
