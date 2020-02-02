@@ -152,36 +152,12 @@ impl Interpreter {
     }
 
     fn extract_arguments(&mut self, cons: &Cons) -> Result<Vec<Value>, Error> {
-        let mut extracted_arguments = Vec::new();
-        let mut current_cdr = match cons.get_cdr() {
-            Value::Cons(cons) => cons,
-            Value::Symbol(symbol) => {
-                if symbol.is_nil() {
-                    return Ok(extracted_arguments);
-                } else {
-                    return Err(Error::empty());
-                }
-            }
-            _ => return Err(Error::empty())
-        };
-
-        loop {
-            extracted_arguments.push(current_cdr.get_car().clone());
-
-            current_cdr = match current_cdr.get_cdr() {
-                Value::Cons(cons) => cons,
-                Value::Symbol(symbol) => {
-                    if symbol.is_nil() {
-                        break;
-                    } else {
-                        return Err(Error::empty());
-                    }
-                }
-                _ => return Err(Error::empty())
-            };
+        match cons.get_cdr() {
+            Value::Cons(cons) => Ok(cons.to_vec()),
+            Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
+            Value::Symbol(symbol) => Err(Error::empty()),
+            _ => Err(Error::empty())
         }
-
-        Ok(extracted_arguments)
     }
 
     fn evaluate_arguments(&mut self, environment: EnvironmentId, arguments: Vec<Value>)  -> Result<Vec<Value>, Error> {

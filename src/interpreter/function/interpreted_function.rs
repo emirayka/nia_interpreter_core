@@ -1,7 +1,7 @@
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterpretedFunction {
     environment: EnvironmentId,
     argument_names: Vec<String>,

@@ -26,10 +26,11 @@ impl PartialEq for Value {
             (Symbol(val1), Symbol(val2)) => val1 == val2,
             (String(val1), String(val2)) => val1 == val2,
             (Cons(val1), Cons(val2)) => val1 == val2,
-//            (Function(val1), Function(val2)) => val1 == val2,
+            (Function(val1), Function(val2)) => val1 == val2,
             _ => false
         }
     }
-
 }
+
+impl Eq for Value {}
 

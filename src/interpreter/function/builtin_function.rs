@@ -19,6 +19,13 @@ impl fmt::Debug for BuiltinFunction {
     }
 }
 
+impl PartialEq for BuiltinFunction {
+    fn eq(&self, other: &Self) -> bool {
+        self as *const _ == other as *const _ // todo: maybe this is incorrect
+    }
+}
+
+impl Eq for BuiltinFunction {}
 
 impl BuiltinFunction {
     pub fn new(func: BuiltinFunctionType) -> BuiltinFunction {
