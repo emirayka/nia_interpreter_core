@@ -6,14 +6,17 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::SpecialFormFunction;
 
 fn quote(
-    _interpreter: &mut Interpreter,
+    interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     let mut values = values;
 
     if values.len() != 1 {
-        return Err(Error::empty());
+        return Err(Error::invalid_argument_count(
+            interpreter,
+            "Special form `quote' must be called with exactly one argument."
+        ));
     }
 
     let first_argument = values.remove(0);
@@ -40,6 +43,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod tests {
     use super::*;
     use crate::interpreter::cons::Cons;
+    use crate::interpreter::error::assertion::assert_invalid_argument_error;
+    use crate::interpreter::error::assertion;
 
     #[test]
     fn test_quote_works_correctly_when_used_quote_special_form() {
@@ -110,5 +115,14 @@ mod tests {
         assert_eq!(cons, interpreter.execute("''cute-symbol").unwrap());
 
 //        Function(func) - lol, how to test this
+    }
+
+    #[test]
+    fn test_quote_returns_err_when_improper_count_of_arguments_were_provided() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
+
+        assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote)"));
+        assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote 1 2)"));
     }
 }

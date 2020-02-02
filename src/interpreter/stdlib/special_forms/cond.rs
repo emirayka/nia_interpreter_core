@@ -134,6 +134,29 @@ mod tests {
     }
 
     #[test]
+    fn test_returns_err_when_invalid_clause_was_provided_to_cond_2() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
+
+        let invalid_forms = vec!(
+            "(1)",
+            "(1.1)",
+            "(#t)",
+            "(#f)",
+            "(symbol)",
+            "(\"string\")",
+            "(:keyword)",
+        );
+
+        for invalid_form in invalid_forms {
+            let result = interpreter.execute(&format!("(cond {})", invalid_form));
+
+            assertion::assert_argument_error(&result);
+            assertion::assert_invalid_argument_error(&result);
+        }
+    }
+
+    #[test]
     fn test_returns_err_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
