@@ -12,7 +12,6 @@ use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::infect_interpreter;
-use std::env::var;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,

@@ -1,3 +1,5 @@
+pub mod assertion;
+
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::interpreter::Interpreter;
 

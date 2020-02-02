@@ -81,44 +81,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::*;
-
-    macro_rules! assert_argument_error {
-        ($e:expr) => {
-            assert!(
-                match $e.err().unwrap().get_total_cause().get_error_kind() {
-                    ErrorKind::Argument(_) => true,
-                    _ => false
-                }
-            );
-        }
-    }
-
-    macro_rules! assert_invalid_argument_error {
-        ($e:expr) => {
-            assert!(
-                match $e.err().unwrap().get_total_cause().get_error_kind() {
-                    ErrorKind::Argument(ArgumentErrorKind::InvalidArgument) => true,
-                    _ => false
-                }
-            );
-
-            assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT, $e.err().unwrap().get_symbol().unwrap().get_name());
-        }
-    }
-
-    macro_rules! assert_invalid_argument_count_error {
-        ($e:expr) => {
-            assert!(
-                match $e.err().unwrap().get_total_cause().get_error_kind() {
-                    ErrorKind::Argument(ArgumentErrorKind::InvalidArgumentCount) => true,
-                    _ => false
-                }
-            );
-
-            assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT_COUNT, $e.err().unwrap().get_symbol().unwrap().get_name());
-        }
-    }
+    use crate::interpreter::error::assertion;
 
     #[test]
     fn test_defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
@@ -157,18 +120,22 @@ mod tests {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
-        // todo: fix bug that will be in future
-        // it should get the final cause of an error, instead of the top-most
         let result = interpreter.execute("(define-variable)");
-        assert_argument_error!(result.as_ref());
-        assert_invalid_argument_count_error!(result.as_ref());
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(define-variable test 2 kek)");
-        assert_argument_error!(result.as_ref());
-        assert_invalid_argument_count_error!(result.as_ref());
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_count_error(&result);
+    }
+
+    #[test]
+    fn test_returns_err_when_an_incorrect_form_were_provided() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(define-variable 3 2)");
-        assert_argument_error!(result.as_ref());
-        assert_invalid_argument_error!(result.as_ref());
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_error(&result);
     }
 }
