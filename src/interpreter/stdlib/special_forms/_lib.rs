@@ -3,6 +3,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::{SpecialFormFunction, SpecialFormFunctionType};
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::environment::EnvironmentId;
 
 pub fn infect_special_form(
     interpreter: &mut Interpreter,
@@ -20,6 +21,25 @@ pub fn infect_special_form(
     match result {
         Ok(()) => Ok(()),
         Err(error) => Err(error)
+    }
+}
+
+
+pub fn execute_forms(
+    interpreter: &mut Interpreter,
+    execution_environment: EnvironmentId,
+    forms: Vec<Value>
+) -> Result<Value, Error> {
+    let mut last_result = None;
+
+    for form in forms {
+        let result = interpreter.execute_value(execution_environment, &form)?;
+        last_result = Some(result);
+    }
+
+    match last_result {
+        Some(value) => Ok(value),
+        None => Ok(interpreter.intern_nil())
     }
 }
 

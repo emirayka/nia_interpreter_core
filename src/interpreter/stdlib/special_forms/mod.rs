@@ -10,6 +10,7 @@ mod define_function;
 mod function;
 mod set;
 mod _let;
+mod let_star;
 
 pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> {
     cond::infect(interpreter)?;

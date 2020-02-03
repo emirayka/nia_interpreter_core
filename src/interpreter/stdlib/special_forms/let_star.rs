@@ -2,123 +2,10 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 use crate::interpreter::cons::Cons;
 use crate::interpreter::symbol::Symbol;
 
-fn set_variable_via_cons(
-    interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
-    cons: &Cons
-) -> Result<(), Error> {
-    let car = cons.get_car();
-    let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
-            "It's not possible to redefine `nil' via special form `let'."
-        )),
-        Value::Symbol(symbol) => {
-            symbol
-        },
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            "The first element of lists in the first argument of the special form `let' must be a symbol."
-        ))
-    };
-
-    let cadr = cons.get_cadr();
-    let value = match cadr {
-        Ok(value) => value,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
-            "The definitions of the special form `let' must have exactly two arguments."
-        ))
-    };
-
-    let value = match interpreter.execute_value(environment, value) {
-        Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
-            interpreter,
-            "The definitions of the special form `let' must have exactly two arguments.",
-            error
-        ))
-    };
-
-    match cons.get_cddr() {
-        Ok(Value::Symbol(symbol)) if symbol.is_nil() => {},
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            "The definitions of the special form `let' must have exactly two arguments."
-        ))
-    };
-
-    interpreter.define_variable(
-        execution_environment,
-        name,
-        value
-    )
-}
-
-fn set_variable_to_nil(
-    interpreter: &mut Interpreter,
-    execution_environment: EnvironmentId,
-    symbol: &Symbol
-) -> Result<(), Error> {
-    let nil = interpreter.intern_nil();
-
-    interpreter.define_variable(execution_environment, symbol, nil)
-}
-
-fn set_definition(
-    interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
-    definition: &Value
-) -> Result<(), Error> {
-    match definition {
-        Value::Cons(cons) => set_variable_via_cons(
-            interpreter,
-            environment,
-            execution_environment,
-            &cons
-        ),
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
-            "It's not possible to redefine `nil' via special form `let'."
-        )),
-        Value::Symbol(symbol) => set_variable_to_nil(
-            interpreter,
-            execution_environment,
-            &symbol
-        ),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            "The first argument of special form `let' must be a list of symbols, or lists."
-        ))
-    }
-}
-
-pub fn set_definitions(
-    interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
-    definitions: Vec<Value>
-) -> Result<(), Error> {
-    for definition in definitions {
-        set_definition(
-            interpreter,
-            environment,
-            execution_environment,
-            &definition
-        )?;
-    }
-
-    Ok(())
-}
-
-
-fn _let(
+fn let_star(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -145,9 +32,9 @@ fn _let(
 
     let execution_environment = interpreter.make_environment(environment);
 
-    set_definitions(
+    super::_let::set_definitions(
         interpreter,
-        environment,
+        execution_environment,
         execution_environment,
         definitions
     )?;
@@ -160,9 +47,10 @@ fn _let(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "let", _let)
+    super::_lib::infect_special_form(interpreter, "let*", let_star)
 }
 
+// todo: simplify tests somehow by using tests of `let'
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,7 +63,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(let () 3 2 1)").unwrap());
+        assert_eq!(Value::Integer(1), interpreter.execute("(let* () 3 2 1)").unwrap());
     }
 
     #[test]
@@ -204,7 +92,7 @@ mod tests {
             assert_eq!(
                 value,
                 interpreter.execute(
-                    &format!("(let ((value {})) value)", code_representation)
+                    &format!("(let* ((value {})) value)", code_representation)
                 ).unwrap()
             );
         }
@@ -219,8 +107,20 @@ mod tests {
 
         assert_eq!(
             interpreter.intern_nil(),
-            interpreter.execute("(let (nil-symbol) nil-symbol)").unwrap()
+            interpreter.execute("(let* (nil-symbol) nil-symbol)").unwrap()
         );
+    }
+
+    // the only difference between `let' `let*'
+    #[test]
+    fn test_able_to_use_previously_defined_values() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        let result = interpreter.execute("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)").unwrap();
+
+        assert_eq!(Value::Integer(1), result);
     }
 
     #[test]
@@ -229,7 +129,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(let test)");
+        let result = interpreter.execute("(let* test)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
@@ -243,17 +143,17 @@ mod tests {
 
 
         let incorrect_strings = vec!(
-             "1",
-             "1.1",
-             "#t",
-             "#f",
-             "\"string\"",
-             ":keyword"
+            "1",
+            "1.1",
+            "#t",
+            "#f",
+            "\"string\"",
+            ":keyword"
         );
 
         for incorrect_string in incorrect_strings {
             let result = interpreter.execute(
-                &format!("(let ({}))", incorrect_string)
+                &format!("(let* ({}))", incorrect_string)
             );
 
             assertion::assert_argument_error(&result);
@@ -280,7 +180,7 @@ mod tests {
 
         for incorrect_string in incorrect_strings {
             let result = interpreter.execute(
-                &format!("(let (({} 2)) {})", incorrect_string, incorrect_string)
+                &format!("(let* (({} 2)) {})", incorrect_string, incorrect_string)
             );
 
             assertion::assert_argument_error(&result);
@@ -294,7 +194,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(let ((nil 2)) nil)");
+        let result = interpreter.execute("(let* ((nil 2)) nil)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
@@ -306,26 +206,15 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(let ((sym)) nil)");
+        let result = interpreter.execute("(let* ((sym)) nil)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
 
-        let result = interpreter.execute("(let ((sym 1 2)) nil)");
+        let result = interpreter.execute("(let* ((sym 1 2)) nil)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
-    }
-
-    #[test]
-    fn test_returns_err_when_attempt_to_use_previously_defined_values() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-
-        let result = interpreter.execute("(let ((sym-1 1) (sym-2 sym-1)) sym-2)");
-
-        assert!(result.is_err())
     }
 
     #[test]
@@ -334,7 +223,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(let ((sym-1 1) (sym-1 2)) sym-1)");
+        let result = interpreter.execute("(let* ((sym-1 1) (sym-1 2)) sym-1)");
 
         assert!(result.is_err())
     }
