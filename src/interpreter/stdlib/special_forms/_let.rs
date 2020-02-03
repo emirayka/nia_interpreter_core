@@ -3,13 +3,170 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
+use crate::interpreter::cons::Cons;
+use crate::interpreter::symbol::Symbol;
+
+fn set_variable_via_cons(
+    interpreter: &mut Interpreter,
+    environment: EnvironmentId,
+    execution_environment: EnvironmentId,
+    cons: &Cons
+) -> Result<(), Error> {
+    let car = cons.get_car();
+    let name = match car {
+        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
+            interpreter,
+            "It's not possible to redefine `nil' via special form `let'."
+        )),
+        Value::Symbol(symbol) => {
+            symbol
+        },
+        _ => return Err(Error::invalid_argument(
+            interpreter,
+            "The first element of lists in the first argument of the special form `let' must be a symbol."
+        ))
+    };
+
+    let cadr = cons.get_cadr();
+    let value = match cadr {
+        Ok(value) => interpreter.execute_value(environment, value),
+        Err(error) => return Err(Error::invalid_argument_caused(
+            interpreter,
+            "The lists in the first argument of the special form `let' must have exactly two arguments.",
+            error
+        ))
+    };
+
+    let value = match value {
+        Ok(value) => value,
+        Err(error) => return Err(Error::generic_execution_error_caused(
+            interpreter,
+            "The lists in the first argument of the special form `let' must have exactly two arguments.",
+            error
+        ))
+    };
+
+    interpreter.define_variable(
+        execution_environment,
+        name,
+        value
+    )
+}
+
+fn set_variable_to_nil(
+    interpreter: &mut Interpreter,
+    execution_environment: EnvironmentId,
+    symbol: &Symbol
+) -> Result<(), Error> {
+    let nil = interpreter.intern_nil();
+
+    interpreter.define_variable(execution_environment, symbol, nil)
+}
+
+fn set_definition(
+    interpreter: &mut Interpreter,
+    environment: EnvironmentId,
+    execution_environment: EnvironmentId,
+    definition: &Value
+) -> Result<(), Error> {
+    match definition {
+        Value::Cons(cons) => set_variable_via_cons(
+            interpreter,
+            environment,
+            execution_environment,
+            &cons
+        ),
+        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
+            interpreter,
+            "It's not possible to redefine `nil' via special form `let'."
+        )),
+        Value::Symbol(symbol) => set_variable_to_nil(
+            interpreter,
+            execution_environment,
+            &symbol
+        ),
+        _ => return Err(Error::invalid_argument(
+            interpreter,
+            "The first argument of special form `let' must be a list of symbols, or lists."
+        ))
+    }
+}
+
+fn set_definitions(
+    interpreter: &mut Interpreter,
+    environment: EnvironmentId,
+    execution_environment: EnvironmentId,
+    definitions: Vec<Value>
+) -> Result<(), Error> {
+    for definition in definitions {
+        set_definition(
+            interpreter,
+            environment,
+            execution_environment,
+            &definition
+        )?;
+    }
+
+    Ok(())
+}
+
+fn execute_forms(
+    interpreter: &mut Interpreter,
+    execution_environment: EnvironmentId,
+    forms: Vec<Value>
+) -> Result<Value, Error> {
+    let mut last_result = None;
+
+    for form in forms {
+        let result = interpreter.execute_value(execution_environment, &form)?;
+        last_result = Some(result);
+    }
+
+    match last_result {
+        Some(value) => Ok(value),
+        None => Ok(interpreter.intern_nil())
+    }
+}
 
 fn _let(
     interpreter: &mut Interpreter,
-    _environment: EnvironmentId,
+    environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    Ok(interpreter.intern_nil())
+    if values.len() == 0 {
+        return Err(Error::invalid_argument_count(
+            interpreter,
+            "Special form let must have at least one argument."
+        ));
+    }
+
+    let mut values = values;
+
+    let definitions = match values.remove(0) {
+        Value::Cons(cons) => cons.to_vec(),
+        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
+        _ => return Err(Error::invalid_argument(
+            interpreter,
+            "The first argument of special form let must be a list of variable definitions."
+        ))
+    };
+
+    let forms = values;
+
+    let execution_environment = interpreter.make_environment(environment);
+
+    set_definitions(
+        interpreter,
+        environment,
+        execution_environment,
+        definitions
+    )?;
+
+    execute_forms(
+        interpreter,
+        execution_environment,
+        forms
+    )
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -20,4 +177,59 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod tests {
     use super::*;
     use crate::interpreter::error::assertion;
+    use crate::interpreter::stdlib::special_forms;
+
+    #[test]
+    fn test_returns_the_result_of_execution_of_the_last_form() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        assert_eq!(Value::Integer(1), interpreter.execute("(let () 3 2 1)").unwrap());
+    }
+
+    #[test]
+    fn test_sets_symbol_with_executed_value() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+        special_forms::quote::infect(&mut interpreter).unwrap();
+
+        let definitions = vec!(
+            (Value::Integer(1), "1"),
+            (Value::Float(1.1), "1.1"),
+            (Value::Boolean(true), "#t"),
+            (Value::Boolean(false), "#f"),
+            (interpreter.intern("symbol"), "'symbol"),
+            (interpreter.intern("symbol"), "(quote symbol)"),
+            (Value::String(String::from("string")), "\"string\""),
+            (Value::Keyword(String::from("keyword")), ":keyword"),
+            (Value::Cons(
+                Cons::new(interpreter.intern("symbol"),
+                          interpreter.intern_nil())),
+             "'(symbol)"),
+        );
+
+        for (value, code_representation) in definitions {
+            println!("{}", code_representation);
+            assert_eq!(
+                value,
+                interpreter.execute(
+                    &format!("(let ((value {})) value)", code_representation)
+                ).unwrap()
+            );
+        }
+    }
+
+    #[test]
+    fn test_sets_symbol_without_value_to_nil() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        assert_eq!(
+            interpreter.intern_nil(),
+            interpreter.execute("(let (nil-symbol) nil-symbol)").unwrap()
+        );
+    }
 }

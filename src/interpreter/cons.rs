@@ -43,6 +43,17 @@ impl Cons {
 }
 
 impl Cons {
+    pub fn get_cadr(&self) -> Result<&Value, Error> {
+        let cdr = self.get_cdr();
+
+        match cdr {
+            Value::Cons(cons) => Ok(cons.get_car()),
+            _ => Err(Error::empty())
+        }
+    }
+}
+
+impl Cons {
     pub fn to_vec(&self) -> Vec<Value> {
         let mut vector = Vec::new();
         let mut current_cdr = self;
