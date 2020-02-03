@@ -6,6 +6,7 @@ mod quote;
 mod define_variable;
 mod define_function;
 mod function;
+mod set;
 
 pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> {
     cond::infect(interpreter)?;
@@ -13,6 +14,7 @@ pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> 
     define_variable::infect(interpreter)?;
     define_function::infect(interpreter)?;
     function::infect(interpreter)?;
+    set::infect(interpreter)?;
 
     Ok(())
 }

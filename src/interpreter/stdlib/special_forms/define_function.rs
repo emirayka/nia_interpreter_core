@@ -91,6 +91,9 @@ mod tests {
         interpreter.execute("(define-function test 2)").unwrap();
         let name = interpreter.intern_symbol("test");
 
+        assert!(interpreter.has_function(
+            interpreter.get_root_environment(),
+            &name));
         assert_eq!(
             &Value::Integer(2),
             interpreter.lookup_function(
@@ -107,6 +110,9 @@ mod tests {
         interpreter.execute("(define-function test)").unwrap();
         let name = interpreter.intern_symbol("test");
 
+        assert!(interpreter.has_function(
+            interpreter.get_root_environment(),
+            &name));
         assert_eq!(
             &interpreter.intern_nil(),
             interpreter.lookup_function(

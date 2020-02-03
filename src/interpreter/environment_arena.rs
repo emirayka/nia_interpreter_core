@@ -294,7 +294,6 @@ mod tests {
         #[test]
         fn test_returns_current_environment_when_variable_is_defined_here() {
             let mut arena = EnvironmentArena::new();
-            let key = new_symbol("test");
 
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);
@@ -314,7 +313,6 @@ mod tests {
         #[test]
         fn test_returns_parent_environment_when_variable_is_defined_here() {
             let mut arena = EnvironmentArena::new();
-            let key = new_symbol("test");
 
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);
@@ -334,7 +332,6 @@ mod tests {
         #[test]
         fn test_returns_parent_environment_when_variable_is_defined_2() {
             let mut arena = EnvironmentArena::new();
-            let key = new_symbol("test");
 
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);
@@ -355,7 +352,6 @@ mod tests {
         #[test]
         fn test_returns_none_when_variable_is_defined_nowhere() {
             let mut arena = EnvironmentArena::new();
-            let key = new_symbol("test");
 
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);

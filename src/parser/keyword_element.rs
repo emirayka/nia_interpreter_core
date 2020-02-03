@@ -6,7 +6,6 @@ use nom::{
         preceded
     },
     combinator::{
-        recognize,
         map_res
     },
     multi::many1,

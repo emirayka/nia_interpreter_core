@@ -43,7 +43,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod tests {
     use super::*;
     use crate::interpreter::cons::Cons;
-    use crate::interpreter::error::assertion::assert_invalid_argument_error;
     use crate::interpreter::error::assertion;
 
     #[test]

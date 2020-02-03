@@ -46,6 +46,22 @@ impl Interpreter {
 }
 
 impl Interpreter {
+    pub fn has_variable(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol
+    ) -> bool {
+        self.environment_arena.has_variable(environment, symbol)
+    }
+
+    pub fn has_function(
+        &mut self,
+        environment: EnvironmentId,
+        symbol: &Symbol
+    ) -> bool {
+        self.environment_arena.has_function(environment, symbol)
+    }
+
     pub fn define_variable(
         &mut self,
         environment: EnvironmentId,

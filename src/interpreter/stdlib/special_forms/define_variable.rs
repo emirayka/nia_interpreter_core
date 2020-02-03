@@ -91,6 +91,9 @@ mod tests {
         interpreter.execute("(define-variable test 2)").unwrap();
         let name = interpreter.intern_symbol("test");
 
+        assert!(interpreter.has_variable(
+            interpreter.get_root_environment(),
+            &name));
         assert_eq!(
             &Value::Integer(2),
             interpreter.lookup_variable(
@@ -107,6 +110,9 @@ mod tests {
         interpreter.execute("(define-variable test)").unwrap();
         let name = interpreter.intern_symbol("test");
 
+        assert!(interpreter.has_variable(
+            interpreter.get_root_environment(),
+            &name));
         assert_eq!(
             &interpreter.intern_nil(),
             interpreter.lookup_variable(

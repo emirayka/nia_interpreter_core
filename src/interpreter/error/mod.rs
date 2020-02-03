@@ -117,6 +117,15 @@ impl Error {
         )
     }
 
+    pub fn generic_execution_error(interpreter: &mut Interpreter, message: &str) -> Error {
+        Error::from(
+            None,
+            ErrorKind::Execution(ExecutionErrorKind::Generic),
+            message,
+            interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
+        )
+    }
+
     pub fn generic_execution_error_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),

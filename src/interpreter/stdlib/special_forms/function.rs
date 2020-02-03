@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn test_constructs_simple_function() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let expected = Value::Function(Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
@@ -167,7 +167,7 @@ mod tests {
     #[test]
     fn test_constructs_simple_macro() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let expected = Value::Function(Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_returns_error_when_incorrect_amount_of_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(function)");
 
@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn test_returns_error_when_not_a_cons_cell_were_provided() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let not_valid_first_arguments = vec!(
             "1",
@@ -239,7 +239,7 @@ mod tests {
     #[test]
     fn test_returns_error_when_first_element_is_not_lambda_nor_macro() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(function (special-form () 2))");
 
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(function (lambda))");
 
@@ -266,7 +266,7 @@ mod tests {
     #[test]
     fn test_returns_error_when_incorrect_constructed_function_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let not_valid_arguments = vec!(
             "1",
