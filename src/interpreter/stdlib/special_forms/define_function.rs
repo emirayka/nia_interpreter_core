@@ -2,8 +2,8 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::special_form_function::SpecialFormFunction;
+
+use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
 fn define_function(
     interpreter: &mut Interpreter,
@@ -64,18 +64,7 @@ fn define_function(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let name = interpreter.intern_symbol("define-function");
-
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(define_function)))
-    );
-
-    match result {
-        Ok(()) => Ok(()),
-        Err(error) => Err(error)
-    }
+    infect_special_form(interpreter, "define-function", define_function)
 }
 
 #[cfg(test)]

@@ -2,8 +2,8 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::special_form_function::SpecialFormFunction;
+
+use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
 fn set(
     interpreter: &mut Interpreter,
@@ -61,24 +61,12 @@ fn set(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let name = interpreter.intern_symbol("set!");
-
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(set)))
-    );
-
-    match result {
-        Ok(()) => Ok(()),
-        Err(error) => Err(error)
-    }
+    infect_special_form(interpreter, "set!", set)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::cons::Cons;
     use crate::interpreter::error::assertion;
     use crate::interpreter::stdlib::special_forms;
 
@@ -86,8 +74,8 @@ mod tests {
     fn test_returns_value_that_was_set_to_variable() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
-        special_forms::function::infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
+        special_forms::function::infect(&mut interpreter).unwrap();
 
         // todo: switch to let later
         let result2 = interpreter.execute("((function (lambda (a) (set! a 2))) 1)").unwrap();
@@ -99,8 +87,8 @@ mod tests {
     fn test_sets_to_current_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
-        special_forms::function::infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
+        special_forms::function::infect(&mut interpreter).unwrap();
 
         let variable_name = interpreter.intern_symbol("a");
 
@@ -128,9 +116,9 @@ mod tests {
     fn test_sets_to_parent_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
-        special_forms::function::infect(&mut interpreter);
-        special_forms::define_variable::infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
+        special_forms::function::infect(&mut interpreter).unwrap();
+        special_forms::define_variable::infect(&mut interpreter).unwrap();
 
         let variable_name_b = interpreter.intern_symbol("b");
 
@@ -151,7 +139,7 @@ mod tests {
     fn test_returns_err_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(set!)");
         assertion::assert_argument_error(&result);
@@ -166,7 +154,7 @@ mod tests {
     fn test_returns_err_when_incorrect_arguments_were_passed() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         let incorrect_variables = vec!(
             "1",

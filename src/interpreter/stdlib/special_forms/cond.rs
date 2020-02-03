@@ -3,8 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::cons::Cons;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::special_form_function::SpecialFormFunction;
+use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
 fn execute_part(
     interpreter: &mut Interpreter,
@@ -79,18 +78,7 @@ fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<V
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let name = interpreter.intern_symbol("cond");
-
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(cond)))
-    );
-
-    match result {
-        Ok(()) => Ok(()),
-        Err(error) => Err(error)
-    }
+    infect_special_form(interpreter, "cond", cond)
 }
 
 #[cfg(test)]
@@ -166,8 +154,7 @@ mod tests {
             interpreter.get_root_environment(),
             &name,
             Value::Integer(1)
-        );
-
+        ).unwrap();
 
         let invalid_forms = vec!(
             "(cond (1 1))",

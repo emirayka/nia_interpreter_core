@@ -3,9 +3,10 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::function::Function;
-use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
+
+use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
@@ -118,18 +119,7 @@ fn function(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let name = interpreter.intern_symbol("function");
-
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(function)))
-    );
-
-    match result {
-        Ok(()) => Ok(()),
-        Err(error) => Err(error)
-    }
+    infect_special_form(interpreter, "function", function)
 }
 
 #[cfg(test)]
