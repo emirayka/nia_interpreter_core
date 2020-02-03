@@ -8,8 +8,8 @@ use crate::interpreter::symbol::Symbol;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
+    definition_value_execution_environment: EnvironmentId,
+    definition_setting_environment: EnvironmentId,
     cons: &Cons
 ) -> Result<(), Error> {
     let car = cons.get_car();
@@ -36,7 +36,7 @@ fn set_variable_via_cons(
         ))
     };
 
-    let value = match interpreter.execute_value(environment, value) {
+    let value = match interpreter.execute_value(definition_value_execution_environment, value) {
         Ok(value) => value,
         Err(error) => return Err(Error::generic_execution_error_caused(
             interpreter,
@@ -54,7 +54,7 @@ fn set_variable_via_cons(
     };
 
     interpreter.define_variable(
-        execution_environment,
+        definition_setting_environment,
         name,
         value
     )
@@ -62,25 +62,25 @@ fn set_variable_via_cons(
 
 fn set_variable_to_nil(
     interpreter: &mut Interpreter,
-    execution_environment: EnvironmentId,
+    definition_setting_environment: EnvironmentId,
     symbol: &Symbol
 ) -> Result<(), Error> {
     let nil = interpreter.intern_nil();
 
-    interpreter.define_variable(execution_environment, symbol, nil)
+    interpreter.define_variable(definition_setting_environment, symbol, nil)
 }
 
 fn set_definition(
     interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
+    definition_value_execution_environment: EnvironmentId,
+    definition_setting_environment: EnvironmentId,
     definition: &Value
 ) -> Result<(), Error> {
     match definition {
         Value::Cons(cons) => set_variable_via_cons(
             interpreter,
-            environment,
-            execution_environment,
+            definition_value_execution_environment,
+            definition_setting_environment,
             &cons
         ),
         Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
@@ -89,7 +89,7 @@ fn set_definition(
         )),
         Value::Symbol(symbol) => set_variable_to_nil(
             interpreter,
-            execution_environment,
+            definition_setting_environment,
             &symbol
         ),
         _ => return Err(Error::invalid_argument(
@@ -101,22 +101,21 @@ fn set_definition(
 
 pub fn set_definitions(
     interpreter: &mut Interpreter,
-    environment: EnvironmentId,
-    execution_environment: EnvironmentId,
+    definition_value_execution_environment: EnvironmentId,
+    definition_setting_environment: EnvironmentId,
     definitions: Vec<Value>
 ) -> Result<(), Error> {
     for definition in definitions {
         set_definition(
             interpreter,
-            environment,
-            execution_environment,
+            definition_value_execution_environment,
+            definition_setting_environment,
             &definition
         )?;
     }
 
     Ok(())
 }
-
 
 fn _let(
     interpreter: &mut Interpreter,
