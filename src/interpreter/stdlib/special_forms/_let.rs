@@ -29,20 +29,27 @@ fn set_variable_via_cons(
 
     let cadr = cons.get_cadr();
     let value = match cadr {
-        Ok(value) => interpreter.execute_value(environment, value),
-        Err(error) => return Err(Error::invalid_argument_caused(
+        Ok(value) => value,
+        Err(_) => return Err(Error::invalid_argument(
             interpreter,
-            "The lists in the first argument of the special form `let' must have exactly two arguments.",
+            "The definitions of the special form `let' must have exactly two arguments."
+        ))
+    };
+
+    let value = match interpreter.execute_value(environment, value) {
+        Ok(value) => value,
+        Err(error) => return Err(Error::generic_execution_error_caused(
+            interpreter,
+            "The definitions of the special form `let' must have exactly two arguments.",
             error
         ))
     };
 
-    let value = match value {
-        Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
+    match cons.get_cddr() {
+        Ok(Value::Symbol(symbol)) if symbol.is_nil() => {},
+        _ => return Err(Error::invalid_argument(
             interpreter,
-            "The lists in the first argument of the special form `let' must have exactly two arguments.",
-            error
+            "The definitions of the special form `let' must have exactly two arguments."
         ))
     };
 
@@ -221,6 +228,7 @@ mod tests {
         }
     }
 
+
     #[test]
     fn test_sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::raw();
@@ -231,5 +239,99 @@ mod tests {
             interpreter.intern_nil(),
             interpreter.execute("(let (nil-symbol) nil-symbol)").unwrap()
         );
+    }
+
+    #[test]
+    fn test_returns_error_when_first_argument_is_not_a_list() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        let result = interpreter.execute("(let test)");
+
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_error(&result);
+    }
+
+    #[test]
+    fn test_returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+
+        let incorrect_strings = vec!(
+             "1",
+             "1.1",
+             "#t",
+             "#f",
+             "\"string\"",
+             ":keyword"
+        );
+
+        for incorrect_string in incorrect_strings {
+            let result = interpreter.execute(
+                &format!("(let ({}))", incorrect_string)
+            );
+
+            assertion::assert_argument_error(&result);
+            assertion::assert_invalid_argument_error(&result);
+        }
+    }
+
+    #[test]
+    fn test_returns_error_when_first_part_of_definitions_is_not_a_symbol() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+
+        let incorrect_strings = vec!(
+            "1",
+            "1.1",
+            "#t",
+            "#f",
+            "\"string\"",
+            ":keyword",
+            "(quote symbol)",
+        );
+
+        for incorrect_string in incorrect_strings {
+            let result = interpreter.execute(
+                &format!("(let (({} 2)) {})", incorrect_string, incorrect_string)
+            );
+
+            assertion::assert_argument_error(&result);
+            assertion::assert_invalid_argument_error(&result);
+        }
+    }
+
+    #[test]
+    fn test_returns_error_when_first_symbol_of_a_definition_is_nil() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        let result = interpreter.execute("(let ((nil 2)) nil)");
+
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_error(&result);
+    }
+
+    #[test]
+    fn test_returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        let result = interpreter.execute("(let ((sym)) nil)");
+
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_error(&result);
+
+        let result = interpreter.execute("(let ((sym 1 2)) nil)");
+
+        assertion::assert_argument_error(&result);
+        assertion::assert_invalid_argument_error(&result);
     }
 }

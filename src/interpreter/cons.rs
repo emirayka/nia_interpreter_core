@@ -51,6 +51,15 @@ impl Cons {
             _ => Err(Error::empty())
         }
     }
+
+    pub fn get_cddr(&self) -> Result<&Value, Error> {
+        let cdr = self.get_cdr();
+
+        match cdr {
+            Value::Cons(cons) => Ok(cons.get_cdr()),
+            _ => Err(Error::empty())
+        }
+    }
 }
 
 impl Cons {

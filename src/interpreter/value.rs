@@ -2,6 +2,8 @@ use crate::interpreter::symbol::Symbol;
 use crate::interpreter::cons::Cons;
 use crate::interpreter::function::Function;
 
+// todo: add object
+
 #[derive(Debug, Clone)]
 pub enum Value {
     Integer(i64),
