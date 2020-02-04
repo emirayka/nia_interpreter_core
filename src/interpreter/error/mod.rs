@@ -8,30 +8,18 @@ pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT: &'static str = "invalid-argument-c
 pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
 
 #[derive(Clone, Copy, Debug)]
-pub enum EnvironmentErrorKind {
+pub enum ErrorKind {
+    Empty,
+
     VariableNotFound,
     FunctionNotFound,
     VariableAlreadyDefined,
     FunctionAlreadyDefined,
-}
 
-#[derive(Clone, Copy, Debug)]
-pub enum ExecutionErrorKind {
-    Generic,
-}
+    GenericExecutionError,
 
-#[derive(Clone, Copy, Debug)]
-pub enum ArgumentErrorKind {
     InvalidArgument,
     InvalidArgumentCount,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum ErrorKind {
-    Environment(EnvironmentErrorKind),
-    Execution(ExecutionErrorKind),
-    Argument(ArgumentErrorKind),
-    Empty,
 }
 
 #[derive(Clone, Debug)]
@@ -84,7 +72,7 @@ impl Error {
     pub fn invalid_argument(interpreter: &mut Interpreter, message: &str) -> Error {
         Error::from(
             None,
-            ErrorKind::Argument(ArgumentErrorKind::InvalidArgument),
+            ErrorKind::InvalidArgument,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT)
         )
@@ -93,7 +81,7 @@ impl Error {
     pub fn invalid_argument_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
-            ErrorKind::Argument(ArgumentErrorKind::InvalidArgument),
+            ErrorKind::InvalidArgument,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT)
         )
@@ -102,7 +90,7 @@ impl Error {
     pub fn invalid_argument_count(interpreter: &mut Interpreter, message: &str) -> Error {
         Error::from(
             None,
-            ErrorKind::Argument(ArgumentErrorKind::InvalidArgumentCount),
+            ErrorKind::InvalidArgumentCount,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT_COUNT)
         )
@@ -111,7 +99,7 @@ impl Error {
     pub fn invalid_argument_count_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
-            ErrorKind::Argument(ArgumentErrorKind::InvalidArgumentCount),
+            ErrorKind::InvalidArgumentCount,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT_COUNT)
         )
@@ -120,7 +108,7 @@ impl Error {
     pub fn generic_execution_error(interpreter: &mut Interpreter, message: &str) -> Error {
         Error::from(
             None,
-            ErrorKind::Execution(ExecutionErrorKind::Generic),
+            ErrorKind::GenericExecutionError,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
         )
@@ -129,7 +117,7 @@ impl Error {
     pub fn generic_execution_error_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
-            ErrorKind::Execution(ExecutionErrorKind::Generic),
+            ErrorKind::GenericExecutionError,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
         )
@@ -150,7 +138,7 @@ mod tests {
 
         assert!(
             match error.get_total_cause().get_error_kind() {
-                ErrorKind::Argument(ArgumentErrorKind::InvalidArgumentCount) => true,
+                ErrorKind::InvalidArgumentCount => true,
                 _ => false
             }
         );

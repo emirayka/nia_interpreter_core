@@ -11,6 +11,7 @@ mod function;
 mod set;
 mod _let;
 mod let_star;
+mod flet;
 
 pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> {
     cond::infect(interpreter)?;
@@ -20,6 +21,8 @@ pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> 
     function::infect(interpreter)?;
     set::infect(interpreter)?;
     _let::infect(interpreter)?;
+    let_star::infect(interpreter)?;
+    flet::infect(interpreter)?;
 
     Ok(())
 }

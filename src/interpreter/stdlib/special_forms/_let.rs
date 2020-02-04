@@ -131,17 +131,17 @@ fn _let(
 
     let mut values = values;
 
-    let definitions = match values.remove(0) {
-        Value::Cons(cons) => cons.to_vec(),
-        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
+    let definitions = match super::_lib::read_let_definitions(
+        interpreter,
+        values.remove(0)
+    ) {
+        Ok(definitions) => definitions,
+        Err(_) => return Err(Error::invalid_argument(
             interpreter,
-            "The first argument of special form let must be a list of variable definitions."
+            "The first argument of special form `let' must be a list of definitions: symbol, or 2-element lists."
         ))
     };
-
     let forms = values;
-
     let execution_environment = interpreter.make_environment(environment);
 
     set_definitions(
@@ -168,14 +168,6 @@ mod tests {
     use crate::interpreter::error::assertion;
     use crate::interpreter::stdlib::special_forms;
 
-    #[test]
-    fn test_returns_the_result_of_execution_of_the_last_form() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-
-        assert_eq!(Value::Integer(1), interpreter.execute("(let () 3 2 1)").unwrap());
-    }
 
     #[test]
     fn test_sets_symbol_with_executed_value() {
@@ -228,10 +220,24 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(let test)");
+        let incorrect_strings = vec!(
+            "1",
+            "1.1",
+            "#t",
+            "#f",
+            "\"string\"",
+            ":keyword",
+        );
 
-        assertion::assert_argument_error(&result);
-        assertion::assert_invalid_argument_error(&result);
+        for incorrect_string in incorrect_strings {
+            let result = interpreter.execute(&format!(
+                "(let {})",
+                incorrect_string
+            ));
+
+            assertion::assert_argument_error(&result);
+            assertion::assert_invalid_argument_error(&result);
+        }
     }
 
     #[test]
@@ -247,7 +253,9 @@ mod tests {
              "#t",
              "#f",
              "\"string\"",
-             ":keyword"
+             ":keyword",
+             "()",
+             "nil",
         );
 
         for incorrect_string in incorrect_strings {
