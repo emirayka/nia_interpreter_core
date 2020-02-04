@@ -6,26 +6,26 @@ use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 use crate::interpreter::cons::Cons;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::function::Function;
-use crate::interpreter::function::interpreted_function::InterpretedFunction;
+use crate::interpreter::function::macro_function::MacroFunction;
 
-fn set_function_via_cons(
+fn set_macro_via_cons(
     interpreter: &mut Interpreter,
-    function_parent_environment: EnvironmentId,
-    function_definition_environment: EnvironmentId,
+    macro_parent_environment: EnvironmentId,
+    macro_definition_environment: EnvironmentId,
     cons: &Cons
 ) -> Result<(), Error> {
     let car = cons.get_car();
     let name = match car {
         Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
             interpreter,
-            "It's not possible to redefine `nil' via special form `flet'."
+            "It's not possible to redefine `nil' via special form `mlet'."
         )),
         Value::Symbol(symbol) => {
             symbol
         },
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "The first element of lists in the first argument of the special form `flet' must be a symbol that represents function name."
+            "The first element of lists in the first argument of the special form `let' must be a symbol that represents macro name."
         ))
     };
 
@@ -34,7 +34,7 @@ fn set_function_via_cons(
         Ok(value) => value,
         Err(_) => return Err(Error::invalid_argument(
             interpreter,
-            "The function definitions of the special form `flet' must have at least two items."
+            "The macro definitions of the special form `mlet' must have at least two items."
         ))
     };
 
@@ -43,7 +43,7 @@ fn set_function_via_cons(
         Value::Symbol(symbol) => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "The function definitions of the special form `flet' must have at least two items."
+            "The macro definitions of the special form `mlet' must have at least two items."
         ))
     };
 
@@ -53,7 +53,7 @@ fn set_function_via_cons(
         Ok(names) => names,
         Err(_) => return Err(Error::invalid_argument(
             interpreter,
-            "The second item of a function definition must be a list of symbols."
+            "The second item of a macro definition must be a list of symbols."
         ))
     };
 
@@ -62,15 +62,15 @@ fn set_function_via_cons(
         Ok(Value::Symbol(symbol)) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "The function definitions of the special form `flet' must have at least two items.",
+            "The macro definitions of the special form `mlet' must have at least two items.",
         ))
     };
 
     interpreter.define_function(
-        function_definition_environment,
+        macro_definition_environment,
         name,
-        Value::Function(Function::Interpreted(InterpretedFunction::new(
-            function_parent_environment,
+        Value::Function(Function::Macro(MacroFunction::new(
+            macro_parent_environment,
             argument_names,
             code
         )))
@@ -79,20 +79,20 @@ fn set_function_via_cons(
 
 fn set_definition(
     interpreter: &mut Interpreter,
-    function_parent_environment: EnvironmentId,
-    function_definition_environment: EnvironmentId,
+    macro_parent_environment: EnvironmentId,
+    macro_definition_environment: EnvironmentId,
     definition: &Value
 ) -> Result<(), Error> {
     match definition {
-        Value::Cons(cons) => set_function_via_cons(
+        Value::Cons(cons) => set_macro_via_cons(
             interpreter,
-            function_parent_environment,
-            function_definition_environment,
+            macro_parent_environment,
+            macro_definition_environment,
             &cons
         ),
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "The first argument of special form `flet' must be a list of lists that represent functions."
+            "The first argument of special form `mlet' must be a list of lists that represent macros."
         ))
     }
 }
@@ -100,14 +100,14 @@ fn set_definition(
 pub fn set_definitions(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
-    function_definition_environment: EnvironmentId,
+    macro_definition_environment: EnvironmentId,
     definitions: Vec<Value>
 ) -> Result<(), Error> {
     for definition in definitions {
         set_definition(
             interpreter,
             special_form_calling_environment,
-            function_definition_environment,
+            macro_definition_environment,
             &definition
         )?;
     }
@@ -115,7 +115,7 @@ pub fn set_definitions(
     Ok(())
 }
 
-fn flet(
+fn mlet(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     values: Vec<Value>
@@ -123,7 +123,7 @@ fn flet(
     if values.len() == 0 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Special form flet must have at least one argument."
+            "Special form mlet must have at least one argument."
         ));
     }
 
@@ -136,30 +136,30 @@ fn flet(
         Ok(values) => values,
         Err(_) => return Err(Error::invalid_argument(
             interpreter,
-            "Special form `flet' must have a first argument of function definitions"
+            "Special form `mlet' must have a first argument of macro definitions"
         ))
     };
     let forms = values;
-    let function_definition_environment = interpreter.make_environment(
+    let macro_definition_environment = interpreter.make_environment(
         special_form_calling_environment
     );
 
     set_definitions(
         interpreter,
         special_form_calling_environment,
-        function_definition_environment,
+        macro_definition_environment,
         definitions
     )?;
 
     super::_lib::execute_forms(
         interpreter,
-        function_definition_environment,
+        macro_definition_environment,
         forms
     )
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "flet", flet)
+    infect_special_form(interpreter, "mlet", mlet)
 }
 
 #[cfg(test)]
@@ -174,30 +174,30 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(flet () 3)").unwrap());
-        assert_eq!(Value::Integer(2), interpreter.execute("(flet () 3 2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(flet () 3 2 1)").unwrap());
+        assert_eq!(Value::Integer(3), interpreter.execute("(mlet () 3)").unwrap());
+        assert_eq!(Value::Integer(2), interpreter.execute("(mlet () 3 2)").unwrap());
+        assert_eq!(Value::Integer(1), interpreter.execute("(mlet () 3 2 1)").unwrap());
     }
 
     #[test]
-    fn able_to_execute_defined_functions() {
+    fn able_to_execute_defined_macros() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
         assert_eq!(
             Value::Integer(1),
-            interpreter.execute("(flet ((test-func () 1)) (test-func))").unwrap()
+            interpreter.execute("(mlet ((test-macro () 1)) (test-macro))").unwrap()
         );
 
         assert_eq!(
             Value::Integer(2),
-            interpreter.execute("(flet ((test-func (a) a)) (test-func 2))").unwrap()
+            interpreter.execute("(mlet ((test-macro (a) a)) (test-macro 2))").unwrap()
         );
     }
 
     #[test]
-    fn able_to_define_several_functions() {
+    fn able_to_define_several_macros() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -205,23 +205,37 @@ mod tests {
         assert_eq!(
             Value::Integer(1),
             interpreter.execute(
-                 "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-1))"
+                "(mlet ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-1))"
             ).unwrap()
         );
 
         assert_eq!(
             Value::Integer(2),
             interpreter.execute(
-                "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-2))"
+                "(mlet ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-2))"
             ).unwrap()
         );
 
         assert_eq!(
             Value::Integer(3),
             interpreter.execute(
-                "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-3))"
+                "(mlet ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-3))"
             ).unwrap()
         );
+    }
+
+    #[test]
+    fn makes_a_correct_macro() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+        crate::interpreter::stdlib::special_forms::quote::infect(&mut interpreter).unwrap();
+
+        let result = interpreter.execute(
+            "(mlet ((test-macro-1 () (quote (quote test)))) (test-macro-1))"
+        );
+
+        assert_eq!(interpreter.intern("test"), result.unwrap());
     }
 
     #[test]
@@ -241,7 +255,7 @@ mod tests {
 
         for incorrect_string in incorrect_strings {
             let result = interpreter.execute(&format!(
-                "(flet {})",
+                "(mlet {})",
                 incorrect_string
             ));
 
@@ -269,7 +283,7 @@ mod tests {
 
         for incorrect_string in incorrect_strings {
             let result = interpreter.execute(
-                &format!("(flet ({}))", incorrect_string)
+                &format!("(mlet ({}))", incorrect_string)
             );
 
             assertion::assert_argument_error(&result);
@@ -278,7 +292,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_error_when_first_part_of_function_definition_is_not_a_symbol() {
+    fn returns_error_when_first_part_of_macro_definition_is_not_a_symbol() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -295,7 +309,7 @@ mod tests {
 
         for incorrect_string in incorrect_strings {
             let result = interpreter.execute(
-                &format!("(flet (({} () 2)) {})", incorrect_string, incorrect_string)
+                &format!("(mlet (({} () 2)) {})", incorrect_string, incorrect_string)
             );
 
             assertion::assert_argument_error(&result);
@@ -309,7 +323,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(flet ((nil () 2)) nil)");
+        let result = interpreter.execute("(mlet ((nil () 2)) nil)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
@@ -321,30 +335,30 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(flet ((sym)) nil)");
+        let result = interpreter.execute("(mlet ((sym)) nil)");
 
         assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
     #[test]
-    fn returns_err_when_attempts_to_use_previously_defined_functions() {
+    fn returns_err_when_attempts_to_use_previously_defined_macros() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(flet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))");
+        let result = interpreter.execute("(mlet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))");
 
         assertion::assert_error(&result);
     }
 
     #[test]
-    fn returns_err_when_attempts_to_redefine_already_defined_function() {
+    fn returns_err_when_attempts_to_redefine_already_defined_macro() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(flet ((sym-1 () 1) (sym-1 () 2)) (sym-1))");
+        let result = interpreter.execute("(mlet ((sym-1 () 1) (sym-1 () 2)) (sym-1))");
 
         assertion::assert_error(&result);
     }
