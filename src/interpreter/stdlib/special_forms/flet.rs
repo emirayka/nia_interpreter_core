@@ -10,7 +10,7 @@ use crate::interpreter::function::interpreted_function::InterpretedFunction;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
-    special_form_calling_environment: EnvironmentId,
+    function_parent_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
     cons: &Cons
 ) -> Result<(), Error> {
@@ -70,7 +70,7 @@ fn set_function_via_cons(
         function_definition_environment,
         name,
         Value::Function(Function::Interpreted(InterpretedFunction::new(
-            special_form_calling_environment,
+            function_parent_environment,
             argument_names,
             code
         )))
@@ -79,14 +79,14 @@ fn set_function_via_cons(
 
 fn set_definition(
     interpreter: &mut Interpreter,
-    special_form_calling_environment: EnvironmentId,
+    function_parent_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
     definition: &Value
 ) -> Result<(), Error> {
     match definition {
         Value::Cons(cons) => set_function_via_cons(
             interpreter,
-            special_form_calling_environment,
+            function_parent_environment,
             function_definition_environment,
             &cons
         ),
@@ -142,9 +142,6 @@ fn flet(
     let forms = values;
     let function_definition_environment = interpreter.make_environment(
         special_form_calling_environment
-    );
-    let execution_environment = interpreter.make_environment(
-        function_definition_environment
     );
 
     set_definitions(
