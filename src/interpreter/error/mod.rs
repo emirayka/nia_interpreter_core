@@ -29,7 +29,7 @@ pub struct Error {
     error_kind: ErrorKind,
     message: String,
     caused_by: Option<Box<Error>>,
-    symbol: Option<Symbol>,
+    symbol: Symbol,
 }
 
 impl Error {
@@ -37,7 +37,7 @@ impl Error {
         self.error_kind
     }
 
-    pub fn get_symbol(&self) -> Option<Symbol> {
+    pub fn get_symbol(&self) -> Symbol {
         self.symbol.clone()
     }
 
@@ -62,7 +62,7 @@ impl Error {
                 Some(error) => Some(Box::new(error)),
                 None => None
             },
-            symbol: Some(symbol)
+            symbol: symbol
         }
     }
 
@@ -71,7 +71,7 @@ impl Error {
             error_kind: ErrorKind::Empty,
             message: String::from(""),
             caused_by: None,
-            symbol: None
+            symbol: Symbol::make_nil()
         }
     }
 

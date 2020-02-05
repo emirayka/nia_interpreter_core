@@ -17,7 +17,16 @@ impl Symbol {
 
     fn from(name: &str) -> Symbol {
         Symbol {
-            name: name.to_string(),
+            name: String::from(name),
+            counter: 0
+        }
+    }
+
+    // kostyl
+    // todo: remove ASAP
+    pub fn make_nil() -> Symbol {
+        Symbol {
+            name: String::from("nil"),
             counter: 0
         }
     }

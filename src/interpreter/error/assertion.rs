@@ -31,7 +31,7 @@ pub fn assert_invalid_argument_error(error: &Result<Value, Error>) {
         }
     );
 
-    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT, error.get_symbol().unwrap().get_name());
+    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT, error.get_symbol().get_name());
 }
 
 pub fn assert_invalid_argument_count_error(error: &Result<Value, Error>) {
@@ -46,6 +46,6 @@ pub fn assert_invalid_argument_count_error(error: &Result<Value, Error>) {
         }
     );
 
-    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT_COUNT, error.get_symbol().unwrap().get_name());
+    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT_COUNT, error.get_symbol().get_name());
 }
 

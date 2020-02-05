@@ -76,7 +76,7 @@ mod tests {
 
         assert_eq!(
             interpreter.intern_symbol("generic-error"),
-            error.get_symbol().unwrap()
+            error.get_symbol()
         );
     }
 
@@ -94,7 +94,7 @@ mod tests {
 
         assert_eq!(
             interpreter.intern_symbol("cute-error-symbol"),
-            error.get_symbol().unwrap()
+            error.get_symbol()
         );
     }
 
