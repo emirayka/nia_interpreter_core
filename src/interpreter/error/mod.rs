@@ -11,12 +11,14 @@ pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution
 pub enum ErrorKind {
     Empty,
 
+    GenericError,
+
+    GenericExecutionError,
+
     VariableNotFound,
     FunctionNotFound,
     VariableAlreadyDefined,
     FunctionAlreadyDefined,
-
-    GenericExecutionError,
 
     InvalidArgument,
     InvalidArgumentCount,
@@ -37,6 +39,10 @@ impl Error {
 
     pub fn get_symbol(&self) -> Option<Symbol> {
         self.symbol.clone()
+    }
+
+    pub fn get_message(&self) -> &String {
+        &self.message
     }
 
     pub fn get_total_cause(&self) -> &Error {
@@ -120,6 +126,15 @@ impl Error {
             ErrorKind::GenericExecutionError,
             message,
             interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
+        )
+    }
+
+    pub fn generic_error(symbol: Symbol, message: &str) -> Error {
+        Error::from(
+            None,
+            ErrorKind::GenericError,
+            message,
+            symbol
         )
     }
 }

@@ -95,7 +95,7 @@ mod tests {
     mod infect_special_form {
         use super::*;
 
-        fn test(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>) -> Result<Value, Error>{
+        fn test(interpreter: &mut Interpreter, _environment: EnvironmentId, _values: Vec<Value>) -> Result<Value, Error>{
             Ok(interpreter.intern_nil())
         }
 

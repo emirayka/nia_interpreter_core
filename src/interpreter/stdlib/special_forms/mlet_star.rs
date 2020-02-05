@@ -3,10 +3,6 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-use crate::interpreter::cons::Cons;
-use crate::interpreter::symbol::Symbol;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::macro_function::MacroFunction;
 
 fn mlet_star(
     interpreter: &mut Interpreter,
@@ -59,7 +55,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod tests {
     use super::*;
     use crate::interpreter::error::assertion;
-    use crate::interpreter::stdlib::special_forms;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {

@@ -2,8 +2,6 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::cons::Cons;
-use crate::interpreter::symbol::Symbol;
 
 fn let_star(
     interpreter: &mut Interpreter,
@@ -58,6 +56,7 @@ mod tests {
     use super::*;
     use crate::interpreter::error::assertion;
     use crate::interpreter::stdlib::special_forms;
+    use crate::interpreter::cons::Cons;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
