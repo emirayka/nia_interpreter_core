@@ -6,7 +6,8 @@ use crate::interpreter::interpreter::Interpreter;
 
 pub type BuiltinFunctionType = fn(
     interpreter: &mut Interpreter,
-    argument_values: Vec<Value>) -> Result<Value, Error>;
+    argument_values: Vec<Value>
+) -> Result<Value, Error>;
 
 #[derive(Clone)]
 pub struct BuiltinFunction {
