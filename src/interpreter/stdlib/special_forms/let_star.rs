@@ -113,6 +113,28 @@ mod tests {
         );
     }
 
+    #[test]
+    fn possible_to_nest_let_invocations() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        assert_eq!(
+            Value::Integer(1),
+            interpreter.execute("(let* ((a 1)) a)").unwrap()
+        );
+
+        assert_eq!(
+            Value::Integer(2),
+            interpreter.execute("(let* ((a 1)) (let* ((a 2) (b 3)) a))").unwrap()
+        );
+
+        assert_eq!(
+            Value::Integer(3),
+            interpreter.execute("(let* ((a 1)) (let* ((a 2) (b 3)) b))").unwrap()
+        );
+    }
+
     // the only difference between `let' `let*'
     #[test]
     fn able_to_use_previously_defined_values() {

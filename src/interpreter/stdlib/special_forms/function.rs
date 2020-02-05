@@ -129,7 +129,7 @@ mod tests {
     use crate::interpreter::function::Function::Macro;
 
     #[test]
-    fn test_constructs_simple_function() {
+    fn constructs_simple_function() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -155,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_constructs_simple_macro() {
+    fn constructs_simple_macro() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -181,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_incorrect_amount_of_arguments_were_provided() {
+    fn returns_error_when_incorrect_amount_of_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -202,7 +202,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_not_a_cons_cell_were_provided() {
+    fn returns_error_when_not_a_cons_cell_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -227,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_element_is_not_lambda_nor_macro() {
+    fn returns_error_when_first_element_is_not_lambda_nor_macro() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
+    fn returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -254,7 +254,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_incorrect_constructed_function_arguments_were_provided() {
+    fn returns_error_when_incorrect_constructed_function_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 

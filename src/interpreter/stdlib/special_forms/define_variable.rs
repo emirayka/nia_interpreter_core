@@ -73,7 +73,7 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn test_defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
+    fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn test_defines_variable_with_nil_when_one_form_were_provided() {
+    fn defines_variable_with_nil_when_one_form_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -111,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_incorrect_count_of_forms_were_provided() {
+    fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_an_incorrect_form_were_provided() {
+    fn returns_err_when_an_incorrect_form_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 

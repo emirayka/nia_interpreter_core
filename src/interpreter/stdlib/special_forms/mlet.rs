@@ -40,7 +40,7 @@ fn set_macro_via_cons(
 
     let arguments = match arguments {
         Value::Cons(cons) => cons.to_vec(),
-        Value::Symbol(symbol) => Vec::new(),
+        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
             "The macro definitions of the special form `mlet' must have at least two items."
@@ -239,6 +239,28 @@ mod tests {
     }
 
     #[test]
+    fn possible_to_nest_let_invocations() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        assert_eq!(
+            Value::Integer(1),
+            interpreter.execute("(mlet ((a () 1)) (a))").unwrap()
+        );
+
+        assert_eq!(
+            Value::Integer(2),
+            interpreter.execute("(mlet ((a () 1)) (mlet ((a () 2) (b () 3)) (a)))").unwrap()
+        );
+
+        assert_eq!(
+            Value::Integer(3),
+            interpreter.execute("(mlet ((a () 1)) (mlet ((a () 2) (b () 3)) (b)))").unwrap()
+        );
+    }
+
+    #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::raw();
 
@@ -318,7 +340,33 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_symbol_of_a_definition_is_nil() {
+    fn returns_error_when_arguments_is_not_a_list() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        let incorrect_strings = vec!(
+            "1",
+            "1.1",
+            "#t",
+            "#f",
+            "\"string\"",
+            ":keyword",
+            "some-symbol",
+        );
+
+        for incorrect_string in incorrect_strings {
+            let result = interpreter.execute(
+                &format!("(mlet ((func {} 2)) (func))", incorrect_string)
+            );
+
+            assertion::assert_argument_error(&result);
+            assertion::assert_invalid_argument_error(&result);
+        }
+    }
+
+    #[test]
+    fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();

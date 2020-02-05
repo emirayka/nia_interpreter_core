@@ -100,7 +100,7 @@ mod tests {
         }
 
         #[test]
-        fn test_sets_function() {
+        fn sets_function() {
             let mut interpreter = Interpreter::raw();
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
@@ -110,7 +110,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_err_when_special_form_already_infected() {
+        fn returns_err_when_special_form_already_infected() {
             let mut interpreter = Interpreter::raw();
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
@@ -125,7 +125,7 @@ mod tests {
         use crate::interpreter::error::assertion;
 
         #[test]
-        fn test_returns_the_result_of_execution_of_the_last_form() {
+        fn returns_the_result_of_execution_of_the_last_form() {
             let mut interpreter = Interpreter::raw();
             let name = interpreter.intern_symbol("test");
 
@@ -152,7 +152,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_err_when_execution_failed() {
+        fn returns_err_when_execution_failed() {
             let mut interpreter = Interpreter::raw();
 
             let forms = vec!(

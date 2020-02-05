@@ -87,7 +87,7 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn test_cond_works_correctly() {
+    fn cond_works_correctly() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -99,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_invalid_clause_was_provided_to_cond() {
+    fn returns_err_when_invalid_clause_was_provided_to_cond() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -122,7 +122,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_invalid_clause_was_provided_to_cond_2() {
+    fn returns_err_when_invalid_clause_was_provided_to_cond_2() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -145,7 +145,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_invalid_predicate_was_provided_to_cond() {
+    fn returns_err_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 

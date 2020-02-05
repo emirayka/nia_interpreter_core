@@ -71,7 +71,7 @@ mod tests {
     use crate::interpreter::stdlib::special_forms;
 
     #[test]
-    fn test_returns_value_that_was_set_to_variable() {
+    fn returns_value_that_was_set_to_variable() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -84,7 +84,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sets_to_current_environment_when_variable_is_defined_here() {
+    fn sets_to_current_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -113,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sets_to_parent_environment_when_variable_is_defined_here() {
+    fn sets_to_parent_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -136,7 +136,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_err_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_incorrect_arguments_were_passed() {
+    fn returns_err_when_incorrect_arguments_were_passed() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();

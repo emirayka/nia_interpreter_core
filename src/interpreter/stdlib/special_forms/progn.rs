@@ -31,7 +31,7 @@ mod tests {
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(progn 3)").unwrap());
         assert_eq!(Value::Integer(2), interpreter.execute("(progn 3 2)").unwrap());
@@ -42,7 +42,7 @@ mod tests {
     fn returns_nil_if_no_form_were_provided() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         assert_eq!(interpreter.intern_nil(), interpreter.execute("(progn)").unwrap());
     }

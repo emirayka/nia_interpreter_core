@@ -42,7 +42,7 @@ fn block(
     environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    let mut values = values;
+    let values = values;
     let mut results = Vec::new();
 
     for value in values {
@@ -68,7 +68,7 @@ mod tests {
     fn returns_list_of_execution_results() {
         let mut interpreter = Interpreter::raw();
 
-        infect(&mut interpreter);
+        infect(&mut interpreter).unwrap();
 
         assert_eq!(interpreter.intern_nil(), interpreter.execute("(block)").unwrap());
         assert_eq!(

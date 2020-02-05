@@ -35,7 +35,7 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn test_quote_works_correctly_when_used_quote_special_form() {
+    fn quote_works_correctly_when_used_quote_special_form() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -60,7 +60,7 @@ mod tests {
     }
 
     #[test]
-    fn test_quote_works_correctly_when_used_quote_sign() {
+    fn quote_works_correctly_when_used_quote_sign() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -85,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn test_quote_works_correctly_for_quote_invocation() {
+    fn quote_works_correctly_for_quote_invocation() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
@@ -106,7 +106,7 @@ mod tests {
     }
 
     #[test]
-    fn test_quote_returns_err_when_improper_count_of_arguments_were_provided() {
+    fn quote_returns_err_when_improper_count_of_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 

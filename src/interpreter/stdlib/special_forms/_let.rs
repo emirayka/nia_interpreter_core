@@ -170,7 +170,7 @@ mod tests {
 
 
     #[test]
-    fn test_sets_symbol_with_executed_value() {
+    fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -203,7 +203,7 @@ mod tests {
 
 
     #[test]
-    fn test_sets_symbol_without_value_to_nil() {
+    fn sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -237,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_argument_is_not_a_list() {
+    fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -263,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
+    fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -291,7 +291,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_part_of_definitions_is_not_a_symbol() {
+    fn returns_error_when_first_part_of_definitions_is_not_a_symbol() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -318,7 +318,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_error_when_first_symbol_of_a_definition_is_nil() {
+    fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -330,7 +330,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
+    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -347,7 +347,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_attempt_to_use_previously_defined_values() {
+    fn returns_err_when_attempt_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -358,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn test_returns_err_when_attempt_to_redefine_already_defined_value() {
+    fn returns_err_when_attempt_to_redefine_already_defined_value() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();

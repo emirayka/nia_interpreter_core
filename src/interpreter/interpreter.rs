@@ -11,7 +11,7 @@ use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::infect_interpreter;
+use crate::interpreter::stdlib::infect_stdlib;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -38,7 +38,7 @@ impl Interpreter {
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter::raw();
 
-        match infect_interpreter(&mut interpreter) {
+        match infect_stdlib(&mut interpreter) {
             Ok(()) => interpreter,
             Err(_error) => panic!("Cannot construct interpreter")
         }
@@ -171,7 +171,7 @@ impl Interpreter {
         match cons.get_cdr() {
             Value::Cons(cons) => Ok(cons.to_vec()),
             Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
-            Value::Symbol(symbol) => Err(Error::empty()),
+            Value::Symbol(_) => Err(Error::empty()),
             _ => Err(Error::empty())
         }
     }
