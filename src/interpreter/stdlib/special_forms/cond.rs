@@ -116,7 +116,6 @@ mod tests {
         for invalid_form in invalid_forms {
             let result = interpreter.execute(&format!("(cond {})", invalid_form));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -139,7 +138,6 @@ mod tests {
         for invalid_form in invalid_forms {
             let result = interpreter.execute(&format!("(cond {})", invalid_form));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -168,7 +166,6 @@ mod tests {
         for invalid_form in invalid_forms {
             let result = interpreter.execute(invalid_form);
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }

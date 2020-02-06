@@ -257,7 +257,6 @@ mod tests {
                 incorrect_string
             ));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -285,7 +284,6 @@ mod tests {
                 &format!("(let ({}))", incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -312,7 +310,6 @@ mod tests {
                 &format!("(let (({} 2)) {})", incorrect_string, incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -325,7 +322,6 @@ mod tests {
 
         let result = interpreter.execute("(let ((nil 2)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -337,12 +333,10 @@ mod tests {
 
         let result = interpreter.execute("(let ((sym)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
 
         let result = interpreter.execute("(let ((sym 1 2)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 

@@ -142,11 +142,9 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(set!)");
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(set! a b c)");
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -167,7 +165,6 @@ mod tests {
 
         for incorrect_variable in incorrect_variables {
             let result = interpreter.execute(&format!("(set! {} 1)", incorrect_variable));
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }

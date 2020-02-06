@@ -3,9 +3,10 @@ pub mod assertion;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::interpreter::Interpreter;
 
+pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
 pub const SYMBOL_NAME_INVALID_ARGUMENT: &'static str = "invalid-argument";
 pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT: &'static str = "invalid-argument-count";
-pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
+pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
 
 #[derive(Clone, Copy, Debug)]
 pub enum ErrorKind {
@@ -14,6 +15,7 @@ pub enum ErrorKind {
     GenericError,
 
     GenericExecutionError,
+    OverflowError,
 
     VariableNotFound,
     FunctionNotFound,
@@ -53,6 +55,32 @@ impl Error {
     }
 }
 
+macro_rules! make_error_constructor {
+    ($name:ident, $error_kind:expr, $symbol_name:expr) => {
+        pub fn $name(interpreter: &mut Interpreter, message: &str) -> Error {
+            Error::from(
+                None,
+                $error_kind,
+                message,
+                interpreter.intern_symbol($symbol_name)
+            )
+        }
+    }
+}
+
+macro_rules! make_caused_error_constructor {
+    ($name:ident, $error_kind:expr, $symbol_name:expr) => {
+        pub fn $name(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
+            Error::from(
+                Some(cause),
+                $error_kind,
+                message,
+                interpreter.intern_symbol($symbol_name)
+            )
+        }
+    }
+}
+
 impl Error {
     pub fn from(caused_by: Option<Error>, kind: ErrorKind, message: &str, symbol: Symbol) -> Error {
         Error {
@@ -75,60 +103,6 @@ impl Error {
         }
     }
 
-    pub fn invalid_argument(interpreter: &mut Interpreter, message: &str) -> Error {
-        Error::from(
-            None,
-            ErrorKind::InvalidArgument,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT)
-        )
-    }
-
-    pub fn invalid_argument_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
-        Error::from(
-            Some(cause),
-            ErrorKind::InvalidArgument,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT)
-        )
-    }
-
-    pub fn invalid_argument_count(interpreter: &mut Interpreter, message: &str) -> Error {
-        Error::from(
-            None,
-            ErrorKind::InvalidArgumentCount,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT_COUNT)
-        )
-    }
-
-    pub fn invalid_argument_count_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
-        Error::from(
-            Some(cause),
-            ErrorKind::InvalidArgumentCount,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_INVALID_ARGUMENT_COUNT)
-        )
-    }
-
-    pub fn generic_execution_error(interpreter: &mut Interpreter, message: &str) -> Error {
-        Error::from(
-            None,
-            ErrorKind::GenericExecutionError,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
-        )
-    }
-
-    pub fn generic_execution_error_caused(interpreter: &mut Interpreter, message: &str, cause: Error) -> Error {
-        Error::from(
-            Some(cause),
-            ErrorKind::GenericExecutionError,
-            message,
-            interpreter.intern_symbol(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
-        )
-    }
-
     pub fn generic_error(symbol: Symbol, message: &str) -> Error {
         Error::from(
             None,
@@ -137,6 +111,45 @@ impl Error {
             symbol
         )
     }
+
+    make_error_constructor!(
+        invalid_argument,
+        ErrorKind::InvalidArgument,
+        SYMBOL_NAME_INVALID_ARGUMENT
+    );
+    make_caused_error_constructor!(
+        invalid_argument_caused,
+        ErrorKind::InvalidArgument,
+        SYMBOL_NAME_INVALID_ARGUMENT
+    );
+
+    make_error_constructor!(
+        invalid_argument_count,
+        ErrorKind::InvalidArgumentCount,
+        SYMBOL_NAME_INVALID_ARGUMENT_COUNT
+    );
+    make_caused_error_constructor!(
+        invalid_argument_count_caused,
+        ErrorKind::InvalidArgumentCount,
+        SYMBOL_NAME_INVALID_ARGUMENT_COUNT
+    );
+
+    make_error_constructor!(
+        generic_execution_error,
+        ErrorKind::GenericExecutionError,
+        SYMBOL_NAME_GENERIC_EXECUTION_ERROR
+    );
+    make_caused_error_constructor!(
+        generic_execution_error_caused,
+        ErrorKind::GenericExecutionError,
+        SYMBOL_NAME_GENERIC_EXECUTION_ERROR
+    );
+
+    make_error_constructor!(
+        overflow_error,
+        ErrorKind::OverflowError,
+        SYMBOL_NAME_OVERFLOW_ERROR
+    );
 }
 
 #[cfg(test)]

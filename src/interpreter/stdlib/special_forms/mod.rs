@@ -20,7 +20,7 @@ mod block;
 mod throw;
 mod _try;
 
-pub fn infect_special_forms(interpreter: &mut Interpreter) -> Result<(), Error> {
+pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     cond::infect(interpreter)?;
     quote::infect(interpreter)?;
     define_variable::infect(interpreter)?;

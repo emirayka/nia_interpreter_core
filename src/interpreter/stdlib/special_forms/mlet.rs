@@ -279,7 +279,6 @@ mod tests {
                 incorrect_string
             ));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -306,7 +305,6 @@ mod tests {
                 &format!("(mlet ({}))", incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -332,7 +330,6 @@ mod tests {
                 &format!("(mlet (({} () 2)) {})", incorrect_string, incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -358,7 +355,6 @@ mod tests {
                 &format!("(mlet ((func {} 2)) (func))", incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -371,7 +367,6 @@ mod tests {
 
         let result = interpreter.execute("(mlet ((nil () 2)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -383,7 +378,6 @@ mod tests {
 
         let result = interpreter.execute("(mlet ((sym)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 

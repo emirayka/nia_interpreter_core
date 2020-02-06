@@ -265,7 +265,6 @@ mod tests {
                 incorrect_string
             ));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -292,7 +291,6 @@ mod tests {
                 &format!("(flet ({}))", incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -318,7 +316,6 @@ mod tests {
                 &format!("(flet (({} () 2)) {})", incorrect_string, incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -344,7 +341,6 @@ mod tests {
                 &format!("(flet ((func {} 2)) (func))", incorrect_string)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -357,7 +353,6 @@ mod tests {
 
         let result = interpreter.execute("(flet ((nil () 2)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -369,7 +364,6 @@ mod tests {
 
         let result = interpreter.execute("(flet ((sym)) nil)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 

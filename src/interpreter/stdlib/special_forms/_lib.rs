@@ -60,7 +60,7 @@ pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Resu
                 interpreter,
                 ""
             )),
-            Value::Symbol(symbol) => {},
+            Value::Symbol(_) => {},
             _ => return Err(Error::invalid_argument(
                 interpreter,
                 ""

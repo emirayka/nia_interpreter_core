@@ -116,11 +116,9 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(define-function)");
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(define-function test 2 kek)");
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -130,7 +128,6 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(define-function 3 2)");
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 }

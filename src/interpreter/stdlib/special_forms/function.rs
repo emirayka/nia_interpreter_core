@@ -81,6 +81,7 @@ fn function(
     let lambda_or_macro_symbol = values.remove(0);
     let arguments = match values.remove(0) {
         Value::Cons(cons) => cons.to_vec(),
+        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
             "The second element of first argument must be a list of symbols that represents argument names"
@@ -180,23 +181,64 @@ mod tests {
     }
 
     #[test]
+    fn returns_correct_function_when_no_argument_was_provided() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
+
+        let expected = Value::Function(Function::Interpreted(InterpretedFunction::new(
+            interpreter.get_root_environment(),
+            vec!(),
+            vec!(
+                Value::Integer(1)
+            )
+        )));
+
+        let result = interpreter.execute(
+            "(function (lambda () 1))"
+        );
+        assert!(result.is_ok());
+
+        let result = result.unwrap();
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn returns_correct_macro_when_no_argument_was_provided() {
+        let mut interpreter = Interpreter::raw();
+        infect(&mut interpreter).unwrap();
+
+        let expected = Value::Function(Function::Macro(MacroFunction::new(
+            interpreter.get_root_environment(),
+            vec!(),
+            vec!(
+                Value::Integer(1)
+            )
+        )));
+
+        let result = interpreter.execute(
+            "(function (macro () 1))"
+        );
+        assert!(result.is_ok());
+
+        let result = result.unwrap();
+        assert_eq!(expected, result);
+    }
+
+    #[test]
     fn returns_error_when_incorrect_amount_of_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
         infect(&mut interpreter).unwrap();
 
         let result = interpreter.execute("(function)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(function 1 2)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(function 1 2 3)");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -220,7 +262,6 @@ mod tests {
                 &format!("(function {})", not_valid_first_argument)
             );
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
     }
@@ -232,7 +273,6 @@ mod tests {
 
         let result = interpreter.execute("(function (special-form () 2))");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -243,12 +283,10 @@ mod tests {
 
         let result = interpreter.execute("(function (lambda))");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
 
         let result = interpreter.execute("(function (lambda ()))");
 
-        assertion::assert_argument_error(&result);
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -272,7 +310,6 @@ mod tests {
                 not_valid_argument
             ));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
 
@@ -282,7 +319,6 @@ mod tests {
                 not_valid_argument
             ));
 
-            assertion::assert_argument_error(&result);
             assertion::assert_invalid_argument_error(&result);
         }
 
@@ -294,7 +330,6 @@ mod tests {
                     not_valid_argument_2
                 ));
 
-                assertion::assert_argument_error(&result);
                 assertion::assert_invalid_argument_error(&result);
             }
         }
