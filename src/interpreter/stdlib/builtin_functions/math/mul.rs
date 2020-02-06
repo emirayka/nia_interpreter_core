@@ -22,7 +22,7 @@ fn mul(
                 Some(int_result) => Value::Integer(int_result),
                 None => return Err(Error::overflow_error(
                     interpreter,
-                    &format!("Attempt to add values {} {} lead to overflow", int1, int2)
+                    &format!("Attempt to multiply values {} {} leads to overflow", int1, int2)
                 ))
             },
             (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) * float2),
@@ -48,7 +48,7 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_correct_sum_of_two_integers() {
+    fn returns_correct_multiplication_of_two_integers() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -136,6 +136,4 @@ mod tests {
             assertion::assert_overflow_error(&result);
         }
     }
-
-    // todo: overflow test, should return overflow error
 }

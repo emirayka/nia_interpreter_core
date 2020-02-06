@@ -3,43 +3,41 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 
-fn sum(
+fn sub(
     interpreter: &mut Interpreter,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() < 2 {
+    if values.len() != 2 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Built-in function `+' must take at least two arguments"
+            "Built-in function `-' must take exactly two argument"
         ));
     }
 
-    let mut result = Value::Integer(0);
+    let mut values = values;
 
-    for value in values {
-        result = match (value, result) {
-            (Value::Integer(int1), Value::Integer(int2)) => match int1.checked_add(int2) {
-                Some(int_result) => Value::Integer(int_result),
-                None => return Err(Error::overflow_error(
-                    interpreter,
-                    &format!("Attempt to add values {} {} leads to overflow", int1, int2)
-                ))
-            },
-            (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) + float2),
-            (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 + (int2 as f64)),
-            (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 + float2),
-            _ => return Err(Error::invalid_argument(
+    let result = match (values.remove(0), values.remove(0)) {
+        (Value::Integer(int1), Value::Integer(int2)) => match int1.checked_sub(int2) {
+            Some(int_result) => Value::Integer(int_result),
+            None => return Err(Error::overflow_error(
                 interpreter,
-                "Built-in function `+' must take only integers or float."
+                &format!("Attempt to subtract values {} {} leads to overflow", int1, int2)
             ))
-        };
-    }
+        },
+        (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) - float2),
+        (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 - (int2 as f64)),
+        (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 - float2),
+        _ => return Err(Error::invalid_argument(
+            interpreter,
+            "Built-in function `-' must take only integers or float."
+        ))
+    };
 
     Ok(result)
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "+", sum)
+    infect_builtin_function(interpreter, "-", sub)
 }
 
 #[cfg(test)]
@@ -48,23 +46,12 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_correct_sum_of_two_integers() {
+    fn returns_correct_subtraction_of_two_integers() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(+ 1 2)").unwrap());
-    }
-
-    #[test]
-    fn is_variadic() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-
-        assert_eq!(Value::Integer(3), interpreter.execute("(+ 1 2)").unwrap());
-        assert_eq!(Value::Integer(6), interpreter.execute("(+ 1 2 3)").unwrap());
-        assert_eq!(Value::Integer(10), interpreter.execute("(+ 1 2 3 4)").unwrap());
+        assert_eq!(Value::Integer(-1), interpreter.execute("(- 1 2)").unwrap());
     }
 
     #[test]
@@ -73,9 +60,8 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Float(6.0), interpreter.execute("(+ 1 2 3.0)").unwrap());
-        assert_eq!(Value::Float(6.0), interpreter.execute("(+ 1.0 2 3)").unwrap());
-        assert_eq!(Value::Float(6.0), interpreter.execute("(+ 1 2.0 3)").unwrap());
+        assert_eq!(Value::Float(-1.0), interpreter.execute("(- 1 2.0)").unwrap());
+        assert_eq!(Value::Float(-1.0), interpreter.execute("(- 1.0 2)").unwrap());
     }
 
     #[test]
@@ -84,10 +70,13 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(+)");
+        let result = interpreter.execute("(-)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(+ 1)");
+        let result = interpreter.execute("(- 1)");
+        assertion::assert_invalid_argument_count_error(&result);
+
+        let result = interpreter.execute("(- 1 2 3)");
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -110,7 +99,7 @@ mod tests {
         );
 
         for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(+ 1 {})", incorrect_value);
+            let incorrect_code = format!("(- 1 {})", incorrect_value);
 
             let result = interpreter.execute(&incorrect_code);
 
@@ -125,9 +114,10 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let code_vector = vec!(
-            "(+ 9223372036854775800 5 5)",
-            "(+ 5 9223372036854775800 5)",
-            "(+ 9223372036854775800 5 5)",
+            "(- 9223372036854775800 -10)",
+            "(- 10 -9223372036854775800)",
+            "(- -10 9223372036854775800)",
+            "(- -9223372036854775800 10)",
         );
 
         for code in code_vector {
