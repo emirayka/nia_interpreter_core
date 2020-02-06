@@ -5,47 +5,45 @@ pub fn assert_error<V, E>(error: &Result<V, E>) {
     assert!(error.is_err());
 }
 
-pub fn assert_invalid_argument_error(error: &Result<Value, Error>) {
-    assert!(error.is_err());
+macro_rules! make_assertion_function {
+    ($name:ident, $error_kind:pat, $symbol_name:expr) => {
+        pub fn $name(error: &Result<Value, Error>) {
+            assert!(error.is_err());
 
-    let error = error.as_ref().err().unwrap().get_total_cause();
+            let error = error.as_ref().err().unwrap().get_total_cause();
 
-    assert!(
-        match error.get_error_kind() {
-            ErrorKind::InvalidArgument => true,
-            _ => false
+            assert!(
+                match error.get_error_kind() {
+                    $error_kind => true,
+                    _ => false
+                }
+            );
+
+            assert_eq!($symbol_name, error.get_symbol().get_name());
         }
-    );
-
-    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT, error.get_symbol().get_name());
+    }
 }
 
-pub fn assert_invalid_argument_count_error(error: &Result<Value, Error>) {
-    assert!(error.is_err());
+make_assertion_function!(
+    assert_invalid_argument_error,
+    ErrorKind::InvalidArgument,
+    SYMBOL_NAME_INVALID_ARGUMENT
+);
 
-    let error = error.as_ref().err().unwrap().get_total_cause();
+make_assertion_function!(
+    assert_invalid_argument_count_error,
+    ErrorKind::InvalidArgumentCount,
+    SYMBOL_NAME_INVALID_ARGUMENT_COUNT
+);
 
-    assert!(
-        match error.get_error_kind() {
-            ErrorKind::InvalidArgumentCount => true,
-            _ => false
-        }
-    );
+make_assertion_function!(
+    assert_overflow_error,
+    ErrorKind::OverflowError,
+    SYMBOL_NAME_OVERFLOW_ERROR
+);
 
-    assert_eq!(SYMBOL_NAME_INVALID_ARGUMENT_COUNT, error.get_symbol().get_name());
-}
-
-pub fn assert_overflow_error(error: &Result<Value, Error>) {
-    assert!(error.is_err());
-
-    let error = error.as_ref().err().unwrap().get_total_cause();
-
-    assert!(
-        match error.get_error_kind() {
-            ErrorKind::OverflowError=> true,
-            _ => false
-        }
-    );
-
-    assert_eq!(SYMBOL_NAME_OVERFLOW_ERROR, error.get_symbol().get_name());
-}
+make_assertion_function!(
+    assert_zero_division_error,
+    ErrorKind::ZeroDivisionError,
+    SYMBOL_NAME_ZERO_DIVISION_ERROR
+);

@@ -4,9 +4,10 @@ use crate::interpreter::symbol::Symbol;
 use crate::interpreter::interpreter::Interpreter;
 
 pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
-pub const SYMBOL_NAME_INVALID_ARGUMENT: &'static str = "invalid-argument";
-pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT: &'static str = "invalid-argument-count";
+pub const SYMBOL_NAME_INVALID_ARGUMENT: &'static str = "invalid-argument-error";
+pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT: &'static str = "invalid-argument-count-error";
 pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
+pub const SYMBOL_NAME_ZERO_DIVISION_ERROR: &'static str = "zero-division-error";
 
 #[derive(Clone, Copy, Debug)]
 pub enum ErrorKind {
@@ -16,6 +17,7 @@ pub enum ErrorKind {
 
     GenericExecutionError,
     OverflowError,
+    ZeroDivisionError,
 
     VariableNotFound,
     FunctionNotFound,
@@ -90,7 +92,7 @@ impl Error {
                 Some(error) => Some(Box::new(error)),
                 None => None
             },
-            symbol: symbol
+            symbol
         }
     }
 
@@ -149,6 +151,12 @@ impl Error {
         overflow_error,
         ErrorKind::OverflowError,
         SYMBOL_NAME_OVERFLOW_ERROR
+    );
+
+    make_error_constructor!(
+        zero_division_error,
+        ErrorKind::ZeroDivisionError,
+        SYMBOL_NAME_ZERO_DIVISION_ERROR
     );
 }
 

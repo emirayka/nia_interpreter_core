@@ -48,12 +48,23 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_correct_sum_of_two_integers() {
+    fn returns_correct_integer_sum() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(+ 1 2)").unwrap());
+    }
+
+    #[test]
+    fn returns_correct_float_sum() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+
+        assert_eq!(Value::Float(3.0), interpreter.execute("(+ 1 2.0)").unwrap());
+        assert_eq!(Value::Float(3.0), interpreter.execute("(+ 1.0 2)").unwrap());
+        assert_eq!(Value::Float(3.0), interpreter.execute("(+ 1.0 2.0)").unwrap());
     }
 
     #[test]
