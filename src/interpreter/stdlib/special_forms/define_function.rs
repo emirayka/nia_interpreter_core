@@ -124,6 +124,20 @@ mod tests {
         assert_eq!(Value::Integer(3), result.unwrap());
     }
 
+    // todo: move to higher module test
+    #[test]
+    fn possible_to_make_a_closure() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+        super::super::function::infect(&mut interpreter).unwrap();
+
+        interpreter.execute("(define-function test (function (lambda (a) (function (lambda () a)))))").unwrap();
+        interpreter.execute("(define-function test2 (test 2))").unwrap();
+
+        assert_eq!(Value::Integer(2), interpreter.execute("(test2)").unwrap());
+    }
+
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::raw();

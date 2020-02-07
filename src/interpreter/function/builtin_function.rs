@@ -3,9 +3,11 @@ use std::fmt;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::environment::EnvironmentId;
 
 pub type BuiltinFunctionType = fn(
     interpreter: &mut Interpreter,
+    environment: EnvironmentId,
     argument_values: Vec<Value>
 ) -> Result<Value, Error>;
 

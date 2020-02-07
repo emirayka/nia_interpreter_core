@@ -47,3 +47,12 @@ make_assertion_function!(
     ErrorKind::ZeroDivisionError,
     SYMBOL_NAME_ZERO_DIVISION_ERROR
 );
+
+pub fn assert_is_function(param: Value) {
+    assert!(
+        match param {
+            Value::Function(_) => true,
+            _ => false
+        }
+    );
+}

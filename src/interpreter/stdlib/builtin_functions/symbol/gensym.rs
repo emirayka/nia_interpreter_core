@@ -4,32 +4,37 @@ use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn round(
+fn gensym(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() != 1 {
+    if values.len() > 1 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Built-in function `round' must take exactly one argument."
+            "Built-in function `gensym' must take exactly one string argument."
         ));
     }
 
     let mut values = values;
 
-    match values.remove(0) {
-        Value::Integer(int) => Ok(Value::Integer(int)),
-        Value::Float(float) => Ok(Value::Integer(float.round() as i64)),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            "Built-in function `round' must take only integer or float values."
-        ))
-    }
+    let name = if values.len() == 0 {
+        String::from("G")
+    } else {
+        match values.remove(0) {
+            Value::String(string) => string,
+            _ => return Err(Error::invalid_argument(
+                interpreter,
+                "Built-in function `gensym' must take exactly one string argument."
+            ))
+        }
+    };
+
+    Ok(Value::Symbol(interpreter.gensym(&name)))
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "round", round)
+    infect_builtin_function(interpreter, "gensym", gensym)
 }
 
 #[cfg(test)]
@@ -38,38 +43,52 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_the_integer_itself_if_it_was_passed() {
+    fn returns_gensym_without_provided_name() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(round 3)").unwrap());
+        let gensym1 = interpreter.execute(r#"(gensym)"#).unwrap();
+        let gensym2 = interpreter.execute(r#"(gensym)"#).unwrap();
+        let gensym3 = interpreter.execute(r#"(gensym)"#).unwrap();
+
+        assert_ne!(gensym1, gensym2);
+        assert_ne!(gensym1, gensym3);
+
+        assert_ne!(gensym2, gensym3);
     }
 
     #[test]
-    fn computes_a_correct_round_of_a_float_correctly() {
+    fn returns_gensym_with_target_name() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(0), interpreter.execute("(round 0.2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.5)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.7)").unwrap());
+        let interned = interpreter.intern("test");
+        let gensym1 = interpreter.execute(r#"(gensym "test")"#).unwrap();
+        let gensym2 = interpreter.execute(r#"(gensym "test")"#).unwrap();
+        let gensym3 = interpreter.execute(r#"(gensym "test")"#).unwrap();
+
+        assert_ne!(interned, gensym1);
+        assert_ne!(interned, gensym2);
+        assert_ne!(interned, gensym3);
+
+        assert_ne!(gensym1, gensym2);
+        assert_ne!(gensym1, gensym3);
+
+        assert_ne!(gensym2, gensym3);
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(round)");
+        let result = interpreter.execute("(gensym 1 2)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(round 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(round 1 2 3)");
+        let result = interpreter.execute("(gensym 1 2 3)");
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -81,10 +100,11 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let incorrect_values = vec!(
+            "1",
+            "1.0",
             "#t",
             "#f",
             "'symbol",
-            "\"string\"",
             ":keyword",
             "'(s-expression)",
             "{}",
@@ -93,7 +113,7 @@ mod tests {
         );
 
         for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(round {})", incorrect_value);
+            let incorrect_code = format!("(gensym {})", incorrect_value);
 
             let result = interpreter.execute(&incorrect_code);
 

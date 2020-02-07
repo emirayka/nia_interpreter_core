@@ -10,13 +10,19 @@ mod pow;
 
 mod floor;
 mod round;
-mod ceil;
+mod ceiling;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     sum::infect(interpreter)?;
     sub::infect(interpreter)?;
     mul::infect(interpreter)?;
+    div::infect(interpreter)?;
     rem::infect(interpreter)?;
+    pow::infect(interpreter)?;
+
+    floor::infect(interpreter)?;
+    round::infect(interpreter)?;
+    ceiling::infect(interpreter)?;
 
     Ok(())
 }

@@ -4,7 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn round(
+fn flookup(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -12,24 +12,33 @@ fn round(
     if values.len() != 1 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Built-in function `round' must take exactly one argument."
+            "Built-in function `flookup' must take exactly one string argument."
         ));
     }
 
     let mut values = values;
 
     match values.remove(0) {
-        Value::Integer(int) => Ok(Value::Integer(int)),
-        Value::Float(float) => Ok(Value::Integer(float.round() as i64)),
+        Value::Symbol(symbol) => {
+            let nil = interpreter.intern_nil();
+
+            match interpreter.lookup_function(
+                _environment,
+                &symbol
+            ) {
+                Ok(value) => Ok(value.clone()),
+                _ => Ok(nil)
+            }
+        }
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "Built-in function `round' must take only integer or float values."
+            "Built-in function `flookup' must take exactly one string argument."
         ))
     }
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "round", round)
+    infect_builtin_function(interpreter, "flookup", flookup)
 }
 
 #[cfg(test)]
@@ -38,38 +47,43 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_the_integer_itself_if_it_was_passed() {
+    fn returns_associated_value() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
+        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(round 3)").unwrap());
+        let result = interpreter.execute("(flet ((a () 1)) (flookup 'a))");
+        assertion::assert_is_function(result.unwrap());
+
+        let result = interpreter.execute("(flet ((a () 1)) (flookup 'flookup))");
+        assertion::assert_is_function(result.unwrap());
     }
 
     #[test]
-    fn computes_a_correct_round_of_a_float_correctly() {
+    fn returns_nil_when_nothing_was_found() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
+        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(0), interpreter.execute("(round 0.2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.5)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.7)").unwrap());
+        let result = interpreter.execute("(flet ((a () 1)) (flookup 'b))");
+        assert_eq!(interpreter.intern_nil(), result.unwrap());
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(round)");
+        let result = interpreter.execute("(flookup)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(round 1 2)");
+        let result = interpreter.execute("(flookup 1 2)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(round 1 2 3)");
+        let result = interpreter.execute("(flookup 1 2 3)");
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -81,9 +95,10 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let incorrect_values = vec!(
+            "1",
+            "1.0",
             "#t",
             "#f",
-            "'symbol",
             "\"string\"",
             ":keyword",
             "'(s-expression)",
@@ -93,7 +108,7 @@ mod tests {
         );
 
         for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(round {})", incorrect_value);
+            let incorrect_code = format!("(flookup {})", incorrect_value);
 
             let result = interpreter.execute(&incorrect_code);
 

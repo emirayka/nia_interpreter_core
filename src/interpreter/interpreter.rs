@@ -287,9 +287,10 @@ impl Interpreter {
     fn evaluate_builtin_function_invocation(
         &mut self,
         builtin_function: &BuiltinFunction,
+        environment: EnvironmentId,
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        (builtin_function.get_func())(self, evaluated_arguments)
+        (builtin_function.get_func())(self, environment, evaluated_arguments)
     }
 
     fn evaluate_special_form_invocation(
@@ -359,7 +360,11 @@ impl Interpreter {
                 };
 
                 // 3) apply function from step 1 to arguments from step 2
-                self.evaluate_builtin_function_invocation(builtin_function, evaluated_arguments)
+                self.evaluate_builtin_function_invocation(
+                    builtin_function,
+                    environment,
+                    evaluated_arguments
+                )
             },
             Function::Interpreted(interpreted_function) => {
                 // 2) evaluate arguments
@@ -548,7 +553,7 @@ mod tests {
                 $interpreter_id.root_environment,
                 &name,
                 Value::Function(Function::Builtin(BuiltinFunction::new(
-                    |interpreter: &mut Interpreter, values: Vec<Value>| -> Result<Value, Error> {
+                    |interpreter: &mut Interpreter, _environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
                         let first = &values[0];
                         let second= &values[1];
 

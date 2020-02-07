@@ -4,7 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn round(
+fn intern(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -12,24 +12,23 @@ fn round(
     if values.len() != 1 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Built-in function `round' must take exactly one argument."
+            "Built-in function `intern' must take exactly one string argument."
         ));
     }
 
     let mut values = values;
 
     match values.remove(0) {
-        Value::Integer(int) => Ok(Value::Integer(int)),
-        Value::Float(float) => Ok(Value::Integer(float.round() as i64)),
+        Value::String(string) => Ok(interpreter.intern(&string)),
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "Built-in function `round' must take only integer or float values."
+            "Built-in function `intern' must take exactly one string argument."
         ))
     }
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "round", round)
+    infect_builtin_function(interpreter, "intern", intern)
 }
 
 #[cfg(test)]
@@ -38,38 +37,34 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_the_integer_itself_if_it_was_passed() {
+    fn returns_interned_symbol() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(round 3)").unwrap());
+        assert_eq!(
+            interpreter.intern("test"),
+            interpreter.execute(r#"(intern "test")"#).unwrap()
+        );
+        assert_eq!(
+            interpreter.intern("a"),
+            interpreter.execute(r#"(intern "a")"#).unwrap()
+        );
     }
 
     #[test]
-    fn computes_a_correct_round_of_a_float_correctly() {
+    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(0), interpreter.execute("(round 0.2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.5)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(round 0.7)").unwrap());
-    }
-
-    #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-
-        let result = interpreter.execute("(round)");
+        let result = interpreter.execute("(intern)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(round 1 2)");
+        let result = interpreter.execute("(intern 1 2)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(round 1 2 3)");
+        let result = interpreter.execute("(intern 1 2 3)");
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -81,10 +76,11 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let incorrect_values = vec!(
+            "1",
+            "1.0",
             "#t",
             "#f",
             "'symbol",
-            "\"string\"",
             ":keyword",
             "'(s-expression)",
             "{}",
@@ -93,7 +89,7 @@ mod tests {
         );
 
         for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(round {})", incorrect_value);
+            let incorrect_code = format!("(intern {})", incorrect_value);
 
             let result = interpreter.execute(&incorrect_code);
 

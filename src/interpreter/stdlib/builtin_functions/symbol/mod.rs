@@ -1,14 +1,14 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
-mod _lib;
-
-mod math;
-mod symbol;
+mod intern;
+mod gensym;
+mod lookup;
+mod flookup;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    math::infect(interpreter)?;
-    symbol::infect(interpreter)?;
+    intern::infect(interpreter)?;
+    gensym::infect(interpreter)?;
 
     Ok(())
 }
