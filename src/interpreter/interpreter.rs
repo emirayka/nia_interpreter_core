@@ -11,11 +11,15 @@ use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
+use crate::interpreter::object_arena::ObjectArena;
+
 use crate::interpreter::stdlib::infect_stdlib;
+use crate::interpreter::object::ObjectId;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
     symbol_arena: SymbolArena,
+    object_arena: ObjectArena,
     root_environment: EnvironmentId,
     call_stack: (),
 }
@@ -27,9 +31,12 @@ impl Interpreter {
 
         let symbol_arena = SymbolArena::new();
 
+        let object_arena = ObjectArena::new();
+
         Interpreter {
             environment_arena,
             symbol_arena,
+            object_arena,
             root_environment: root_env_id,
             call_stack: (),
         }
@@ -142,6 +149,22 @@ impl Interpreter {
 
     pub fn intern_symbol_nil(&mut self, symbol_name: &str) -> Symbol {
         self.symbol_arena.intern(symbol_name)
+    }
+
+    pub fn make_object(&mut self) -> ObjectId {
+        self.object_arena.make()
+    }
+
+    pub fn make_child_object(&mut self, prototype_id: ObjectId) -> ObjectId {
+        self.object_arena.make_child(prototype_id)
+    }
+
+    pub fn get_object_item(&mut self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
+        self.object_arena.get_item(object_id, key)
+    }
+
+    pub fn set_object_item(&mut self, object_id: ObjectId, key: &Symbol, value: Value) {
+        self.object_arena.set_item(object_id, key, value);
     }
 
     pub fn get_root_environment(&self) -> EnvironmentId {
@@ -315,25 +338,12 @@ impl Interpreter {
         Ok(value_to_return)
     }
 
-    fn evaluate_s_expression(&mut self, environment: EnvironmentId, cons: &Cons) -> Result<Value, Error> {
-        // 1) evaluate first symbol
-        let car_value = cons.get_car();
-
-        let function = match car_value {
-            Value::Symbol(func_name) => match self.lookup_function(environment, func_name) {
-                Ok(Value::Function(func)) => func.clone(),
-                Ok(_) => return Err(Error::empty()),
-                Err(error) => return Err(error)
-            },
-            Value::Function(func) => func.clone(),
-            Value::Cons(cons) => match self.evaluate_s_expression(environment, cons) {
-                Ok(Value::Function(func)) => func,
-                Ok(_) => return Err(Error::empty()),
-                Err(error) => return Err(error)
-            },
-            _ => return Err(Error::empty())
-        };
-
+    fn evaluate_s_expression_function_invocation(
+        &mut self,
+        environment: EnvironmentId,
+        function: Function,
+        cons: &Cons
+    ) -> Result<Value, Error> {
         // todo: add caused errors
         match &function {
             Function::Builtin(builtin_function) => {
@@ -389,6 +399,88 @@ impl Interpreter {
                     Err(error) => return Err(error)
                 }
             }
+        }
+    }
+
+    fn evaluate_s_expression_keyword(
+        &mut self,
+        environment: EnvironmentId,
+        keyword_name: &String,
+        cons: &Cons
+    ) -> Result<Value, Error> {
+        let name = self.intern_symbol(keyword_name);
+
+        let arguments = match self.extract_arguments(cons) {
+            Ok(arguments) => arguments,
+            Err(error) => return Err(error)
+        };
+
+        if arguments.len() != 1 {
+            return Err(Error::empty());
+        }
+
+        let evaluated_argument = self.evaluate_value(
+            environment,
+            &arguments[0]
+        );
+
+        match evaluated_argument {
+            Ok(Value::Object(object_id)) => {
+                match self.object_arena.get_item(object_id, &name) {
+                    Some(value) => Ok(value.clone()),
+                    _ => return Err(Error::empty())
+                }
+            },
+            _ => return Err(Error::empty())
+        }
+    }
+
+    fn evaluate_s_expression(
+        &mut self,
+        environment: EnvironmentId,
+        s_expression: &Cons
+    ) -> Result<Value, Error> {
+        // 1) evaluate first symbol
+        let car_value = s_expression.get_car();
+
+        match car_value {
+            Value::Symbol(func_name) => {
+                let func = match self.lookup_function(environment, func_name) {
+                    Ok(Value::Function(func)) => func.clone(),
+                    Ok(_) => return Err(Error::empty()),
+                    Err(error) => return Err(error)
+                };
+
+                self.evaluate_s_expression_function_invocation(
+                    environment,
+                    func,
+                    s_expression
+                )
+            },
+            Value::Function(func) => self.evaluate_s_expression_function_invocation(
+                environment,
+                func.clone(),
+                s_expression
+            ),
+            Value::Cons(cons) => {
+                let func = match self.evaluate_s_expression(environment, cons) {
+                    Ok(Value::Function(func)) => func,
+                    Ok(_) => return Err(Error::empty()),
+                    Err(error) => return Err(error)
+                };
+
+                self.evaluate_s_expression_function_invocation(
+                    environment,
+                    func,
+                    s_expression
+                )
+            },
+            Value::Keyword(keyword_name) => self.evaluate_s_expression_keyword(
+                environment,
+                keyword_name,
+                s_expression
+            ),
+            _ => return Err(Error::empty())
         }
     }
 
@@ -474,28 +566,28 @@ mod tests {
     }
 
     #[test]
-    pub fn test_executes_integer_correctly() {
+    pub fn executes_integer_correctly() {
         assert_execution_result_eq!(Value::Integer(1), "1");
     }
 
     #[test]
-    pub fn test_executes_float_correctly() {
+    pub fn executes_float_correctly() {
         assert_execution_result_eq!(Value::Float(1.2), "1.2");
     }
 
     #[test]
-    pub fn test_executes_boolean_correctly() {
+    pub fn executes_boolean_correctly() {
         assert_execution_result_eq!(Value::Boolean(true), "#t");
         assert_execution_result_eq!(Value::Boolean(false), "#f");
     }
 
     #[test]
-    pub fn test_executes_string_correctly() {
+    pub fn executes_string_correctly() {
         assert_execution_result_eq!(Value::String(String::from("tas")), r#""tas""#);
     }
 
     #[test]
-    pub fn test_executes_symbol_correctly() {
+    pub fn executes_symbol_correctly() {
         let mut interpreter = Interpreter::raw();
         let name = interpreter.intern_symbol("test");
 
@@ -511,12 +603,20 @@ mod tests {
     }
 
     #[test]
-    pub fn test_executes_keyword_correctly() {
+    pub fn executes_keyword_correctly() {
         assert_execution_result_eq!(Value::Keyword(String::from("tas")), r#":tas"#);
     }
 
     #[test]
-    pub fn test_builtin_function_works_correctly() {
+    pub fn executes_keyword_s_expression_correctly() {
+        let mut interpreter = Interpreter::raw();
+
+        let result = interpreter.execute("(:a {:a 1})");
+        assert_eq!(Value::Integer(1), result.unwrap());
+    }
+
+    #[test]
+    pub fn builtin_function_works_correctly() {
         let mut interpreter = Interpreter::raw();
 
         define_sum_function!(interpreter);
@@ -535,7 +635,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_interpreted_function_works_correctly() {
+    pub fn interpreted_function_works_correctly() {
         let mut interpreter = Interpreter::raw();
 
         define_sum_function!(interpreter);
@@ -569,7 +669,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_special_form_invocation_evaluates_correctly() {
+    pub fn special_form_invocation_evaluates_correctly() {
         let mut interpreter = Interpreter::raw();
         let name = interpreter.intern_symbol("testif");
 
@@ -606,8 +706,8 @@ mod tests {
         assert_eq!(Value::Integer(2), result.unwrap());
     }
 
-    #[test]
-    pub fn test_macro_invocation_evaluates_correctly() {
+//    #[test]
+//    pub fn macro_invocation_evaluates_correctly() {
 //        use crate::interpreter::stdlib::infect_interpreter;
 //
 //        let mut interpreter = Interpreter::new();
@@ -630,5 +730,5 @@ mod tests {
 //
 //            )))
 //        )
-    }
+//    }
 }

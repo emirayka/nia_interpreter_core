@@ -1,6 +1,8 @@
 mod symbol;
 mod cons;
 mod function;
+mod object;
+mod object_arena;
 mod value;
 mod error;
 mod environment;

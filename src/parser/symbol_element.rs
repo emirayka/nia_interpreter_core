@@ -53,14 +53,14 @@ mod tests {
 
     #[test]
     fn test_able_to_parse_all_fine_symbols() {
-        let example = "test1-_^v=+?<>./&*%$@!~{}";
+        let example = "test1-_^v=+?<>./&*%$@!~";
         assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
     }
 
     #[test]
     fn test_able_to_parse_all_fine_escaped_symbols() {
-        let text = r##"test\"\#\,\`\ \(\)\:\\"##;
-        let expected = r##"test"#,` ():\"##;
+        let text = r##"test\"\#\,\`\ \(\)\:\\\{\}"##;
+        let expected = r##"test"#,` ():\{}"##;
 
         assert_eq!(Ok(("", SymbolElement {value: String::from(expected)})), parse_symbol_element(text));
     }

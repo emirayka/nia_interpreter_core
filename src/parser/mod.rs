@@ -7,6 +7,7 @@ pub mod keyword_element;
 pub mod string_element;
 pub mod boolean_element;
 pub mod s_expression_element;
+pub mod object_element;
 pub mod prefix_element;
 
 use nom::{
@@ -37,6 +38,7 @@ pub enum Element {
     Symbol(symbol_element::SymbolElement),
     Keyword(keyword_element::KeywordElement),
     SExpression(s_expression_element::SExpressionElement),
+    Object(object_element::ObjectElement),
     Prefix(prefix_element::PrefixElement),
 }
 
@@ -53,6 +55,7 @@ impl PartialEq for Element {
             (Boolean(val1), Boolean(val2)) => val1 == val2,
             (Prefix(val1), Prefix(val2)) => val1 == val2,
             (SExpression(val1), SExpression(val2)) => val1 == val2,
+            (Object(val1), Object(val2)) => val1 == val2,
             _ => false
         }
     }
@@ -82,6 +85,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
     ))),
         |el| Ok(Element::Integer(el))
@@ -93,6 +97,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::Float(el))
@@ -104,6 +109,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::Boolean(el))
@@ -115,6 +121,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::Symbol(el))
@@ -126,6 +133,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::Keyword(el))
@@ -137,6 +145,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
             alt((
                 peek(space1),
                 peek(tag(")")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::String(el))
@@ -149,9 +158,22 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
                 peek(space1),
                 peek(tag(")")),
                 peek(tag("(")),
+                peek(tag("}")),
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::SExpression(el))
+    );
+
+    let object_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
+        terminated(
+            object_element::parse_object_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                peek(tag("}")),
+                all_consuming(tag(""))
+            ))),
+        |el| Ok(Element::Object(el))
     );
 
     let quoted_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
@@ -166,6 +188,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         string_parser,
         keyword_parser,
         s_expression_parser,
+        object_parser,
         quoted_parser,
         symbol_parser,
     ));
@@ -282,9 +305,18 @@ mod tests {
                         Element::String(string_element::StringElement::new(String::from("nested-string"))),
                         Element::Symbol(symbol_element::SymbolElement::new(String::from("nested-symbol"))),
                     ))),
+                    Element::Object(object_element::ObjectElement::new(vec!(
+                        (keyword_element::KeywordElement::new(String::from("a")), Element::Integer(integer_element::IntegerElement::new(1))),
+                        (keyword_element::KeywordElement::new(String::from("b")), Element::Float(float_element::FloatElement::new(1.1))),
+                        (keyword_element::KeywordElement::new(String::from("c")), Element::Boolean(boolean_element::BooleanElement::new(true))),
+                        (keyword_element::KeywordElement::new(String::from("d")), Element::Boolean(boolean_element::BooleanElement::new(false))),
+                        (keyword_element::KeywordElement::new(String::from("e")), Element::Keyword(keyword_element::KeywordElement::new(String::from("object-keyword")))),
+                        (keyword_element::KeywordElement::new(String::from("f")), Element::String(string_element::StringElement::new(String::from("object-string")))),
+                        (keyword_element::KeywordElement::new(String::from("g")), Element::Symbol(symbol_element::SymbolElement::new(String::from("object-symbol")))),
+                    )))
                 )))
             ),
-            "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol))"
+            "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol) {:a 1 :b 1.1 :c #t :d #f :e :object-keyword :f \"object-string\" :g object-symbol})"
         );
     }
 
@@ -311,7 +343,7 @@ mod tests {
         assert_is_err!(parse_code("1#f"));
 
         assert_is_ok!(parse_code("1 :t"));
-        assert_is_err!(parse_code("1:t")); // because, "1:t" is not a valid symbol, nor keyword
+        assert_is_err!(parse_code("1:t")); // because, "1:t" is neither a valid symbol nor keyword
 
         assert_is_ok!(parse_code("1 t"));
         assert_is_ok!(parse_code("1t")); // because, "1t" is a valid symbol
@@ -321,6 +353,9 @@ mod tests {
 
         assert_is_ok!(parse_code("1 ()"));
         assert_is_err!(parse_code("1()"));
+
+        assert_is_ok!(parse_code("1 {}"));
+        assert_is_err!(parse_code("1{}"));
     }
 
     #[test]
@@ -347,6 +382,9 @@ mod tests {
 
         assert_is_ok!(parse_code("1.1 ()"));
         assert_is_err!(parse_code("1.1()"));
+
+        assert_is_ok!(parse_code("1.1 {}"));
+        assert_is_err!(parse_code("1.1{}"));
     }
 
     #[test]
@@ -373,6 +411,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#t ()"));
         assert_is_err!(parse_code("#t()"));
+
+        assert_is_ok!(parse_code("#t {}"));
+        assert_is_err!(parse_code("#t{}"));
     }
 
     #[test]
@@ -399,6 +440,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#f ()"));
         assert_is_err!(parse_code("#f()"));
+
+        assert_is_ok!(parse_code("#f {}"));
+        assert_is_err!(parse_code("#f{}"));
     }
 
     #[test]
@@ -425,6 +469,9 @@ mod tests {
 
         assert_is_ok!(parse_code(":key ()"));
         assert_is_err!(parse_code(":key()"));
+
+        assert_is_ok!(parse_code(":key {}"));
+        assert_is_err!(parse_code(":key{}"));
     }
 
     #[test]
@@ -451,6 +498,9 @@ mod tests {
 
         assert_is_ok!(parse_code("\"str\" ()"));
         assert_is_err!(parse_code("\"str\"()"));
+
+        assert_is_ok!(parse_code("\"str\" {}"));
+        assert_is_err!(parse_code("\"str\"{}"));
     }
 
     #[test]
@@ -477,6 +527,9 @@ mod tests {
 
         assert_is_ok!(parse_code("sym ()"));
         assert_is_err!(parse_code("sym()"));
+
+        assert_is_ok!(parse_code("sym {}"));
+        assert_is_err!(parse_code("sym{}"));
     }
 
     #[test]
@@ -503,6 +556,38 @@ mod tests {
 
         assert_is_ok!(parse_code("() ()"));
         assert_is_ok!(parse_code("()()"));
+
+        assert_is_ok!(parse_code("() {}"));
+        assert_is_err!(parse_code("(){}"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_object_literal() {
+        assert_is_ok!(parse_code("{} 1"));
+        assert_is_err!(parse_code("{}1"));
+
+        assert_is_ok!(parse_code("{} 1.1"));
+        assert_is_err!(parse_code("{}1.1"));
+
+        assert_is_ok!(parse_code("{} #t"));
+        assert_is_err!(parse_code("{}#t"));
+        assert_is_ok!(parse_code("{} #f"));
+        assert_is_err!(parse_code("{}#f"));
+
+        assert_is_ok!(parse_code("{} :t"));
+        assert_is_err!(parse_code("{}:t"));
+
+        assert_is_ok!(parse_code("{} t"));
+        assert_is_err!(parse_code("{}t"));
+
+        assert_is_ok!(parse_code("{} \"\""));
+        assert_is_err!(parse_code("{}\"\""));
+
+        assert_is_ok!(parse_code("{} ()"));
+        assert_is_err!(parse_code("{}()"));
+
+        assert_is_ok!(parse_code("{} {}"));
+        assert_is_err!(parse_code("{}{}"));
     }
 
     #[test]
@@ -510,8 +595,17 @@ mod tests {
         assert_is_err!(parse_code("("));
         assert_is_err!(parse_code("()("));
         assert_is_err!(parse_code("(()"));
-        assert_is_err!(parse_code("\"string"));
+        assert_is_err!(parse_code("\"string")); // todo: move to another test
         assert_is_err!(parse_code("((\"string))"));
+    }
+
+    #[test]
+    fn test_does_not_allow_unfinished_object_literals() {
+        assert_is_err!(parse_code("{"));
+        assert_is_err!(parse_code("{}{"));
+        assert_is_err!(parse_code("{{}"));
+        assert_is_err!(parse_code("\"string"));
+        assert_is_err!(parse_code("{{\"string}}"));
     }
 
     // todo: add tests when input is not complete

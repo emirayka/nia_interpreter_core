@@ -1,5 +1,6 @@
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::cons::Cons;
+use crate::interpreter::object::{ObjectId};
 use crate::interpreter::function::Function;
 
 // todo: add object
@@ -13,6 +14,7 @@ pub enum Value {
     Symbol(Symbol),
     String(String),
     Cons(Cons),
+    Object(ObjectId),
     Function(Function),
 }
 
@@ -28,6 +30,7 @@ impl PartialEq for Value {
             (Symbol(val1), Symbol(val2)) => val1 == val2,
             (String(val1), String(val2)) => val1 == val2,
             (Cons(val1), Cons(val2)) => val1 == val2,
+            (Object(val1), Object(val2)) => val1 == val2,
             (Function(val1), Function(val2)) => val1 == val2,
             _ => false
         }
