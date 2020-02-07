@@ -10,6 +10,7 @@ extern crate nom;
 // todo: Get rid of unnecessary .clone()
 // todo: Should "(()t t)" be able to be parsed? It works in emacs lisp. From the other hand, "()t" does not.
 // todo: check test on arithmetic operations
+// todo: major problem is freeing memory in arenas
 
 fn main() {
     let mut interpreter = interpreter::interpreter::Interpreter::new();

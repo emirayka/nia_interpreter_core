@@ -110,6 +110,20 @@ mod tests {
             ).unwrap());
     }
 
+    // todo: move to higher module test
+    #[test]
+    fn defines_function_that_can_be_executed() {
+        let mut interpreter = Interpreter::raw();
+
+        infect(&mut interpreter).unwrap();
+        super::super::function::infect(&mut interpreter).unwrap();
+
+        interpreter.execute("(define-function test (function (lambda (a b) b)))").unwrap();
+        let result = interpreter.execute("(test 2 3)");
+
+        assert_eq!(Value::Integer(3), result.unwrap());
+    }
+
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::raw();
