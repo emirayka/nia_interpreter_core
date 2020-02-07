@@ -6,6 +6,11 @@ mod sub;
 mod mul;
 mod div;
 mod rem;
+mod pow;
+
+mod floor;
+mod round;
+mod ceil;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     sum::infect(interpreter)?;
