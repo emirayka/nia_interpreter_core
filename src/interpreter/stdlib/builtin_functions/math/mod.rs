@@ -5,12 +5,13 @@ mod sum;
 mod sub;
 mod mul;
 mod div;
+mod rem;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     sum::infect(interpreter)?;
     sub::infect(interpreter)?;
     mul::infect(interpreter)?;
-    div::infect(interpreter)?;
+    rem::infect(interpreter)?;
 
     Ok(())
 }

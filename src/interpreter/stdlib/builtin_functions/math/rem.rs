@@ -3,14 +3,14 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 
-fn div(
+fn rem(
     interpreter: &mut Interpreter,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Err(Error::invalid_argument_count(
             interpreter,
-            "Built-in function `/' must take exactly two arguments."
+            "Built-in function `%' must take exactly two arguments."
         ));
     }
 
@@ -20,36 +20,36 @@ fn div(
         (Value::Integer(int1), Value::Integer(int2)) => match int2 {
             0 => return Err(Error::zero_division_error(
                 interpreter,
-                &format!("Can't divide {} on {}.", int1, int2)
+                &format!("Can't compute the remainder of {} on {}.", int1, int2)
             )),
-            _ => Value::Integer(int1 / int2),
+            _ => Value::Integer(int1 % int2),
         },
         (Value::Integer(int1), Value::Float(float2)) => if float2 == 0.0 {
             return Err(Error::zero_division_error(
                 interpreter,
-                &format!("Can't divide {} on {}.", int1, float2)
+                &format!("Can't compute the remainder of {} on {}.", int1, float2)
             ));
         } else {
-            Value::Float((int1 as f64) / float2)
+            Value::Float((int1 as f64) % float2)
         },
         (Value::Float(float1), Value::Integer(int2)) => match int2 {
             0 => return Err(Error::zero_division_error(
                 interpreter,
-                &format!("Can't divide {} on {}.", float1, int2)
+                &format!("Can't compute the remainder of {} on {}.", float1, int2)
             )),
-            _ => Value::Float(float1 / (int2 as f64)),
+            _ => Value::Float(float1 % (int2 as f64)),
         },
         (Value::Float(float1), Value::Float(float2)) => if float2 == 0.0 {
             return Err(Error::zero_division_error(
                 interpreter,
-                &format!("Can't divide {} on {}.", float1, float2)
+                &format!("Can't compute the remainder of {} on {}.", float1, float2)
             ));
         } else {
-            Value::Float(float1 / float2)
+            Value::Float(float1 % float2)
         },
         _ => return Err(Error::invalid_argument(
             interpreter,
-            "Built-in function `/' must take only integer or float values."
+            "Built-in function `%' must take only integer or float values."
         ))
     };
 
@@ -57,7 +57,7 @@ fn div(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "/", div)
+    infect_builtin_function(interpreter, "%", rem)
 }
 
 #[cfg(test)]
@@ -71,7 +71,7 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(/ 3 2)").unwrap());
+        assert_eq!(Value::Integer(2), interpreter.execute("(% 5 3)").unwrap());
     }
 
     #[test]
@@ -80,9 +80,9 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        assert_eq!(Value::Float(0.5), interpreter.execute("(/ 1 2.0)").unwrap());
-        assert_eq!(Value::Float(0.5), interpreter.execute("(/ 1.0 2)").unwrap());
-        assert_eq!(Value::Float(0.5), interpreter.execute("(/ 1.0 2.0)").unwrap());
+        assert_eq!(Value::Float(2.0), interpreter.execute("(% 7 5.0)").unwrap());
+        assert_eq!(Value::Float(2.0), interpreter.execute("(% 7.0 5)").unwrap());
+        assert_eq!(Value::Float(2.0), interpreter.execute("(% 7.0 5.0)").unwrap());
     }
 
     #[test]
@@ -91,13 +91,13 @@ mod tests {
 
         infect(&mut interpreter).unwrap();
 
-        let result = interpreter.execute("(/)");
+        let result = interpreter.execute("(%)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(/ 1)");
+        let result = interpreter.execute("(% 1)");
         assertion::assert_invalid_argument_count_error(&result);
 
-        let result = interpreter.execute("(/ 1 2 3)");
+        let result = interpreter.execute("(% 1 2 3)");
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -121,7 +121,7 @@ mod tests {
         );
 
         for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(/ 1 {})", incorrect_value);
+            let incorrect_code = format!("(% 1 {})", incorrect_value);
 
             let result = interpreter.execute(&incorrect_code);
 
@@ -136,10 +136,10 @@ mod tests {
         infect(&mut interpreter).unwrap();
 
         let code_vector = vec!(
-            "(/ 1 0)",
-            "(/ 1 0.0)",
-            "(/ 1.0 0)",
-            "(/ 1.0 0.0)",
+            "(% 1 0)",
+            "(% 1 0.0)",
+            "(% 1.0 0)",
+            "(% 1.0 0.0)",
         );
 
         for code in code_vector {

@@ -116,6 +116,7 @@ mod tests {
             "\"string\"",
             ":keyword",
             "'(s-expression)",
+            "{}",
             "(function (lambda () 1))",
             "(function (macro () 1))",
         );
