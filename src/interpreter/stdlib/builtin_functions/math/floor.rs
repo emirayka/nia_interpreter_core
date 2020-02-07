@@ -36,7 +36,7 @@ mod tests {
     use crate::interpreter::error::assertion;
 
     #[test]
-    fn returns_integer_itself_if_it_was_passed() {
+    fn returns_the_integer_itself_if_it_was_passed() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
@@ -45,7 +45,7 @@ mod tests {
     }
 
     #[test]
-    fn floors_floats_correctly() {
+    fn computes_a_floor_of_a_float_correctly() {
         let mut interpreter = Interpreter::raw();
 
         infect(&mut interpreter).unwrap();
