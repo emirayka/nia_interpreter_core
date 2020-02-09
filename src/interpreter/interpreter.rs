@@ -593,7 +593,7 @@ mod tests {
 
     #[test]
     pub fn executes_symbol_correctly() {
-        let mut interpreter = Interpreter::raw();
+        let mut interpreter = Interpreter::new();
         let name = interpreter.intern_symbol("test");
 
         interpreter.environment_arena.define_variable(
@@ -614,23 +614,78 @@ mod tests {
 
     #[test]
     pub fn executes_keyword_s_expression_correctly() {
-        let mut interpreter = Interpreter::raw();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(:a {:a 1})");
+
         assert_eq!(Value::Integer(1), result.unwrap());
     }
 
     #[test]
-    pub fn builtin_function_works_correctly() {
-        let mut interpreter = Interpreter::raw();
+    fn executes_object_expression_correctly() {
+        let mut interpreter = Interpreter::new();
 
-        define_sum_function!(interpreter);
+        let pairs = vec!(
+            (Value::Integer(1), "1"),
+            (Value::Float(1.1), "1.1"),
+            (Value::Boolean(false), "#f"),
+            (Value::Boolean(true), "#t"),
+            (interpreter.intern("symbol"), "'symbol"),
+            (Value::Keyword(String::from("keyword")), ":keyword"),
+            (Value::String(String::from("string")), "\"string\""),
+        );
+
+        let symbol = interpreter.intern_symbol("value");
+
+        for pair in pairs {
+            let code = String::from("{:value ") + pair.1 + "}";
+            let result = interpreter.execute(&code);
+
+            match result {
+                Ok(Value::Object(object_id)) => {
+                    assert_eq!(
+                        &pair.0,
+                        interpreter.get_object_item(object_id, &symbol).unwrap()
+                    );
+                }
+                _ => assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn executes_delimited_symbols_expression_correctly() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            (Value::Integer(1), "1"),
+            (Value::Float(1.1), "1.1"),
+            (Value::Boolean(false), "#f"),
+            (Value::Boolean(true), "#t"),
+            (interpreter.intern("symbol"), "'symbol"),
+            (Value::Keyword(String::from("keyword")), ":keyword"),
+            (Value::String(String::from("string")), "\"string\""),
+        );
+
+        for pair in pairs {
+            let code = String::from("(let ((obj {:value ") + pair.1 + "})) obj:value)";
+            let result = interpreter.execute(&code);
+
+            println!("{:?}", code);
+
+            assert_eq!(pair.0, result.unwrap());
+        }
+    }
+
+    #[test]
+    pub fn builtin_function_works_correctly() {
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(+ 1 2)");
         assert_eq!(Value::Integer(3), result.unwrap());
 
         let result = interpreter.execute("(+ 1 2.2)");
-        assert_eq!(interpreter.intern_nil(), result.unwrap());
+        assert_eq!(Value::Float(3.2), result.unwrap());
 
         let result = interpreter.execute("(+ 1.1 2.4)");
         assert_eq!(Value::Float(3.5), result.unwrap());
@@ -641,9 +696,8 @@ mod tests {
 
     #[test]
     pub fn interpreted_function_works_correctly() {
-        let mut interpreter = Interpreter::raw();
+        let mut interpreter = Interpreter::new();
 
-        define_sum_function!(interpreter);
         let code = vec!(
             Value::Cons(Cons::new(
                 interpreter.intern("+"),
@@ -675,7 +729,8 @@ mod tests {
 
     #[test]
     pub fn special_form_invocation_evaluates_correctly() {
-        let mut interpreter = Interpreter::raw();
+        let mut interpreter = Interpreter::new();
+
         let name = interpreter.intern_symbol("testif");
 
         interpreter.environment_arena.define_function(

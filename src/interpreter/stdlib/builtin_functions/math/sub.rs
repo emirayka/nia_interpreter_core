@@ -49,18 +49,14 @@ mod tests {
 
     #[test]
     fn returns_correct_subtraction_of_two_integers() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(-1), interpreter.execute("(- 1 2)").unwrap());
     }
 
     #[test]
     fn returns_correct_float_subtraction() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(-1.0), interpreter.execute("(- 1 2.0)").unwrap());
         assert_eq!(Value::Float(-1.0), interpreter.execute("(- 1.0 2)").unwrap());
@@ -69,9 +65,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(-)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -85,10 +79,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "#t",
@@ -113,9 +104,7 @@ mod tests {
 
     #[test]
     fn returns_overflow_error_when_an_overflow_occurred() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
             "(- 9223372036854775800 -10)",

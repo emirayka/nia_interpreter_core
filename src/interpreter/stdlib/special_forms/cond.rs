@@ -88,8 +88,7 @@ mod tests {
 
     #[test]
     fn cond_works_correctly() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(1), interpreter.execute("(cond (#t 1) (#t 2) (#t 3))").unwrap());
         assert_eq!(Value::Integer(2), interpreter.execute("(cond (#f 1) (#t 2) (#t 3))").unwrap());
@@ -100,8 +99,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let invalid_forms = vec!(
             "1",
@@ -122,8 +120,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond_2() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let invalid_forms = vec!(
             "(1)",
@@ -144,8 +141,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_invalid_predicate_was_provided_to_cond() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let name = interpreter.intern_symbol("test");
         interpreter.define_variable(

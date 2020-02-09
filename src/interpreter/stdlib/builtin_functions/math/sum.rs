@@ -51,18 +51,14 @@ mod tests {
 
     #[test]
     fn returns_correct_integer_sum() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(+ 1 2)").unwrap());
     }
 
     #[test]
     fn returns_correct_float_sum() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(3.0), interpreter.execute("(+ 1 2.0)").unwrap());
         assert_eq!(Value::Float(3.0), interpreter.execute("(+ 1.0 2)").unwrap());
@@ -71,9 +67,7 @@ mod tests {
 
     #[test]
     fn is_variadic() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(+ 1 2)").unwrap());
         assert_eq!(Value::Integer(6), interpreter.execute("(+ 1 2 3)").unwrap());
@@ -82,9 +76,7 @@ mod tests {
 
     #[test]
     fn converts_to_float_if_any_was_present() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(6.0), interpreter.execute("(+ 1 2 3.0)").unwrap());
         assert_eq!(Value::Float(6.0), interpreter.execute("(+ 1.0 2 3)").unwrap());
@@ -93,9 +85,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(+)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -106,10 +96,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "#t",
@@ -134,9 +121,7 @@ mod tests {
 
     #[test]
     fn returns_overflow_error_when_an_overflow_occurred() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
             "(+ 9223372036854775800 5 5)",

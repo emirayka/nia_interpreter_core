@@ -64,9 +64,7 @@ mod tests {
 
     #[test]
     fn returns_generic_error_when_no_symbol_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw)");
 
@@ -82,9 +80,7 @@ mod tests {
 
     #[test]
     fn returns_error_with_correct_symbol_when_it_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol)");
 
@@ -100,9 +96,7 @@ mod tests {
 
     #[test]
     fn returns_error_with_correct_message_when_it_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol \"Cute error message\")");
 

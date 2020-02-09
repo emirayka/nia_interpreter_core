@@ -83,18 +83,14 @@ mod tests {
 
     #[test]
     fn returns_correct_power_of_two_integers() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(81), interpreter.execute("(pow 3 4)").unwrap());
     }
 
     #[test]
     fn returns_correct_float_power() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(81.0), interpreter.execute("(pow 3 4.0)").unwrap());
         assert_eq!(Value::Float(81.0), interpreter.execute("(pow 3.0 4)").unwrap());
@@ -103,9 +99,7 @@ mod tests {
 
     #[test]
     fn should_be_able_to_handle_float_and_negative_values() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(2.0), interpreter.execute("(pow 4 0.5)").unwrap());
         assert_eq!(Value::Float(0.25), interpreter.execute("(pow 4 -1)").unwrap());
@@ -114,9 +108,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(pow)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -130,10 +122,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "#t",
@@ -158,9 +147,7 @@ mod tests {
 
     #[test]
     fn returns_overflow_error_when_an_overflow_occurred() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
             "(pow 2 65)",

@@ -74,8 +74,7 @@ mod tests {
 
     #[test]
     fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-variable test 2)").unwrap();
         let name = interpreter.intern_symbol("test");
@@ -93,8 +92,7 @@ mod tests {
 
     #[test]
     fn defines_variable_with_nil_when_one_form_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-variable test)").unwrap();
         let name = interpreter.intern_symbol("test");
@@ -112,8 +110,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(define-variable)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -124,8 +121,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_an_incorrect_form_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(define-variable 3 2)");
         assertion::assert_invalid_argument_error(&result);

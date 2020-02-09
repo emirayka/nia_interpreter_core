@@ -72,10 +72,7 @@ mod tests {
 
     #[test]
     fn returns_value_that_was_set_to_variable() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        special_forms::function::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         // todo: switch to let later
         let result2 = interpreter.execute("((function (lambda (a) (set! a 2))) 1)").unwrap();
@@ -85,10 +82,7 @@ mod tests {
 
     #[test]
     fn sets_to_current_environment_when_variable_is_defined_here() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        special_forms::function::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let variable_name = interpreter.intern_symbol("a");
 
@@ -114,11 +108,7 @@ mod tests {
 
     #[test]
     fn sets_to_parent_environment_when_variable_is_defined_here() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        special_forms::function::infect(&mut interpreter).unwrap();
-        special_forms::define_variable::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let variable_name_b = interpreter.intern_symbol("b");
 
@@ -137,9 +127,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_incorrect_count_of_arguments_were_passed() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(set!)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -150,9 +138,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_incorrect_arguments_were_passed() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_variables = vec!(
             "1",

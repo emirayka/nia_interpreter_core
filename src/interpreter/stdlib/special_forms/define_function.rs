@@ -74,8 +74,7 @@ mod tests {
 
     #[test]
     fn defines_function_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test 2)").unwrap();
         let name = interpreter.intern_symbol("test");
@@ -93,8 +92,7 @@ mod tests {
 
     #[test]
     fn defines_function_with_nil_when_one_form_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test)").unwrap();
         let name = interpreter.intern_symbol("test");
@@ -113,10 +111,7 @@ mod tests {
     // todo: move to higher module test
     #[test]
     fn defines_function_that_can_be_executed() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::function::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test (function (lambda (a b) b)))").unwrap();
         let result = interpreter.execute("(test 2 3)");
@@ -127,10 +122,7 @@ mod tests {
     // todo: move to higher module test
     #[test]
     fn possible_to_make_a_closure() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::function::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test (function (lambda (a) (function (lambda () a)))))").unwrap();
         interpreter.execute("(define-function test2 (test 2))").unwrap();
@@ -140,8 +132,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(define-function)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -152,8 +143,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_an_incorrect_form_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(define-function 3 2)");
         assertion::assert_invalid_argument_error(&result);

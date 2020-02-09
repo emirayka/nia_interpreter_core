@@ -127,11 +127,7 @@ mod tests {
 
     #[test]
     fn returns_result_of_try_clause_if_it_was_ok() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             Value::Integer(1),
@@ -145,11 +141,7 @@ mod tests {
 
     #[test]
     fn able_to_catch_error() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             Value::Integer(1),
@@ -164,11 +156,7 @@ mod tests {
 
     #[test]
     fn if_error_cannot_be_catch_then_it_returns_it() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             "not-a-cute-error",
@@ -182,11 +170,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_catch_clause_thrown_an_error() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             "not-a-cute-error",
@@ -200,11 +184,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_not_enough_arguments_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(try 1)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -212,11 +192,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_catch_clause_has_invalid_count_of_items() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
-        super::super::throw::infect(&mut interpreter).unwrap();
-        super::super::progn::infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(try 1 ())");
         assertion::assert_invalid_argument_error(&result);

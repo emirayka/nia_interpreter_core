@@ -126,7 +126,7 @@ mod tests {
 
         #[test]
         fn returns_the_result_of_execution_of_the_last_form() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
             let name = interpreter.intern_symbol("test");
 
             interpreter.define_variable(
@@ -153,7 +153,7 @@ mod tests {
 
         #[test]
         fn returns_err_when_execution_failed() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
 
             let forms = vec!(
                 Value::Integer(1),
@@ -180,7 +180,7 @@ mod tests {
 
         #[test]
         fn returns_empty_vector_when_nil_was_provided() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
             let nil = interpreter.intern_nil();
 
             let result = read_let_definitions(
@@ -195,7 +195,7 @@ mod tests {
 
         #[test]
         fn returns_vector_of_cons_cells_when_a_list_was_provided() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
 
             // s-expr representation: ((1 2) (1 2))
             let value = Value::Cons(Cons::new(
@@ -245,7 +245,7 @@ mod tests {
 
         #[test]
         fn returns_err_when_neither_a_cons_nor_symbol_were_provided() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
 
             // s-expr representation: ((1 2) (1 2))
             let value = Value::Cons(Cons::new(
@@ -278,7 +278,7 @@ mod tests {
 
         #[test]
         fn returns_vector_of_symbol_names() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
             let values = vec!(
                 interpreter.intern("a"),
                 interpreter.intern("b"),
@@ -300,7 +300,7 @@ mod tests {
 
         #[test]
         fn returns_err_when_not_a_symbol_were_provided() {
-            let mut interpreter = Interpreter::raw();
+            let mut interpreter = Interpreter::new();
 
             let incorrect_items = vec!(
                 Value::Integer(1),

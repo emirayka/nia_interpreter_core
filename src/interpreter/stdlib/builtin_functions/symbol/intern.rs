@@ -38,9 +38,7 @@ mod tests {
 
     #[test]
     fn returns_interned_symbol() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             interpreter.intern("test"),
@@ -54,9 +52,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(intern)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -70,10 +66,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "1",

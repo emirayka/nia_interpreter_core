@@ -9,6 +9,8 @@ mod flookup;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     intern::infect(interpreter)?;
     gensym::infect(interpreter)?;
+    lookup::infect(interpreter)?;
+    flookup::infect(interpreter)?;
 
     Ok(())
 }

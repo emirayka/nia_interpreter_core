@@ -39,18 +39,14 @@ mod tests {
 
     #[test]
     fn returns_the_integer_itself_if_it_was_passed() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(round 3)").unwrap());
     }
 
     #[test]
     fn computes_a_correct_round_of_a_float_correctly() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(0), interpreter.execute("(round 0.2)").unwrap());
         assert_eq!(Value::Integer(1), interpreter.execute("(round 0.5)").unwrap());
@@ -59,9 +55,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(round)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -75,10 +69,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "#t",

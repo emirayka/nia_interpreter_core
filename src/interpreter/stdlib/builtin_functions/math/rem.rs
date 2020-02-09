@@ -69,18 +69,14 @@ mod tests {
 
     #[test]
     fn returns_correct_integer_division() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(2), interpreter.execute("(% 5 3)").unwrap());
     }
 
     #[test]
     fn returns_correct_float_division() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Float(2.0), interpreter.execute("(% 7 5.0)").unwrap());
         assert_eq!(Value::Float(2.0), interpreter.execute("(% 7.0 5)").unwrap());
@@ -89,9 +85,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(%)");
         assertion::assert_invalid_argument_count_error(&result);
@@ -105,10 +99,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
-        let mut interpreter = Interpreter::raw();
-
-        crate::interpreter::stdlib::special_forms::infect(&mut interpreter).unwrap();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_values = vec!(
             "#t",
@@ -133,9 +124,7 @@ mod tests {
 
     #[test]
     fn returns_zero_division_error_when_attempts_to_divide_on_zero() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
             "(% 1 0)",

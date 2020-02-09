@@ -168,9 +168,7 @@ mod tests {
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(Value::Integer(3), interpreter.execute("(flet () 3)").unwrap());
         assert_eq!(Value::Integer(2), interpreter.execute("(flet () 3 2)").unwrap());
@@ -179,9 +177,7 @@ mod tests {
 
     #[test]
     fn able_to_execute_defined_functions() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             Value::Integer(1),
@@ -196,9 +192,7 @@ mod tests {
 
     #[test]
     fn able_to_define_several_functions() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             Value::Integer(1),
@@ -224,9 +218,7 @@ mod tests {
 
     #[test]
     fn possible_to_nest_let_invocations() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assert_eq!(
             Value::Integer(1),
@@ -246,9 +238,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
             "1",
@@ -271,9 +261,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
             "1",
@@ -297,9 +285,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_first_part_of_function_definition_is_not_a_symbol() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
             "1",
@@ -322,9 +308,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_arguments_is_not_a_list() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
             "1",
@@ -347,9 +331,7 @@ mod tests {
 
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_nil() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(flet ((nil () 2)) nil)");
 
@@ -358,9 +340,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(flet ((sym)) nil)");
 
@@ -369,9 +349,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_attempts_to_use_previously_defined_functions() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(flet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))");
 
@@ -380,9 +358,7 @@ mod tests {
 
     #[test]
     fn returns_err_when_attempts_to_redefine_already_defined_function() {
-        let mut interpreter = Interpreter::raw();
-
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(flet ((sym-1 () 1) (sym-1 () 2)) (sym-1))");
 

@@ -36,8 +36,7 @@ mod tests {
 
     #[test]
     fn quote_works_correctly_when_used_quote_special_form() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let cons = Value::Cons(Cons::new(
             Value::Integer(1),
@@ -61,8 +60,7 @@ mod tests {
 
     #[test]
     fn quote_works_correctly_when_used_quote_sign() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let cons = Value::Cons(Cons::new(
             Value::Integer(1),
@@ -86,8 +84,7 @@ mod tests {
 
     #[test]
     fn quote_works_correctly_for_quote_invocation() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         let cons = Value::Cons(Cons::new(
             interpreter.intern("quote"),
@@ -107,8 +104,7 @@ mod tests {
 
     #[test]
     fn quote_returns_err_when_improper_count_of_arguments_were_provided() {
-        let mut interpreter = Interpreter::raw();
-        infect(&mut interpreter).unwrap();
+        let mut interpreter = Interpreter::new();
 
         assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote)"));
         assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote 1 2)"));

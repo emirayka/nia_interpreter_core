@@ -5,6 +5,7 @@ use crate::parser::prefix_element::{PrefixElement, Prefix};
 use crate::parser::Element;
 use crate::interpreter::interpreter::Interpreter;
 use crate::parser::object_element::ObjectElement;
+use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
 
 fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressionElement) -> Value {
     let values = sexp_element.get_values();
@@ -51,16 +52,58 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
 
 fn preread_object(interpreter: &mut Interpreter, object_element: &ObjectElement) -> Value {
     let values = object_element.get_values();
-    let object_id = interpreter.make_object();
 
-    for (keyword_element, element) in values {
-        let symbol = interpreter.intern_symbol(keyword_element.get_value());
+    let mut last_cons = interpreter.intern_nil();
+
+    for (keyword_element, element) in values.iter().rev() {
+        let keyword = Value::Keyword(String::from(keyword_element.get_value()));
         let value = preread_element(interpreter, element);
 
-        interpreter.set_object_item(object_id, &symbol, value);
+        last_cons = Value::Cons(Cons::new(
+            keyword,
+            Value::Cons(Cons::new(
+                value,
+                last_cons
+            ))
+        ));
     }
 
-    Value::Object(object_id)
+    Value::Cons(Cons::new(
+        Value::Cons(Cons::new(
+            Value::Keyword(String::from("make")),
+            Value::Cons(Cons::new(
+                interpreter.intern("object"),
+                interpreter.intern_nil()
+            ))
+        )),
+        last_cons
+    ))
+}
+
+fn preread_delimited_symbols_element(
+    interpreter: &mut Interpreter,
+    delimited_symbols_element: &DelimitedSymbolsElement
+) -> Value {
+    let values = delimited_symbols_element.get_symbols();
+    let object_id = interpreter.make_object();
+
+    let object_symbol_name = values[0].get_value();
+    let mut previous_cons = interpreter.intern(object_symbol_name);
+
+    for symbol_element in &values[1..] {
+        let symbol_name = symbol_element.get_value();
+
+        let current_cons = Value::Cons(Cons::new(
+            Value::Keyword(String::from(symbol_name)),
+            Value::Cons(Cons::new(
+                previous_cons,
+                interpreter.intern_nil()
+            ))
+        ));
+        previous_cons = current_cons;
+    }
+
+    previous_cons
 }
 
 fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
@@ -130,15 +173,26 @@ fn preread_prefix_element(interpreter: &mut Interpreter, prefix_element: &Prefix
 
 pub fn preread_element(interpreter: &mut Interpreter, element: &Element) -> Value {
     match element {
-        Element::Integer(integer_element) => Value::Integer(integer_element.get_value()),
-        Element::Float(float_element) => Value::Float(float_element.get_value()),
-        Element::Boolean(boolean_element) => Value::Boolean(boolean_element.get_value().clone()),
-        Element::String(string_element) => Value::String(string_element.get_value().clone()),
-        Element::Symbol(symbol_element) => interpreter.intern(symbol_element.get_value()),
-        Element::Keyword(keyword_element) => Value::Keyword(keyword_element.get_value().clone()),
-        Element::SExpression(sexp_element) => preread_s_expression(interpreter, sexp_element),
-        Element::Object(object_element) => preread_object(interpreter, object_element),
-        Element::Prefix(prefix_element) => preread_prefix_element(interpreter, prefix_element),
+        Element::Integer(integer_element) =>
+            Value::Integer(integer_element.get_value()),
+        Element::Float(float_element) =>
+            Value::Float(float_element.get_value()),
+        Element::Boolean(boolean_element) =>
+            Value::Boolean(boolean_element.get_value().clone()),
+        Element::String(string_element) =>
+            Value::String(string_element.get_value().clone()),
+        Element::Symbol(symbol_element) =>
+            interpreter.intern(symbol_element.get_value()),
+        Element::Keyword(keyword_element) =>
+            Value::Keyword(keyword_element.get_value().clone()),
+        Element::SExpression(sexp_element) =>
+            preread_s_expression(interpreter, sexp_element),
+        Element::Object(object_element) =>
+            preread_object(interpreter, object_element),
+        Element::DelimitedSymbols(delimited_symbols_element) =>
+            preread_delimited_symbols_element(interpreter, delimited_symbols_element),
+        Element::Prefix(prefix_element) =>
+            preread_prefix_element(interpreter, prefix_element),
     }
 }
 
@@ -179,7 +233,7 @@ mod tests {
 
 
     #[test]
-    pub fn prereads_integer_elements_correctly() {
+    fn prereads_integer_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Integer(1)
@@ -197,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_float_elements_correctly() {
+    fn prereads_float_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Float(1.2)
@@ -215,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_boolean_elements_correctly() {
+    fn prereads_boolean_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Boolean(true)
@@ -233,7 +287,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_string_elements_correctly() {
+    fn prereads_string_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::String("cute string".to_string())
@@ -251,7 +305,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_symbol_elements_correctly() {
+    fn prereads_symbol_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Symbol(new_symbol("cutesymbol"))
@@ -269,7 +323,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_keyword_elements_correctly() {
+    fn prereads_keyword_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Keyword("cutekeyword".to_string())
@@ -287,7 +341,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_s_expression_elements_correctly() {
+    fn prereads_s_expression_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Symbol(new_symbol("nil"))
@@ -325,55 +379,131 @@ mod tests {
         );
     }
 
-    macro_rules! assert_object_has_items {
-        ($expected:expr, $code:expr) => {
-            let mut interpreter = Interpreter::raw();
+    #[cfg(test)]
+    mod object {
+        use super::*;
 
-            if let Ok((_, code)) = parse_code($code) {
-                let result = &preread_elements(&mut interpreter, code.get_elements())[0];
-                let expected: Vec<(&str, Value)> = $expected;
+        macro_rules! assert_object_has_items {
+            ($expected:expr, $code:expr) => {
+                let mut interpreter = Interpreter::new();
 
-                assert!(
-                    match &result {
-                        Value::Object(_) => true,
-                        _ => false
+                if let Ok((_, code)) = parse_code($code) {
+                    let result = &preread_elements(&mut interpreter, code.get_elements())[0];
+                    let result = interpreter.evaluate_value(
+                        interpreter.get_root_environment(),
+                        &result
+                    ).unwrap();
+                    let expected: Vec<(&str, Value)> = $expected;
+
+                    match result {
+                        Value::Object(object_id) => {
+                            for (name, value) in expected {
+                                let symbol = interpreter.intern_symbol(name);
+
+                                assert_eq!(&value, interpreter.get_object_item(
+                                    object_id,
+                                    &symbol
+                                ).unwrap());
+                            }
+                        },
+                        _ => unreachable!()
                     }
-                );
 
-                match result {
-                    Value::Object(object_id) => {
-                        for (name, value) in expected {
-                            let symbol = interpreter.intern_symbol(name);
-
-                            assert_eq!(&value, interpreter.get_object_item(
-                                *object_id,
-                                &symbol
-                            ).unwrap());
-                        }
-                    },
-                    _ => unreachable!()
                 }
 
             }
+        }
 
+        #[test]
+        fn prereads_elements_correctly() {
+            assert_object_has_items!(vec!(), "{}");
+            assert_object_has_items!(
+                vec!(
+                    ("a", Value::Integer(1)),
+                ),
+                "{:a 1}"
+            );
+            assert_object_has_items!(
+                vec!(
+                    ("a", Value::Integer(1)),
+                    ("b", Value::Integer(2))
+                ),
+                "{:a 1 :b 2}"
+            );
+        }
+
+        #[test]
+        fn evaluates_items_correctly() {
+            assert_object_has_items!(
+                vec!(
+                    ("a", Value::Integer(1)),
+                    ("b", Value::Float(1.1)),
+                    ("c", Value::Boolean(true)),
+                    ("d", Value::Boolean(false)),
+                    ("e", Value::Symbol(new_symbol("symbol"))),
+                    ("f", Value::String(String::from("string"))),
+                    ("g", Value::Keyword(String::from("keyword"))),
+                ),
+                "{:a 1 :b 1.1 :c #t :d #f :e 'symbol :f \"string\" :g :keyword}"
+            );
         }
     }
 
+
     #[test]
-    pub fn prereads_object_elements_correctly() {
-        assert_object_has_items!(vec!(), "{}");
-        assert_object_has_items!(
+    fn prereads_delimited_symbols_element_correctly() {
+        assert_prereading_result_equal!(
             vec!(
-                ("a", Value::Integer(1)),
+                Value::Cons(Cons::new(
+                    Value::Keyword(String::from("value")),
+                    Value::Cons(Cons::new(
+                        Value::Symbol(new_symbol("object")),
+                        Value::Symbol(new_symbol("nil"))
+                    ))
+                ))
             ),
-            "{:a 1}"
+            "object:value"
         );
-        assert_object_has_items!(
+
+        assert_prereading_result_equal!(
             vec!(
-                ("a", Value::Integer(1)),
-                ("b", Value::Integer(2))
+                Value::Cons(Cons::new(
+                    Value::Keyword(String::from("value2")),
+                    Value::Cons(Cons::new(
+                        Value::Cons(Cons::new(
+                            Value::Keyword(String::from("value1")),
+                            Value::Cons(Cons::new(
+                                Value::Symbol(new_symbol("object")),
+                                Value::Symbol(new_symbol("nil"))
+                            ))
+                        )),
+                        Value::Symbol(new_symbol("nil"))
+                    ))
+                ))
             ),
-            "{:a 1 :b 2}"
+            "object:value1:value2"
+        );
+
+        assert_prereading_result_equal!(
+            vec!(
+                Value::Cons(Cons::new(
+                    Value::Cons(Cons::new(
+                        Value::Keyword(String::from("value2")),
+                        Value::Cons(Cons::new(
+                            Value::Cons(Cons::new(
+                                Value::Keyword(String::from("value1")),
+                                Value::Cons(Cons::new(
+                                    Value::Symbol(new_symbol("object")),
+                                    Value::Symbol(new_symbol("nil"))
+                                ))
+                            )),
+                            Value::Symbol(new_symbol("nil"))
+                        ))
+                    )),
+                    Value::Symbol(new_symbol("nil"))
+                )),
+            ),
+            "(object:value1:value2)"
         );
     }
 
@@ -417,7 +547,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_quoted_values_correctly() {
+    fn prereads_quoted_values_correctly() {
         assert_prefix_values_works!("'", "quote");
         assert_prefix_values_works!("`", "`");
         assert_prefix_values_works!(",", ",");
@@ -425,7 +555,7 @@ mod tests {
     }
 
     #[test]
-    pub fn prereads_complex_s_expression_correctly() {
+    fn prereads_complex_s_expression_correctly() {
         assert_prereading_result_equal!(
             vec!(
                 Value::Cons(Cons::new(
