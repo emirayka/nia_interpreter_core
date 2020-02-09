@@ -159,12 +159,20 @@ impl Interpreter {
         self.object_arena.make_child(prototype_id)
     }
 
-    pub fn get_object_item(&mut self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
+    pub fn get_object_item(&self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
         self.object_arena.get_item(object_id, key)
     }
 
     pub fn set_object_item(&mut self, object_id: ObjectId, key: &Symbol, value: Value) {
         self.object_arena.set_item(object_id, key, value);
+    }
+
+    pub fn get_object_proto(&self, object_id: ObjectId) -> Option<ObjectId> {
+        self.object_arena.get_object(object_id).get_prototype()
+    }
+
+    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) {
+        self.object_arena.get_object_mut(object_id).set_prototype(proto_id)
     }
 
     pub fn get_root_environment(&self) -> EnvironmentId {

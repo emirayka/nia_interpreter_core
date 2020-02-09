@@ -45,6 +45,10 @@ impl Object {
         self.prototype
     }
 
+    pub fn set_prototype(&mut self, object_id: ObjectId) {
+        self.prototype = Some(object_id)
+    }
+
     pub fn has_item(&self, symbol: &Symbol) -> bool {
         self.items.contains_key(symbol)
     }

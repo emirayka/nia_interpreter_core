@@ -52,6 +52,20 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         object_set::object_set
     )?;
 
+    infect_to_object(
+        interpreter,
+        object_object_id,
+        "get-proto",
+        object_get_proto::object_get_proto
+    )?;
+
+    infect_to_object(
+        interpreter,
+        object_object_id,
+        "set-proto!",
+        object_set_proto::object_set_proto
+    )?;
+
     let name = interpreter.intern_symbol("object");
 
     interpreter.define_variable(
