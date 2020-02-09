@@ -5,7 +5,11 @@ use crate::interpreter::function::Function;
 use crate::interpreter::value::Value;
 use crate::interpreter::object::ObjectId;
 
-mod make_object;
+mod object_make;
+mod object_get;
+mod object_set;
+mod object_get_proto;
+mod object_set_proto;
 
 fn infect_to_object(
     interpreter: &mut Interpreter,
@@ -31,7 +35,21 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter,
         object_object_id,
         "make",
-        make_object::make_object
+        object_make::object_make
+    )?;
+
+    infect_to_object(
+        interpreter,
+        object_object_id,
+        "get",
+        object_get::object_get
+    )?;
+
+    infect_to_object(
+        interpreter,
+        object_object_id,
+        "set!",
+        object_set::object_set
     )?;
 
     let name = interpreter.intern_symbol("object");
