@@ -1,7 +1,6 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
 pub fn make_object(
@@ -56,7 +55,7 @@ mod tests {
                 object_id
             } else {
                 panic!("");
-            }
+            };
 
             for (key, value) in expected {
                 let symbol = interpreter.intern_symbol(key);

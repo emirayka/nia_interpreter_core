@@ -85,7 +85,6 @@ fn preread_delimited_symbols_element(
     delimited_symbols_element: &DelimitedSymbolsElement
 ) -> Value {
     let values = delimited_symbols_element.get_symbols();
-    let object_id = interpreter.make_object();
 
     let object_symbol_name = values[0].get_value();
     let mut previous_cons = interpreter.intern(object_symbol_name);

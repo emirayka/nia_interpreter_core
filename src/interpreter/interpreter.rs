@@ -546,30 +546,6 @@ mod tests {
         }
     }
 
-    macro_rules! define_sum_function {
-        ($interpreter_id:ident) => {
-            let name = $interpreter_id.intern_symbol("+");
-            $interpreter_id.environment_arena.define_function(
-                $interpreter_id.root_environment,
-                &name,
-                Value::Function(Function::Builtin(BuiltinFunction::new(
-                    |interpreter: &mut Interpreter, _environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
-                        let first = &values[0];
-                        let second= &values[1];
-
-                        let value = match (first, second) {
-                            (Value::Integer(int1), Value::Integer(int2)) => Value::Integer(int1 + int2),
-                            (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 + float2),
-                            _ => interpreter.intern_nil()
-                        };
-
-                        Ok(value)
-                    }
-                )))
-            ).unwrap();
-        }
-    }
-
     #[test]
     pub fn executes_integer_correctly() {
         assert_execution_result_eq!(Value::Integer(1), "1");

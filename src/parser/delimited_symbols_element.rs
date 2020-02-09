@@ -1,7 +1,4 @@
 use nom::{
-    character::complete::{
-        space0
-    },
     bytes::complete::tag,
     combinator::{
         map_res

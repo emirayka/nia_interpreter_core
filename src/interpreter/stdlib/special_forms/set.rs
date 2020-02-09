@@ -68,7 +68,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod tests {
     use super::*;
     use crate::interpreter::error::assertion;
-    use crate::interpreter::stdlib::special_forms;
 
     #[test]
     fn returns_value_that_was_set_to_variable() {
