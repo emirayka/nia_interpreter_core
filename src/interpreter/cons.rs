@@ -1,5 +1,6 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
+use crate::interpreter::interpreter::Interpreter;
 
 #[derive(Debug, Clone)]
 pub struct Cons {
@@ -89,6 +90,19 @@ impl Cons {
 
         vector
     }
+
+    pub fn from_vec(interpreter: &mut Interpreter, vector: Vec<Value>) -> Value {
+        let mut last_cons = interpreter.intern_nil();
+
+        for value in vector.into_iter().rev() {
+            last_cons = Value::Cons(Cons::new(
+                value,
+                last_cons
+            ))
+        }
+
+        last_cons
+    }
 }
 
 impl PartialEq for Cons {
@@ -107,6 +121,10 @@ mod tests {
         let mut arena = SymbolArena::new();
 
         arena.intern(symbol_name)
+    }
+
+    fn nil() -> Value {
+        Value::Symbol(new_symbol("nil"))
     }
 
     #[allow(non_snake_case)]
@@ -189,6 +207,41 @@ mod tests {
                 let result = incorrect_cons.to_vec();
 
                 assert_eq!(&incorrect_cdr, result.last().unwrap());
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod from_vec {
+        use super::*;
+
+        macro_rules! assert_result_eq {
+            ($expected:expr, $vector:expr) => {
+                let mut interpreter = Interpreter::new();
+
+                assert_eq!($expected, Cons::from_vec(&mut interpreter, $vector));
+            }
+        }
+
+        #[test]
+        fn returns_nil_for_an_empty_list() {
+            assert_result_eq!(nil(), vec!());
+        }
+
+        #[test]
+        fn returns_list_with_an_value() {
+            let values = vec!(
+                Value::Integer(1),
+                Value::Float(1.1),
+                Value::Boolean(true),
+                Value::Boolean(false),
+            );
+
+            for value in values {
+                assert_result_eq!(
+                    Value::Cons(Cons::new(value.clone(), nil())),
+                    vec!(value)
+                );
             }
         }
     }

@@ -65,3 +65,12 @@ pub fn assert_is_object(param: Value) {
         }
     );
 }
+
+pub fn assert_is_nil(param: Value) {
+    assert!(
+        match param {
+            Value::Symbol(symbol) => symbol.is_nil(),
+            _ => false
+        }
+    );
+}
