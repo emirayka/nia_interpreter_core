@@ -3,15 +3,16 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::cons::cons_arena::ConsId;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    cons: &Cons
+    cons_id: &ConsId
 ) -> Result<(), Error> {
-    let car = cons.get_car();
+    let car = interpreter.get_car(cons_id).clone();
+
     let name = match car {
         Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
             interpreter,
@@ -26,16 +27,16 @@ fn set_variable_via_cons(
         ))
     };
 
-    let cadr = cons.get_cadr();
+    let cadr = interpreter.get_cadr(cons_id);
     let value = match cadr {
-        Ok(value) => value,
+        Ok(value) => value.clone(),
         Err(_) => return Err(Error::invalid_argument(
             interpreter,
             "The definitions of the special form `let' must have exactly two arguments."
         ))
     };
 
-    let value = match interpreter.execute_value(definition_value_execution_environment, value) {
+    let value = match interpreter.execute_value(definition_value_execution_environment, &value) {
         Ok(value) => value,
         Err(error) => return Err(Error::generic_execution_error_caused(
             interpreter,
@@ -44,7 +45,7 @@ fn set_variable_via_cons(
         ))
     };
 
-    match cons.get_cddr() {
+    match interpreter.get_cddr(cons_id) {
         Ok(Value::Symbol(symbol)) if symbol.is_nil() => {},
         _ => return Err(Error::invalid_argument(
             interpreter,
@@ -54,7 +55,7 @@ fn set_variable_via_cons(
 
     interpreter.define_variable(
         definition_setting_environment,
-        name,
+        &name,
         value
     )
 }
@@ -76,11 +77,11 @@ fn set_definition(
     definition: &Value
 ) -> Result<(), Error> {
     match definition {
-        Value::Cons(cons) => set_variable_via_cons(
+        Value::Cons(cons_id) => set_variable_via_cons(
             interpreter,
             definition_value_execution_environment,
             definition_setting_environment,
-            &cons
+            cons_id
         ),
         Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
             interpreter,
@@ -166,6 +167,9 @@ mod tests {
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
 
+        let symbol = interpreter.intern("symbol");
+        let nil = interpreter.intern_nil();
+
         let definitions = vec!(
             (Value::Integer(1), "1"),
             (Value::Float(1.1), "1.1"),
@@ -175,10 +179,7 @@ mod tests {
             (interpreter.intern("symbol"), "(quote symbol)"),
             (Value::String(String::from("string")), "\"string\""),
             (Value::Keyword(String::from("keyword")), ":keyword"),
-            (Value::Cons(
-                Cons::new(interpreter.intern("symbol"),
-                          interpreter.intern_nil())),
-             "'(symbol)"),
+            (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
         );
 
         for (value, code_representation) in definitions {

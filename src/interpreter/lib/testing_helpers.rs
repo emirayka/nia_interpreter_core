@@ -1,6 +1,5 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::Value::Integer;
 
 // i -> Integer
 // f -> Float
@@ -9,7 +8,7 @@ use crate::interpreter::value::Value::Integer;
 // y -> Symbol
 // k -> Keyword
 
-fn make_value_pairs_ifbsyk(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
+pub fn make_value_pairs_ifbsyk(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
     vec!(
         (String::from("1"), Value::Integer(1)),
         (String::from("1.1"), Value::Float(1.1)),

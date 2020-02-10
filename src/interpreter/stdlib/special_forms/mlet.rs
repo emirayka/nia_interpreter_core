@@ -4,15 +4,15 @@ use crate::interpreter::error::Error;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::cons::cons_arena::ConsId;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,
     macro_parent_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    cons: &Cons
+    cons_id: &ConsId
 ) -> Result<(), Error> {
-    let car = cons.get_car();
+    let car = interpreter.get_car(cons_id).clone();
     let name = match car {
         Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
             interpreter,
@@ -27,7 +27,7 @@ fn set_macro_via_cons(
         ))
     };
 
-    let cadr = cons.get_cadr();
+    let cadr = interpreter.get_cadr(cons_id);
     let arguments = match cadr {
         Ok(value) => value,
         Err(_) => return Err(Error::invalid_argument(
@@ -37,7 +37,7 @@ fn set_macro_via_cons(
     };
 
     let arguments = match arguments {
-        Value::Cons(cons) => cons.to_vec(),
+        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
         Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
@@ -55,8 +55,8 @@ fn set_macro_via_cons(
         ))
     };
 
-    let code = match cons.get_cddr() {
-        Ok(Value::Cons(cons)) => cons.to_vec(),
+    let code = match interpreter.get_cddr(cons_id) {
+        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(&cons_id),
         Ok(Value::Symbol(symbol)) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,
@@ -66,7 +66,7 @@ fn set_macro_via_cons(
 
     interpreter.define_function(
         macro_definition_environment,
-        name,
+        &name,
         Value::Function(Function::Macro(MacroFunction::new(
             macro_parent_environment,
             argument_names,

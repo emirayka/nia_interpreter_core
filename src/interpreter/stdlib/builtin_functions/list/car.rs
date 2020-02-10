@@ -18,7 +18,7 @@ pub fn car(
     let mut values = values;
 
     match values.remove(0) {
-        Value::Cons(cons) => Ok(cons.get_car().clone()),
+        Value::Cons(cons_id) => Ok(interpreter.get_car(&cons_id).clone()),
         _ => return Err(Error::invalid_argument(
             interpreter,
             ""

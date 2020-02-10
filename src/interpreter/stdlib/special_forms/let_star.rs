@@ -51,7 +51,6 @@ pub fn let_star(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::cons::cons::Cons;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -64,6 +63,14 @@ mod tests {
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
 
+        let symbol = interpreter.intern("symbol");
+        let nil = interpreter.intern_nil();
+
+        let cons = interpreter.make_cons_value(
+            symbol,
+            nil
+        );
+
         let definitions = vec!(
             (Value::Integer(1), "1"),
             (Value::Float(1.1), "1.1"),
@@ -73,10 +80,7 @@ mod tests {
             (interpreter.intern("symbol"), "(quote symbol)"),
             (Value::String(String::from("string")), "\"string\""),
             (Value::Keyword(String::from("keyword")), ":keyword"),
-            (Value::Cons(
-                Cons::new(interpreter.intern("symbol"),
-                          interpreter.intern_nil())),
-             "'(symbol)"),
+            (cons, "'(symbol)"),
         );
 
         for (value, code_representation) in definitions {

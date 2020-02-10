@@ -25,20 +25,21 @@ pub fn quote(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::cons::cons::Cons;
     use crate::interpreter::lib::assertion;
 
     #[test]
     fn quote_works_correctly_when_used_quote_special_form() {
         let mut interpreter = Interpreter::new();
+        let nil = interpreter.intern_nil();
 
-        let cons = Value::Cons(Cons::new(
+        let cdr = interpreter.make_cons_value(
+            Value::Integer(2),
+            nil
+        );
+        let cons = interpreter.make_cons_value(
             Value::Integer(1),
-            Value::Cons(Cons::new(
-                Value::Integer(2),
-                interpreter.intern_nil()
-            ))
-        ));
+            cdr
+        );
 
         assert_eq!(Value::Integer(1), interpreter.execute("(quote 1)").unwrap());
         assert_eq!(Value::Float(1.1), interpreter.execute("(quote 1.1)").unwrap());
@@ -56,13 +57,15 @@ mod tests {
     fn quote_works_correctly_when_used_quote_sign() {
         let mut interpreter = Interpreter::new();
 
-        let cons = Value::Cons(Cons::new(
+        let nil = interpreter.intern_nil();
+        let cdr = interpreter.make_cons_value(
+            Value::Integer(2),
+            nil
+        );
+        let cons = interpreter.make_cons_value(
             Value::Integer(1),
-            Value::Cons(Cons::new(
-                Value::Integer(2),
-                interpreter.intern_nil()
-            ))
-        ));
+            cdr
+        );
 
         assert_eq!(Value::Integer(1), interpreter.execute("'1").unwrap());
         assert_eq!(Value::Float(1.1), interpreter.execute("'1.1").unwrap());
@@ -80,13 +83,17 @@ mod tests {
     fn quote_works_correctly_for_quote_invocation() {
         let mut interpreter = Interpreter::new();
 
-        let cons = Value::Cons(Cons::new(
-            interpreter.intern("quote"),
-            Value::Cons(Cons::new(
-                interpreter.intern("cute-symbol"),
-                interpreter.intern_nil()
-            ))
-        ));
+        let quote = interpreter.intern("quote");
+        let cute_symbol = interpreter.intern("cute-symbol");
+        let nil = interpreter.intern_nil();
+        let cdr = interpreter.make_cons_value(
+            cute_symbol,
+            nil
+        );
+        let cons = interpreter.make_cons_value(
+            quote,
+            cdr
+        );
 
         assert_eq!(cons, interpreter.execute("(quote (quote cute-symbol))").unwrap());
         assert_eq!(cons, interpreter.execute("(quote 'cute-symbol)").unwrap());

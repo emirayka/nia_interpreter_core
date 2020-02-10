@@ -2,28 +2,28 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::cons::cons_arena::ConsId;
 
 fn execute_part(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    part: &Cons
+    part_cons_id: &ConsId
 ) -> Result<Option<Value>, Error> {
-    let part_predicate = part.get_car();
-    let part_action = match part.get_cdr() {
-        Value::Cons(cons) => cons.get_car(),
+    let part_predicate = interpreter.get_car(part_cons_id).clone();
+    let part_action = match interpreter.get_cdr(part_cons_id) {
+        Value::Cons(cons_id) => interpreter.get_car(cons_id).clone(),
         _ => return Err(Error::invalid_argument(
             interpreter,
             "Invalid action part."
         ))
     };
 
-    let predicate_result = interpreter.execute_value(environment, part_predicate);
+    let predicate_result = interpreter.execute_value(environment, &part_predicate);
 
     match predicate_result {
         Ok(value) => match value {
             Value::Boolean(true) => {
-                let action_result = interpreter.execute_value(environment, part_action);
+                let action_result = interpreter.execute_value(environment, &part_action);
 
                 match action_result {
                     Ok(result) => Ok(Some(result)),

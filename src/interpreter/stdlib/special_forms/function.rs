@@ -62,7 +62,7 @@ pub fn function(
     }
 
     let mut values = match values.remove(0) {
-        Value::Cons(cons) => cons.to_vec(),
+        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
         _ => return Err(Error::invalid_argument(
             interpreter,
             ERROR_MESSAGE_INCORRECT_ARGUMENT
@@ -78,7 +78,7 @@ pub fn function(
 
     let lambda_or_macro_symbol = values.remove(0);
     let arguments = match values.remove(0) {
-        Value::Cons(cons) => cons.to_vec(),
+        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
         Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
         _ => return Err(Error::invalid_argument(
             interpreter,

@@ -3,6 +3,8 @@ pub mod interpreted_function;
 pub mod macro_function;
 pub mod special_form_function;
 
+pub mod function_arena;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Function {
     Builtin(builtin_function::BuiltinFunction),

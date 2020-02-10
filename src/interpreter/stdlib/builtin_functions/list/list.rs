@@ -2,16 +2,13 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons::Cons;
 
 pub fn list(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    let mut values = values;
-
-    Ok(Cons::from_vec(interpreter, values))
+    Ok(interpreter.cons_from_vec(values))
 }
 
 #[cfg(test)]
@@ -36,10 +33,12 @@ mod tests {
     fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
         for_value_pairs_evaluated_ifbsyk(
             |interpreter, string, value| {
-                let expected = Value::Cons(Cons::new(
+                let nil = interpreter.intern_nil();
+
+                let expected = interpreter.make_cons_value(
                     value,
-                    interpreter.intern_nil()
-                ));
+                    nil
+                );
                 let result = interpreter.execute(&format!("(list {})", string)).unwrap();
 
                 assert_eq!(expected, result);
@@ -54,13 +53,16 @@ mod tests {
                 let code = &format!("(list {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();
 
-                let expected = Value::Cons(Cons::new(
+                let nil = interpreter.intern_nil();
+                let expected = interpreter.make_cons_value(
+                    val2,
+                    nil
+                );
+
+                let expected = interpreter.make_cons_value(
                     val1,
-                    Value::Cons(Cons::new(
-                        val2,
-                        interpreter.intern_nil()
-                    ))
-                ));
+                    expected
+                );
 
                 assert_eq!(expected, result);
             }

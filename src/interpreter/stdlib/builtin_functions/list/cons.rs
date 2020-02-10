@@ -2,7 +2,6 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons::Cons;
 
 pub fn cons(
     interpreter: &mut Interpreter,
@@ -18,7 +17,10 @@ pub fn cons(
 
     let mut values = values;
 
-    Ok(Value::Cons(Cons::new(values.remove(0), values.remove(0))))
+    Ok(interpreter.make_cons_value(
+        values.remove(0),
+        values.remove(0)
+    ))
 }
 
 #[cfg(test)]
@@ -36,10 +38,10 @@ mod tests {
                 let code = &format!("(cons {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();
 
-                let expected = Value::Cons(Cons::new(
+                let expected = interpreter.make_cons_value(
                     val1,
                     val2
-                ));
+                );
 
                 assert_eq!(expected, result);
             }

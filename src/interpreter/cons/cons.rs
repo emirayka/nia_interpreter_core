@@ -1,107 +1,43 @@
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 
 #[derive(Debug, Clone)]
 pub struct Cons {
-    car: Box<Value>,
-    cdr: Box<Value>
+    car: Value,
+    cdr: Value
 }
 
 impl Cons {
     pub fn new(car: Value, cdr: Value) -> Cons {
         Cons {
-            car: Box::new(car),
-            cdr: Box::new(cdr)
+            car,
+            cdr
         }
     }
 }
 
 impl Cons {
     pub fn get_car(&self) -> &Value {
-        self.car.as_ref()
+        &self.car
     }
 
     pub fn get_cdr(&self) -> &Value {
-        self.cdr.as_ref()
+        &self.cdr
     }
 
     pub fn get_car_mut(&mut self) -> &mut Value {
-        self.car.as_mut()
+        &mut self.car
     }
 
     pub fn get_cdr_mut(&mut self) -> &mut Value {
-        self.cdr.as_mut()
+        &mut self.cdr
     }
 
     pub fn set_car(&mut self, new_car: Value) {
-        self.car = Box::new(new_car);
+        self.car = new_car;
     }
 
     pub fn set_cdr(&mut self, new_cdr: Value) {
-        self.cdr = Box::new(new_cdr);
-    }
-}
-
-impl Cons {
-    pub fn get_cadr(&self) -> Result<&Value, Error> {
-        let cdr = self.get_cdr();
-
-        match cdr {
-            Value::Cons(cons) => Ok(cons.get_car()),
-            _ => Err(Error::empty())
-        }
-    }
-
-    pub fn get_cddr(&self) -> Result<&Value, Error> {
-        let cdr = self.get_cdr();
-
-        match cdr {
-            Value::Cons(cons) => Ok(cons.get_cdr()),
-            _ => Err(Error::empty())
-        }
-    }
-}
-
-impl Cons {
-    pub fn to_vec(&self) -> Vec<Value> {
-        let mut vector = Vec::new();
-        let mut current_cdr = self;
-
-        loop {
-            vector.push(current_cdr.get_car().clone());
-
-            current_cdr = match current_cdr.get_cdr() {
-                Value::Cons(cons) => cons,
-                Value::Symbol(symbol) => {
-                    if !symbol.is_nil() {
-                        vector.push(Value::Symbol(symbol.clone()));
-                    }
-
-                    break;
-                }
-                value => {
-                    vector.push(value.clone());
-
-                    break;
-                }
-            };
-        }
-
-        vector
-    }
-
-    pub fn from_vec(interpreter: &mut Interpreter, vector: Vec<Value>) -> Value {
-        let mut last_cons = interpreter.intern_nil();
-
-        for value in vector.into_iter().rev() {
-            last_cons = Value::Cons(Cons::new(
-                value,
-                last_cons
-            ))
-        }
-
-        last_cons
+        self.cdr = new_cdr;
     }
 }
 
@@ -144,105 +80,6 @@ mod tests {
 
             assert_eq!(&Value::Integer(1), l.get_car());
             assert_eq!(&Value::Integer(2), l.get_cdr());
-        }
-    }
-
-
-    #[cfg(test)]
-    mod to_vec {
-        use super::*;
-
-        #[test]
-        fn test_returns_correct_vector_that_represents_values_in_cons_cells() {
-            let cons = Cons::new(
-                Value::Integer(1),
-                Value::Cons(Cons::new(
-                    Value::Integer(2),
-                    Value::Cons(Cons::new(
-                        Value::Integer(3),
-                        Value::Symbol(new_symbol("nil"))
-                    ))
-                ))
-            );
-
-            let result_vector = cons.to_vec();
-
-            assert_eq!(
-                vec!(
-                    Value::Integer(1),
-                    Value::Integer(2),
-                    Value::Integer(3)
-                ),
-                result_vector
-            );
-        }
-
-        #[test]
-        fn test_returns_vector_when_cdr_is_not_nil_nor_cons_cell() {
-            let construct_cons= |v: &Value| Cons::new(
-                Value::Integer(1),
-                Value::Cons(Cons::new(
-                    Value::Integer(2),
-                    Value::Cons(Cons::new(
-                        Value::Integer(3),
-                        v.clone()
-                    ))
-                ))
-            );
-
-            let incorrect_cudders = vec!(
-                Value::Integer(1),
-                Value::Float(1.1),
-                Value::Boolean(true),
-                Value::Boolean(false),
-                Value::Symbol(new_symbol("not-nil-symbol")),
-                Value::String(String::from("string")),
-                Value::Keyword(String::from("string")),
-                //Value::Function() todo: fix
-            );
-
-            for incorrect_cdr in incorrect_cudders {
-                let incorrect_cons = construct_cons(&incorrect_cdr);
-
-                let result = incorrect_cons.to_vec();
-
-                assert_eq!(&incorrect_cdr, result.last().unwrap());
-            }
-        }
-    }
-
-    #[cfg(test)]
-    mod from_vec {
-        use super::*;
-
-        macro_rules! assert_result_eq {
-            ($expected:expr, $vector:expr) => {
-                let mut interpreter = Interpreter::new();
-
-                assert_eq!($expected, Cons::from_vec(&mut interpreter, $vector));
-            }
-        }
-
-        #[test]
-        fn returns_nil_for_an_empty_list() {
-            assert_result_eq!(nil(), vec!());
-        }
-
-        #[test]
-        fn returns_list_with_an_value() {
-            let values = vec!(
-                Value::Integer(1),
-                Value::Float(1.1),
-                Value::Boolean(true),
-                Value::Boolean(false),
-            );
-
-            for value in values {
-                assert_result_eq!(
-                    Value::Cons(Cons::new(value.clone(), nil())),
-                    vec!(value)
-                );
-            }
         }
     }
 }

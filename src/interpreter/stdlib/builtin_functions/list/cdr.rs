@@ -18,7 +18,7 @@ pub fn cdr(
     let mut values = values;
 
     match values.remove(0) {
-        Value::Cons(cons) => Ok(cons.get_cdr().clone()),
+        Value::Cons(cons_id) => Ok(interpreter.get_cdr(&cons_id).clone()),
         _ => return Err(Error::invalid_argument(
             interpreter,
             ""

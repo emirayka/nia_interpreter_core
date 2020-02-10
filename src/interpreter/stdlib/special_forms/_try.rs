@@ -1,25 +1,25 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
-use crate::interpreter::cons::cons::Cons;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::cons::cons_arena::ConsId;
 
-fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<Cons>, Error> {
+fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<ConsId>, Error> {
     let mut catch_clauses = Vec::new();
 
     for clause in clauses {
         match clause {
-            Value::Cons(cons) => {
-                match cons.get_car() {
+            Value::Cons(cons_id) => {
+                match interpreter.get_car(&cons_id) {
                     Value::Symbol(symbol) if symbol.get_name() == "catch" => {
-                        catch_clauses.push(cons)
+                        catch_clauses.push(cons_id)
                     },
                     _ => return Err(Error::invalid_argument(
                         interpreter,
                         "The first item of clauses must be lists."
                     ))
                 }
-            },
+            }
             _ => return Err(Error::invalid_argument(
                 interpreter,
                 "The clauses of special form `try' must be lists."
@@ -28,7 +28,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
     }
 
     for clause in &catch_clauses {
-        match clause.get_cddr() {
+        match interpreter.get_cddr(clause) {
             Ok(_) => {},
             Err(_) => return Err(Error::invalid_argument(
                 interpreter,
@@ -70,7 +70,7 @@ pub fn _try(
             let mut found_clause = None;
 
             for catch_clause in catch_clauses {
-                let catch_symbol = match catch_clause.get_cadr() {
+                let catch_symbol = match interpreter.get_cadr(&catch_clause) {
                     Ok(Value::Symbol(symbol)) => symbol,
                     Ok(_) => return Err(Error::invalid_argument(
                         interpreter,
@@ -82,7 +82,7 @@ pub fn _try(
                     ))
                 };
 
-                if catch_symbol == &error.get_symbol() {
+                if catch_symbol == error.get_symbol() {
                     found_clause = Some(catch_clause);
                     break;
                 }
@@ -90,7 +90,7 @@ pub fn _try(
 
             match found_clause {
                 Some(catch_clause) => {
-                    let catch_code = match catch_clause.get_cddr() {
+                    let catch_code = match interpreter.get_cddr(&catch_clause) {
                         Ok(value) => value,
                         Err(_) => return Err(Error::invalid_argument(
                             interpreter,
@@ -100,11 +100,15 @@ pub fn _try(
 
                     match catch_code {
                         Value::Symbol(symbol) if symbol.is_nil() => Ok(interpreter.intern_nil()),
-                        Value::Cons(cons) => super::_lib::execute_forms(
-                            interpreter,
-                            environment,
-                            cons.to_vec()
-                        ),
+                        Value::Cons(cons_id) => {
+                            let values = interpreter.cons_to_vec(&cons_id);
+
+                            super::_lib::execute_forms(
+                                interpreter,
+                                environment,
+                                values
+                            )
+                        },
                         _ => unreachable!()
                     }
                 },

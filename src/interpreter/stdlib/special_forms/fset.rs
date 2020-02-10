@@ -103,8 +103,6 @@ mod tests {
     fn sets_to_parent_environment_when_function_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
-        let function_name_b = interpreter.intern_symbol("b");
-
         interpreter.execute("(define-function b (function (lambda () 0)))").unwrap();
         interpreter.execute("(flet ((a () 1)) (fset! b (function (lambda () 2))))").unwrap();
 

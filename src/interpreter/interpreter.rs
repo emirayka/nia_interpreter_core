@@ -13,12 +13,13 @@ use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
 use crate::interpreter::object::object_arena::ObjectArena;
 use crate::interpreter::object::object::ObjectId;
-use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::cons::cons_arena::{ConsArena, ConsId};
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
     symbol_arena: SymbolArena,
     object_arena: ObjectArena,
+    cons_arena: ConsArena,
     root_environment: EnvironmentId,
     call_stack: (),
 }
@@ -29,13 +30,14 @@ impl Interpreter {
         let root_env_id = environment_arena.alloc();
 
         let symbol_arena = SymbolArena::new();
-
         let object_arena = ObjectArena::new();
+        let cons_arena = ConsArena::new();
 
         Interpreter {
             environment_arena,
             symbol_arena,
             object_arena,
+            cons_arena,
             root_environment: root_env_id,
             call_stack: (),
         }
@@ -52,6 +54,77 @@ impl Interpreter {
 }
 
 impl Interpreter {
+    pub fn is_equal(&self, value1: &Value, value2: &Value) -> bool {
+        use crate::interpreter::value::Value::*;
+
+        match (value1, value2) {
+            (Integer(val1), Integer(val2)) => val1 == val2,
+            (Float(val1), Float(val2)) => val1 == val2,
+            (Boolean(val1), Boolean(val2)) => val1 == val2,
+            (Keyword(val1), Keyword(val2)) => val1 == val2,
+            (Symbol(val1), Symbol(val2)) => val1 == val2,
+            (String(val1), String(val2)) => val1 == val2,
+            (Cons(val1), Cons(val2)) => {
+                let car1 = self.get_car(val1);
+                let car2 = self.get_car(val2);
+
+                let cdr1 = self.get_cdr(val1);
+                let cdr2 = self.get_cdr(val2);
+
+                self.is_equal(car1, car2) &&
+                    self.is_equal(car1, car2)
+            },
+            (Object(val1), Object(val2)) => {
+                // todo: fix, make it checking objects and not references to them
+                val1 == val2
+            },
+            (Function(val1), Function(val2)) => val1 == val2,
+            _ => false
+        }
+    }
+
+    pub fn make_cons(&mut self, car: Value, cdr: Value) -> ConsId {
+        self.cons_arena.make_cons(car, cdr)
+    }
+
+    pub fn make_cons_value(&mut self, car: Value, cdr: Value) -> Value {
+        Value::Cons(self.cons_arena.make_cons(car, cdr))
+    }
+
+    pub fn get_car(&self, cons_id: &ConsId) -> &Value {
+        self.cons_arena.get_car(&cons_id)
+    }
+
+    pub fn get_cdr(&self, cons_id: &ConsId) -> &Value {
+        self.cons_arena.get_cdr(&cons_id)
+    }
+
+    pub fn get_cadr(&self, cons_id: &ConsId) -> Result<Value, Error> {
+        self.cons_arena.get_cadr(&cons_id)
+    }
+
+    pub fn get_cddr(&self, cons_id: &ConsId) -> Result<Value, Error> {
+        self.cons_arena.get_cddr(&cons_id)
+    }
+
+    pub fn set_car(&mut self, cons_id: &ConsId, value: Value) {
+        self.cons_arena.set_car(&cons_id, value)
+    }
+
+    pub fn set_cdr(&mut self, cons_id: &ConsId, value: Value) {
+        self.cons_arena.set_cdr(&cons_id, value)
+    }
+
+    pub fn cons_from_vec(&mut self, vector: Vec<Value>) -> Value {
+        let nil = self.intern_nil();
+
+        self.cons_arena.cons_from_vec(nil, vector)
+    }
+
+    pub fn cons_to_vec(&mut self, cons_id: &ConsId) -> Vec<Value> {
+        self.cons_arena.cons_to_vec(cons_id)
+    }
+
     pub fn has_variable(
         &mut self,
         environment: EnvironmentId,
@@ -205,9 +278,9 @@ impl Interpreter {
         }
     }
 
-    fn extract_arguments(&mut self, cons: &Cons) -> Result<Vec<Value>, Error> {
-        match cons.get_cdr() {
-            Value::Cons(cons) => Ok(cons.to_vec()),
+    fn extract_arguments(&mut self, cons_id: &ConsId) -> Result<Vec<Value>, Error> {
+        match self.cons_arena.get_cdr(cons_id).clone() {
+            Value::Cons(cons) => Ok(self.cons_to_vec(&cons)),
             Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
             Value::Symbol(_) => Err(Error::empty()),
             _ => Err(Error::empty())
@@ -358,13 +431,13 @@ impl Interpreter {
         &mut self,
         environment: EnvironmentId,
         function: Function,
-        cons: &Cons
+        cons_id: &ConsId
     ) -> Result<Value, Error> {
         // todo: add caused errors
         match &function {
             Function::Builtin(builtin_function) => {
                 // 2) evaluate arguments
-                let arguments = match self.extract_arguments(cons) {
+                let arguments = match self.extract_arguments(cons_id) {
                     Ok(arguments) => arguments,
                     Err(error) => return Err(error)
                 };
@@ -383,7 +456,7 @@ impl Interpreter {
             },
             Function::Interpreted(interpreted_function) => {
                 // 2) evaluate arguments
-                let arguments = match self.extract_arguments(cons) {
+                let arguments = match self.extract_arguments(cons_id) {
                     Ok(arguments) => arguments,
                     Err(error) => return Err(error)
                 };
@@ -397,7 +470,7 @@ impl Interpreter {
                 self.evaluate_interpreted_function_invocation(interpreted_function, evaluated_arguments)
             },
             Function::SpecialForm(special_form) => {
-                let arguments = match self.extract_arguments(cons) {
+                let arguments = match self.extract_arguments(cons_id) {
                     Ok(arguments) => arguments,
                     Err(error) => return Err(error)
                 };
@@ -409,7 +482,7 @@ impl Interpreter {
                 )
             },
             Function::Macro(macro_function) => {
-                let arguments = match self.extract_arguments(cons) {
+                let arguments = match self.extract_arguments(cons_id) {
                     Ok(arguments) => arguments,
                     Err(error) => return Err(error)
                 };
@@ -426,11 +499,11 @@ impl Interpreter {
         &mut self,
         environment: EnvironmentId,
         keyword_name: &String,
-        cons: &Cons
+        cons_id: &ConsId
     ) -> Result<Value, Error> {
         let name = self.intern_symbol(keyword_name);
 
-        let arguments = match self.extract_arguments(cons) {
+        let arguments = match self.extract_arguments(cons_id) {
             Ok(arguments) => arguments,
             Err(error) => return Err(error)
         };
@@ -458,14 +531,14 @@ impl Interpreter {
     fn evaluate_s_expression(
         &mut self,
         environment: EnvironmentId,
-        s_expression: &Cons
+        s_expression: &ConsId
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
-        let car_value = s_expression.get_car();
+        let car_value = self.cons_arena.get_car(s_expression).clone();
 
         match car_value {
             Value::Symbol(func_name) => {
-                let func = match self.lookup_function(environment, func_name) {
+                let func = match self.lookup_function(environment, &func_name) {
                     Ok(Value::Function(func)) => func.clone(),
                     Ok(_) => return Err(Error::empty()),
                     Err(error) => return Err(error)
@@ -482,8 +555,8 @@ impl Interpreter {
                 func.clone(),
                 s_expression
             ),
-            Value::Cons(cons) => {
-                let func = match self.evaluate_s_expression(environment, cons) {
+            Value::Cons(cons_id) => {
+                let func = match self.evaluate_s_expression(environment, &cons_id) {
                     Ok(Value::Function(func)) => func,
                     Ok(_) => return Err(Error::empty()),
                     Err(error) => return Err(error)
@@ -494,10 +567,10 @@ impl Interpreter {
                     func,
                     s_expression
                 )
-            },
+            }
             Value::Keyword(keyword_name) => self.evaluate_s_expression_keyword(
                 environment,
-                keyword_name,
+                &keyword_name,
                 s_expression
             ),
             _ => return Err(Error::empty())
@@ -551,6 +624,7 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::testing_helpers::make_value_pairs_ifbsyk;
 
     macro_rules! assert_execution_result_eq {
         ($expected:expr, $code:expr) => {
@@ -616,26 +690,18 @@ mod tests {
     fn executes_object_expression_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            (Value::Integer(1), "1"),
-            (Value::Float(1.1), "1.1"),
-            (Value::Boolean(false), "#f"),
-            (Value::Boolean(true), "#t"),
-            (interpreter.intern("symbol"), "'symbol"),
-            (Value::Keyword(String::from("keyword")), ":keyword"),
-            (Value::String(String::from("string")), "\"string\""),
-        );
+        let pairs = make_value_pairs_ifbsyk(&mut interpreter);
 
         let symbol = interpreter.intern_symbol("value");
 
         for pair in pairs {
-            let code = String::from("{:value ") + pair.1 + "}";
+            let code = String::from("{:value ") + &pair.0 + "}";
             let result = interpreter.execute(&code);
 
             match result {
                 Ok(Value::Object(object_id)) => {
                     assert_eq!(
-                        &pair.0,
+                        &pair.1,
                         interpreter.get_object_item(object_id, &symbol).unwrap()
                     );
                 }
@@ -648,23 +714,15 @@ mod tests {
     fn executes_delimited_symbols_expression_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            (Value::Integer(1), "1"),
-            (Value::Float(1.1), "1.1"),
-            (Value::Boolean(false), "#f"),
-            (Value::Boolean(true), "#t"),
-            (interpreter.intern("symbol"), "'symbol"),
-            (Value::Keyword(String::from("keyword")), ":keyword"),
-            (Value::String(String::from("string")), "\"string\""),
-        );
+        let pairs = make_value_pairs_ifbsyk(&mut interpreter);
 
         for pair in pairs {
-            let code = String::from("(let ((obj {:value ") + pair.1 + "})) obj:value)";
+            let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
             let result = interpreter.execute(&code);
 
             println!("{:?}", code);
 
-            assert_eq!(pair.0, result.unwrap());
+            assert_eq!(pair.1, result.unwrap());
         }
     }
 
@@ -689,17 +747,28 @@ mod tests {
     pub fn interpreted_function_works_correctly() {
         let mut interpreter = Interpreter::new();
 
+        let a = interpreter.intern("a");
+        let b = interpreter.intern("b");
+        let plus = interpreter.intern("+");
+        let nil = interpreter.intern_nil();
+
+        let value = Value::Cons(interpreter.make_cons(
+            b,
+            nil
+        ));
+
+        let value = Value::Cons(interpreter.make_cons(
+            a,
+            value
+        ));
+
+        let value = Value::Cons(interpreter.make_cons(
+            plus,
+            value
+        ));
+
         let code = vec!(
-            Value::Cons(Cons::new(
-                interpreter.intern("+"),
-                Value::Cons(Cons::new(
-                    interpreter.intern("a"),
-                    Value::Cons(Cons::new(
-                        interpreter.intern("b"),
-                        interpreter.intern("nil")
-                    ))
-                )),
-            ))
+            value
         );
 
         let name = interpreter.intern_symbol("test");
