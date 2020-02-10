@@ -3,9 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
-fn progn(
+pub fn progn(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -15,10 +13,6 @@ fn progn(
         environment,
         values
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "progn", progn)
 }
 
 #[cfg(test)]

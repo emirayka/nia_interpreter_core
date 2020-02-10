@@ -3,9 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
-fn throw(
+pub fn throw(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -51,10 +49,6 @@ fn throw(
         symbol,
         &message
     ))
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "throw", throw)
 }
 
 #[cfg(test)]

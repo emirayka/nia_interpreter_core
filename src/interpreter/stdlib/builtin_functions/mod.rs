@@ -1,8 +1,6 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
-mod _lib;
-
 mod math;
 mod symbol;
 mod object;

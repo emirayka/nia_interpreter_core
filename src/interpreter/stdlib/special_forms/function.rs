@@ -6,8 +6,6 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
  (lambda|macro ([arguments]) form1 form2 ...).";
@@ -49,7 +47,7 @@ fn construct_macro_function(
     )))
 }
 
-fn function(
+pub fn function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -117,10 +115,6 @@ fn function(
             "The first element of the first argument must be a symbol `lambda' or `macro'"
         ))
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "function", function)
 }
 
 #[cfg(test)]

@@ -3,7 +3,6 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::cons::Cons;
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
 fn execute_part(
     interpreter: &mut Interpreter,
@@ -45,7 +44,7 @@ fn execute_part(
     }
 }
 
-fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>) -> Result<Value, Error> {
+pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>) -> Result<Value, Error> {
     let mut result = Ok(interpreter.intern_nil());
 
     for value in values {
@@ -75,10 +74,6 @@ fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<V
     }
 
     result
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "cond", cond)
 }
 
 #[cfg(test)]

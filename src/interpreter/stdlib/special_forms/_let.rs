@@ -2,7 +2,6 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 use crate::interpreter::cons::Cons;
 use crate::interpreter::symbol::Symbol;
 
@@ -117,7 +116,7 @@ pub fn set_definitions(
     Ok(())
 }
 
-fn _let(
+pub fn _let(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -156,10 +155,6 @@ fn _let(
         execution_environment,
         forms
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "let", _let)
 }
 
 #[cfg(test)]

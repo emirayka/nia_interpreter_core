@@ -3,7 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-fn let_star(
+pub fn let_star(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -44,10 +44,6 @@ fn let_star(
         execution_environment,
         forms
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    super::_lib::infect_special_form(interpreter, "let*", let_star)
 }
 
 // todo: simplify tests somehow by using tests of `let'

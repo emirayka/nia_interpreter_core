@@ -1,10 +1,9 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn floor(
+pub fn floor(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -26,10 +25,6 @@ fn floor(
             "Built-in function `floor' must take only integer or float values."
         ))
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "floor", floor)
 }
 
 #[cfg(test)]

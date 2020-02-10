@@ -3,9 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
-fn quote(
+pub fn quote(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -22,10 +20,6 @@ fn quote(
     let first_argument = values.remove(0);
 
     Ok(first_argument)
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "quote", quote)
 }
 
 #[cfg(test)]

@@ -1,10 +1,9 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn lookup(
+pub fn lookup(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -35,10 +34,6 @@ fn lookup(
             "Built-in function `lookup' must take exactly one string argument."
         ))
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "lookup", lookup)
 }
 
 #[cfg(test)]

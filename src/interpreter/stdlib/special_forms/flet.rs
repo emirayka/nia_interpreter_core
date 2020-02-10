@@ -2,7 +2,6 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 use crate::interpreter::cons::Cons;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
@@ -114,7 +113,7 @@ pub fn set_definitions(
     Ok(())
 }
 
-fn flet(
+pub fn flet(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     values: Vec<Value>
@@ -155,10 +154,6 @@ fn flet(
         function_definition_environment,
         forms
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "flet", flet)
 }
 
 #[cfg(test)]

@@ -62,6 +62,7 @@ mod tests {
         );
     }
 
+    #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 

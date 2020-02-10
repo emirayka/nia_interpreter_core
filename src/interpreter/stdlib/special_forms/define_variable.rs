@@ -3,9 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
-fn define_variable(
+pub fn define_variable(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -61,10 +59,6 @@ fn define_variable(
         ))
     }
 
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "define-variable", define_variable)
 }
 
 #[cfg(test)]

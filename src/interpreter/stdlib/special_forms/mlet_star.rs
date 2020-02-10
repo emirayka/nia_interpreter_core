@@ -2,9 +2,8 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 
-fn mlet_star(
+pub fn mlet_star(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     values: Vec<Value>
@@ -45,10 +44,6 @@ fn mlet_star(
         macro_definition_environment,
         forms
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "mlet*", mlet_star)
 }
 
 #[cfg(test)]

@@ -3,7 +3,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 
-fn flet_star(
+pub fn flet_star(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     values: Vec<Value>
@@ -44,10 +44,6 @@ fn flet_star(
         function_definition_environment,
         forms
     )
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    super::_lib::infect_special_form(interpreter, "flet*", flet_star)
 }
 
 #[cfg(test)]

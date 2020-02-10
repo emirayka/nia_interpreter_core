@@ -1,7 +1,6 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
 fn positive_int_pow(a: i64, b: i64) -> Option<i64> {
@@ -40,7 +39,7 @@ fn checked_int_pow(a: i64, b: i64) -> Option<Value> {
     }
 }
 
-fn pow(
+pub fn pow(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -70,10 +69,6 @@ fn pow(
             "Built-in function `pow' must take either integers or float."
         ))
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "pow", pow)
 }
 
 #[cfg(test)]

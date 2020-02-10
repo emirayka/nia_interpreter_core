@@ -2,8 +2,6 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
 use crate::interpreter::cons::Cons;
 
 fn make_cons(interpreter: &mut Interpreter, values: Vec<Value>) -> Value {
@@ -37,7 +35,7 @@ fn make_cons(interpreter: &mut Interpreter, values: Vec<Value>) -> Value {
     base_cons
 }
 
-fn block(
+pub fn block(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -52,10 +50,6 @@ fn block(
     }
 
     Ok(make_cons(interpreter, results))
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "block", block)
 }
 
 #[cfg(test)]

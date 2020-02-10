@@ -1,10 +1,9 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::builtin_functions::_lib::infect_builtin_function;
 use crate::interpreter::environment::EnvironmentId;
 
-fn ceiling(
+pub fn ceiling(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -26,10 +25,6 @@ fn ceiling(
             "Built-in function `ceiling' must take only integer or float values."
         ))
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_builtin_function(interpreter, "ceiling", ceiling)
 }
 
 #[cfg(test)]

@@ -4,8 +4,6 @@ use crate::interpreter::cons::Cons;
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::stdlib::special_forms::_lib::infect_special_form;
-
 fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<Cons>, Error> {
     let mut catch_clauses = Vec::new();
 
@@ -42,7 +40,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
     Ok(catch_clauses)
 }
 
-fn _try(
+pub fn _try(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
@@ -114,10 +112,6 @@ fn _try(
             }
         }
     }
-}
-
-pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "try", _try)
 }
 
 #[cfg(test)]
