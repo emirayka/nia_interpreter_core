@@ -67,10 +67,9 @@ mod tests {
     fn returns_value_that_was_set_to_variable() {
         let mut interpreter = Interpreter::new();
 
-        // todo: switch to let later
-        let result2 = interpreter.execute("((function (lambda (a) (set! a 2))) 1)").unwrap();
+        let result = interpreter.execute("(let ((a 1)) (set! a 2))");
 
-        assert_eq!(Value::Integer(2), result2);
+        assert_eq!(Value::Integer(2), result.unwrap());
     }
 
     #[test]
@@ -85,9 +84,8 @@ mod tests {
             Value::Integer(0)
         ).unwrap();
 
-        // todo: switch to let later
-        let result1 = interpreter.execute("((function (lambda (a) a)) 1)").unwrap();
-        let result2 = interpreter.execute("((function (lambda (a) (set! a 2) a)) 1)").unwrap();
+        let result1 = interpreter.execute("(let ((a 1)) a)").unwrap();
+        let result2 = interpreter.execute("(let ((a 1)) (set! a 2) a)").unwrap();
 
         assert_eq!(
             &Value::Integer(0),
@@ -105,9 +103,8 @@ mod tests {
 
         let variable_name_b = interpreter.intern_symbol("b");
 
-        // todo: switch to let later
         interpreter.execute("(define-variable b 0)").unwrap();
-        interpreter.execute("((function (lambda (a) (set! b 2) a)) 1)").unwrap();
+        interpreter.execute("(let ((a 1)) (set! b 2))").unwrap();
 
         assert_eq!(
             &Value::Integer(2),

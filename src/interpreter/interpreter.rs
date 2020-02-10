@@ -186,6 +186,14 @@ impl Interpreter {
     ) -> Option<EnvironmentId> {
         self.environment_arena.lookup_environment_by_variable(environment, variable_name)
     }
+
+    pub fn lookup_environment_by_function(
+        &self,
+        environment: EnvironmentId,
+        function_name: &Symbol
+    ) -> Option<EnvironmentId> {
+        self.environment_arena.lookup_environment_by_function(environment, function_name)
+    }
 }
 
 impl Interpreter {

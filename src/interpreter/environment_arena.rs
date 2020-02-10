@@ -150,6 +150,20 @@ impl EnvironmentArena {
             }
         }
     }
+
+    pub fn lookup_environment_by_function(
+        &self,
+        environment: EnvironmentId,
+        function_name: &Symbol
+    ) -> Option<EnvironmentId > {
+        match self.has_function(environment, function_name) {
+            true => Some(environment),
+            false => match self.get(environment).unwrap().get_parent() {
+                Some(parent) => self.lookup_environment_by_function(parent, function_name),
+                None => None
+            }
+        }
+    }
 }
 
 #[cfg(test)]

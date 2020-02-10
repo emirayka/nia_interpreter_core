@@ -10,6 +10,7 @@ mod define_variable;
 mod define_function;
 mod function;
 mod set;
+mod fset;
 mod _let;
 mod let_star;
 mod flet;
@@ -28,6 +29,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     infect_special_form(interpreter, "define-function", define_function::define_function)?;
     infect_special_form(interpreter, "function", function::function)?;
     infect_special_form(interpreter, "set!", set::set)?;
+    infect_special_form(interpreter, "fset!", fset:: fset)?;
     infect_special_form(interpreter, "let", _let::_let)?;
     infect_special_form(interpreter, "let*", let_star::let_star)?;
     infect_special_form(interpreter, "flet", flet::flet)?;
