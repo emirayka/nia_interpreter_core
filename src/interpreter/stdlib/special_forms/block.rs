@@ -56,6 +56,7 @@ pub fn block(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn returns_list_of_execution_results() {
@@ -63,12 +64,17 @@ mod tests {
         let nil = interpreter.intern_nil();
 
         assert_eq!(interpreter.intern_nil(), interpreter.execute("(block)").unwrap());
-        assert_eq!(
-            interpreter.make_cons_value(
-                Value::Integer(1),
-                nil.clone()
-            ),
-            interpreter.execute("(block 1)").unwrap()
+
+        let expected = interpreter.make_cons_value(
+            Value::Integer(1),
+            nil.clone()
+        );
+        let result = interpreter.execute("(block 1)").unwrap();
+
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            &expected,
+            &result
         );
 
         let cdr = interpreter.make_cons_value(
@@ -76,12 +82,17 @@ mod tests {
             nil.clone()
         );
 
-        assert_eq!(
-            interpreter.make_cons_value(
-                Value::Integer(1),
-                cdr,
-            ),
-            interpreter.execute("(block 1 2)").unwrap()
+        let expected = interpreter.make_cons_value(
+            Value::Integer(1),
+            cdr,
+        );
+
+        let result = interpreter.execute("(block 1 2)").unwrap();
+
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            &expected,
+            &result
         );
 
         let cdr = interpreter.make_cons_value(
@@ -94,12 +105,17 @@ mod tests {
             cdr
         );
 
-        assert_eq!(
-            interpreter.make_cons_value(
-                Value::Integer(1),
-                cdr
-            ),
-            interpreter.execute("(block 1 2 3)").unwrap()
+        let expected = interpreter.make_cons_value(
+            Value::Integer(1),
+            cdr
+        );
+
+        let result = interpreter.execute("(block 1 2 3)").unwrap();
+
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            &expected,
+            &result
         );
     }
 }

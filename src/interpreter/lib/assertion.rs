@@ -2,6 +2,12 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::*;
 use crate::interpreter::interpreter::Interpreter;
 
+pub fn assert_deep_equal(interpreter: &mut Interpreter, value1: &Value, value2: &Value) {
+    assert!(
+        interpreter.deep_equal(value1, value2)
+    );
+}
+
 pub fn assert_error<V, E>(error: &Result<V, E>) {
     assert!(error.is_err());
 }
@@ -73,17 +79,5 @@ pub fn assert_is_nil(param: Value) {
             Value::Symbol(symbol) => symbol.is_nil(),
             _ => false
         }
-    );
-}
-
-pub fn assert_values_eq(interpreter: &mut Interpreter, value1: &Value, value2: &Value) {
-    assert!(
-        interpreter.is_equal(value1, value2)
-    );
-}
-
-pub fn assert_values_ne(interpreter: &mut Interpreter, value1: &Value, value2: &Value) {
-    assert!(
-        !interpreter.is_equal(value1, value2)
     );
 }

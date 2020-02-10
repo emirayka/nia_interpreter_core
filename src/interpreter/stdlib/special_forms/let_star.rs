@@ -84,11 +84,14 @@ mod tests {
         );
 
         for (value, code_representation) in definitions {
-            assert_eq!(
-                value,
-                interpreter.execute(
-                    &format!("(let* ((value {})) value)", code_representation)
-                ).unwrap()
+            let result = interpreter.execute(
+                &format!("(let* ((value {})) value)", code_representation)
+            ).unwrap();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                &value,
+                &result
             );
         }
     }

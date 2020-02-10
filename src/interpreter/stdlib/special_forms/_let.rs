@@ -182,12 +182,15 @@ mod tests {
             (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
         );
 
-        for (value, code_representation) in definitions {
-            assert_eq!(
-                value,
-                interpreter.execute(
-                    &format!("(let ((value {})) value)", code_representation)
-                ).unwrap()
+        for (value, string) in definitions {
+            let result = interpreter.execute(
+                &format!("(let ((value {})) value)", string)
+            ).unwrap();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                &value,
+                &result
             );
         }
     }

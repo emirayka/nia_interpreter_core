@@ -54,7 +54,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn is_equal(&self, value1: &Value, value2: &Value) -> bool {
+    pub fn deep_equal(&self, value1: &Value, value2: &Value) -> bool {
         use crate::interpreter::value::Value::*;
 
         match (value1, value2) {
@@ -71,8 +71,8 @@ impl Interpreter {
                 let cdr1 = self.get_cdr(val1);
                 let cdr2 = self.get_cdr(val2);
 
-                self.is_equal(car1, car2) &&
-                    self.is_equal(car1, car2)
+                self.deep_equal(car1, car2) &&
+                    self.deep_equal(cdr1, cdr2)
             },
             (Object(val1), Object(val2)) => {
                 // todo: fix, make it checking objects and not references to them

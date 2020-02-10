@@ -48,7 +48,15 @@ mod tests {
         assert_eq!(Value::Keyword(String::from("test")), interpreter.execute("(quote :test)").unwrap());
         assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("(quote cute-symbol)").unwrap());
         assert_eq!(Value::String(String::from("test")), interpreter.execute("(quote \"test\")").unwrap());
-        assert_eq!(cons, interpreter.execute("(quote (1 2))").unwrap());
+
+        let expected = cons;
+        let result = interpreter.execute("(quote (1 2))").unwrap();
+
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            &expected,
+            &result
+        );
 
 //        Function(func) - lol, how to test this
     }
@@ -74,7 +82,14 @@ mod tests {
         assert_eq!(Value::Keyword(String::from("test")), interpreter.execute("':test").unwrap());
         assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("'cute-symbol").unwrap());
         assert_eq!(Value::String(String::from("test")), interpreter.execute("'\"test\"").unwrap());
-        assert_eq!(cons, interpreter.execute("'(1 2)").unwrap());
+
+        let expected = cons;
+        let result = interpreter.execute("'(1 2)").unwrap();
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            &expected,
+            &result
+        );
 
 //        Function(func) - lol, how to test this
     }
@@ -90,15 +105,22 @@ mod tests {
             cute_symbol,
             nil
         );
-        let cons = interpreter.make_cons_value(
+        let expected = interpreter.make_cons_value(
             quote,
             cdr
         );
 
-        assert_eq!(cons, interpreter.execute("(quote (quote cute-symbol))").unwrap());
-        assert_eq!(cons, interpreter.execute("(quote 'cute-symbol)").unwrap());
-        assert_eq!(cons, interpreter.execute("'(quote cute-symbol)").unwrap());
-        assert_eq!(cons, interpreter.execute("''cute-symbol").unwrap());
+        let result = interpreter.execute("(quote (quote cute-symbol))").unwrap();
+        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+
+        let result = interpreter.execute("(quote 'cute-symbol)").unwrap();
+        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+
+        let result = interpreter.execute("'(quote cute-symbol)").unwrap();
+        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+
+        let result = interpreter.execute("''cute-symbol").unwrap();
+        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
 
 //        Function(func) - lol, how to test this
     }

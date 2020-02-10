@@ -43,7 +43,7 @@ mod tests {
                     val2
                 );
 
-                assert_eq!(expected, result);
+                assertion::assert_deep_equal(interpreter, &expected, &result);
             }
         );
     }

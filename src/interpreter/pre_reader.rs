@@ -237,6 +237,7 @@ mod tests {
     use super::*;
     use crate::parser::parse_code;
     use crate::interpreter::symbol::{SymbolArena, Symbol};
+    use crate::interpreter::lib::assertion;
 
     fn new_symbol(name: &str) -> Symbol {
         let mut symbol_arena = SymbolArena::new();
@@ -257,7 +258,7 @@ mod tests {
                 assert_eq!(len, result.len());
 
                 for i in 0..len {
-                    assert_eq!(expected[i], result[i]);
+                    assert_eq!(&expected[i], &result[i]);
                 }
             }
         }
@@ -473,6 +474,13 @@ mod tests {
         }
     }
 
+    fn assert_prereading_deeply(interpreter: &mut Interpreter, expected: Value, code: &str) {
+        if let Ok((_, program)) = parse_code(code) {
+            let result = &preread_elements(interpreter, program.get_elements())[0];
+
+            assertion::assert_deep_equal(interpreter, &expected, result);
+        }
+    }
 
     #[test]
     fn prereads_delimited_symbols_element_correctly() {
@@ -483,13 +491,12 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
-        assert_prereading_result_equal!(
-            vec!(interpreter.make_cons_value(
-                    Value::Keyword(String::from("value")),
-                    cdr
-            )),
-            "object:value"
+        let expected = interpreter.make_cons_value(
+            Value::Keyword(String::from("value")),
+            cdr
         );
+
+        assert_prereading_deeply(&mut interpreter, expected, "object:value");
 
         let cdr = interpreter.make_cons_value(
             Value::Symbol(new_symbol("object")),
@@ -506,13 +513,12 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
-        assert_prereading_result_equal!(
-            vec!(interpreter.make_cons_value(
-                Value::Keyword(String::from("value2")),
-                cdr
-            )),
-            "object:value1:value2"
+        let expected = interpreter.make_cons_value(
+            Value::Keyword(String::from("value2")),
+            cdr
         );
+
+        assert_prereading_deeply(&mut interpreter, expected, "object:value1:value2");
 
         let cdr = interpreter.make_cons_value(
             Value::Symbol(new_symbol("object")),
@@ -534,13 +540,12 @@ mod tests {
             cdr
         );
 
-        assert_prereading_result_equal!(
-            vec!(interpreter.make_cons_value(
-                car,
-                Value::Symbol(new_symbol("nil"))
-            )),
-            "(object:value1:value2)"
+        let expected = interpreter.make_cons_value(
+            car,
+            Value::Symbol(new_symbol("nil"))
         );
+
+        assert_prereading_deeply(&mut interpreter, expected, "(object:value1:value2)");
     }
 
     macro_rules! assert_prefix_result_equal {
@@ -607,7 +612,7 @@ mod tests {
         );
 
         let cdr = interpreter.make_cons_value(
-            Value::Boolean(true),
+            Value::Boolean(false),
             Value::Symbol(new_symbol("nil"))
         );
 
@@ -631,16 +636,11 @@ mod tests {
              cdr
         );
 
-        let cdr = interpreter.make_cons_value(
+        let expected = interpreter.make_cons_value(
             Value::Symbol(new_symbol("a")),
             cdr
         );
 
-        assert_prereading_result_equal!(
-            vec!(
-                cdr
-            ),
-            "(a 1 2.3 #t (3 4) #f)"
-        );
+        assert_prereading_deeply(&mut interpreter, expected, "(a 1 2.3 #t (3 4) #f)");
     }
 }

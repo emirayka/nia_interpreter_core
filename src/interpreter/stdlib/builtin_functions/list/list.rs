@@ -41,7 +41,7 @@ mod tests {
                 );
                 let result = interpreter.execute(&format!("(list {})", string)).unwrap();
 
-                assert_eq!(expected, result);
+                assertion::assert_deep_equal(interpreter, &expected, &result);
             }
         );
     }
@@ -64,7 +64,7 @@ mod tests {
                     expected
                 );
 
-                assert_eq!(expected, result);
+                assertion::assert_deep_equal(interpreter, &expected, &result);
             }
         );
     }
