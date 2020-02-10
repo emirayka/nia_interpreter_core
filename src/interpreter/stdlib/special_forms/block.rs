@@ -3,39 +3,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-// todo: check and delete
-//fn make_cons(interpreter: &mut Interpreter, values: Vec<Value>) -> Value {
-//    if values.len() == 0 {
-//        return interpreter.intern_nil();
-//    }
-//
-//    let nil = interpreter.intern_nil();
-//    let mut values = values;
-//
-//    let mut base_cons = interpreter.make_cons_value(
-//        values.remove(0),
-//        nil.clone()
-//    );
-//
-//    let mut cons = &mut base_cons;
-//
-//    for value in values {
-//        let new_cons = interpreter.make_cons_value(
-//            value,
-//            nil.clone()
-//        );
-//
-//        cons = if let Value::Cons(cons_id) = cons {
-//            cons_id.set_cdr(new_cons);
-//            cons_id.get_cdr_mut()
-//        } else {
-//            unreachable!();
-//        };
-//    }
-//
-//    base_cons
-//}
-
 pub fn block(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,

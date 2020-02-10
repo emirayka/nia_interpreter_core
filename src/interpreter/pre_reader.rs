@@ -373,36 +373,29 @@ mod tests {
         );
     }
 
-//    #[test]
-//    fn prereads_s_expression_elements_correctly() {
-//        assert_prereading_result_equal!(
-//            vec!(
-//                Value::Symbol(new_symbol("nil"))
-//            ),
-//            "()"
-//        );
-//
-//        assert_prereading_result_equal!(
-//            vec!(interpreter.make_cons_value(
-//                    Value::Symbol(new_symbol("a")),
-//                    Value::Symbol(new_symbol("nil"))
-//            )),
-//            "(a)"
-//        );
-//
-//        let cdr = interpreter.make_cons_value(
-//            Value::Symbol(new_symbol("b")),
-//            Value::Symbol(new_symbol("nil"))
-//        );
-//
-//        assert_prereading_result_equal!(
-//            vec!(interpreter.make_cons_value(
-//                    Value::Symbol(new_symbol("a")),
-//                    cdr
-//            )),
-//            "(a b)"
-//        );
-//    }
+    #[test]
+    fn prereads_s_expression_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
+        let expected = Value::Symbol(new_symbol("nil"));
+        assert_prereading_deeply(&mut interpreter, expected, "()");
+
+        let expected = interpreter.make_cons_value(
+            Value::Symbol(new_symbol("a")),
+            Value::Symbol(new_symbol("nil"))
+        );
+        assert_prereading_deeply(&mut interpreter, expected, "(a)");
+
+        let cdr = interpreter.make_cons_value(
+            Value::Symbol(new_symbol("b")),
+            Value::Symbol(new_symbol("nil"))
+        );
+        let expected = interpreter.make_cons_value(
+            Value::Symbol(new_symbol("a")),
+            cdr
+        );
+        assert_prereading_deeply(&mut interpreter, expected, "(a b)");
+    }
 
     #[cfg(test)]
     mod object {

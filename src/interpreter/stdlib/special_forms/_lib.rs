@@ -124,6 +124,7 @@ mod tests {
     #[cfg(test)]
     mod read_let_definitions {
         use super::*;
+        use crate::interpreter::lib::assertion;
 
         #[test]
         fn returns_empty_vector_when_nil_was_provided() {
@@ -140,83 +141,46 @@ mod tests {
             assert_eq!(expected, result.unwrap());
         }
 
-        // todo: rewrite this
-//        #[test]
-//        fn returns_vector_of_cons_cells_when_a_list_was_provided() {
-//            let mut interpreter = Interpreter::new();
-//
-//            // s-expr representation: ((1 2) (1 2))
-//            let value = Value::Cons(Cons::new(
-//                Value::Cons(Cons::new(
-//                    Value::Integer(1),
-//                    Value::Cons(Cons::new(
-//                        Value::Integer(2),
-//                        interpreter.intern_nil()
-//                    ))
-//                )),
-//                Value::Cons(Cons::new(
-//                    Value::Cons(Cons::new(
-//                        Value::Integer(1),
-//                        Value::Cons(Cons::new(
-//                            Value::Integer(2),
-//                            interpreter.intern_nil()
-//                        ))
-//                    ))   ,
-//                    interpreter.intern_nil()
-//                ))
-//            ));
-//
-//            let expected = vec!(
-//                Value::Cons(Cons::new(
-//                    Value::Integer(1),
-//                    Value::Cons(Cons::new(
-//                        Value::Integer(2),
-//                        interpreter.intern_nil()
-//                    ))
-//                )),
-//                Value::Cons(Cons::new(
-//                    Value::Integer(1),
-//                    Value::Cons(Cons::new(
-//                        Value::Integer(2),
-//                        interpreter.intern_nil()
-//                    ))
-//                ))
-//            );
-//
-//            let result = read_let_definitions(
-//                &mut interpreter,
-//                value
-//            );
-//
-//            assert_eq!(expected, result.unwrap());
-//        }
+        #[test]
+        fn returns_vector_of_cons_cells_when_a_list_was_provided() {
+            let mut interpreter = Interpreter::new();
 
-//        #[test]
-//        fn returns_err_when_neither_a_cons_nor_symbol_were_provided() {
-//            let mut interpreter = Interpreter::new();
-//
-//            // s-expr representation: ((1 2) (1 2))
-//            let value = Value::Cons(Cons::new(
-//                Value::Cons(Cons::new(
-//                    Value::Integer(1),
-//                    Value::Cons(Cons::new(
-//                        Value::Integer(2),
-//                        interpreter.intern_nil()
-//                    ))
-//                )),
-//                Value::Cons(Cons::new(
-//                    Value::Integer(1),
-//                    interpreter.intern_nil()
-//                ))
-//            ));
-//
-//            let result = read_let_definitions(
-//                &mut interpreter,
-//                value
-//            );
-//
-//            assertion::assert_error(&result);
-//        }
+            let mut expected = vec!();
+            expected.push(interpreter.execute("(quote (1 2))").unwrap());
+            expected.push(interpreter.execute("(quote (1 2))").unwrap());
+
+            let value = interpreter.execute("(quote ((1 2) (1 2)))").unwrap();
+            let result = read_let_definitions(
+                &mut interpreter,
+                value
+            ).unwrap();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                &expected[0],
+                &result[0]
+            );
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                &expected[1],
+                &result[1]
+            );
+        }
+
+        #[test]
+        fn returns_err_when_neither_a_cons_nor_symbol_were_provided() {
+            let mut interpreter = Interpreter::new();
+
+            let value = interpreter.execute("(quote ((1 2) 1))").unwrap();
+
+            let result = read_let_definitions(
+                &mut interpreter,
+                value
+            );
+
+            assertion::assert_error(&result);
+        }
     }
 
     #[cfg(test)]
