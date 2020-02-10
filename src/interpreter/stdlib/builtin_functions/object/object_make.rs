@@ -44,7 +44,7 @@ pub fn object_make(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     macro_rules! assert_object_has_values {
         ($expected:expr, $code:expr) => {

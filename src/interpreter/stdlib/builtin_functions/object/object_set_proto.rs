@@ -40,7 +40,7 @@ pub fn object_set_proto(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn sets_proto_correctly() {

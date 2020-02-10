@@ -1,3 +1,4 @@
+mod lib;
 mod symbol;
 mod cons;
 mod function;

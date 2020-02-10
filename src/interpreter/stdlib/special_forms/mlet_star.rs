@@ -54,7 +54,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {

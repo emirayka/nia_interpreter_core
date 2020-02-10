@@ -70,7 +70,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn defines_function_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {

@@ -35,7 +35,7 @@ pub fn object_get_proto(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn returns_nil_when_no_proto_exists() {

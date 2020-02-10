@@ -122,7 +122,7 @@ mod tests {
     #[cfg(test)]
     mod execute_forms {
         use super::*;
-        use crate::interpreter::error::assertion;
+        use crate::interpreter::lib::assertion;
 
         #[test]
         fn returns_the_result_of_execution_of_the_last_form() {
@@ -176,7 +176,7 @@ mod tests {
     mod read_let_definitions {
         use super::*;
         use crate::interpreter::cons::Cons;
-        use crate::interpreter::error::assertion;
+        use crate::interpreter::lib::assertion;
 
         #[test]
         fn returns_empty_vector_when_nil_was_provided() {
@@ -274,7 +274,7 @@ mod tests {
     #[cfg(test)]
     mod convert_vector_of_values_to_vector_of_symbol_names {
         use super::*;
-        use crate::interpreter::error::assertion;
+        use crate::interpreter::lib::assertion;
 
         #[test]
         fn returns_vector_of_symbol_names() {

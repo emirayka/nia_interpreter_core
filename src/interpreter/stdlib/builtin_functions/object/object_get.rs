@@ -47,7 +47,7 @@ pub fn object_get(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn fetchs_item_of_object_correctly() {

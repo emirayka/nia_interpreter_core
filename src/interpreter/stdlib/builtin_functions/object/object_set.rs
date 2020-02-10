@@ -46,7 +46,7 @@ pub fn object_set(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::error::assertion;
+    use crate::interpreter::lib::assertion;
 
     #[test]
     fn sets_item_to_object() {

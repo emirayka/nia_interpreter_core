@@ -56,3 +56,12 @@ pub fn assert_is_function(param: Value) {
         }
     );
 }
+
+pub fn assert_is_object(param: Value) {
+    assert!(
+        match param {
+            Value::Object(_) => true,
+            _ => false
+        }
+    );
+}
