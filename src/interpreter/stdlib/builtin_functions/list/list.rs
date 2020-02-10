@@ -18,6 +18,7 @@ pub fn list(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_value_pairs_evaluated_ifbsyk, for_meta_value_pairs_evaluated_ifbsyk};
 
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {
@@ -30,51 +31,36 @@ mod tests {
 
     #[test]
     fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
-        let mut interpreter = Interpreter::new();
+        for_value_pairs_evaluated_ifbsyk(
+            |interpreter, string, value| {
+                let expected = Value::Cons(Cons::new(
+                    value,
+                    interpreter.intern_nil()
+                ));
+                let result = interpreter.execute(&format!("(list {})", string)).unwrap();
 
-        let values = vec!(
-            ("1", Value::Integer(1)),
-            ("1.1", Value::Float(1.1)),
-            ("#t", Value::Boolean(true)),
-            ("#f", Value::Boolean(false)),
+                assert_eq!(expected, result);
+            }
         );
-
-        for (str, value) in values {
-            let expected = Value::Cons(Cons::new(
-                value,
-                interpreter.intern_nil()
-            ));
-            let result = interpreter.execute(&format!("(list {})", str)).unwrap();
-
-            assert_eq!(expected, result);
-        }
     }
 
     #[test]
     fn returns_a_list_of_two_values_when_was_called_with_two_arguments() {
-        let mut interpreter = Interpreter::new();
-
-        let values = vec!(
-            ("1", Value::Integer(1)),
-            ("1.1", Value::Float(1.1)),
-            ("#t", Value::Boolean(true)),
-            ("#f", Value::Boolean(false)),
-        );
-
-        for (str1, value1) in &values {
-            for (str2, value2) in &values {
+        for_meta_value_pairs_evaluated_ifbsyk(
+            |interpreter, str1, val1, str2, val2| {
                 let code = &format!("(list {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();
+
                 let expected = Value::Cons(Cons::new(
-                    value1.clone(),
+                    val1,
                     Value::Cons(Cons::new(
-                        value2.clone(),
+                        val2,
                         interpreter.intern_nil()
                     ))
                 ));
 
                 assert_eq!(expected, result);
             }
-        }
+        );
     }
 }
