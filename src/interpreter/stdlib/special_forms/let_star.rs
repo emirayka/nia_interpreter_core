@@ -1,7 +1,7 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 pub fn let_star(
     interpreter: &mut Interpreter,
@@ -51,7 +51,7 @@ pub fn let_star(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::cons::Cons;
+    use crate::interpreter::cons::cons::Cons;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {

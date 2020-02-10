@@ -1,10 +1,10 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \

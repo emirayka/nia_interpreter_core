@@ -3,7 +3,7 @@ use std::fmt;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 pub type BuiltinFunctionType = fn(
     interpreter: &mut Interpreter,

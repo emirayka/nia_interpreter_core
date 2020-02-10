@@ -3,23 +3,7 @@ use std::collections::HashMap;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct EnvironmentId {
-    index: usize
-}
-
-impl EnvironmentId {
-    pub fn new(index: usize) -> EnvironmentId {
-        EnvironmentId {
-            index,
-        }
-    }
-
-    pub fn get_index(&self) -> usize {
-        self.index
-    }
-}
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 pub struct LexicalEnvironment {
     variables: HashMap<Symbol, Value>,

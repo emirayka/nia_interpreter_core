@@ -1,8 +1,8 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::cons::Cons;
+use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 fn make_cons(interpreter: &mut Interpreter, values: Vec<Value>) -> Value {
     if values.len() == 0 {
@@ -55,7 +55,6 @@ pub fn block(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::cons::Cons;
 
     #[test]
     fn returns_list_of_execution_results() {

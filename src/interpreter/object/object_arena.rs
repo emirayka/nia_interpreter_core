@@ -1,6 +1,6 @@
-use crate::interpreter::object::{Object, ObjectId};
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::value::Value;
+use crate::interpreter::object::object::{Object, ObjectId};
 
 pub struct ObjectArena {
     objects: Vec<Object>,

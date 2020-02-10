@@ -1,7 +1,7 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 pub fn execute_forms(
     interpreter: &mut Interpreter,
@@ -124,8 +124,8 @@ mod tests {
     #[cfg(test)]
     mod read_let_definitions {
         use super::*;
-        use crate::interpreter::cons::Cons;
         use crate::interpreter::lib::assertion;
+        use crate::interpreter::cons::cons::Cons;
 
         #[test]
         fn returns_empty_vector_when_nil_was_provided() {

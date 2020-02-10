@@ -1,10 +1,24 @@
-use crate::interpreter::environment::{
-    LexicalEnvironment,
-    EnvironmentId
-};
 use crate::interpreter::value::Value;
 use crate::interpreter::symbol::Symbol;
 use crate::interpreter::error::Error;
+use crate::interpreter::environment::environment::LexicalEnvironment;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct EnvironmentId {
+    index: usize
+}
+
+impl EnvironmentId {
+    pub fn new(index: usize) -> EnvironmentId {
+        EnvironmentId {
+            index,
+        }
+    }
+
+    pub fn get_index(&self) -> usize {
+        self.index
+    }
+}
 
 pub struct EnvironmentArena {
     contestants: Vec<LexicalEnvironment>,

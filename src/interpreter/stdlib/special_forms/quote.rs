@@ -1,7 +1,7 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 pub fn quote(
     interpreter: &mut Interpreter,
@@ -25,7 +25,7 @@ pub fn quote(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::cons::Cons;
+    use crate::interpreter::cons::cons::Cons;
     use crate::interpreter::lib::assertion;
 
     #[test]

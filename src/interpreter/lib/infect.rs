@@ -1,10 +1,10 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::object::ObjectId;
 use crate::interpreter::function::builtin_function::{BuiltinFunctionType, BuiltinFunction};
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::{SpecialFormFunctionType, SpecialFormFunction};
+use crate::interpreter::object::object::ObjectId;
 
 pub fn infect_object(
     interpreter: &mut Interpreter,
@@ -68,7 +68,7 @@ mod tests {
     #[cfg(test)]
     mod infect_special_form {
         use super::*;
-        use crate::interpreter::environment::EnvironmentId;
+        use crate::interpreter::environment::environment_arena::EnvironmentId;
 
         fn test(interpreter: &mut Interpreter, _environment: EnvironmentId, _values: Vec<Value>) -> Result<Value, Error>{
             Ok(interpreter.intern_nil())

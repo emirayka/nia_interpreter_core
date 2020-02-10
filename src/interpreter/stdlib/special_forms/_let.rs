@@ -1,9 +1,9 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::cons::Cons;
 use crate::interpreter::symbol::Symbol;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::cons::cons::Cons;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,

@@ -1,9 +1,6 @@
-use crate::interpreter::environment_arena::EnvironmentArena;
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::parser::parse_code;
 use crate::interpreter::pre_reader::preread_elements;
-use crate::interpreter::cons::Cons;
 use crate::interpreter::function::{Function};
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::builtin_function::BuiltinFunction;
@@ -11,10 +8,12 @@ use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::{Symbol, SymbolArena};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
-use crate::interpreter::object_arena::ObjectArena;
 
 use crate::interpreter::stdlib::infect_stdlib;
-use crate::interpreter::object::ObjectId;
+use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
+use crate::interpreter::object::object_arena::ObjectArena;
+use crate::interpreter::object::object::ObjectId;
+use crate::interpreter::cons::cons::Cons;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,

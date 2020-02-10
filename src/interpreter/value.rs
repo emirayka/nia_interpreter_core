@@ -1,7 +1,7 @@
 use crate::interpreter::symbol::Symbol;
-use crate::interpreter::cons::Cons;
-use crate::interpreter::object::{ObjectId};
 use crate::interpreter::function::Function;
+use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::object::object::ObjectId;
 
 // todo: add object
 

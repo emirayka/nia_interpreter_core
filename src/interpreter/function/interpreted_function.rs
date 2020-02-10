@@ -1,5 +1,5 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterpretedFunction {

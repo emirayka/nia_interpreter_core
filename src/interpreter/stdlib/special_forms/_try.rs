@@ -1,8 +1,8 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::cons::Cons;
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
+use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
 
 fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<Cons>, Error> {
     let mut catch_clauses = Vec::new();

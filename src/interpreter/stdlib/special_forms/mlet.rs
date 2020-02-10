@@ -1,10 +1,10 @@
-use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::cons::Cons;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::macro_function::MacroFunction;
+use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::cons::cons::Cons;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,
