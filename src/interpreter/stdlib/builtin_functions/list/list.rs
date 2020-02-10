@@ -18,7 +18,10 @@ pub fn list(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{for_value_pairs_evaluated_ifbsyk, for_meta_value_pairs_evaluated_ifbsyk};
+    use crate::interpreter::lib::testing_helpers::{
+        for_value_pairs_evaluated_ifbsyk,
+        for_meta_value_pairs_evaluated_ifbsyk
+    };
 
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {
