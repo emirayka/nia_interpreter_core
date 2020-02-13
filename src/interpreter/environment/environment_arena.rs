@@ -1,6 +1,5 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::symbol::Symbol;
-use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment::LexicalEnvironment;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,19 +108,19 @@ impl EnvironmentArena {
         }
     }
 
-    pub fn define_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn define_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         env.define_variable(symbol, value)
     }
 
-    pub fn define_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn define_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         env.define_function(symbol, value)
     }
 
-    pub fn set_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn set_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_variable(symbol) {
@@ -132,11 +131,11 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_variable(parent_id, symbol, value)
         } else {
-            Err(Error::empty())
+            Err(())
         }
     }
 
-    pub fn set_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), Error> {
+    pub fn set_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
         if env.has_function(symbol) {
@@ -147,7 +146,7 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_function(parent_id, symbol, value)
         } else {
-            Err(Error::empty())
+            Err(())
         }
     }
 

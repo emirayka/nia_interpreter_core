@@ -9,32 +9,29 @@ pub fn fset(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `fset!' must be used with exactly two arguments"
-        ));
+        );
     }
 
     let mut values = values;
 
     let function_name = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `fset!' must be a symbol."
-        ))
+        )
     };
 
     let value = values.remove(0);
 
     let value = match interpreter.execute_value(environment, &value) {
         Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
-            interpreter,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
             "Cannot execute value: \"{}\"",
             error
-        ))
+        )
     };
 
     let target_env = interpreter.lookup_environment_by_function(environment, &function_name);
@@ -43,18 +40,15 @@ pub fn fset(
         Some(target_env) => {
             match interpreter.set_function(target_env, &function_name, value.clone()) {
                 Ok(()) => Ok(value),
-                Err(error) => Err(Error::generic_execution_error_caused(
-                    interpreter,
+                Err(error) => interpreter.make_generic_execution_error_caused(
                     &format!("Cannot set function `{}'", function_name.get_name()),
-                    error))
+                    error
+                )
             }
         },
-        None => {
-            Err(Error::generic_execution_error(
-                interpreter,
-                &format!("Cannot find function `{}'", function_name.get_name())
-            ))
-        }
+        None => interpreter.make_generic_execution_error(
+            &format!("Cannot find function `{}'", function_name.get_name())
+        )
     }
 }
 

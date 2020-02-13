@@ -9,36 +9,32 @@ pub fn object_get(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:get' must take even count of arguments."
-        ));
+        );
     }
 
     let mut values = values;
     let object_id = match values.remove(0) {
         Value::Object(object_id) => object_id,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:get' must be an object."
-        ))
+        )
     };
 
     let symbol = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The second argument of built-in function `object:get' must be a symbol."
-        ))
+        )
     };
 
     let value = match interpreter.get_object_item(object_id, &symbol) {
         Some(value) => value,
         // todo: must return something other than execution error
-        None => return Err(Error::generic_execution_error(
-            interpreter,
+        None => return interpreter.make_generic_execution_error(
             &format!("Cannot get item `{}' of object.", symbol.get_name())
-        ))
+        )
     };
 
     Ok(value.clone())

@@ -9,13 +9,17 @@ fn execute_part(
     environment: EnvironmentId,
     part_cons_id: &ConsId
 ) -> Result<Option<Value>, Error> {
-    let part_predicate = interpreter.get_car(part_cons_id).clone();
-    let part_action = match interpreter.get_cdr(part_cons_id) {
-        Value::Cons(cons_id) => interpreter.get_car(cons_id).clone(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            "Invalid action part."
-        ))
+    let part_action = match interpreter.get_cadr(part_cons_id) {
+        Ok(value) => value, // todo: check error
+        _ => return interpreter.make_invalid_argument_error("Invalid action part.")
+    };
+
+    let part_predicate = match interpreter.get_car(part_cons_id) {
+        Ok(value) => value.clone(),
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     };
 
     let predicate_result = interpreter.execute_value(environment, &part_predicate);
@@ -27,18 +31,16 @@ fn execute_part(
 
                 match action_result {
                     Ok(result) => Ok(Some(result)),
-                    Err(error) => Err(Error::generic_execution_error_caused(
-                        interpreter,
+                    Err(error) => interpreter.make_generic_execution_error_caused(
                         "Cannot evaluate the action part.",
                         error
-                    ))
+                    )
                 }
             },
             Value::Boolean(false) => Ok(None),
-            _ => Err(Error::invalid_argument(
-                interpreter,
+            _ => interpreter.make_invalid_argument_error(
                 "Predicate must evaluate to boolean value."
-            ))
+            )
         },
         Err(error) => Err(error)
     }
@@ -55,20 +57,18 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
                     break;
                 },
                 Err(error) => {
-                    result = Err(Error::generic_execution_error_caused(
-                        interpreter,
+                    result = interpreter.make_generic_execution_error_caused(
                         "Cannot execute special form `cond' clause.",
                         error
-                    ));
+                    );
                     break;
                 },
                 _ => ()
             }
         } else {
-            result = Err(Error::invalid_argument(
-                interpreter,
+            result = interpreter.make_invalid_argument_error(
                 "Invalid usage of special form `cond'."
-            ));
+            );
             break;
         }
     }
@@ -135,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_err_when_invalid_predicate_was_provided_to_cond() {
+    fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();
 
         let name = interpreter.intern_symbol("test");

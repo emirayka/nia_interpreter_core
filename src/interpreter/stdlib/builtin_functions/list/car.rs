@@ -9,20 +9,26 @@ pub fn car(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `car' must take exactly one argument."
-        ));
+        );
     }
 
     let mut values = values;
 
-    match values.remove(0) {
-        Value::Cons(cons_id) => Ok(interpreter.get_car(&cons_id).clone()),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+    let cons = match values.remove(0) {
+        Value::Cons(cons_id) => interpreter.get_car(&cons_id),
+        _ => return interpreter.make_invalid_argument_error(
             ""
-        ))
+        )
+    };
+
+    match cons {
+        Ok(value) => Ok(value.clone()),
+        Err(error) => interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     }
 }
 

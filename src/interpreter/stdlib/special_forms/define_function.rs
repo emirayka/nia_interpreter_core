@@ -11,10 +11,9 @@ pub fn define_function(
     let mut values = values;
 
     if values.len() < 1 || values.len() > 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `define-function' must be used with one or two forms."
-        ));
+        );
     }
 
     let first_argument = values.remove(0);
@@ -26,10 +25,9 @@ pub fn define_function(
 
     let function_name = match first_argument {
         Value::Symbol(symbol) => symbol,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "First form of `define-function' must be a symbol."
-        ))
+        )
     };
 
     let evaluated_value = match second_argument {
@@ -39,11 +37,10 @@ pub fn define_function(
 
     let result = match evaluated_value {
         Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
-            interpreter,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
             "Cannot evaluate the second form of define-function.",
             error
-        ))
+        )
     };
 
     match interpreter.define_function(
@@ -52,11 +49,10 @@ pub fn define_function(
         result
     ) {
         Ok(()) => Ok(Value::Boolean(true)),
-        Err(error) => Err(Error::generic_execution_error_caused(
-            interpreter,
+        Err(error) => interpreter.make_generic_execution_error_caused(
             &format!("Cannot define function: {}.", function_name.get_name()),
             error
-        ))
+        )
     }
 
 }
@@ -77,7 +73,7 @@ mod tests {
             interpreter.get_root_environment(),
             &name));
         assert_eq!(
-            &Value::Integer(2),
+            Value::Integer(2),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 &name
@@ -95,7 +91,7 @@ mod tests {
             interpreter.get_root_environment(),
             &name));
         assert_eq!(
-            &interpreter.intern_nil(),
+            interpreter.intern_nil(),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 &name

@@ -9,32 +9,29 @@ pub fn set(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `set!' must be used with exactly two arguments"
-        ));
+        );
     }
 
     let mut values = values;
 
     let variable_name = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `set!' must be a symbol."
-        ))
+        )
     };
 
     let value = values.remove(0);
 
     let value = match interpreter.execute_value(environment, &value) {
         Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
-            interpreter,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
             "Cannot execute value: \"{}\"",
             error
-        ))
+        )
     };
 
     let target_env = interpreter.lookup_environment_by_variable(environment, &variable_name);
@@ -43,17 +40,16 @@ pub fn set(
         Some(target_env) => {
             match interpreter.set_variable(target_env, &variable_name, value.clone()) {
                 Ok(()) => Ok(value),
-                Err(error) => Err(Error::generic_execution_error_caused(
-                        interpreter,
+                Err(error) => interpreter.make_generic_execution_error_caused(
                         &format!("Cannot set variable `{}'", variable_name.get_name()),
-                    error))
+                    error
+                )
             }
         },
         None => {
-            Err(Error::generic_execution_error(
-                interpreter,
+                interpreter.make_generic_execution_error(
                 &format!("Cannot find variable `{}'", variable_name.get_name())
-            ))
+            )
         }
     }
 }
@@ -88,7 +84,7 @@ mod tests {
         let result2 = interpreter.execute("(let ((a 1)) (set! a 2) a)").unwrap();
 
         assert_eq!(
-            &Value::Integer(0),
+            Value::Integer(0),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
                 &variable_name
@@ -107,7 +103,7 @@ mod tests {
         interpreter.execute("(let ((a 1)) (set! b 2))").unwrap();
 
         assert_eq!(
-            &Value::Integer(2),
+            Value::Integer(2),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
                 &variable_name_b

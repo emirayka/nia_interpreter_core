@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 
 pub fn assert_deep_equal(interpreter: &mut Interpreter, value1: &Value, value2: &Value) {
     assert!(
-        interpreter.deep_equal(value1, value2)
+        interpreter.deep_equal(value1, value2).unwrap()
     );
 }
 
@@ -34,24 +34,24 @@ macro_rules! make_assertion_function {
 make_assertion_function!(
     assert_invalid_argument_error,
     ErrorKind::InvalidArgument,
-    SYMBOL_NAME_INVALID_ARGUMENT
+    SYMBOL_NAME_INVALID_ARGUMENT_ERROR
 );
 
 make_assertion_function!(
     assert_invalid_argument_count_error,
     ErrorKind::InvalidArgumentCount,
-    SYMBOL_NAME_INVALID_ARGUMENT_COUNT
+    SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
 );
 
 make_assertion_function!(
     assert_overflow_error,
-    ErrorKind::OverflowError,
+    ErrorKind::Overflow,
     SYMBOL_NAME_OVERFLOW_ERROR
 );
 
 make_assertion_function!(
     assert_zero_division_error,
-    ErrorKind::ZeroDivisionError,
+    ErrorKind::ZeroDivision,
     SYMBOL_NAME_ZERO_DIVISION_ERROR
 );
 

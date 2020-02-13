@@ -9,10 +9,9 @@ pub fn let_star(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `let*' must have at least one argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -22,10 +21,9 @@ pub fn let_star(
         values.remove(0)
     ) {
         Ok(definitions) => definitions,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The first argument of special form `let*' must be a list of definitions: symbol, or 2-element lists."
-        ))
+        )
     };
 
     let forms = values;

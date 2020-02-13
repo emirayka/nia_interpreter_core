@@ -20,6 +20,7 @@ extern crate nom;
 // todo: binary plugins
 // todo: ordinary plugins
 // todo: file system
+// todo: implement constant checking, and move checking setting nil errors to interpreter itself
 
 fn main() {
     let mut interpreter = interpreter::interpreter::Interpreter::new();

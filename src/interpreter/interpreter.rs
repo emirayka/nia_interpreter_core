@@ -54,32 +54,143 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn deep_equal(&self, value1: &Value, value2: &Value) -> bool {
+    pub fn make_empty_error<T>(&mut self) -> Result<T, Error> {
+        let symbol = self.intern_symbol_nil();
+
+        Err(Error::generic_error(symbol, ""))
+    }
+
+    pub fn make_generic_error<T>(&mut self, symbol: Symbol, message: &str) -> Result<T, Error> {
+        Err(Error::generic_error(symbol, message))
+    }
+
+    pub fn make_generic_execution_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
+        );
+
+        Err(Error::generic_execution_error(symbol, message))
+    }
+
+    pub fn make_generic_execution_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
+        );
+
+        Err(Error::generic_execution_error_caused(symbol, message, cause))
+    }
+
+    pub fn make_overflow_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
+        );
+
+        Err(Error::overflow_error(symbol, message))
+    }
+
+    pub fn make_overflow_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
+        );
+
+        Err(Error::overflow_error_caused(symbol, message, cause))
+    }
+
+    pub fn make_zero_division_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
+        );
+
+        Err(Error::zero_division_error(symbol, message))
+    }
+
+    pub fn make_zero_division_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
+        );
+
+        Err(Error::zero_division_error_caused(symbol, message, cause))
+    }
+
+    pub fn make_invalid_cons_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
+        );
+
+        Err(Error::invalid_cons_error(symbol, message))
+    }
+
+    pub fn make_invalid_cons_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
+        );
+
+        Err(Error::invalid_cons_error_caused(symbol, message, cause))
+    }
+
+    pub fn make_invalid_argument_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
+        );
+
+        Err(Error::invalid_argument_error(symbol, message))
+    }
+
+    pub fn make_invalid_argument_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
+        );
+
+        Err(Error::invalid_argument_error_caused(symbol, message, cause))
+    }
+
+
+    pub fn make_invalid_argument_count_error<T>(&mut self, message: &str) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
+        );
+
+        Err(Error::invalid_argument_count_error(symbol, message))
+    }
+
+    pub fn make_invalid_argument_count_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
+        let symbol = self.intern_symbol(
+            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
+        );
+
+        Err(Error::invalid_argument_count_error_caused(symbol, message, cause))
+    }
+}
+
+impl Interpreter {
+    pub fn deep_equal(&mut self, value1: &Value, value2: &Value) -> Result<bool, Error> {
         use crate::interpreter::value::Value::*;
 
         match (value1, value2) {
-            (Integer(val1), Integer(val2)) => val1 == val2,
-            (Float(val1), Float(val2)) => val1 == val2,
-            (Boolean(val1), Boolean(val2)) => val1 == val2,
-            (Keyword(val1), Keyword(val2)) => val1 == val2,
-            (Symbol(val1), Symbol(val2)) => val1 == val2,
-            (String(val1), String(val2)) => val1 == val2,
+            (Integer(val1), Integer(val2)) => Ok(val1 == val2),
+            (Float(val1), Float(val2)) => Ok(val1 == val2),
+            (Boolean(val1), Boolean(val2)) => Ok(val1 == val2),
+            (Keyword(val1), Keyword(val2)) => Ok(val1 == val2),
+            (Symbol(val1), Symbol(val2)) => Ok(val1 == val2),
+            (String(val1), String(val2)) => Ok(val1 == val2),
             (Cons(val1), Cons(val2)) => {
-                let car1 = self.get_car(val1);
-                let car2 = self.get_car(val2);
+                let car1 = self.get_car(val1)?.clone();
+                let car2 = self.get_car(val2)?.clone();
 
-                let cdr1 = self.get_cdr(val1);
-                let cdr2 = self.get_cdr(val2);
+                let cdr1 = self.get_cdr(val1)?.clone();
+                let cdr2 = self.get_cdr(val2)?.clone();
 
-                self.deep_equal(car1, car2) &&
-                    self.deep_equal(cdr1, cdr2)
+                let car_equals = self.deep_equal(&car1, &car2)?;
+                let cdr_equals = self.deep_equal(&cdr1, &cdr2)?;
+
+                Ok(car_equals && cdr_equals)
             },
             (Object(val1), Object(val2)) => {
                 // todo: fix, make it checking objects and not references to them
-                val1 == val2
+                Ok(val1 == val2)
             },
-            (Function(val1), Function(val2)) => val1 == val2,
-            _ => false
+            (Function(val1), Function(val2)) => Ok(val1 == val2),
+            _ => Ok(false)
         }
     }
 
@@ -91,28 +202,46 @@ impl Interpreter {
         Value::Cons(self.cons_arena.make_cons(car, cdr))
     }
 
-    pub fn get_car(&self, cons_id: &ConsId) -> &Value {
-        self.cons_arena.get_car(&cons_id)
+    pub fn get_car(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_car(&cons_id) {
+            Ok(value) => Ok(value.clone()),
+            _ => self.make_empty_error()
+        }
     }
 
-    pub fn get_cdr(&self, cons_id: &ConsId) -> &Value {
-        self.cons_arena.get_cdr(&cons_id)
+    pub fn get_cdr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cdr(&cons_id) {
+            Ok(value) => Ok(value.clone()),
+            _ => self.make_empty_error()
+        }
     }
 
-    pub fn get_cadr(&self, cons_id: &ConsId) -> Result<Value, Error> {
-        self.cons_arena.get_cadr(&cons_id)
+    pub fn get_cadr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cadr(&cons_id) {
+            Ok(value) => Ok(value),
+            _ => self.make_empty_error()
+        }
     }
 
-    pub fn get_cddr(&self, cons_id: &ConsId) -> Result<Value, Error> {
-        self.cons_arena.get_cddr(&cons_id)
+    pub fn get_cddr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cddr(&cons_id) {
+            Ok(value) => Ok(value),
+            _ => self.make_empty_error()
+        }
     }
 
-    pub fn set_car(&mut self, cons_id: &ConsId, value: Value) {
-        self.cons_arena.set_car(&cons_id, value)
+    pub fn set_car(&mut self, cons_id: &ConsId, value: Value) -> Result<(), Error> {
+        match self.cons_arena.set_car(&cons_id, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
-    pub fn set_cdr(&mut self, cons_id: &ConsId, value: Value) {
-        self.cons_arena.set_cdr(&cons_id, value)
+    pub fn set_cdr(&mut self, cons_id: &ConsId, value: Value) -> Result<(), Error> {
+        match self.cons_arena.set_cdr(&cons_id, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn cons_from_vec(&mut self, vector: Vec<Value>) -> Value {
@@ -121,8 +250,11 @@ impl Interpreter {
         self.cons_arena.cons_from_vec(nil, vector)
     }
 
-    pub fn cons_to_vec(&mut self, cons_id: &ConsId) -> Vec<Value> {
-        self.cons_arena.cons_to_vec(cons_id)
+    pub fn cons_to_vec(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
+        match self.cons_arena.cons_to_vec(cons_id) {
+            Ok(value) => Ok(value),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn has_variable(
@@ -147,7 +279,10 @@ impl Interpreter {
         symbol: &Symbol,
         value: Value
     ) -> Result<(), Error> {
-        self.environment_arena.define_variable(environment, symbol, value)
+        match self.environment_arena.define_variable(environment, symbol, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn define_function(
@@ -156,7 +291,10 @@ impl Interpreter {
         symbol: &Symbol,
         value: Value
     ) -> Result<(), Error> {
-        self.environment_arena.define_function(environment, symbol, value)
+        match self.environment_arena.define_function(environment, symbol, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn set_variable(
@@ -165,7 +303,10 @@ impl Interpreter {
         symbol: &Symbol,
         value: Value
     ) -> Result<(), Error> {
-        self.environment_arena.set_variable(environment, symbol, value)
+        match self.environment_arena.set_variable(environment, symbol, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn set_function(
@@ -174,28 +315,31 @@ impl Interpreter {
         symbol: &Symbol,
         value: Value
     ) -> Result<(), Error> {
-        self.environment_arena.set_function(environment, symbol, value)
+        match self.environment_arena.set_function(environment, symbol, value) {
+            Ok(()) => Ok(()),
+            _ => self.make_empty_error()
+        }
     }
 
     pub fn lookup_variable(
-        &self,
+        &mut self,
         environment: EnvironmentId,
         symbol: &Symbol
-    ) -> Result<&Value, Error> {
+    ) -> Result<Value, Error> {
         match self.environment_arena.lookup_variable(environment, symbol) {
-            Some(value) => Ok(value),
-            None => Err(Error::empty())
+            Some(value) => Ok(value.clone()),
+            None => self.make_empty_error()
         }
     }
 
     pub fn lookup_function(
-        &self,
+        &mut self,
         environment: EnvironmentId,
         symbol: &Symbol
-    ) -> Result<&Value, Error> {
+    ) -> Result<Value, Error> {
         match self.environment_arena.lookup_function(environment, symbol) {
-            Some(value) => Ok(value),
-            None => Err(Error::empty())
+            Some(value) => Ok(value.clone()),
+            None => self.make_empty_error()
         }
     }
 
@@ -219,8 +363,8 @@ impl Interpreter {
         self.symbol_arena.intern(symbol_name)
     }
 
-    pub fn intern_symbol_nil(&mut self, symbol_name: &str) -> Symbol {
-        self.symbol_arena.intern(symbol_name)
+    pub fn intern_symbol_nil(&mut self) -> Symbol {
+        self.symbol_arena.intern("nil")
     }
 
     pub fn make_object(&mut self) -> ObjectId {
@@ -279,11 +423,18 @@ impl Interpreter {
     }
 
     fn extract_arguments(&mut self, cons_id: &ConsId) -> Result<Vec<Value>, Error> {
-        match self.cons_arena.get_cdr(cons_id).clone() {
-            Value::Cons(cons) => Ok(self.cons_to_vec(&cons)),
+        let cons = self.cons_arena.get_cdr(cons_id);
+
+        let cons = match cons {
+            Ok(cons) => cons,
+            Err(_) => return self.make_empty_error()
+        };
+
+        match cons {
+            Value::Cons(cons) => self.cons_to_vec(cons),
             Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
-            Value::Symbol(_) => Err(Error::empty()),
-            _ => Err(Error::empty())
+            Value::Symbol(_) => self.make_empty_error(),
+            _ => self.make_empty_error()
         }
     }
 
@@ -293,7 +444,7 @@ impl Interpreter {
         for argument in arguments {
             match self.evaluate_value(environment, &argument) {
                 Ok(evaluated_argument) => evaluated_arguments.push(evaluated_argument),
-                Err(_) => return Err(Error::empty())
+                Err(_) => return self.make_empty_error()
             }
         }
 
@@ -328,7 +479,7 @@ impl Interpreter {
         for value in code {
             last_result = match self.evaluate_value(execution_environment, value) {
                 Ok(value) => Some(value),
-                _ => return Err(Error::empty())
+                _ => return self.make_empty_error()
             };
         }
 
@@ -341,7 +492,7 @@ impl Interpreter {
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_argument_names().len() != evaluated_arguments.len() {
-            return Err(Error::empty());
+            return self.make_empty_error();
         }
 
         // 1) make new environment
@@ -396,7 +547,7 @@ impl Interpreter {
         arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_argument_names().len() != arguments.len() {
-            return Err(Error::empty());
+            return self.make_empty_error();
         }
 
         // 1) make new environment
@@ -509,7 +660,7 @@ impl Interpreter {
         };
 
         if arguments.len() != 1 {
-            return Err(Error::empty());
+            return self.make_empty_error();
         }
 
         let evaluated_argument = self.evaluate_value(
@@ -521,10 +672,10 @@ impl Interpreter {
             Ok(Value::Object(object_id)) => {
                 match self.object_arena.get_item(object_id, &name) {
                     Some(value) => Ok(value.clone()),
-                    _ => return Err(Error::empty())
+                    _ => return self.make_empty_error()
                 }
             },
-            _ => return Err(Error::empty())
+            _ => return self.make_empty_error()
         }
     }
 
@@ -534,13 +685,18 @@ impl Interpreter {
         s_expression: &ConsId
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
-        let car_value = self.cons_arena.get_car(s_expression).clone();
+        let car = self.cons_arena.get_car(s_expression).clone();
 
-        match car_value {
+        let car = match car {
+            Ok(value) => value,
+            Err(_) => return self.make_empty_error()
+        };
+
+        match car {
             Value::Symbol(func_name) => {
                 let func = match self.lookup_function(environment, &func_name) {
                     Ok(Value::Function(func)) => func.clone(),
-                    Ok(_) => return Err(Error::empty()),
+                    Ok(_) => return self.make_empty_error(),
                     Err(error) => return Err(error)
                 };
 
@@ -558,7 +714,7 @@ impl Interpreter {
             Value::Cons(cons_id) => {
                 let func = match self.evaluate_s_expression(environment, &cons_id) {
                     Ok(Value::Function(func)) => func,
-                    Ok(_) => return Err(Error::empty()),
+                    Ok(_) => return self.make_empty_error(),
                     Err(error) => return Err(error)
                 };
 
@@ -573,7 +729,7 @@ impl Interpreter {
                 &keyword_name,
                 s_expression
             ),
-            _ => return Err(Error::empty())
+            _ => return self.make_empty_error()
         }
     }
 
@@ -596,14 +752,14 @@ impl Interpreter {
         let parsed = parse_code(code);
 
         if parsed.is_err() {
-            return Err(Error::empty());
+            return self.make_empty_error();
         }
 
         // second step: read forms
         let values = if let Ok((_, code)) = parsed {
             preread_elements(self, code.get_elements())
         } else {
-            return Err(Error::empty());
+            return self.make_empty_error();
         };
 
         // third step: evaluate
@@ -807,7 +963,7 @@ mod tests {
                     match evaluated_condition {
                         Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
                         Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => Err(Error::empty())
+                        _ => interpreter.make_empty_error()
                     }
                 }
             )))

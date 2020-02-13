@@ -12,57 +12,74 @@ fn set_function_via_cons(
     function_definition_environment: EnvironmentId,
     cons_id: &ConsId
 ) -> Result<(), Error> {
-    let car = interpreter.get_car(cons_id).clone();
+    let car = match interpreter.get_car(cons_id){
+        Ok(value) => value.clone(),
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
+    };
+
     let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
             "It's not possible to redefine `nil' via special form `flet'."
-        )),
+        ),
         Value::Symbol(symbol) => {
             symbol
         },
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `flet' must be a symbol that represents function name."
-        ))
+        )
     };
 
     let cadr = interpreter.get_cadr(cons_id);
     let arguments = match cadr {
         Ok(value) => value.clone(),
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
-        ))
+        )
     };
 
     let arguments = match arguments {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
-        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
+        Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
+        _ => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
-        ))
+        )
+    };
+
+    let arguments = match arguments {
+        Ok(arguments) => arguments,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     };
 
     let argument_names = match super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
         arguments
     ) {
         Ok(names) => names,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The second item of a function definition must be a list of symbols."
-        ))
+        )
     };
 
     let cddr = interpreter.get_cddr(cons_id);
     let code = match cddr {
-        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(&cons_id),
-        Ok(Value::Symbol(symbol)) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
+        Ok(Value::Symbol(symbol)) if symbol.is_nil() => Ok(Vec::new()),
+        _ => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items.",
-        ))
+        )
+    };
+
+    let code = match code {
+        Ok(code) => code,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     };
 
     interpreter.define_function(
@@ -89,10 +106,9 @@ fn set_definition(
             function_definition_environment,
             &cons
         ),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `flet' must be a list of lists that represent functions."
-        ))
+        )
     }
 }
 
@@ -120,10 +136,9 @@ pub fn flet(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form flet must have at least one argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -133,10 +148,9 @@ pub fn flet(
         values.remove(0)
     ) {
         Ok(values) => values,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "Special form `flet' must have a first argument of function definitions"
-        ))
+        )
     };
     let forms = values;
     let function_definition_environment = interpreter.make_environment(

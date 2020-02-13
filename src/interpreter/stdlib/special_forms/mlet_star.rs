@@ -9,10 +9,9 @@ pub fn mlet_star(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `mlet*' must have at least one argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -22,10 +21,9 @@ pub fn mlet_star(
         values.remove(0)
     ) {
         Ok(values) => values,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "Special form `mlet*' must have a first argument of macro definitions"
-        ))
+        )
     };
     let forms = values;
     let macro_definition_environment = interpreter.make_environment(

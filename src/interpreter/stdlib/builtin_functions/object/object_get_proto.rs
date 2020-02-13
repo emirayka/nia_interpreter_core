@@ -9,19 +9,17 @@ pub fn object_get_proto(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:get-proto' must take only one argument."
-        ));
+        );
     }
 
     let mut values = values;
     let object_id = match values.remove(0) {
         Value::Object(object_id) => object_id,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:get-proto' must be an object."
-        ))
+        )
     };
 
     let proto_id = interpreter.get_object_proto(object_id);

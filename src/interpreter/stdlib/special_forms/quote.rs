@@ -11,10 +11,9 @@ pub fn quote(
     let mut values = values;
 
     if values.len() != 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `quote' must be called with exactly one argument."
-        ));
+        );
     }
 
     let first_argument = values.remove(0);

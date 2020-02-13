@@ -9,49 +9,43 @@ pub fn div(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `/' must take exactly two arguments."
-        ));
+        );
     }
 
     let mut values = values;
 
     let result = match (values.remove(0), values.remove(0)) {
         (Value::Integer(int1), Value::Integer(int2)) => match int2 {
-            0 => return Err(Error::zero_division_error(
-                interpreter,
+            0 => return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", int1, int2)
-            )),
+            ),
             _ => Value::Integer(int1 / int2),
         },
         (Value::Integer(int1), Value::Float(float2)) => if float2 == 0.0 {
-            return Err(Error::zero_division_error(
-                interpreter,
+            return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", int1, float2)
-            ));
+            );
         } else {
             Value::Float((int1 as f64) / float2)
         },
         (Value::Float(float1), Value::Integer(int2)) => match int2 {
-            0 => return Err(Error::zero_division_error(
-                interpreter,
+            0 => return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", float1, int2)
-            )),
+            ),
             _ => Value::Float(float1 / (int2 as f64)),
         },
         (Value::Float(float1), Value::Float(float2)) => if float2 == 0.0 {
-            return Err(Error::zero_division_error(
-                interpreter,
+            return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", float1, float2)
-            ));
+            );
         } else {
             Value::Float(float1 / float2)
         },
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "Built-in function `/' must take only integer or float values."
-        ))
+        )
     };
 
     Ok(result)

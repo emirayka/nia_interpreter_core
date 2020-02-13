@@ -12,56 +12,73 @@ fn set_macro_via_cons(
     macro_definition_environment: EnvironmentId,
     cons_id: &ConsId
 ) -> Result<(), Error> {
-    let car = interpreter.get_car(cons_id).clone();
+    let car = match interpreter.get_car(cons_id){
+        Ok(car) => car.clone(),
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
+    };
+
     let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
             "It's not possible to redefine `nil' via special form `mlet'."
-        )),
+        ),
         Value::Symbol(symbol) => {
             symbol
         },
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol that represents macro name."
-        ))
+        )
     };
 
     let cadr = interpreter.get_cadr(cons_id);
     let arguments = match cadr {
         Ok(value) => value,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items."
-        ))
+        )
     };
 
     let arguments = match arguments {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
-        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
+        Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
+        _ => return interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items."
-        ))
+        )
+    };
+
+    let arguments = match arguments {
+        Ok(arguments) => arguments,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     };
 
     let argument_names = match super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
         arguments
     ) {
         Ok(names) => names,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The second item of a macro definition must be a list of symbols."
-        ))
+        )
     };
 
     let code = match interpreter.get_cddr(cons_id) {
-        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(&cons_id),
-        Ok(Value::Symbol(symbol)) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
+        Ok(Value::Symbol(symbol)) if symbol.is_nil() => Ok(Vec::new()),
+        _ => return interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items.",
-        ))
+        )
+    };
+
+    let code = match code {
+        Ok(code) => code,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
     };
 
     interpreter.define_function(
@@ -88,10 +105,9 @@ fn set_definition(
             macro_definition_environment,
             &cons
         ),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `mlet' must be a list of lists that represent macros."
-        ))
+        )
     }
 }
 
@@ -119,10 +135,9 @@ pub fn mlet(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form mlet must have at least one argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -132,10 +147,9 @@ pub fn mlet(
         values.remove(0)
     ) {
         Ok(values) => values,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "Special form `mlet' must have a first argument of macro definitions"
-        ))
+        )
     };
     let forms = values;
     let macro_definition_environment = interpreter.make_environment(

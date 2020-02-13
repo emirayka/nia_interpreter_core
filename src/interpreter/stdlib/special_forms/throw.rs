@@ -9,10 +9,9 @@ pub fn throw(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `throw' must be called with no more than two arguments"
-        ));
+        );
     }
 
     let mut values = values;
@@ -22,10 +21,9 @@ pub fn throw(
 
         match value {
             Value::Symbol(symbol) => symbol,
-            _ => return Err(Error::invalid_argument(
-                interpreter,
+            _ => return interpreter.make_invalid_argument_error(
                 "The first argument of special form `throw' (if any) must be a symbol."
-            ))
+            )
         }
     } else {
         interpreter.intern_symbol("generic-error")
@@ -36,19 +34,18 @@ pub fn throw(
 
         match value {
             Value::String(string) => string,
-            _ => return Err(Error::invalid_argument(
-                interpreter,
+            _ => return interpreter.make_invalid_argument_error(
                 "The second argument of special form `throw' (if any) must be a string."
-            ))
+            )
         }
     } else {
         String::from("")
     };
 
-    Err(Error::generic_error(
+    interpreter.make_generic_error(
         symbol,
         &message
-    ))
+    )
 }
 
 #[cfg(test)]

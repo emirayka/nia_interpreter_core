@@ -9,27 +9,24 @@ pub fn object_set_proto(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:set-proto!' must take only one argument."
-        ));
+        );
     }
 
     let mut values = values;
     let object_id = match values.remove(0) {
         Value::Object(object_id) => object_id,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:set-proto!' must be an object."
-        ))
+        )
     };
 
     let proto_id = match values.remove(0) {
         Value::Object(object_id) => object_id,
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:set-proto!' must be an object."
-        ))
+        )
     };
 
     interpreter.set_object_proto(object_id, proto_id);

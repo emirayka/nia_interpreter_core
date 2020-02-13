@@ -9,10 +9,9 @@ pub fn cons(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `cons' must take exactly two arguments."
-        ));
+        );
     }
 
     let mut values = values;

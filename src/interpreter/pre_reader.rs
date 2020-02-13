@@ -42,10 +42,10 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
 
         interpreter.set_cdr(&current_cons_id, Value::Cons(next_cons_id));
 
-        if let Value::Cons(next_cons) = interpreter.get_cdr(&current_cons_id) {
+        if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(&current_cons_id) {
             current_cons_id = next_cons.clone();
         } else {
-            unreachable!();
+            unreachable!(); //todo: check
         }
     }
 

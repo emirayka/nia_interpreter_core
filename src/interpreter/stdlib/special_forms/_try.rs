@@ -11,29 +11,30 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
         match clause {
             Value::Cons(cons_id) => {
                 match interpreter.get_car(&cons_id) {
-                    Value::Symbol(symbol) if symbol.get_name() == "catch" => {
+                    Ok(Value::Symbol(symbol)) if symbol.get_name() == "catch" => {
                         catch_clauses.push(cons_id)
                     },
-                    _ => return Err(Error::invalid_argument(
-                        interpreter,
-                        "The first item of clauses must be lists."
-                    ))
+                    Ok(_) => return interpreter.make_invalid_argument_error(
+                        "The first item of catch clauses must be a catch symbol."
+                    ),
+                    Err(error) => return interpreter.make_generic_execution_error_caused(
+                        "",
+                        error
+                    )
                 }
             }
-            _ => return Err(Error::invalid_argument(
-                interpreter,
+            _ => return interpreter.make_invalid_argument_error(
                 "The clauses of special form `try' must be lists."
-            ))
+            )
         }
     }
 
     for clause in &catch_clauses {
         match interpreter.get_cddr(clause) {
             Ok(_) => {},
-            Err(_) => return Err(Error::invalid_argument(
-                interpreter,
+            Err(_) => return interpreter.make_invalid_argument_error(
                 "The clauses of special form `try' must be lists with two items at least."
-            ))
+            )
         }
     }
 
@@ -46,10 +47,9 @@ pub fn _try(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 2 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form `try' must take at least two arguments"
-        ));
+        );
     }
 
     let mut values = values;
@@ -72,14 +72,12 @@ pub fn _try(
             for catch_clause in catch_clauses {
                 let catch_symbol = match interpreter.get_cadr(&catch_clause) {
                     Ok(Value::Symbol(symbol)) => symbol,
-                    Ok(_) => return Err(Error::invalid_argument(
-                        interpreter,
+                    Ok(_) => return interpreter.make_invalid_argument_error(
                         "The first item of catch clause of the special form `try' must be a symbol."
-                    )),
-                    _  => return Err(Error::invalid_argument(
-                        interpreter,
+                    ),
+                    _  => return interpreter.make_invalid_argument_error(
                         "The catch clauses of special form `try' must have two items at least."
-                    ))
+                    )
                 };
 
                 if catch_symbol == error.get_symbol() {
@@ -92,16 +90,23 @@ pub fn _try(
                 Some(catch_clause) => {
                     let catch_code = match interpreter.get_cddr(&catch_clause) {
                         Ok(value) => value,
-                        Err(_) => return Err(Error::invalid_argument(
-                            interpreter,
+                        Err(_) => return interpreter.make_invalid_argument_error(
                             "The catch clauses of special form `try' must have two items at least."
-                        ))
+                        )
                     };
 
                     match catch_code {
                         Value::Symbol(symbol) if symbol.is_nil() => Ok(interpreter.intern_nil()),
                         Value::Cons(cons_id) => {
-                            let values = interpreter.cons_to_vec(&cons_id);
+                            let values = interpreter.cons_to_vec(cons_id);
+
+                            let values = match values {
+                                Ok(values) => values,
+                                Err(error) => return interpreter.make_generic_execution_error_caused(
+                                    "",
+                                    error
+                                )
+                            };
 
                             super::_lib::execute_forms(
                                 interpreter,

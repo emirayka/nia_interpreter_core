@@ -23,26 +23,20 @@ pub fn execute_forms(
 
 pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Result<Vec<Value>, Error> {
     let definitions = match value {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(&cons_id),
+        Value::Cons(cons_id) => match interpreter.cons_to_vec(cons_id) {
+            Ok(vec) => vec,
+            _ => return interpreter.make_empty_error()
+        },
         Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
-            ""
-        ))
+        _ => return interpreter.make_invalid_argument_error("")
     };
 
     for definition in &definitions {
         match definition {
             Value::Cons(_) => {},
-            Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-                interpreter,
-                ""
-            )),
+            Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(""),
             Value::Symbol(_) => {},
-            _ => return Err(Error::invalid_argument(
-                interpreter,
-                ""
-            ))
+            _ => return interpreter.make_invalid_argument_error("")
         }
     };
 

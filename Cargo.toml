@@ -7,5 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+paste = "0.1.6"
 nom = "5.1.0"
+
+[dev-dependencies]
 pretty_assertions = "0.6.1"

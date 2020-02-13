@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
 use crate::interpreter::cons::cons::Cons;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -50,85 +49,117 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn get_cons(&self, cons_id: &ConsId) -> &Cons {
-        self.arena.get(&cons_id).unwrap() // todo: change?
+    pub fn get_cons(&self, cons_id: &ConsId) -> Option<&Cons> {
+        self.arena.get(&cons_id)
     }
 
-    pub fn get_cons_mut(&mut self, cons_id: &ConsId) -> &mut Cons {
-        self.arena.get_mut(&cons_id).unwrap() // todo: change?
+    pub fn get_cons_mut(&mut self, cons_id: &ConsId) -> Option<&mut Cons> {
+        self.arena.get_mut(&cons_id)
     }
 
-    pub fn get_car(&self, cons_id: &ConsId) -> &Value {
-        self.get_cons(cons_id).get_car()
+    pub fn get_car(&self, cons_id: &ConsId) -> Result<Value, ()> {
+        match self.get_cons(cons_id) {
+            Some(cons) => Ok(cons.get_car().clone()),
+            None => Err(())
+        }
     }
 
-    pub fn get_cdr(&self, cons_id: &ConsId) -> &Value {
-        self.get_cons(cons_id).get_cdr()
+    pub fn get_cdr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+        match self.get_cons(cons_id) {
+            Some(cons) => Ok(cons.get_cdr().clone()),
+            None => Err(())
+        }
     }
 
-    pub fn get_car_mut(&mut self, cons_id: &ConsId) -> &mut Value {
-        self.get_cons_mut(cons_id).get_car_mut()
+    pub fn get_car_mut(&mut self, cons_id: &ConsId) -> Result<&mut Value, ()> {
+        match self.get_cons_mut(cons_id) {
+            Some(cons) => Ok(cons.get_car_mut()),
+            None => Err(())
+        }
     }
 
-    pub fn get_cdr_mut(&mut self, cons_id: &ConsId) -> &mut Value {
-        self.get_cons_mut(cons_id).get_cdr_mut()
+    pub fn get_cdr_mut(&mut self, cons_id: &ConsId) -> Result<&mut Value, ()> {
+        match self.get_cons_mut(cons_id) {
+            Some(cons) => Ok(cons.get_cdr_mut()),
+            None => Err(())
+        }
     }
 
-    pub fn set_car(&mut self, cons_id: &ConsId, new_car: Value) {
-        self.get_cons_mut(cons_id).set_car(new_car)
+    pub fn set_car(&mut self, cons_id: &ConsId, new_car: Value) -> Result<(), ()> {
+        match self.get_cons_mut(cons_id) {
+            Some(cons) => {
+                cons.set_car(new_car);
+
+                Ok(())
+            },
+            _ => Err(())
+        }
     }
 
-    pub fn set_cdr(&mut self, cons_id: &ConsId, new_cdr: Value) {
-        self.get_cons_mut(cons_id).set_cdr(new_cdr)
+    pub fn set_cdr(&mut self, cons_id: &ConsId, new_cdr: Value) -> Result<(), ()> {
+        match self.get_cons_mut(cons_id) {
+            Some(cons) => {
+                cons.set_cdr(new_cdr);
+
+                Ok(())
+            },
+            _ => Err(())
+        }
     }
 }
 
 impl ConsArena {
-    pub fn get_cadr(&self, cons_id: &ConsId) -> Result<Value, Error> {
-        let cdr = self.get_cdr(cons_id);
-
-        match cdr {
-            Value::Cons(cons_id) => Ok(self.get_car(cons_id).clone()),
-            _ => Err(Error::empty())
+    pub fn get_cadr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+        match self.get_cdr(cons_id) {
+            Ok(Value::Cons(cons_id)) => match self.get_car(&cons_id) {
+                Ok(value) => Ok(value.clone()),
+                _ => Err(())
+            },
+            _ => Err(())
         }
     }
 
-    pub fn get_cddr(&self, cons_id: &ConsId) -> Result<Value, Error> {
-        let cdr = self.get_cdr(cons_id);
-
-        match cdr {
-            Value::Cons(cons_id) => Ok(self.get_cdr(cons_id).clone()),
-            _ => Err(Error::empty())
+    pub fn get_cddr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+        match self.get_cdr(cons_id) {
+            Ok(Value::Cons(cons_id)) => match self.get_cdr(&cons_id) {
+                Ok(value) => Ok(value.clone()),
+                _ => Err(())
+            },
+            _ => Err(())
         }
     }
 }
 
 impl ConsArena {
-    pub fn cons_to_vec(&self, cons_id: &ConsId) -> Vec<Value> {
-        let mut vector = Vec::new();
+    pub fn cons_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, ()> {
+        let mut results = Vec::new();
         let mut current_cdr = cons_id;
 
         loop {
-            vector.push(self.get_car(current_cdr).clone());
+            match self.get_car(&current_cdr) {
+                Ok(value) => results.push(value.clone()),
+                _ => return Err(())
+            }
 
-            current_cdr = match self.get_cdr(current_cdr) {
-                Value::Cons(cons_id) => &cons_id,
-                Value::Symbol(symbol) => {
+            current_cdr = match self.get_cdr(&current_cdr) {
+                Ok(Value::Cons(cons_id)) => cons_id,
+                Ok(Value::Symbol(symbol)) => {
                     if !symbol.is_nil() {
-                        vector.push(Value::Symbol(symbol.clone()));
+                        results.push(Value::Symbol(symbol.clone()));
                     }
 
                     break;
-                }
-                value => {
-                    vector.push(value.clone());
+                },
+                Ok(value) => {
+                    results.push(value.clone());
 
                     break;
-                }
+                },
+                _ => return Err(())
             };
         }
 
-        vector
+        Ok(results)
     }
 
     pub fn cons_from_vec(&mut self, nil: Value, vector: Vec<Value>) -> Value {
@@ -182,7 +213,7 @@ mod tests {
                 cdr
             );
 
-            let result_vector = cons_arena.cons_to_vec(&cons);
+            let result_vector = cons_arena.cons_to_vec(cons).unwrap();
 
             assert_eq!(
                 vec!(
@@ -225,7 +256,7 @@ mod tests {
                     cdr
                 );
 
-                let result = cons_arena.cons_to_vec(&incorrect_cons);
+                let result = cons_arena.cons_to_vec(incorrect_cons).unwrap();
 
                 assert_eq!(&incorrect_cdr, result.last().unwrap());
             }

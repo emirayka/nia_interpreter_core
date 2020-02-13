@@ -9,10 +9,9 @@ pub fn gensym(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `gensym' must take exactly one string argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -22,10 +21,9 @@ pub fn gensym(
     } else {
         match values.remove(0) {
             Value::String(string) => string,
-            _ => return Err(Error::invalid_argument(
-                interpreter,
+            _ => return interpreter.make_invalid_argument_error(
                 "Built-in function `gensym' must take exactly one string argument."
-            ))
+            )
         }
     };
 

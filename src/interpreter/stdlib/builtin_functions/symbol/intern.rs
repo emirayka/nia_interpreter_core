@@ -9,20 +9,18 @@ pub fn intern(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `intern' must take exactly one string argument."
-        ));
+        );
     }
 
     let mut values = values;
 
     match values.remove(0) {
         Value::String(string) => Ok(interpreter.intern(&string)),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "Built-in function `intern' must take exactly one string argument."
-        ))
+        )
     }
 }
 

@@ -9,10 +9,9 @@ pub fn flookup(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `flookup' must take exactly one string argument."
-        ));
+        )
     }
 
     let mut values = values;
@@ -29,10 +28,9 @@ pub fn flookup(
                 _ => Ok(nil)
             }
         }
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "Built-in function `flookup' must take exactly one string argument."
-        ))
+        )
     }
 }
 

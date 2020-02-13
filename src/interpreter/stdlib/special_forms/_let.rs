@@ -13,44 +13,47 @@ fn set_variable_via_cons(
 ) -> Result<(), Error> {
     let car = interpreter.get_car(cons_id).clone();
 
+    let car = match car {
+        Ok(car) => car.clone(),
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
+    };
+
     let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
             "It's not possible to redefine `nil' via special form `let'."
-        )),
+        ),
         Value::Symbol(symbol) => {
             symbol
         },
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol."
-        ))
+        )
     };
 
     let cadr = interpreter.get_cadr(cons_id);
     let value = match cadr {
         Ok(value) => value.clone(),
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
-        ))
+        )
     };
 
     let value = match interpreter.execute_value(definition_value_execution_environment, &value) {
         Ok(value) => value,
-        Err(error) => return Err(Error::generic_execution_error_caused(
-            interpreter,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
             "The definitions of the special form `let' must have exactly two arguments.",
             error
-        ))
+        )
     };
 
     match interpreter.get_cddr(cons_id) {
         Ok(Value::Symbol(symbol)) if symbol.is_nil() => {},
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
-        ))
+        )
     };
 
     interpreter.define_variable(
@@ -83,19 +86,17 @@ fn set_definition(
             definition_setting_environment,
             cons_id
         ),
-        Value::Symbol(symbol) if symbol.is_nil() => return Err(Error::invalid_argument(
-            interpreter,
+        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
             "It's not possible to redefine `nil' via special form `let'."
-        )),
+        ),
         Value::Symbol(symbol) => set_variable_to_nil(
             interpreter,
             definition_setting_environment,
             &symbol
         ),
-        _ => return Err(Error::invalid_argument(
-            interpreter,
+        _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `let' must be a list of symbols, or lists."
-        ))
+        )
     }
 }
 
@@ -123,10 +124,9 @@ pub fn _let(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Special form let must have at least one argument."
-        ));
+        );
     }
 
     let mut values = values;
@@ -136,10 +136,9 @@ pub fn _let(
         values.remove(0)
     ) {
         Ok(definitions) => definitions,
-        Err(_) => return Err(Error::invalid_argument(
-            interpreter,
+        Err(_) => return interpreter.make_invalid_argument_error(
             "The first argument of special form `let' must be a list of definitions: symbol, or 2-element lists."
-        ))
+        )
     };
     let forms = values;
     let execution_environment = interpreter.make_environment(environment);

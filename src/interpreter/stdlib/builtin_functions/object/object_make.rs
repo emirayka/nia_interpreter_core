@@ -9,10 +9,9 @@ pub fn object_make(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() % 2 != 0 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:make' must take even count of arguments."
-        ));
+        );
     }
 
     let mut values = values;
@@ -31,10 +30,9 @@ pub fn object_make(
                 value
             );
         } else {
-            return Err(Error::invalid_argument(
-                interpreter,
+            return interpreter.make_invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword."
-            ));
+            );
         }
     }
 

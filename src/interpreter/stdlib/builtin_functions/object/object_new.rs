@@ -9,10 +9,9 @@ pub fn object_new(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 1 {
-        return Err(Error::invalid_argument_count(
-            interpreter,
+        return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:new' must take zero or one arguments."
-        ));
+        );
     }
 
     let mut values = values;
@@ -21,10 +20,9 @@ pub fn object_new(
     let proto_id = if values.len() > 0 {
         match values.remove(0) {
             Value::Object(proto_id) => Some(proto_id),
-            _ => return Err(Error::invalid_argument(
-                interpreter,
+            _ => return interpreter.make_invalid_argument_error(
                 "The first argument of `object:new' must be an object."
-            ))
+            )
         }
     } else {
         None
@@ -62,7 +60,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_odd_count_of_arguments_was_provided() {
+    fn returns_invalid_argument_count_error_when_odd_count_of_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(object:new {} 1)");
@@ -70,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_when_an_even_argument_is_not_a_keyword() {
+    fn returns_invalid_argument_error_when_an_even_argument_is_not_a_keyword() {
         let mut interpreter = Interpreter::new();
 
         let invalid_arguments = vec!(
