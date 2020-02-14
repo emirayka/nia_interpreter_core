@@ -10,7 +10,7 @@ fn set_function_via_cons(
     interpreter: &mut Interpreter,
     function_parent_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
-    cons_id: &ConsId
+    cons_id: ConsId
 ) -> Result<(), Error> {
     let car = match interpreter.get_car(cons_id){
         Ok(value) => value.clone(),
@@ -82,14 +82,19 @@ fn set_function_via_cons(
         )
     };
 
+    let function = Function::Interpreted(InterpretedFunction::new(
+        function_parent_environment,
+        argument_names,
+        code
+    ));
+
+    let function_id = interpreter.register_function(function);
+    let function_value = Value::Function(function_id);
+
     interpreter.define_function(
         function_definition_environment,
         &name,
-        Value::Function(Function::Interpreted(InterpretedFunction::new(
-            function_parent_environment,
-            argument_names,
-            code
-        )))
+        function_value
     )
 }
 
@@ -97,14 +102,14 @@ fn set_definition(
     interpreter: &mut Interpreter,
     function_parent_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
-    definition: &Value
+    definition: Value
 ) -> Result<(), Error> {
     match definition {
-        Value::Cons(cons) => set_function_via_cons(
+        Value::Cons(cons_id) => set_function_via_cons(
             interpreter,
             function_parent_environment,
             function_definition_environment,
-            &cons
+            cons_id
         ),
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `flet' must be a list of lists that represent functions."
@@ -123,7 +128,7 @@ pub fn set_definitions(
             interpreter,
             special_form_calling_environment,
             function_definition_environment,
-            &definition
+            definition
         )?;
     }
 

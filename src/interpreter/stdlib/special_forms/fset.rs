@@ -25,7 +25,7 @@ pub fn fset(
 
     let value = values.remove(0);
 
-    let value = match interpreter.execute_value(environment, &value) {
+    let value = match interpreter.execute_value(environment, value) {
         Ok(value) => value,
         Err(error) => return interpreter.make_generic_execution_error_caused(
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
@@ -58,24 +58,28 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::function::Function;
     use crate::interpreter::function::interpreted_function::InterpretedFunction;
+    use crate::interpreter::lib::assertion::assert_deep_equal;
 
     #[test]
     fn returns_value_that_was_set_to_function() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Function(Function::Interpreted(InterpretedFunction::new(
+        let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
             vec!(),
             vec!(
                 Value::Integer(2)
             )
-        )));
+        ));
 
+        let function_id = interpreter.register_function(function);
+
+        let expected = Value::Function(function_id);
         let result = interpreter.execute(
             "(define-function a (function (lambda () 1))) (fset! a (function (lambda () 2)))"
         );
 
-        assert_eq!(expected, result.unwrap());
+        assertion::assert_deep_equal(&mut interpreter, expected, result.unwrap());
     }
 
     #[test]

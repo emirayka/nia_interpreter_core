@@ -27,7 +27,7 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
     for (index, element) in values.iter().enumerate() {
         let value = preread_element(interpreter, element);
 
-        interpreter.set_car(&current_cons_id, value);
+        interpreter.set_car(current_cons_id, value); // todo: check error here
 
         if index == len - 1 {
             break;
@@ -40,9 +40,9 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
             nil
         );
 
-        interpreter.set_cdr(&current_cons_id, Value::Cons(next_cons_id));
+        interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id)); // todo: check error here
 
-        if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(&current_cons_id) {
+        if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(current_cons_id) {
             current_cons_id = next_cons.clone();
         } else {
             unreachable!(); //todo: check
@@ -406,10 +406,11 @@ mod tests {
                 let mut interpreter = Interpreter::new();
 
                 if let Ok((_, code)) = parse_code($code) {
-                    let result = &preread_elements(&mut interpreter, code.get_elements())[0];
+                    let result = preread_elements(&mut interpreter, code.get_elements()).remove(0);
+
                     let result = interpreter.evaluate_value(
                         interpreter.get_root_environment(),
-                        &result
+                        result
                     ).unwrap();
                     let expected: Vec<(&str, Value)> = $expected;
 
@@ -469,9 +470,12 @@ mod tests {
 
     fn assert_prereading_deeply(interpreter: &mut Interpreter, expected: Value, code: &str) {
         if let Ok((_, program)) = parse_code(code) {
-            let result = &preread_elements(interpreter, program.get_elements())[0];
+            let result = preread_elements(
+                interpreter,
+                program.get_elements()
+            ).remove(0);
 
-            assertion::assert_deep_equal(interpreter, &expected, result);
+            assertion::assert_deep_equal(interpreter, expected, result);
         }
     }
 

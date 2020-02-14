@@ -12,7 +12,7 @@ pub fn block(
     let mut results = Vec::new();
 
     for value in values {
-        let result = interpreter.execute_value(environment, &value)?;
+        let result = interpreter.execute_value(environment, value)?;
 
         results.push(result);
     }
@@ -40,8 +40,8 @@ mod tests {
 
         assertion::assert_deep_equal(
             &mut interpreter,
-            &expected,
-            &result
+            expected,
+            result
         );
 
         let cdr = interpreter.make_cons_value(
@@ -58,8 +58,8 @@ mod tests {
 
         assertion::assert_deep_equal(
             &mut interpreter,
-            &expected,
-            &result
+            expected,
+            result
         );
 
         let cdr = interpreter.make_cons_value(
@@ -81,8 +81,8 @@ mod tests {
 
         assertion::assert_deep_equal(
             &mut interpreter,
-            &expected,
-            &result
+            expected,
+            result
         );
     }
 }

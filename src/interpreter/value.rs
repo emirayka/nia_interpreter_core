@@ -1,9 +1,7 @@
 use crate::interpreter::symbol::Symbol;
-use crate::interpreter::function::Function;
 use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::cons::cons_arena::ConsId;
-
-// todo: add object
+use crate::interpreter::function::function_arena::FunctionId;
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -15,7 +13,7 @@ pub enum Value {
     String(String),
     Cons(ConsId),
     Object(ObjectId),
-    Function(Function),
+    Function(FunctionId),
 }
 
 impl PartialEq for Value {

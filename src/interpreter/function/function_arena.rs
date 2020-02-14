@@ -3,7 +3,7 @@ use crate::interpreter::function::Function;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FunctionId {
-    id: usize
+    id: usize,
 }
 
 impl FunctionId {
@@ -16,13 +16,14 @@ impl FunctionId {
 
 pub struct FunctionArena {
     arena: HashMap<FunctionId, Function>,
-    next_id: usize
+    next_id: usize,
 }
 
 impl FunctionArena {
-    pub fn new(id: usize) -> FunctionId {
-        FunctionId {
-            id
+    pub fn new() -> FunctionArena {
+        FunctionArena {
+            arena: HashMap::new(),
+            next_id: 0,
         }
     }
 
@@ -33,5 +34,9 @@ impl FunctionArena {
         self.next_id += 1;
 
         function_id
+    }
+
+    pub fn get_function(&mut self, function_id: FunctionId) -> Option<&Function> {
+        self.arena.get(&function_id)
     }
 }

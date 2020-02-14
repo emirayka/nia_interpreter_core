@@ -88,8 +88,8 @@ mod tests {
 
             assertion::assert_deep_equal(
                 &mut interpreter,
-                &value,
-                &result
+                value,
+                result
             );
         }
     }

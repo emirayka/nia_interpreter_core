@@ -2,10 +2,24 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::*;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn assert_deep_equal(interpreter: &mut Interpreter, value1: &Value, value2: &Value) {
+pub fn assert_deep_equal(interpreter: &mut Interpreter, value1: Value, value2: Value) {
     assert!(
         interpreter.deep_equal(value1, value2).unwrap()
     );
+}
+
+pub fn assert_vectors_deep_equal(interpreter: &mut Interpreter, values1: Vec<Value>, values2: Vec<Value>) {
+    let mut values1 = values1;
+    let mut values2 = values2;
+
+    assert_eq!(values1.len(), values2.len());
+
+    while values1.len() > 0 {
+        let value1 = values1.remove(0);
+        let value2 = values2.remove(0);
+
+        assert_deep_equal(interpreter, value1, value2);
+    }
 }
 
 pub fn assert_error<V, E>(error: &Result<V, E>) {

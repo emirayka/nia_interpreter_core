@@ -14,12 +14,14 @@ use crate::interpreter::environment::environment_arena::{EnvironmentArena, Envir
 use crate::interpreter::object::object_arena::ObjectArena;
 use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::cons::cons_arena::{ConsArena, ConsId};
+use crate::interpreter::function::function_arena::{FunctionArena, FunctionId};
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
     symbol_arena: SymbolArena,
     object_arena: ObjectArena,
     cons_arena: ConsArena,
+    function_arena: FunctionArena,
     root_environment: EnvironmentId,
     call_stack: (),
 }
@@ -32,12 +34,14 @@ impl Interpreter {
         let symbol_arena = SymbolArena::new();
         let object_arena = ObjectArena::new();
         let cons_arena = ConsArena::new();
+        let function_arena = FunctionArena::new();
 
         Interpreter {
             environment_arena,
             symbol_arena,
             object_arena,
             cons_arena,
+            function_arena,
             root_environment: root_env_id,
             call_stack: (),
         }
@@ -163,7 +167,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn deep_equal(&mut self, value1: &Value, value2: &Value) -> Result<bool, Error> {
+    pub fn deep_equal(&mut self, value1: Value, value2: Value) -> Result<bool, Error> {
         use crate::interpreter::value::Value::*;
 
         match (value1, value2) {
@@ -180,8 +184,8 @@ impl Interpreter {
                 let cdr1 = self.get_cdr(val1)?.clone();
                 let cdr2 = self.get_cdr(val2)?.clone();
 
-                let car_equals = self.deep_equal(&car1, &car2)?;
-                let cdr_equals = self.deep_equal(&cdr1, &cdr2)?;
+                let car_equals = self.deep_equal(car1, car2)?;
+                let cdr_equals = self.deep_equal(cdr1, cdr2)?;
 
                 Ok(car_equals && cdr_equals)
             },
@@ -189,11 +193,18 @@ impl Interpreter {
                 // todo: fix, make it checking objects and not references to them
                 Ok(val1 == val2)
             },
-            (Function(val1), Function(val2)) => Ok(val1 == val2),
+            (Function(val1), Function(val2)) => {
+                let function_1 = self.get_function(val1)?.clone();
+                let function_2 = self.get_function(val2)?.clone();
+
+                Ok(function_1 == function_2)
+            },
             _ => Ok(false)
         }
     }
+}
 
+impl Interpreter {
     pub fn make_cons(&mut self, car: Value, cdr: Value) -> ConsId {
         self.cons_arena.make_cons(car, cdr)
     }
@@ -202,43 +213,43 @@ impl Interpreter {
         Value::Cons(self.cons_arena.make_cons(car, cdr))
     }
 
-    pub fn get_car(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
-        match self.cons_arena.get_car(&cons_id) {
+    pub fn get_car(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_car(cons_id) {
             Ok(value) => Ok(value.clone()),
             _ => self.make_empty_error()
         }
     }
 
-    pub fn get_cdr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
-        match self.cons_arena.get_cdr(&cons_id) {
+    pub fn get_cdr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cdr(cons_id) {
             Ok(value) => Ok(value.clone()),
             _ => self.make_empty_error()
         }
     }
 
-    pub fn get_cadr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
-        match self.cons_arena.get_cadr(&cons_id) {
+    pub fn get_cadr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cadr(cons_id) {
             Ok(value) => Ok(value),
             _ => self.make_empty_error()
         }
     }
 
-    pub fn get_cddr(&mut self, cons_id: &ConsId) -> Result<Value, Error> {
-        match self.cons_arena.get_cddr(&cons_id) {
+    pub fn get_cddr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+        match self.cons_arena.get_cddr(cons_id) {
             Ok(value) => Ok(value),
             _ => self.make_empty_error()
         }
     }
 
-    pub fn set_car(&mut self, cons_id: &ConsId, value: Value) -> Result<(), Error> {
-        match self.cons_arena.set_car(&cons_id, value) {
+    pub fn set_car(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
+        match self.cons_arena.set_car(cons_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
     }
 
-    pub fn set_cdr(&mut self, cons_id: &ConsId, value: Value) -> Result<(), Error> {
-        match self.cons_arena.set_cdr(&cons_id, value) {
+    pub fn set_cdr(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
+        match self.cons_arena.set_cdr(cons_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
@@ -255,6 +266,28 @@ impl Interpreter {
             Ok(value) => Ok(value),
             _ => self.make_empty_error()
         }
+    }
+}
+
+impl Interpreter {
+    pub fn get_root_environment(&self) -> EnvironmentId {
+        self.root_environment
+    }
+
+    pub fn lookup_environment_by_variable(
+        &self,
+        environment: EnvironmentId,
+        variable_name: &Symbol
+    ) -> Option<EnvironmentId> {
+        self.environment_arena.lookup_environment_by_variable(environment, variable_name)
+    }
+
+    pub fn lookup_environment_by_function(
+        &self,
+        environment: EnvironmentId,
+        function_name: &Symbol
+    ) -> Option<EnvironmentId> {
+        self.environment_arena.lookup_environment_by_function(environment, function_name)
     }
 
     pub fn has_variable(
@@ -346,7 +379,9 @@ impl Interpreter {
     pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> EnvironmentId {
         self.environment_arena.alloc_child(parent_environment)
     }
+}
 
+impl Interpreter {
     pub fn intern_nil(&mut self) -> Value {
         Value::Symbol(self.symbol_arena.intern("nil"))
     }
@@ -366,7 +401,9 @@ impl Interpreter {
     pub fn intern_symbol_nil(&mut self) -> Symbol {
         self.symbol_arena.intern("nil")
     }
+}
 
+impl Interpreter {
     pub fn make_object(&mut self) -> ObjectId {
         self.object_arena.make()
     }
@@ -390,25 +427,21 @@ impl Interpreter {
     pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) {
         self.object_arena.get_object_mut(object_id).set_prototype(proto_id)
     }
+}
 
-    pub fn get_root_environment(&self) -> EnvironmentId {
-        self.root_environment
+impl Interpreter {
+    pub fn register_function(&mut self, function: Function) -> FunctionId {
+        self.function_arena.register_function(function)
     }
 
-    pub fn lookup_environment_by_variable(
-        &self,
-        environment: EnvironmentId,
-        variable_name: &Symbol
-    ) -> Option<EnvironmentId> {
-        self.environment_arena.lookup_environment_by_variable(environment, variable_name)
-    }
+    pub fn get_function(&mut self, function_id: FunctionId) -> Result<&Function, Error> {
+        let error = self.make_empty_error();
 
-    pub fn lookup_environment_by_function(
-        &self,
-        environment: EnvironmentId,
-        function_name: &Symbol
-    ) -> Option<EnvironmentId> {
-        self.environment_arena.lookup_environment_by_function(environment, function_name)
+        if let Some(function) = self.function_arena.get_function(function_id) {
+            Ok(function)
+        } else {
+            error
+        }
     }
 }
 
@@ -422,7 +455,7 @@ impl Interpreter {
         }
     }
 
-    fn extract_arguments(&mut self, cons_id: &ConsId) -> Result<Vec<Value>, Error> {
+    fn extract_arguments(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
         let cons = self.cons_arena.get_cdr(cons_id);
 
         let cons = match cons {
@@ -442,7 +475,7 @@ impl Interpreter {
         let mut evaluated_arguments = Vec::new();
 
         for argument in arguments {
-            match self.evaluate_value(environment, &argument) {
+            match self.evaluate_value(environment, argument) {
                 Ok(evaluated_argument) => evaluated_arguments.push(evaluated_argument),
                 Err(_) => return self.make_empty_error()
             }
@@ -477,7 +510,7 @@ impl Interpreter {
         let mut last_result = None;
 
         for value in code {
-            last_result = match self.evaluate_value(execution_environment, value) {
+            last_result = match self.evaluate_value(execution_environment, value.clone()) { // todo: change to *
                 Ok(value) => Some(value),
                 _ => return self.make_empty_error()
             };
@@ -581,11 +614,21 @@ impl Interpreter {
     fn evaluate_s_expression_function_invocation(
         &mut self,
         environment: EnvironmentId,
-        function: Function,
-        cons_id: &ConsId
+        function: FunctionId,
+        cons_id: ConsId
     ) -> Result<Value, Error> {
         // todo: add caused errors
-        match &function {
+        let function = self.get_function(function);
+
+        let function = match function {
+            Ok(function) => function.clone(), // todo: remove
+            Err(error) => return self.make_generic_execution_error_caused(
+                "",
+                error
+            )
+        };
+
+        match function {
             Function::Builtin(builtin_function) => {
                 // 2) evaluate arguments
                 let arguments = match self.extract_arguments(cons_id) {
@@ -600,7 +643,7 @@ impl Interpreter {
 
                 // 3) apply function from step 1 to arguments from step 2
                 self.evaluate_builtin_function_invocation(
-                    builtin_function,
+                    &builtin_function,
                     environment,
                     evaluated_arguments
                 )
@@ -618,7 +661,10 @@ impl Interpreter {
                 };
 
                 // 3) apply function from step 1 to arguments from step 2
-                self.evaluate_interpreted_function_invocation(interpreted_function, evaluated_arguments)
+                self.evaluate_interpreted_function_invocation(
+                    &interpreted_function,
+                    evaluated_arguments
+                )
             },
             Function::SpecialForm(special_form) => {
                 let arguments = match self.extract_arguments(cons_id) {
@@ -628,7 +674,7 @@ impl Interpreter {
 
                 self.evaluate_special_form_invocation(
                     environment,
-                    special_form,
+                    &special_form,
                     arguments
                 )
             },
@@ -638,8 +684,8 @@ impl Interpreter {
                     Err(error) => return Err(error)
                 };
 
-                match self.evaluate_macro_invocation(macro_function, arguments) {
-                    Ok(value) => self.evaluate_value(environment, &value),
+                match self.evaluate_macro_invocation(&macro_function, arguments) {
+                    Ok(value) => self.evaluate_value(environment, value),
                     Err(error) => return Err(error)
                 }
             }
@@ -650,11 +696,11 @@ impl Interpreter {
         &mut self,
         environment: EnvironmentId,
         keyword_name: &String,
-        cons_id: &ConsId
+        cons_id: ConsId
     ) -> Result<Value, Error> {
         let name = self.intern_symbol(keyword_name);
 
-        let arguments = match self.extract_arguments(cons_id) {
+        let mut arguments = match self.extract_arguments(cons_id) {
             Ok(arguments) => arguments,
             Err(error) => return Err(error)
         };
@@ -663,9 +709,11 @@ impl Interpreter {
             return self.make_empty_error();
         }
 
+        let argument = arguments.remove(0);
+
         let evaluated_argument = self.evaluate_value(
             environment,
-            &arguments[0]
+            argument
         );
 
         match evaluated_argument {
@@ -682,7 +730,7 @@ impl Interpreter {
     fn evaluate_s_expression(
         &mut self,
         environment: EnvironmentId,
-        s_expression: &ConsId
+        s_expression: ConsId
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
         let car = self.cons_arena.get_car(s_expression).clone();
@@ -694,7 +742,7 @@ impl Interpreter {
 
         match car {
             Value::Symbol(func_name) => {
-                let func = match self.lookup_function(environment, &func_name) {
+                let function_id = match self.lookup_function(environment, &func_name) {
                     Ok(Value::Function(func)) => func.clone(),
                     Ok(_) => return self.make_empty_error(),
                     Err(error) => return Err(error)
@@ -702,17 +750,17 @@ impl Interpreter {
 
                 self.evaluate_s_expression_function_invocation(
                     environment,
-                    func,
+                    function_id,
                     s_expression
                 )
             },
-            Value::Function(func) => self.evaluate_s_expression_function_invocation(
+            Value::Function(function_id) => self.evaluate_s_expression_function_invocation(
                 environment,
-                func.clone(),
+                function_id,
                 s_expression
             ),
             Value::Cons(cons_id) => {
-                let func = match self.evaluate_s_expression(environment, &cons_id) {
+                let function_id = match self.evaluate_s_expression(environment, cons_id) {
                     Ok(Value::Function(func)) => func,
                     Ok(_) => return self.make_empty_error(),
                     Err(error) => return Err(error)
@@ -720,7 +768,7 @@ impl Interpreter {
 
                 self.evaluate_s_expression_function_invocation(
                     environment,
-                    func,
+                    function_id,
                     s_expression
                 )
             }
@@ -733,9 +781,9 @@ impl Interpreter {
         }
     }
 
-    pub fn evaluate_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, Error> {
+    pub fn evaluate_value(&mut self, environment: EnvironmentId, value: Value) -> Result<Value, Error> {
         match value {
-            Value::Symbol(symbol_name) => self.evaluate_symbol(environment, symbol_name),
+            Value::Symbol(symbol_name) => self.evaluate_symbol(environment, &symbol_name),
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
             _ => Ok(value.clone())
         }
@@ -743,7 +791,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn execute_value(&mut self, environment: EnvironmentId, value: &Value) -> Result<Value, Error> {
+    pub fn execute_value(&mut self, environment: EnvironmentId, value: Value) -> Result<Value, Error> {
         self.evaluate_value(environment, value)
     }
 
@@ -766,7 +814,7 @@ impl Interpreter {
         let mut results: Vec<Value> = Vec::new();
 
         for value in values {
-            match self.execute_value(self.root_environment, &value) {
+            match self.execute_value(self.root_environment, value) {
                 Ok(result) => results.push(result),
                 Err(error) => return Err(error)
             }
@@ -929,14 +977,18 @@ mod tests {
 
         let name = interpreter.intern_symbol("test");
 
+        let function = Function::Interpreted(InterpretedFunction::new(
+            interpreter.root_environment,
+            vec!("a".to_string(), "b".to_string()),
+            code
+        ));
+
+        let function_id = interpreter.register_function(function);
+
         interpreter.environment_arena.define_function(
             interpreter.root_environment,
             &name,
-            Value::Function(Function::Interpreted(InterpretedFunction::new(
-                interpreter.root_environment,
-                vec!("a".to_string(), "b".to_string()),
-                code
-            )))
+            Value::Function(function_id)
         ).unwrap();
 
         let result = interpreter.execute("(test 3 2)");
@@ -948,25 +1000,31 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let name = interpreter.intern_symbol("testif");
+        let function = Function::SpecialForm(SpecialFormFunction::new(
+            |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
+                let mut values = values;
+
+                let condition = values.remove(0);
+                let then_clause = values.remove(0);
+                let else_clause = values.remove(0);
+
+                let evaluated_condition = interpreter.evaluate_value(environment, condition);
+
+                match evaluated_condition {
+                    Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
+                    Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
+                    _ => interpreter.make_empty_error()
+                }
+            }
+        ));
+
+        let function_id = interpreter.register_function(function);
+        let function_value = Value::Function(function_id);
 
         interpreter.environment_arena.define_function(
             interpreter.root_environment,
             &name,
-            Value::Function(Function::SpecialForm(SpecialFormFunction::new(
-                |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
-                    let condition = &values[0];
-                    let then_clause = &values[1];
-                    let else_clause = &values[2];
-
-                    let evaluated_condition = interpreter.evaluate_value(environment, condition);
-
-                    match evaluated_condition {
-                        Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
-                        Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => interpreter.make_empty_error()
-                    }
-                }
-            )))
+            function_value
         ).unwrap();
 
         let result = interpreter.execute("(testif #t 1 2)");

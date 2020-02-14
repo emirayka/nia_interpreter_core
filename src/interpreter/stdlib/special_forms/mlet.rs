@@ -10,7 +10,7 @@ fn set_macro_via_cons(
     interpreter: &mut Interpreter,
     macro_parent_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    cons_id: &ConsId
+    cons_id: ConsId
 ) -> Result<(), Error> {
     let car = match interpreter.get_car(cons_id){
         Ok(car) => car.clone(),
@@ -81,14 +81,19 @@ fn set_macro_via_cons(
         )
     };
 
+    let function = Function::Macro(MacroFunction::new(
+        macro_parent_environment,
+        argument_names,
+        code
+    ));
+
+    let function_id = interpreter.register_function(function);
+    let function_value = Value::Function(function_id);
+
     interpreter.define_function(
         macro_definition_environment,
         &name,
-        Value::Function(Function::Macro(MacroFunction::new(
-            macro_parent_environment,
-            argument_names,
-            code
-        )))
+        function_value
     )
 }
 
@@ -96,14 +101,14 @@ fn set_definition(
     interpreter: &mut Interpreter,
     macro_parent_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    definition: &Value
+    definition: Value
 ) -> Result<(), Error> {
     match definition {
         Value::Cons(cons) => set_macro_via_cons(
             interpreter,
             macro_parent_environment,
             macro_definition_environment,
-            &cons
+            cons
         ),
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `mlet' must be a list of lists that represent macros."
@@ -122,7 +127,7 @@ pub fn set_definitions(
             interpreter,
             special_form_calling_environment,
             macro_definition_environment,
-            &definition
+            definition
         )?;
     }
 

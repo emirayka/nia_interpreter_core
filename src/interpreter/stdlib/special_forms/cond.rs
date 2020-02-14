@@ -7,7 +7,7 @@ use crate::interpreter::cons::cons_arena::ConsId;
 fn execute_part(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    part_cons_id: &ConsId
+    part_cons_id: ConsId
 ) -> Result<Option<Value>, Error> {
     let part_action = match interpreter.get_cadr(part_cons_id) {
         Ok(value) => value, // todo: check error
@@ -22,12 +22,12 @@ fn execute_part(
         )
     };
 
-    let predicate_result = interpreter.execute_value(environment, &part_predicate);
+    let predicate_result = interpreter.execute_value(environment, part_predicate);
 
     match predicate_result {
         Ok(value) => match value {
             Value::Boolean(true) => {
-                let action_result = interpreter.execute_value(environment, &part_action);
+                let action_result = interpreter.execute_value(environment, part_action);
 
                 match action_result {
                     Ok(result) => Ok(Some(result)),
@@ -50,7 +50,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
     let mut result = Ok(interpreter.intern_nil());
 
     for value in values {
-        if let Value::Cons(part) = &value {
+        if let Value::Cons(part) = value {
             match execute_part(interpreter, environment, part) {
                 Ok(Some(value)) => {
                     result = Ok(value);

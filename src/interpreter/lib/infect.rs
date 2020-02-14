@@ -6,7 +6,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::{SpecialFormFunctionType, SpecialFormFunction};
 use crate::interpreter::object::object::ObjectId;
 
-pub fn infect_object(
+pub fn infect_object_function(
     interpreter: &mut Interpreter,
     object_id: ObjectId,
     item_name: &str,
@@ -14,10 +14,14 @@ pub fn infect_object(
 ) -> Result<(), Error> {
     let name = interpreter.intern_symbol(item_name);
 
+    let function = Function::Builtin(BuiltinFunction::new(func));
+    let function_id = interpreter.register_function(function);
+    let function_value = Value::Function(function_id);
+
     interpreter.set_object_item(
         object_id,
         &name,
-        Value::Function(Function::Builtin(BuiltinFunction::new(func)))
+        function_value
     );
 
     Ok(())
@@ -30,10 +34,14 @@ pub fn infect_builtin_function(
 ) -> Result<(), Error> {
     let name = interpreter.intern_symbol(name);
 
+    let function = Function::Builtin(BuiltinFunction::new(func));
+    let function_id = interpreter.register_function(function);
+    let function_value = Value::Function(function_id);
+
     let result = interpreter.define_function(
         interpreter.get_root_environment(),
         &name,
-        Value::Function(Function::Builtin(BuiltinFunction::new(func)))
+        function_value
     );
 
     match result {
@@ -49,10 +57,14 @@ pub fn infect_special_form(
 ) -> Result<(), Error> {
     let name = interpreter.intern_symbol(name);
 
+    let function = Function::SpecialForm(SpecialFormFunction::new(func));
+    let function_id = interpreter.register_function(function);
+    let function_value = Value::Function(function_id);
+
     let result = interpreter.define_function(
         interpreter.get_root_environment(),
         &name,
-        Value::Function(Function::SpecialForm(SpecialFormFunction::new(func)))
+        function_value
     );
 
     match result {

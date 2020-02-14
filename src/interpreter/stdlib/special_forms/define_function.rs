@@ -31,7 +31,7 @@ pub fn define_function(
     };
 
     let evaluated_value = match second_argument {
-        Some(value) => interpreter.evaluate_value(environment, &value),
+        Some(value) => interpreter.evaluate_value(environment, value),
         None => Ok(interpreter.intern_nil())
     };
 

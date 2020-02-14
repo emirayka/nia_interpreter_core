@@ -10,7 +10,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
     for clause in clauses {
         match clause {
             Value::Cons(cons_id) => {
-                match interpreter.get_car(&cons_id) {
+                match interpreter.get_car(cons_id) {
                     Ok(Value::Symbol(symbol)) if symbol.get_name() == "catch" => {
                         catch_clauses.push(cons_id)
                     },
@@ -30,7 +30,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
     }
 
     for clause in &catch_clauses {
-        match interpreter.get_cddr(clause) {
+        match interpreter.get_cddr(*clause) {
             Ok(_) => {},
             Err(_) => return interpreter.make_invalid_argument_error(
                 "The clauses of special form `try' must be lists with two items at least."
@@ -62,7 +62,7 @@ pub fn _try(
         Err(error) => return Err(error)
     };
 
-    let try_result = interpreter.execute_value(environment, &try_code);
+    let try_result = interpreter.execute_value(environment, try_code);
 
     match try_result {
         Ok(try_value) => Ok(try_value),
@@ -70,7 +70,7 @@ pub fn _try(
             let mut found_clause = None;
 
             for catch_clause in catch_clauses {
-                let catch_symbol = match interpreter.get_cadr(&catch_clause) {
+                let catch_symbol = match interpreter.get_cadr(catch_clause) {
                     Ok(Value::Symbol(symbol)) => symbol,
                     Ok(_) => return interpreter.make_invalid_argument_error(
                         "The first item of catch clause of the special form `try' must be a symbol."
@@ -88,7 +88,7 @@ pub fn _try(
 
             match found_clause {
                 Some(catch_clause) => {
-                    let catch_code = match interpreter.get_cddr(&catch_clause) {
+                    let catch_code = match interpreter.get_cddr(catch_clause) {
                         Ok(value) => value,
                         Err(_) => return interpreter.make_invalid_argument_error(
                             "The catch clauses of special form `try' must have two items at least."

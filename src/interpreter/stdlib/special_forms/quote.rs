@@ -53,8 +53,8 @@ mod tests {
 
         assertion::assert_deep_equal(
             &mut interpreter,
-            &expected,
-            &result
+            expected,
+            result
         );
 
 //        Function(func) - lol, how to test this
@@ -86,8 +86,8 @@ mod tests {
         let result = interpreter.execute("'(1 2)").unwrap();
         assertion::assert_deep_equal(
             &mut interpreter,
-            &expected,
-            &result
+            expected,
+            result
         );
 
 //        Function(func) - lol, how to test this
@@ -110,16 +110,16 @@ mod tests {
         );
 
         let result = interpreter.execute("(quote (quote cute-symbol))").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result); // todo: remove clone here
 
         let result = interpreter.execute("(quote 'cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result);
 
         let result = interpreter.execute("'(quote cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result);
 
         let result = interpreter.execute("''cute-symbol").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, &expected, &result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
 
 //        Function(func) - lol, how to test this
     }

@@ -24,27 +24,37 @@ fn parse_argument_names(values: Vec<Value>) -> Result<Vec<String>, ()> {
 }
 
 fn construct_interpreted_function(
+    interpreter: &mut Interpreter,
     environment: EnvironmentId,
     argument_names: Vec<String>,
     code: Vec<Value>
 ) -> Value {
-    Value::Function(Function::Interpreted(InterpretedFunction::new(
+    let function = Function::Interpreted(InterpretedFunction::new(
         environment,
         argument_names,
         code
-    )))
+    ));
+
+    let function_id = interpreter.register_function(function);
+
+    Value::Function(function_id)
 }
 
 fn construct_macro_function(
+    interpreter: &mut Interpreter,
     environment: EnvironmentId,
     argument_names: Vec<String>,
     code: Vec<Value>
 ) -> Value {
-    Value::Function(Function::Macro(MacroFunction::new(
+    let function = Function::Macro(MacroFunction::new(
         environment,
         argument_names,
         code
-    )))
+    ));
+
+    let function_id = interpreter.register_function(function);
+
+    Value::Function(function_id)
 }
 
 pub fn function(
@@ -109,6 +119,7 @@ pub fn function(
     match lambda_or_macro_symbol {
         Value::Symbol(symbol) if symbol.get_name() == "lambda" => {
             Ok(construct_interpreted_function(
+                interpreter,
                 environment,
                 argument_names,
                 code
@@ -116,6 +127,7 @@ pub fn function(
         },
         Value::Symbol(symbol) if symbol.get_name() == "macro" => {
             Ok(construct_macro_function(
+                interpreter,
                 environment,
                 argument_names,
                 code
@@ -136,7 +148,7 @@ mod tests {
     fn constructs_simple_function() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Function(Function::Interpreted(InterpretedFunction::new(
+        let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
             vec!(
                 String::from("first-arg"),
@@ -146,7 +158,11 @@ mod tests {
                 interpreter.intern("first-arg"),
                 interpreter.intern("second-arg")
             )
-        )));
+        ));
+
+        let function_id = interpreter.register_function(function);
+
+        let expected = Value::Function(function_id);
 
         let result = interpreter.execute(
             "(function (lambda (first-arg second-arg) first-arg second-arg))"
@@ -154,14 +170,14 @@ mod tests {
         assert!(result.is_ok());
 
         let result = result.unwrap();
-        assert_eq!(expected, result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
     fn constructs_simple_macro() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Function(Function::Macro(MacroFunction::new(
+        let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
             vec!(
                 String::from("first-arg"),
@@ -171,7 +187,11 @@ mod tests {
                 interpreter.intern("first-arg"),
                 interpreter.intern("second-arg")
             )
-        )));
+        ));
+
+        let function_id = interpreter.register_function(function);
+
+        let expected = Value::Function(function_id);
 
         let result = interpreter.execute(
             "(function (macro (first-arg second-arg) first-arg second-arg))"
@@ -179,20 +199,24 @@ mod tests {
         assert!(result.is_ok());
 
         let result = result.unwrap();
-        assert_eq!(expected, result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Function(Function::Interpreted(InterpretedFunction::new(
+        let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
             vec!(),
             vec!(
                 Value::Integer(1)
             )
-        )));
+        ));
+
+        let function_id = interpreter.register_function( function);
+
+        let expected = Value::Function(function_id);
 
         let result = interpreter.execute(
             "(function (lambda () 1))"
@@ -200,20 +224,24 @@ mod tests {
         assert!(result.is_ok());
 
         let result = result.unwrap();
-        assert_eq!(expected, result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Function(Function::Macro(MacroFunction::new(
+        let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
             vec!(),
             vec!(
                 Value::Integer(1)
             )
-        )));
+        ));
+
+        let function_id = interpreter.register_function(function);
+
+        let expected = Value::Function(function_id);
 
         let result = interpreter.execute(
             "(function (macro () 1))"
@@ -221,7 +249,7 @@ mod tests {
         assert!(result.is_ok());
 
         let result = result.unwrap();
-        assert_eq!(expected, result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -229,15 +257,12 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(function)");
-
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(function 1 2)");
-
         assertion::assert_invalid_argument_count_error(&result);
 
         let result = interpreter.execute("(function 1 2 3)");
-
         assertion::assert_invalid_argument_count_error(&result);
     }
 
@@ -269,7 +294,6 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(function (special-form () 2))");
-
         assertion::assert_invalid_argument_error(&result);
     }
 
@@ -278,11 +302,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(function (lambda))");
-
         assertion::assert_invalid_argument_error(&result);
 
         let result = interpreter.execute("(function (lambda ()))");
-
         assertion::assert_invalid_argument_error(&result);
     }
 

@@ -25,7 +25,7 @@ pub fn set(
 
     let value = values.remove(0);
 
-    let value = match interpreter.execute_value(environment, &value) {
+    let value = match interpreter.execute_value(environment, value) {
         Ok(value) => value,
         Err(error) => return interpreter.make_generic_execution_error_caused(
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description

@@ -11,7 +11,7 @@ pub fn execute_forms(
     let mut last_result = None;
 
     for form in forms {
-        let result = interpreter.execute_value(execution_environment, &form)?;
+        let result = interpreter.execute_value(execution_environment, form)?;
         last_result = Some(result);
     }
 
@@ -144,21 +144,15 @@ mod tests {
             expected.push(interpreter.execute("(quote (1 2))").unwrap());
 
             let value = interpreter.execute("(quote ((1 2) (1 2)))").unwrap();
-            let result = read_let_definitions(
+            let mut result = read_let_definitions(
                 &mut interpreter,
                 value
             ).unwrap();
 
-            assertion::assert_deep_equal(
+            assertion::assert_vectors_deep_equal(
                 &mut interpreter,
-                &expected[0],
-                &result[0]
-            );
-
-            assertion::assert_deep_equal(
-                &mut interpreter,
-                &expected[1],
-                &result[1]
+                expected,
+                result
             );
         }
 

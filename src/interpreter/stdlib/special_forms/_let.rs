@@ -9,7 +9,7 @@ fn set_variable_via_cons(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    cons_id: &ConsId
+    cons_id: ConsId
 ) -> Result<(), Error> {
     let car = interpreter.get_car(cons_id).clone();
 
@@ -41,7 +41,7 @@ fn set_variable_via_cons(
         )
     };
 
-    let value = match interpreter.execute_value(definition_value_execution_environment, &value) {
+    let value = match interpreter.execute_value(definition_value_execution_environment, value) {
         Ok(value) => value,
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "The definitions of the special form `let' must have exactly two arguments.",
@@ -77,7 +77,7 @@ fn set_definition(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    definition: &Value
+    definition: Value
 ) -> Result<(), Error> {
     match definition {
         Value::Cons(cons_id) => set_variable_via_cons(
@@ -111,7 +111,7 @@ pub fn set_definitions(
             interpreter,
             definition_value_execution_environment,
             definition_setting_environment,
-            &definition
+            definition
         )?;
     }
 
@@ -188,8 +188,8 @@ mod tests {
 
             assertion::assert_deep_equal(
                 &mut interpreter,
-                &value,
-                &result
+                value,
+                result
             );
         }
     }

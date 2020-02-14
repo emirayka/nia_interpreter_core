@@ -49,43 +49,43 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn get_cons(&self, cons_id: &ConsId) -> Option<&Cons> {
+    pub fn get_cons(&self, cons_id: ConsId) -> Option<&Cons> {
         self.arena.get(&cons_id)
     }
 
-    pub fn get_cons_mut(&mut self, cons_id: &ConsId) -> Option<&mut Cons> {
+    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Option<&mut Cons> {
         self.arena.get_mut(&cons_id)
     }
 
-    pub fn get_car(&self, cons_id: &ConsId) -> Result<Value, ()> {
+    pub fn get_car(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
             Some(cons) => Ok(cons.get_car().clone()),
             None => Err(())
         }
     }
 
-    pub fn get_cdr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+    pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
             Some(cons) => Ok(cons.get_cdr().clone()),
             None => Err(())
         }
     }
 
-    pub fn get_car_mut(&mut self, cons_id: &ConsId) -> Result<&mut Value, ()> {
+    pub fn get_car_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
         match self.get_cons_mut(cons_id) {
             Some(cons) => Ok(cons.get_car_mut()),
             None => Err(())
         }
     }
 
-    pub fn get_cdr_mut(&mut self, cons_id: &ConsId) -> Result<&mut Value, ()> {
+    pub fn get_cdr_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
         match self.get_cons_mut(cons_id) {
             Some(cons) => Ok(cons.get_cdr_mut()),
             None => Err(())
         }
     }
 
-    pub fn set_car(&mut self, cons_id: &ConsId, new_car: Value) -> Result<(), ()> {
+    pub fn set_car(&mut self, cons_id: ConsId, new_car: Value) -> Result<(), ()> {
         match self.get_cons_mut(cons_id) {
             Some(cons) => {
                 cons.set_car(new_car);
@@ -96,7 +96,7 @@ impl ConsArena {
         }
     }
 
-    pub fn set_cdr(&mut self, cons_id: &ConsId, new_cdr: Value) -> Result<(), ()> {
+    pub fn set_cdr(&mut self, cons_id: ConsId, new_cdr: Value) -> Result<(), ()> {
         match self.get_cons_mut(cons_id) {
             Some(cons) => {
                 cons.set_cdr(new_cdr);
@@ -109,9 +109,9 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn get_cadr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+    pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cdr(cons_id) {
-            Ok(Value::Cons(cons_id)) => match self.get_car(&cons_id) {
+            Ok(Value::Cons(cons_id)) => match self.get_car(cons_id) {
                 Ok(value) => Ok(value.clone()),
                 _ => Err(())
             },
@@ -119,9 +119,9 @@ impl ConsArena {
         }
     }
 
-    pub fn get_cddr(&self, cons_id: &ConsId) -> Result<Value, ()> {
+    pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cdr(cons_id) {
-            Ok(Value::Cons(cons_id)) => match self.get_cdr(&cons_id) {
+            Ok(Value::Cons(cons_id)) => match self.get_cdr(cons_id) {
                 Ok(value) => Ok(value.clone()),
                 _ => Err(())
             },
@@ -136,12 +136,12 @@ impl ConsArena {
         let mut current_cdr = cons_id;
 
         loop {
-            match self.get_car(&current_cdr) {
+            match self.get_car(current_cdr) {
                 Ok(value) => results.push(value.clone()),
                 _ => return Err(())
             }
 
-            current_cdr = match self.get_cdr(&current_cdr) {
+            current_cdr = match self.get_cdr(current_cdr) {
                 Ok(Value::Cons(cons_id)) => cons_id,
                 Ok(Value::Symbol(symbol)) => {
                     if !symbol.is_nil() {
