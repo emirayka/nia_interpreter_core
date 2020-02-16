@@ -1,7 +1,8 @@
-use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::interpreter::Interpreter;
 
 pub fn object_make(
     interpreter: &mut Interpreter,
@@ -80,7 +81,7 @@ mod tests {
         assert_object_has_values!(
             vec!(
                 ("a", Value::Integer(1)),
-                ("b", Value::String(String::from("string"))),
+                ("b", Value::String(StringId::new(0))),
             ),
             "(object:make :a 1 :b \"string\")"
          );

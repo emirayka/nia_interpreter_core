@@ -16,12 +16,22 @@ pub fn intern(
 
     let mut values = values;
 
-    match values.remove(0) {
-        Value::String(string) => Ok(interpreter.intern(&string)),
+    let string_id = match values.remove(0) {
+        Value::String(string_id) => string_id,
         _ => return interpreter.make_invalid_argument_error(
             "Built-in function `intern' must take exactly one string argument."
         )
-    }
+    };
+
+    let symbol_name = match interpreter.get_string(string_id) {
+        Ok(string) => String::from(string.get_string()), // todo: fix, looks shitty
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
+        )
+    };
+
+    Ok(interpreter.intern(&symbol_name))
 }
 
 #[cfg(test)]

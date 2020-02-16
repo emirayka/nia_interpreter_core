@@ -53,8 +53,8 @@ impl PrefixElement {
         self.prefix
     }
 
-    pub fn get_value(&self) -> &Element {
-        self.value.as_ref()
+    pub fn get_value(self) -> Element {
+        *self.value
     }
 }
 

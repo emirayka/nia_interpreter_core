@@ -193,6 +193,8 @@ mod tests {
     #[cfg(test)]
     mod cons_to_vec {
         use super::*;
+        use crate::interpreter::string::string_arena::StringId;
+        use crate::interpreter::interpreter::Interpreter;
 
         #[test]
         fn test_returns_correct_vector_that_represents_values_in_cons_cells() {
@@ -235,7 +237,7 @@ mod tests {
                 Value::Boolean(true),
                 Value::Boolean(false),
                 Value::Symbol(new_symbol("not-nil-symbol")),
-                Value::String(String::from("string")),
+                Value::String(StringId::new(1024)),
                 Value::Keyword(String::from("string")),
                 //Value::Function() todo: fix
             );

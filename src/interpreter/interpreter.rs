@@ -15,12 +15,15 @@ use crate::interpreter::object::object_arena::ObjectArena;
 use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::cons::cons_arena::{ConsArena, ConsId};
 use crate::interpreter::function::function_arena::{FunctionArena, FunctionId};
+use crate::interpreter::string::string_arena::{StringArena, StringId};
+use crate::interpreter::string::string::VString;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
+    string_arena: StringArena,
     symbol_arena: SymbolArena,
-    object_arena: ObjectArena,
     cons_arena: ConsArena,
+    object_arena: ObjectArena,
     function_arena: FunctionArena,
     root_environment: EnvironmentId,
     call_stack: (),
@@ -31,16 +34,18 @@ impl Interpreter {
         let mut environment_arena = EnvironmentArena::new();
         let root_env_id = environment_arena.alloc();
 
+        let string_arena = StringArena::new();
         let symbol_arena = SymbolArena::new();
-        let object_arena = ObjectArena::new();
         let cons_arena = ConsArena::new();
+        let object_arena = ObjectArena::new();
         let function_arena = FunctionArena::new();
 
         Interpreter {
             environment_arena,
+            string_arena,
             symbol_arena,
-            object_arena,
             cons_arena,
+            object_arena,
             function_arena,
             root_environment: root_env_id,
             call_stack: (),
@@ -176,7 +181,12 @@ impl Interpreter {
             (Boolean(val1), Boolean(val2)) => Ok(val1 == val2),
             (Keyword(val1), Keyword(val2)) => Ok(val1 == val2),
             (Symbol(val1), Symbol(val2)) => Ok(val1 == val2),
-            (String(val1), String(val2)) => Ok(val1 == val2),
+            (String(val1), String(val2)) => {
+                let string1 = self.get_string(val1)?.clone(); // todo: fix that clone?
+                let string2 = self.get_string(val2)?.clone();
+
+                Ok(string1 == string2)
+            },
             (Cons(val1), Cons(val2)) => {
                 let car1 = self.get_car(val1)?.clone();
                 let car2 = self.get_car(val2)?.clone();
@@ -201,6 +211,47 @@ impl Interpreter {
             },
             _ => Ok(false)
         }
+    }
+}
+
+impl Interpreter {
+    pub fn make_string(&mut self, string: String) -> StringId {
+        self.string_arena.make_string(string)
+    }
+
+    pub fn make_string_value(&mut self, string: String) -> Value {
+        Value::String(self.make_string(string))
+    }
+
+    pub fn get_string(&mut self, string_id: StringId) -> Result<&VString, Error> {
+        let error = self.make_empty_error(); // todo: fix, looks shitty
+
+        match self.string_arena.get_string(string_id) {
+            Some(string) => Ok(string),
+            _ => error
+        }
+    }
+}
+
+impl Interpreter {
+    pub fn intern_nil(&mut self) -> Value {
+        Value::Symbol(self.symbol_arena.intern("nil"))
+    }
+
+    pub fn intern(&mut self, symbol_name: &str) -> Value {
+        Value::Symbol(self.symbol_arena.intern(symbol_name))
+    }
+
+    pub fn gensym(&mut self, symbol_name: &str) -> Symbol {
+        self.symbol_arena.gensym(symbol_name)
+    }
+
+    pub fn intern_symbol(&mut self, symbol_name: &str) -> Symbol {
+        self.symbol_arena.intern(symbol_name)
+    }
+
+    pub fn intern_symbol_nil(&mut self) -> Symbol {
+        self.symbol_arena.intern("nil")
     }
 }
 
@@ -265,6 +316,48 @@ impl Interpreter {
         match self.cons_arena.cons_to_vec(cons_id) {
             Ok(value) => Ok(value),
             _ => self.make_empty_error()
+        }
+    }
+}
+
+impl Interpreter {
+    pub fn make_object(&mut self) -> ObjectId {
+        self.object_arena.make()
+    }
+
+    pub fn make_child_object(&mut self, prototype_id: ObjectId) -> ObjectId {
+        self.object_arena.make_child(prototype_id)
+    }
+
+    pub fn get_object_item(&self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
+        self.object_arena.get_item(object_id, key)
+    }
+
+    pub fn set_object_item(&mut self, object_id: ObjectId, key: &Symbol, value: Value) {
+        self.object_arena.set_item(object_id, key, value);
+    }
+
+    pub fn get_object_proto(&self, object_id: ObjectId) -> Option<ObjectId> {
+        self.object_arena.get_object(object_id).get_prototype()
+    }
+
+    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) {
+        self.object_arena.get_object_mut(object_id).set_prototype(proto_id)
+    }
+}
+
+impl Interpreter {
+    pub fn register_function(&mut self, function: Function) -> FunctionId {
+        self.function_arena.register_function(function)
+    }
+
+    pub fn get_function(&mut self, function_id: FunctionId) -> Result<&Function, Error> {
+        let error = self.make_empty_error();
+
+        if let Some(function) = self.function_arena.get_function(function_id) {
+            Ok(function)
+        } else {
+            error
         }
     }
 }
@@ -378,70 +471,6 @@ impl Interpreter {
 
     pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> EnvironmentId {
         self.environment_arena.alloc_child(parent_environment)
-    }
-}
-
-impl Interpreter {
-    pub fn intern_nil(&mut self) -> Value {
-        Value::Symbol(self.symbol_arena.intern("nil"))
-    }
-
-    pub fn intern(&mut self, symbol_name: &str) -> Value {
-        Value::Symbol(self.symbol_arena.intern(symbol_name))
-    }
-
-    pub fn gensym(&mut self, symbol_name: &str) -> Symbol {
-        self.symbol_arena.gensym(symbol_name)
-    }
-
-    pub fn intern_symbol(&mut self, symbol_name: &str) -> Symbol {
-        self.symbol_arena.intern(symbol_name)
-    }
-
-    pub fn intern_symbol_nil(&mut self) -> Symbol {
-        self.symbol_arena.intern("nil")
-    }
-}
-
-impl Interpreter {
-    pub fn make_object(&mut self) -> ObjectId {
-        self.object_arena.make()
-    }
-
-    pub fn make_child_object(&mut self, prototype_id: ObjectId) -> ObjectId {
-        self.object_arena.make_child(prototype_id)
-    }
-
-    pub fn get_object_item(&self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
-        self.object_arena.get_item(object_id, key)
-    }
-
-    pub fn set_object_item(&mut self, object_id: ObjectId, key: &Symbol, value: Value) {
-        self.object_arena.set_item(object_id, key, value);
-    }
-
-    pub fn get_object_proto(&self, object_id: ObjectId) -> Option<ObjectId> {
-        self.object_arena.get_object(object_id).get_prototype()
-    }
-
-    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) {
-        self.object_arena.get_object_mut(object_id).set_prototype(proto_id)
-    }
-}
-
-impl Interpreter {
-    pub fn register_function(&mut self, function: Function) -> FunctionId {
-        self.function_arena.register_function(function)
-    }
-
-    pub fn get_function(&mut self, function_id: FunctionId) -> Result<&Function, Error> {
-        let error = self.make_empty_error();
-
-        if let Some(function) = self.function_arena.get_function(function_id) {
-            Ok(function)
-        } else {
-            error
-        }
     }
 }
 
@@ -829,6 +858,7 @@ impl Interpreter {
 mod tests {
     use super::*;
     use crate::interpreter::lib::testing_helpers::make_value_pairs_ifbsyk;
+    use crate::interpreter::lib::assertion;
 
     macro_rules! assert_execution_result_eq {
         ($expected:expr, $code:expr) => {
@@ -857,7 +887,16 @@ mod tests {
 
     #[test]
     pub fn executes_string_correctly() {
-        assert_execution_result_eq!(Value::String(String::from("tas")), r#""tas""#);
+        let mut interpreter = Interpreter::new();
+
+        let expected = interpreter.make_string_value(String::from("tas"));
+        let result = interpreter.execute(r#""tas""#).unwrap();
+
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            expected,
+            result
+        );
     }
 
     #[test]
@@ -902,15 +941,21 @@ mod tests {
             let code = String::from("{:value ") + &pair.0 + "}";
             let result = interpreter.execute(&code);
 
-            match result {
+            let object_id = match result {
                 Ok(Value::Object(object_id)) => {
-                    assert_eq!(
-                        &pair.1,
-                        interpreter.get_object_item(object_id, &symbol).unwrap()
-                    );
+                    object_id
                 }
-                _ => assert!(false)
-            }
+                _ => panic!()
+            };
+
+            let expected = pair.1;
+            let result = interpreter.get_object_item(object_id, &symbol).unwrap().clone();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                expected,
+                result
+            );
         }
     }
 
@@ -924,9 +969,11 @@ mod tests {
             let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
             let result = interpreter.execute(&code);
 
-            println!("{:?}", code);
-
-            assert_eq!(pair.1, result.unwrap());
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                pair.1,
+                result.unwrap()
+            );
         }
     }
 

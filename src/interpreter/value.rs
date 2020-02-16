@@ -1,6 +1,7 @@
+use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::symbol::Symbol;
-use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::function::function_arena::FunctionId;
 
 #[derive(Debug, Clone)]
@@ -10,7 +11,7 @@ pub enum Value {
     Boolean(bool),
     Keyword(String),
     Symbol(Symbol),
-    String(String),
+    String(StringId),
     Cons(ConsId),
     Object(ObjectId),
     Function(FunctionId),

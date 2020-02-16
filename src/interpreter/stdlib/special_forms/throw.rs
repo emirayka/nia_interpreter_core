@@ -32,10 +32,18 @@ pub fn throw(
     let message = if values.len() > 0 {
         let value = values.remove(0);
 
-        match value {
-            Value::String(string) => string,
+        let string = match value {
+            Value::String(string_id) => interpreter.get_string(string_id),
             _ => return interpreter.make_invalid_argument_error(
                 "The second argument of special form `throw' (if any) must be a string."
+            )
+        };
+
+        match string {
+            Ok(string) => String::from(string.get_string()), // tood: fix, looks shitty
+            Err(error) => return interpreter.make_generic_execution_error_caused(
+                "Cannot yield a string",
+                error
             )
         }
     } else {

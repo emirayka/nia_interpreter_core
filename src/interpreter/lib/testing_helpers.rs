@@ -9,12 +9,14 @@ use crate::interpreter::interpreter::Interpreter;
 // k -> Keyword
 
 pub fn make_value_pairs_ifbsyk(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
+    let string_value = interpreter.make_string_value(String::from("string"));
+
     vec!(
         (String::from("1"), Value::Integer(1)),
         (String::from("1.1"), Value::Float(1.1)),
         (String::from("#t"), Value::Boolean(true)),
         (String::from("#f"), Value::Boolean(false)),
-        (String::from("\"string\""), Value::String(String::from("string"))),
+        (String::from("\"string\""), string_value),
         (String::from("'symbol"), interpreter.intern("symbol")),
         (String::from(":keyword"), Value::Keyword(String::from("keyword"))),
     )

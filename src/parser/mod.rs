@@ -76,8 +76,8 @@ impl Code {
         }
     }
 
-    pub fn get_elements(&self) -> &Vec<Element> {
-        &self.elements
+    pub fn get_elements(self) -> Vec<Element> {
+        self.elements
     }
 }
 
@@ -269,11 +269,12 @@ mod tests {
                     _ => unreachable!()
                 };
 
-                assert_eq!(expected.len(), parsed.get_elements().len());
+                let elements = parsed.get_elements();
+                assert_eq!(expected.len(), elements.len());
                 let len = expected.len();
 
                 for i in 0..len {
-                    assert_eq!(&expected[i], &parsed.get_elements()[i]);
+                    assert_eq!(&expected[i], &elements[i]);
                 }
             };
         }

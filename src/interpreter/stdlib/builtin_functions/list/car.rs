@@ -45,9 +45,11 @@ mod tests {
         for_value_pairs_evaluated_ifbsyk(
             |interpreter, string, value| {
                 let code = &format!("(car (cons {} 1))", string);
+
+                let expected = value;
                 let result = interpreter.execute(code).unwrap();
 
-                assert_eq!(value, result)
+                assertion::assert_deep_equal(interpreter, expected, result);
             }
         )
     }

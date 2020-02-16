@@ -19,12 +19,22 @@ pub fn gensym(
     let name = if values.len() == 0 {
         String::from("G")
     } else {
-        match values.remove(0) {
-            Value::String(string) => string,
+        let string_id = match values.remove(0) {
+            Value::String(string_id) => string_id,
             _ => return interpreter.make_invalid_argument_error(
                 "Built-in function `gensym' must take exactly one string argument."
             )
-        }
+        };
+
+        let string = match interpreter.get_string(string_id) {
+            Ok(string) => string.get_string(),
+            Err(error) => return interpreter.make_generic_execution_error_caused(
+                "",
+                error
+            )
+        };
+
+        String::from(string)
     };
 
     Ok(Value::Symbol(interpreter.gensym(&name)))

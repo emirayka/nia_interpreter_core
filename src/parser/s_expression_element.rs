@@ -26,8 +26,8 @@ impl SExpressionElement {
         }
     }
 
-    pub fn get_values(&self) -> &Vec<Element> {
-        &self.values
+    pub fn get_values(self) -> Vec<Element> {
+        self.values
     }
 }
 

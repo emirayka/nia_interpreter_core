@@ -1,3 +1,4 @@
+use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::value::Value;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
@@ -6,7 +7,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::parser::object_element::ObjectElement;
 use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
 
-fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressionElement) -> Value {
+fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Value {
     let values = sexp_element.get_values();
 
     if values.len() == 0 {
@@ -20,11 +21,10 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
         nil
     );
 
-    let values = sexp_element.get_values();
     let len = values.len();
     let mut current_cons_id = root_cons;
 
-    for (index, element) in values.iter().enumerate() {
+    for (index, element) in values.into_iter().enumerate() {
         let value = preread_element(interpreter, element);
 
         interpreter.set_car(current_cons_id, value); // todo: check error here
@@ -52,12 +52,12 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: &SExpressio
     Value::Cons(root_cons)
 }
 
-fn preread_object(interpreter: &mut Interpreter, object_element: &ObjectElement) -> Value {
+fn preread_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Value {
     let values = object_element.get_values();
 
     let mut last_cons = interpreter.intern_nil();
 
-    for (keyword_element, element) in values.iter().rev() {
+    for (keyword_element, element) in values.into_iter().rev() {
         let keyword = Value::Keyword(String::from(keyword_element.get_value()));
         let value = preread_element(interpreter, element);
 
@@ -92,7 +92,7 @@ fn preread_object(interpreter: &mut Interpreter, object_element: &ObjectElement)
 
 fn preread_delimited_symbols_element(
     interpreter: &mut Interpreter,
-    delimited_symbols_element: &DelimitedSymbolsElement
+    delimited_symbols_element: DelimitedSymbolsElement
 ) -> Value {
     let values = delimited_symbols_element.get_symbols();
 
@@ -119,7 +119,7 @@ fn preread_delimited_symbols_element(
     previous_cons
 }
 
-fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
     let nil = interpreter.intern_nil();
@@ -137,7 +137,7 @@ fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: &Element
     Value::Cons(cons_id)
 }
 
-fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
     let graveaccent = interpreter.intern("`");
@@ -156,7 +156,7 @@ fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: &E
     Value::Cons(cons_id)
 }
 
-fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
     let comma = interpreter.intern(",");
@@ -175,7 +175,7 @@ fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: &Element
     Value::Cons(cons_id)
 }
 
-fn preread_commadog_prefix_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+fn preread_commadog_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
     let commadog = interpreter.intern(",@");
@@ -194,7 +194,7 @@ fn preread_commadog_prefix_element(interpreter: &mut Interpreter, element: &Elem
     Value::Cons(cons_id)
 }
 
-fn preread_prefix_element(interpreter: &mut Interpreter, prefix_element: &PrefixElement) -> Value {
+fn preread_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElement) -> Value {
     match prefix_element.get_prefix() {
         Prefix::Quote => preread_quote_prefix_element(interpreter, prefix_element.get_value()),
         Prefix::GraveAccent => preread_graveaccent_prefix_element(interpreter, prefix_element.get_value()),
@@ -203,7 +203,7 @@ fn preread_prefix_element(interpreter: &mut Interpreter, prefix_element: &Prefix
     }
 }
 
-pub fn preread_element(interpreter: &mut Interpreter, element: &Element) -> Value {
+pub fn preread_element(interpreter: &mut Interpreter, element: Element) -> Value {
     match element {
         Element::Integer(integer_element) =>
             Value::Integer(integer_element.get_value()),
@@ -211,8 +211,11 @@ pub fn preread_element(interpreter: &mut Interpreter, element: &Element) -> Valu
             Value::Float(float_element.get_value()),
         Element::Boolean(boolean_element) =>
             Value::Boolean(boolean_element.get_value().clone()),
-        Element::String(string_element) =>
-            Value::String(string_element.get_value().clone()),
+        Element::String(string_element) => {
+            let string = string_element.get_value();
+
+            interpreter.make_string_value(string)
+        },
         Element::Symbol(symbol_element) =>
             interpreter.intern(symbol_element.get_value()),
         Element::Keyword(keyword_element) =>
@@ -228,8 +231,8 @@ pub fn preread_element(interpreter: &mut Interpreter, element: &Element) -> Valu
     }
 }
 
-pub fn preread_elements(interpreter: &mut Interpreter, elements: &Vec<Element>) -> Vec<Value> {
-    elements.into_iter().map(|e| preread_element(interpreter, &e)).collect()
+pub fn preread_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> Vec<Value> {
+    elements.into_iter().map(|e| preread_element(interpreter, e)).collect()
 }
 
 #[cfg(test)]
@@ -323,15 +326,15 @@ mod tests {
     fn prereads_string_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::String("cute string".to_string())
+                Value::String(StringId::new(0))
             ),
             r#""cute string""#
         );
 
         assert_prereading_result_equal!(
             vec!(
-                Value::String("first cute string".to_string()),
-                Value::String("second cute string".to_string())
+                Value::String(StringId::new(0)),
+                Value::String(StringId::new(1))
             ),
             r#""first cute string" "second cute string""#
         );
@@ -460,7 +463,7 @@ mod tests {
                     ("c", Value::Boolean(true)),
                     ("d", Value::Boolean(false)),
                     ("e", Value::Symbol(new_symbol("symbol"))),
-                    ("f", Value::String(String::from("string"))),
+                    ("f", Value::String(StringId::new(0))),
                     ("g", Value::Keyword(String::from("keyword"))),
                 ),
                 "{:a 1 :b 1.1 :c #t :d #f :e 'symbol :f \"string\" :g :keyword}"
@@ -549,7 +552,7 @@ mod tests {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
             if let Ok((_, program)) = parse_code($code) {
                 let mut interpreter = Interpreter::new();
-                let expected = preread_elements(&mut interpreter, &program.get_elements())[0].clone();
+                let expected = preread_elements(&mut interpreter, program.get_elements())[0].clone();
 
                 let expected = interpreter.make_cons_value(
                     expected,

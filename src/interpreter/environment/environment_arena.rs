@@ -278,23 +278,26 @@ mod tests {
         let parent_key = new_symbol("parent_test");
         let child_key = new_symbol("child_test");
 
-        // variable
-        arena.define_variable(parent_id, &parent_key, Value::String("parent".to_string())).unwrap();
-        arena.define_variable(child_id, &child_key, Value::String("child".to_string())).unwrap();
+        let parent_value = Value::Integer(1);
+        let child_value = Value::Integer(2);
 
-        assert_eq!(&Value::String("parent".to_string()), arena.lookup_variable(parent_id, &parent_key).unwrap());
-        assert_eq!(&Value::String("parent".to_string()), arena.lookup_variable(child_id, &parent_key).unwrap());
+        // variable
+        arena.define_variable(parent_id, &parent_key, parent_value.clone()).unwrap();
+        arena.define_variable(child_id, &child_key, child_value.clone()).unwrap();
+
+        assert_eq!(&parent_value, arena.lookup_variable(parent_id, &parent_key).unwrap());
+        assert_eq!(&parent_value, arena.lookup_variable(child_id, &parent_key).unwrap());
         assert_eq!(None, arena.lookup_variable(parent_id, &child_key));
-        assert_eq!(&Value::String("child".to_string()), arena.lookup_variable(child_id, &child_key).unwrap());
+        assert_eq!(&child_value, arena.lookup_variable(child_id, &child_key).unwrap());
 
         // function
-        arena.define_function(parent_id, &parent_key, Value::String("parent".to_string())).unwrap();
-        arena.define_function(child_id, &child_key, Value::String("child".to_string())).unwrap();
+        arena.define_function(parent_id, &parent_key, parent_value.clone()).unwrap();
+        arena.define_function(child_id, &child_key, child_value.clone()).unwrap();
 
-        assert_eq!(&Value::String("parent".to_string()), arena.lookup_function(parent_id, &parent_key).unwrap());
-        assert_eq!(&Value::String("parent".to_string()), arena.lookup_function(child_id, &parent_key).unwrap());
+        assert_eq!(&parent_value, arena.lookup_function(parent_id, &parent_key).unwrap());
+        assert_eq!(&parent_value, arena.lookup_function(child_id, &parent_key).unwrap());
         assert_eq!(None, arena.lookup_function(parent_id, &child_key));
-        assert_eq!(&Value::String("child".to_string()), arena.lookup_function(child_id, &child_key).unwrap());
+        assert_eq!(&child_value, arena.lookup_function(child_id, &child_key).unwrap());
     }
 
     #[test]
@@ -305,13 +308,16 @@ mod tests {
         let parent_id = arena.alloc();
         let child_id = arena.alloc_child(parent_id);
 
-        arena.define_variable(parent_id, &key, Value::String("parent".to_string())).unwrap();
-        arena.set_variable(child_id, &key, Value::Integer(1)).unwrap();
-        assert_eq!(&Value::Integer(1), arena.lookup_variable(parent_id,&key).unwrap());
+        let parent_value = Value::Integer(1);
+        let child_value = Value::Integer(2);
 
-        arena.define_function(parent_id, &key, Value::String("parent".to_string())).unwrap();
-        arena.set_function(child_id, &key, Value::Integer(1)).unwrap();
-        assert_eq!(&Value::Integer(1), arena.lookup_function(child_id,&key).unwrap());
+        arena.define_variable(parent_id, &key, parent_value.clone()).unwrap();
+        arena.set_variable(child_id, &key, child_value.clone()).unwrap();
+        assert_eq!(&child_value, arena.lookup_variable(parent_id, &key).unwrap());
+
+        arena.define_function(parent_id, &key, parent_value.clone()).unwrap();
+        arena.set_function(child_id, &key, child_value.clone()).unwrap();
+        assert_eq!(&child_value, arena.lookup_function(child_id,&key).unwrap());
     }
 
     #[cfg(test)]

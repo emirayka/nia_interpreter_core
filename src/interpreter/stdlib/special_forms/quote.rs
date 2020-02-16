@@ -46,7 +46,14 @@ mod tests {
         assert_eq!(Value::Boolean(false), interpreter.execute("(quote #f)").unwrap());
         assert_eq!(Value::Keyword(String::from("test")), interpreter.execute("(quote :test)").unwrap());
         assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("(quote cute-symbol)").unwrap());
-        assert_eq!(Value::String(String::from("test")), interpreter.execute("(quote \"test\")").unwrap());
+
+        let expected = interpreter.make_string_value(String::from("test"));
+        let result = interpreter.execute("(quote \"test\")").unwrap();
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            expected,
+            result
+        );
 
         let expected = cons;
         let result = interpreter.execute("(quote (1 2))").unwrap();
@@ -80,7 +87,14 @@ mod tests {
         assert_eq!(Value::Boolean(false), interpreter.execute("'#f").unwrap());
         assert_eq!(Value::Keyword(String::from("test")), interpreter.execute("':test").unwrap());
         assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("'cute-symbol").unwrap());
-        assert_eq!(Value::String(String::from("test")), interpreter.execute("'\"test\"").unwrap());
+
+        let expected = interpreter.make_string_value(String::from("test"));
+        let result = interpreter.execute("'\"test\"").unwrap();
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            expected,
+            result
+        );
 
         let expected = cons;
         let result = interpreter.execute("'(1 2)").unwrap();

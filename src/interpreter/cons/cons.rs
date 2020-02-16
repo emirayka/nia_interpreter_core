@@ -67,13 +67,29 @@ mod tests {
     #[cfg(test)]
     mod set_car__set_cdr {
         use super::*;
+        use crate::interpreter::interpreter::Interpreter;
+        use crate::interpreter::lib::assertion;
 
         #[test]
         fn test_works_correctly() {
-            let mut l = Cons::new(Value::String("car".to_string()), Value::String("cdr".to_string()));
+            let mut interpreter = Interpreter::new();
 
-            assert_eq!(&Value::String("car".to_string()), l.get_car());
-            assert_eq!(&Value::String("cdr".to_string()), l.get_cdr());
+            let string1 = interpreter.make_string_value(String::from("car"));
+            let string2 = interpreter.make_string_value(String::from("cdr"));
+
+            let mut l = Cons::new(string1.clone(), string2.clone());
+
+            assertion::assert_vectors_deep_equal(
+                &mut interpreter,
+                vec!(
+                    string1,
+                    string2,
+                ),
+                vec!(
+                    l.get_car().clone(),
+                    l.get_cdr().clone()
+                )
+            );
 
             l.set_car(Value::Integer(1));
             l.set_cdr(Value::Integer(2));

@@ -207,7 +207,7 @@ mod tests {
                 Value::Float(1.1),
                 Value::Boolean(true),
                 Value::Boolean(false),
-                Value::String(String::from("string")),
+                interpreter.make_string_value(String::from("string")),
                 Value::Keyword(String::from("keyword")),
             );
 

@@ -1,4 +1,6 @@
 mod lib;
+mod keyword;
+mod string;
 mod symbol;
 mod cons;
 mod function;
