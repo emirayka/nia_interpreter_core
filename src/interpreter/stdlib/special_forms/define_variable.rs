@@ -23,7 +23,7 @@ pub fn define_variable(
         None
     };
 
-    let variable_name = match first_argument {
+    let variable_symbol_id = match first_argument {
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "First form of `define-variable' must be a symbol."
@@ -32,7 +32,7 @@ pub fn define_variable(
 
     let evaluated_value = match second_argument {
         Some(value) => interpreter.evaluate_value(environment, value),
-        None => Ok(interpreter.intern_nil())
+        None => Ok(interpreter.intern_nil_symbol_value())
     };
 
     let result = match evaluated_value {
@@ -45,14 +45,21 @@ pub fn define_variable(
 
     match interpreter.define_variable(
         interpreter.get_root_environment(),
-        &variable_name,
+        variable_symbol_id,
         result
     ) {
         Ok(()) => Ok(Value::Boolean(true)),
-        Err(error) => interpreter.make_generic_execution_error_caused(
-            &format!("Cannot define variable: {}.", variable_name.get_name()),
-            error
-        )
+        Err(error) => {
+            let variable_name = &format!(
+                "Cannot define variable: {}.",
+                interpreter.get_symbol_name(variable_symbol_id)?
+            );
+
+            interpreter.make_generic_execution_error_caused(
+                variable_name,
+                error
+            )
+        }
     }
 
 }
@@ -67,17 +74,19 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-variable test 2)").unwrap();
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         assert!(interpreter.has_variable(
             interpreter.get_root_environment(),
-            &name));
+            name
+        ));
         assert_eq!(
             Value::Integer(2),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
-                &name
-            ).unwrap());
+                name
+            ).unwrap()
+        );
     }
 
     #[test]
@@ -85,16 +94,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-variable test)").unwrap();
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         assert!(interpreter.has_variable(
             interpreter.get_root_environment(),
-            &name));
+            name
+        ));
         assert_eq!(
-            interpreter.intern_nil(),
+            interpreter.intern_nil_symbol_value(),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
-                &name
+                name
             ).unwrap());
     }
 

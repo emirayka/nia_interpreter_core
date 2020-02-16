@@ -26,7 +26,7 @@ pub fn throw(
             )
         }
     } else {
-        interpreter.intern_symbol("generic-error")
+        interpreter.intern("generic-error")
     };
 
     let message = if values.len() > 0 {
@@ -72,7 +72,7 @@ mod tests {
         let error = result.err().unwrap();
 
         assert_eq!(
-            interpreter.intern_symbol("generic-error"),
+            interpreter.intern("generic-error"),
             error.get_symbol()
         );
     }
@@ -88,7 +88,7 @@ mod tests {
         let error = result.err().unwrap();
 
         assert_eq!(
-            interpreter.intern_symbol("cute-error-symbol"),
+            interpreter.intern("cute-error-symbol"),
             error.get_symbol()
         );
     }

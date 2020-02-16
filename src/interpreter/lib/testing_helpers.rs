@@ -18,7 +18,7 @@ pub fn make_value_pairs_ifbsyk(interpreter: & mut Interpreter) -> Vec<(String, V
         (String::from("#t"), Value::Boolean(true)),
         (String::from("#f"), Value::Boolean(false)),
         (String::from("\"string\""), string_value),
-        (String::from("'symbol"), interpreter.intern("symbol")),
+        (String::from("'symbol"), interpreter.intern_symbol_value("symbol")),
         (String::from(":keyword"), keyword_value),
     )
 }

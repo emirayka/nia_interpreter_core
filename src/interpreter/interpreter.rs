@@ -5,7 +5,7 @@ use crate::interpreter::function::{Function};
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::builtin_function::BuiltinFunction;
 use crate::interpreter::function::special_form_function::SpecialFormFunction;
-use crate::interpreter::symbol::{Symbol, SymbolArena};
+use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 
@@ -71,17 +71,17 @@ impl Interpreter {
 
 impl Interpreter {
     pub fn make_empty_error<T>(&mut self) -> Result<T, Error> {
-        let symbol = self.intern_symbol_nil();
+        let symbol = self.intern_nil();
 
         Err(Error::generic_error(symbol, ""))
     }
 
-    pub fn make_generic_error<T>(&mut self, symbol: Symbol, message: &str) -> Result<T, Error> {
+    pub fn make_generic_error<T>(&mut self, symbol: SymbolId, message: &str) -> Result<T, Error> {
         Err(Error::generic_error(symbol, message))
     }
 
     pub fn make_generic_execution_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
         );
 
@@ -89,7 +89,7 @@ impl Interpreter {
     }
 
     pub fn make_generic_execution_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
         );
 
@@ -97,7 +97,7 @@ impl Interpreter {
     }
 
     pub fn make_overflow_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
         );
 
@@ -105,7 +105,7 @@ impl Interpreter {
     }
 
     pub fn make_overflow_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
         );
 
@@ -113,7 +113,7 @@ impl Interpreter {
     }
 
     pub fn make_zero_division_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
         );
 
@@ -121,7 +121,7 @@ impl Interpreter {
     }
 
     pub fn make_zero_division_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
         );
 
@@ -129,7 +129,7 @@ impl Interpreter {
     }
 
     pub fn make_invalid_cons_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
         );
 
@@ -137,7 +137,7 @@ impl Interpreter {
     }
 
     pub fn make_invalid_cons_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
         );
 
@@ -145,7 +145,7 @@ impl Interpreter {
     }
 
     pub fn make_invalid_argument_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
         );
 
@@ -153,7 +153,7 @@ impl Interpreter {
     }
 
     pub fn make_invalid_argument_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
         );
 
@@ -162,7 +162,7 @@ impl Interpreter {
 
 
     pub fn make_invalid_argument_count_error<T>(&mut self, message: &str) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
         );
 
@@ -170,7 +170,7 @@ impl Interpreter {
     }
 
     pub fn make_invalid_argument_count_error_caused<T>(&mut self, message: &str, cause: Error) -> Result<T, Error> {
-        let symbol = self.intern_symbol(
+        let symbol = self.intern(
             crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
         );
 
@@ -268,24 +268,63 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn intern_nil(&mut self) -> Value {
-        Value::Symbol(self.symbol_arena.intern("nil"))
+    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
+        let error = self.make_generic_execution_error(
+            ""
+        );
+
+        match self.symbol_arena.get_symbol(symbol_id) {
+            Some(symbol) => Ok(symbol),
+            _ => error
+        }
+    }
+    
+    pub fn get_symbol_name(&mut self, symbol_id: SymbolId) -> Result<&String, Error> {
+        let symbol = self.get_symbol(symbol_id)?;
+
+        Ok(symbol.get_name())
     }
 
-    pub fn intern(&mut self, symbol_name: &str) -> Value {
-        Value::Symbol(self.symbol_arena.intern(symbol_name))
-    }
-
-    pub fn gensym(&mut self, symbol_name: &str) -> Symbol {
-        self.symbol_arena.gensym(symbol_name)
-    }
-
-    pub fn intern_symbol(&mut self, symbol_name: &str) -> Symbol {
+    pub fn intern(&mut self, symbol_name: &str) -> SymbolId {
         self.symbol_arena.intern(symbol_name)
     }
 
-    pub fn intern_symbol_nil(&mut self) -> Symbol {
-        self.symbol_arena.intern("nil")
+    pub fn intern_symbol(&mut self, symbol_name: &str) -> &Symbol {
+        let symbol_id = self.symbol_arena.intern(symbol_name);
+
+        self.get_symbol(symbol_id).unwrap()
+    }
+
+    pub fn intern_symbol_value(&mut self, symbol_name: &str) -> Value {
+        Value::Symbol(self.symbol_arena.intern(symbol_name))
+    }
+
+    pub fn intern_nil(&mut self) -> SymbolId {
+        self.intern("nil")
+    }
+
+    pub fn intern_nil_symbol(&mut self) -> &Symbol {
+        self.intern_symbol("nil")
+    }
+
+    pub fn intern_nil_symbol_value(&mut self) -> Value {
+        self.intern_symbol_value("nil")
+    }
+
+    pub fn gensym(&mut self, symbol_name: &str) -> SymbolId {
+        self.symbol_arena.gensym(symbol_name)
+    }
+
+    pub fn gensym_symbol(&mut self, symbol_name: &str) -> &Symbol {
+        let symbol_id = self.gensym(symbol_name);
+
+        self.get_symbol(symbol_id).unwrap()
+    }
+
+    pub fn gensym_symbol_value(&mut self, symbol_name: &str) -> Value {
+        let symbol_id = self.gensym(symbol_name);
+
+        Value::Symbol(symbol_id)
     }
 }
 
@@ -341,16 +380,34 @@ impl Interpreter {
     }
 
     pub fn cons_from_vec(&mut self, vector: Vec<Value>) -> Value {
-        let nil = self.intern_nil();
+        let nil = self.intern_nil_symbol_value();
 
         self.cons_arena.cons_from_vec(nil, vector)
     }
 
     pub fn cons_to_vec(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
-        match self.cons_arena.cons_to_vec(cons_id) {
-            Ok(value) => Ok(value),
-            _ => self.make_empty_error()
+        let mut vector = match self.cons_arena.cons_to_vec(cons_id) {
+            Ok(value) => value,
+            _ => return self.make_empty_error()
+        };
+
+        // Remove last item of the vector if it's nil. It's necessary, because ConsArena can't say
+        // if a SymbolId is the one registered for nil, so it returns all items in the list,
+        // including the nil at the cdr of the last cell of the list.
+        match vector.last() {
+            Some(&val   @ _) => {
+                if let Value::Symbol(symbol_id) = val {
+                    let symbol = self.get_symbol(symbol_id)?;
+
+                    if symbol.is_nil() {
+                        vector.remove(vector.len() - 1);
+                    }
+                }
+            },
+            _ => {}
         }
+
+        Ok(vector)
     }
 }
 
@@ -363,11 +420,11 @@ impl Interpreter {
         self.object_arena.make_child(prototype_id)
     }
 
-    pub fn get_object_item(&self, object_id: ObjectId, key: &Symbol) -> Option<&Value> {
+    pub fn get_object_item(&self, object_id: ObjectId, key: SymbolId) -> Option<Value> {
         self.object_arena.get_item(object_id, key)
     }
 
-    pub fn set_object_item(&mut self, object_id: ObjectId, key: &Symbol, value: Value) {
+    pub fn set_object_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) {
         self.object_arena.set_item(object_id, key, value);
     }
 
@@ -404,7 +461,7 @@ impl Interpreter {
     pub fn lookup_environment_by_variable(
         &self,
         environment: EnvironmentId,
-        variable_name: &Symbol
+        variable_name: SymbolId
     ) -> Option<EnvironmentId> {
         self.environment_arena.lookup_environment_by_variable(environment, variable_name)
     }
@@ -412,7 +469,7 @@ impl Interpreter {
     pub fn lookup_environment_by_function(
         &self,
         environment: EnvironmentId,
-        function_name: &Symbol
+        function_name: SymbolId
     ) -> Option<EnvironmentId> {
         self.environment_arena.lookup_environment_by_function(environment, function_name)
     }
@@ -420,7 +477,7 @@ impl Interpreter {
     pub fn has_variable(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol
+        symbol: SymbolId
     ) -> bool {
         self.environment_arena.has_variable(environment, symbol)
     }
@@ -428,7 +485,7 @@ impl Interpreter {
     pub fn has_function(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol
+        symbol: SymbolId
     ) -> bool {
         self.environment_arena.has_function(environment, symbol)
     }
@@ -436,10 +493,10 @@ impl Interpreter {
     pub fn define_variable(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol,
+        symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
-        match self.environment_arena.define_variable(environment, symbol, value) {
+        match self.environment_arena.define_variable(environment, symbol_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
@@ -448,10 +505,10 @@ impl Interpreter {
     pub fn define_function(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol,
+        symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
-        match self.environment_arena.define_function(environment, symbol, value) {
+        match self.environment_arena.define_function(environment, symbol_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
@@ -460,10 +517,10 @@ impl Interpreter {
     pub fn set_variable(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol,
+        symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
-        match self.environment_arena.set_variable(environment, symbol, value) {
+        match self.environment_arena.set_variable(environment, symbol_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
@@ -472,10 +529,10 @@ impl Interpreter {
     pub fn set_function(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol,
+        symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
-        match self.environment_arena.set_function(environment, symbol, value) {
+        match self.environment_arena.set_function(environment, symbol_id, value) {
             Ok(()) => Ok(()),
             _ => self.make_empty_error()
         }
@@ -484,9 +541,9 @@ impl Interpreter {
     pub fn lookup_variable(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol
+        symbol_id: SymbolId
     ) -> Result<Value, Error> {
-        match self.environment_arena.lookup_variable(environment, symbol) {
+        match self.environment_arena.lookup_variable(environment, symbol_id) {
             Some(value) => Ok(value.clone()),
             None => self.make_empty_error()
         }
@@ -495,9 +552,9 @@ impl Interpreter {
     pub fn lookup_function(
         &mut self,
         environment: EnvironmentId,
-        symbol: &Symbol
+        symbol_id: SymbolId
     ) -> Result<Value, Error> {
-        match self.environment_arena.lookup_function(environment, symbol) {
+        match self.environment_arena.lookup_function(environment, symbol_id) {
             Some(value) => Ok(value.clone()),
             None => self.make_empty_error()
         }
@@ -509,8 +566,8 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn evaluate_symbol(&mut self, environment: EnvironmentId, symbol: &Symbol) -> Result<Value, Error> {
-        let result = self.lookup_variable(environment, symbol);
+    fn evaluate_symbol(&mut self, environment: EnvironmentId, symbol_id: SymbolId) -> Result<Value, Error> {
+        let result = self.lookup_variable(environment, symbol_id);
 
         match result {
             Ok(value) => Ok(value.clone()),
@@ -528,8 +585,15 @@ impl Interpreter {
 
         match cons {
             Value::Cons(cons) => self.cons_to_vec(cons),
-            Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
-            Value::Symbol(_) => self.make_empty_error(),
+            Value::Symbol(symbol_id) => {
+                let symbol = self.get_symbol(symbol_id)?;
+
+                if symbol.is_nil() {
+                    Ok(Vec::new())
+                } else {
+                    self.make_empty_error()
+                }
+            }
             _ => self.make_empty_error()
         }
     }
@@ -557,10 +621,10 @@ impl Interpreter {
 
         for i in 0..len {
             let name = &names[i];
-            let name = self.intern_symbol(name);
+            let name = self.intern(name);
             let variable = &variables[i];
 
-            match self.define_variable(execution_environment, &name, variable.clone()) {
+            match self.define_variable(execution_environment, name, variable.clone()) {
                 Ok(()) => (),
                 Err(error) => return Err(error)
             };
@@ -613,7 +677,7 @@ impl Interpreter {
         // 4) return result
         let value_to_return = match execution_result {
             Some(value) => value,
-            None => self.intern_nil()
+            None => self.intern_nil_symbol_value()
         };
 
         Ok(value_to_return)
@@ -668,7 +732,7 @@ impl Interpreter {
         // 4) return result
         let value_to_return = match execution_result {
             Some(value) => value,
-            None => self.intern_nil()
+            None => self.intern_nil_symbol_value()
         };
 
         Ok(value_to_return)
@@ -769,7 +833,7 @@ impl Interpreter {
             )
         };
 
-        let symbol = self.intern_symbol(&keyword_name);
+        let symbol_id = self.intern(&keyword_name);
 
         let mut arguments = match self.extract_arguments(cons_id) {
             Ok(arguments) => arguments,
@@ -789,7 +853,7 @@ impl Interpreter {
 
         match evaluated_argument {
             Ok(Value::Object(object_id)) => {
-                match self.object_arena.get_item(object_id, &symbol) {
+                match self.object_arena.get_item(object_id, symbol_id) {
                     Some(value) => Ok(value.clone()),
                     _ => return self.make_empty_error()
                 }
@@ -813,7 +877,7 @@ impl Interpreter {
 
         match car {
             Value::Symbol(func_name) => {
-                let function_id = match self.lookup_function(environment, &func_name) {
+                let function_id = match self.lookup_function(environment, func_name) {
                     Ok(Value::Function(func)) => func.clone(),
                     Ok(_) => return self.make_empty_error(),
                     Err(error) => return Err(error)
@@ -854,7 +918,7 @@ impl Interpreter {
 
     pub fn evaluate_value(&mut self, environment: EnvironmentId, value: Value) -> Result<Value, Error> {
         match value {
-            Value::Symbol(symbol_name) => self.evaluate_symbol(environment, &symbol_name),
+            Value::Symbol(symbol_name) => self.evaluate_symbol(environment, symbol_name),
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
             _ => Ok(value.clone())
         }
@@ -944,11 +1008,11 @@ mod tests {
     #[test]
     pub fn executes_symbol_correctly() {
         let mut interpreter = Interpreter::new();
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         interpreter.environment_arena.define_variable(
             interpreter.root_environment,
-            &name,
+            name,
             Value::Integer(1)
         ).unwrap();
 
@@ -977,7 +1041,7 @@ mod tests {
 
         let pairs = make_value_pairs_ifbsyk(&mut interpreter);
 
-        let symbol = interpreter.intern_symbol("value");
+        let key = interpreter.intern("value");
 
         for pair in pairs {
             let code = String::from("{:value ") + &pair.0 + "}";
@@ -991,7 +1055,7 @@ mod tests {
             };
 
             let expected = pair.1;
-            let result = interpreter.get_object_item(object_id, &symbol).unwrap().clone();
+            let result = interpreter.get_object_item(object_id, key).unwrap().clone();
 
             assertion::assert_deep_equal(
                 &mut interpreter,
@@ -1043,10 +1107,10 @@ mod tests {
     pub fn interpreted_function_works_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let a = interpreter.intern("a");
-        let b = interpreter.intern("b");
-        let plus = interpreter.intern("+");
-        let nil = interpreter.intern_nil();
+        let a = interpreter.intern_symbol_value("a");
+        let b = interpreter.intern_symbol_value("b");
+        let plus = interpreter.intern_symbol_value("+");
+        let nil = interpreter.intern_nil_symbol_value();
 
         let value = Value::Cons(interpreter.make_cons(
             b,
@@ -1067,7 +1131,7 @@ mod tests {
             value
         );
 
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.root_environment,
@@ -1079,7 +1143,7 @@ mod tests {
 
         interpreter.environment_arena.define_function(
             interpreter.root_environment,
-            &name,
+            name,
             Value::Function(function_id)
         ).unwrap();
 
@@ -1091,7 +1155,7 @@ mod tests {
     pub fn special_form_invocation_evaluates_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let name = interpreter.intern_symbol("testif");
+        let name = interpreter.intern("testif");
         let function = Function::SpecialForm(SpecialFormFunction::new(
             |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
                 let mut values = values;
@@ -1115,7 +1179,7 @@ mod tests {
 
         interpreter.environment_arena.define_function(
             interpreter.root_environment,
-            &name,
+            name,
             function_value
         ).unwrap();
 

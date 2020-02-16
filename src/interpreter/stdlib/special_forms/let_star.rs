@@ -61,8 +61,8 @@ mod tests {
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
 
-        let symbol = interpreter.intern("symbol");
-        let nil = interpreter.intern_nil();
+        let symbol = interpreter.intern_symbol_value("symbol");
+        let nil = interpreter.intern_nil_symbol_value();
 
         let cons = interpreter.make_cons_value(
             symbol,
@@ -74,8 +74,8 @@ mod tests {
             (Value::Float(1.1), "1.1"),
             (Value::Boolean(true), "#t"),
             (Value::Boolean(false), "#f"),
-            (interpreter.intern("symbol"), "'symbol"),
-            (interpreter.intern("symbol"), "(quote symbol)"),
+            (interpreter.intern_symbol_value("symbol"), "'symbol"),
+            (interpreter.intern_symbol_value("symbol"), "(quote symbol)"),
             (interpreter.intern_string_value(String::from("string")), "\"string\""),
             (interpreter.intern_keyword_value(String::from("keyword")), ":keyword"),
             (cons, "'(symbol)"),
@@ -100,7 +100,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_eq!(
-            interpreter.intern_nil(),
+            interpreter.intern_nil_symbol_value(),
             interpreter.execute("(let* (nil-symbol) nil-symbol)").unwrap()
         );
     }

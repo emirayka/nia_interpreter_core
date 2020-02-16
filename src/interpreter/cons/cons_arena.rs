@@ -137,21 +137,19 @@ impl ConsArena {
 
         loop {
             match self.get_car(current_cdr) {
-                Ok(value) => results.push(value.clone()),
+                Ok(value) => results.push(value),
                 _ => return Err(())
             }
 
             current_cdr = match self.get_cdr(current_cdr) {
                 Ok(Value::Cons(cons_id)) => cons_id,
-                Ok(Value::Symbol(symbol)) => {
-                    if !symbol.is_nil() {
-                        results.push(Value::Symbol(symbol.clone()));
-                    }
+                Ok(symbol_value @ Value::Symbol(_)) => {
+                    results.push(symbol_value);
 
                     break;
-                },
+                }
                 Ok(value) => {
-                    results.push(value.clone());
+                    results.push(value);
 
                     break;
                 },
@@ -178,12 +176,14 @@ impl ConsArena {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::{SymbolArena, Symbol};
+    use crate::interpreter::symbol::{SymbolArena, SymbolId};
 
-    fn new_symbol(symbol_name: &str) -> Symbol {
-        let mut arena = SymbolArena::new();
-
-        arena.intern(symbol_name)
+    fn new_symbol(name: &str) -> SymbolId {
+        if name == "nil" {
+            SymbolId::new(0)
+        } else {
+            SymbolId::new(1)
+        }
     }
 
     fn nil() -> Value {
@@ -223,7 +223,8 @@ mod tests {
                 vec!(
                     Value::Integer(1),
                     Value::Integer(2),
-                    Value::Integer(3)
+                    Value::Integer(3),
+                    Value::Symbol(SymbolId::new(0))
                 ),
                 result_vector
             );
@@ -275,7 +276,7 @@ mod tests {
             ($expected:expr, $vector:expr) => {
                 let mut cons_arena = ConsArena::new();
 
-                assert_eq!($expected, cons_arena.cons_from_vec(Value::Symbol(new_symbol("nil")), $vector));
+                assert_eq!($expected, cons_arena.cons_from_vec(nil(), $vector));
             }
         }
 

@@ -12,7 +12,7 @@ pub fn infect_object_function(
     item_name: &str,
     func: BuiltinFunctionType
 ) -> Result<(), Error> {
-    let name = interpreter.intern_symbol(item_name);
+    let name = interpreter.intern(item_name);
 
     let function = Function::Builtin(BuiltinFunction::new(func));
     let function_id = interpreter.register_function(function);
@@ -20,7 +20,7 @@ pub fn infect_object_function(
 
     interpreter.set_object_item(
         object_id,
-        &name,
+        name,
         function_value
     );
 
@@ -32,7 +32,7 @@ pub fn infect_builtin_function(
     name: &str,
     func: BuiltinFunctionType
 ) -> Result<(), Error> {
-    let name = interpreter.intern_symbol(name);
+    let name = interpreter.intern(name);
 
     let function = Function::Builtin(BuiltinFunction::new(func));
     let function_id = interpreter.register_function(function);
@@ -40,7 +40,7 @@ pub fn infect_builtin_function(
 
     let result = interpreter.define_function(
         interpreter.get_root_environment(),
-        &name,
+        name,
         function_value
     );
 
@@ -55,7 +55,7 @@ pub fn infect_special_form(
     name: &str,
     func: SpecialFormFunctionType
 ) -> Result<(), Error> {
-    let name = interpreter.intern_symbol(name);
+    let name = interpreter.intern(name);
 
     let function = Function::SpecialForm(SpecialFormFunction::new(func));
     let function_id = interpreter.register_function(function);
@@ -63,7 +63,7 @@ pub fn infect_special_form(
 
     let result = interpreter.define_function(
         interpreter.get_root_environment(),
-        &name,
+        name,
         function_value
     );
 
@@ -83,7 +83,7 @@ mod tests {
         use crate::interpreter::environment::environment_arena::EnvironmentId;
 
         fn test(interpreter: &mut Interpreter, _environment: EnvironmentId, _values: Vec<Value>) -> Result<Value, Error>{
-            Ok(interpreter.intern_nil())
+            Ok(interpreter.intern_nil_symbol_value())
         }
 
         #[test]
@@ -92,8 +92,8 @@ mod tests {
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
-            let name = interpreter.intern_symbol("test");
-            assert!(interpreter.has_function(interpreter.get_root_environment(), &name));
+            let name = interpreter.intern("test");
+            assert!(interpreter.has_function(interpreter.get_root_environment(), name));
         }
 
         #[test]

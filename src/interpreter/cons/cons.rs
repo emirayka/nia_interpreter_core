@@ -51,9 +51,9 @@ impl PartialEq for Cons {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::{SymbolArena, Symbol};
+    use crate::interpreter::symbol::{SymbolArena, SymbolId};
 
-    fn new_symbol(symbol_name: &str) -> Symbol {
+    fn new_symbol(symbol_name: &str) -> SymbolId {
         let mut arena = SymbolArena::new();
 
         arena.intern(symbol_name)

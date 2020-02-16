@@ -33,11 +33,11 @@ pub fn object_make(
                 )
             };
 
-            let symbol = interpreter.intern_symbol(&keyword_name);
+            let symbol_id = interpreter.intern(&keyword_name);
 
             interpreter.set_object_item(
                 object_id,
-                &symbol,
+                symbol_id,
                 value
             );
         } else {
@@ -67,9 +67,9 @@ mod tests {
             };
 
             for (key, value) in expected {
-                let symbol = interpreter.intern_symbol(key);
+                let symbol_id = interpreter.intern(key);
 
-                assert_eq!(&value, interpreter.get_object_item(object_id, &symbol).unwrap());
+                assert_eq!(value, interpreter.get_object_item(object_id, symbol_id).unwrap());
             }
         }
     }

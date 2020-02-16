@@ -17,12 +17,12 @@ pub fn flookup(
     let mut values = values;
 
     match values.remove(0) {
-        Value::Symbol(symbol) => {
-            let nil = interpreter.intern_nil();
+        Value::Symbol(symbol_id) => {
+            let nil = interpreter.intern_nil_symbol_value();
 
             match interpreter.lookup_function(
                 _environment,
-                &symbol
+                symbol_id
             ) {
                 Ok(value) => Ok(value.clone()),
                 _ => Ok(nil)
@@ -55,7 +55,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute("(flet ((a () 1)) (flookup 'b))");
-        assert_eq!(interpreter.intern_nil(), result.unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
     }
 
     #[test]

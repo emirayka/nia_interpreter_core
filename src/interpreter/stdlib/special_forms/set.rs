@@ -16,13 +16,12 @@ pub fn set(
 
     let mut values = values;
 
-    let variable_name = match values.remove(0) {
+    let variable_symbol_id = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `set!' must be a symbol."
         )
     };
-
     let value = values.remove(0);
 
     let value = match interpreter.execute_value(environment, value) {
@@ -34,21 +33,33 @@ pub fn set(
         )
     };
 
-    let target_env = interpreter.lookup_environment_by_variable(environment, &variable_name);
+    let target_env = interpreter.lookup_environment_by_variable(environment, variable_symbol_id);
 
     match target_env {
         Some(target_env) => {
-            match interpreter.set_variable(target_env, &variable_name, value.clone()) {
+            match interpreter.set_variable(target_env, variable_symbol_id, value.clone()) {
                 Ok(()) => Ok(value),
-                Err(error) => interpreter.make_generic_execution_error_caused(
-                        &format!("Cannot set variable `{}'", variable_name.get_name()),
-                    error
-                )
+                Err(error) => {
+                    let message = &format!(
+                        "Cannot set variable `{}'",
+                        interpreter.get_symbol_name(variable_symbol_id)?
+                    );
+
+                    interpreter.make_generic_execution_error_caused(
+                        message,
+                        error
+                    )
+                }
             }
         },
         None => {
-                interpreter.make_generic_execution_error(
-                &format!("Cannot find variable `{}'", variable_name.get_name())
+            let message = &format!(
+                "Cannot find variable `{}'",
+                interpreter.get_symbol_name(variable_symbol_id)?
+            );
+
+            interpreter.make_generic_execution_error(
+                message
             )
         }
     }
@@ -72,11 +83,11 @@ mod tests {
     fn sets_to_current_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
-        let variable_name = interpreter.intern_symbol("a");
+        let variable_symbol_id = interpreter.intern("a");
 
         interpreter.define_variable(
             interpreter.get_root_environment(),
-            &variable_name,
+            variable_symbol_id,
             Value::Integer(0)
         ).unwrap();
 
@@ -87,7 +98,7 @@ mod tests {
             Value::Integer(0),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
-                &variable_name
+                variable_symbol_id
             ).unwrap());
         assert_eq!(Value::Integer(1), result1);
         assert_eq!(Value::Integer(2), result2);
@@ -97,7 +108,7 @@ mod tests {
     fn sets_to_parent_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
-        let variable_name_b = interpreter.intern_symbol("b");
+        let variable_name_b = interpreter.intern("b");
 
         interpreter.execute("(define-variable b 0)").unwrap();
         interpreter.execute("(let ((a 1)) (set! b 2))").unwrap();
@@ -106,7 +117,7 @@ mod tests {
             Value::Integer(2),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
-                &variable_name_b
+                variable_name_b
             ).unwrap()
         );
     }

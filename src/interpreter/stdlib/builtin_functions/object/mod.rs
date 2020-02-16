@@ -56,11 +56,11 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         object_new::object_new
     )?;
 
-    let name = interpreter.intern_symbol("object");
+    let object_symbol_id = interpreter.intern("object");
 
     interpreter.define_variable(
         interpreter.get_root_environment(),
-        &name,
+        object_symbol_id,
         Value::Object(object_object_id)
     )?;
 

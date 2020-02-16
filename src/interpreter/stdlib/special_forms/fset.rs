@@ -16,7 +16,7 @@ pub fn fset(
 
     let mut values = values;
 
-    let function_name = match values.remove(0) {
+    let function_symbol_id = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `fset!' must be a symbol."
@@ -34,21 +34,35 @@ pub fn fset(
         )
     };
 
-    let target_env = interpreter.lookup_environment_by_function(environment, &function_name);
+    let target_env = interpreter.lookup_environment_by_function(environment, function_symbol_id);
 
     match target_env {
         Some(target_env) => {
-            match interpreter.set_function(target_env, &function_name, value.clone()) {
+            match interpreter.set_function(target_env, function_symbol_id, value.clone()) {
                 Ok(()) => Ok(value),
-                Err(error) => interpreter.make_generic_execution_error_caused(
-                    &format!("Cannot set function `{}'", function_name.get_name()),
-                    error
-                )
+                Err(error) => {
+                    let message = &format!(
+                        "Cannot set function `{}'",
+                        interpreter.get_symbol_name(function_symbol_id)?
+                    );
+
+                    interpreter.make_generic_execution_error_caused(
+                        message,
+                        error
+                    )
+                }
             }
         },
-        None => interpreter.make_generic_execution_error(
-            &format!("Cannot find function `{}'", function_name.get_name())
-        )
+        None => {
+            let message = &format!(
+                "Cannot find function `{}'",
+                interpreter.get_symbol_name(function_symbol_id)?
+            );
+
+            interpreter.make_generic_execution_error(
+                message
+            )
+        }
     }
 }
 

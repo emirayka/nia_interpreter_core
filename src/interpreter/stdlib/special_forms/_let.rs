@@ -1,7 +1,7 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::symbol::Symbol;
+use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 
@@ -22,12 +22,17 @@ fn set_variable_via_cons(
     };
 
     let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
-            "It's not possible to redefine `nil' via special form `let'."
-        ),
-        Value::Symbol(symbol) => {
-            symbol
-        },
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if symbol.is_nil() {
+                return interpreter.make_invalid_argument_error(
+                    "It's not possible to redefine `nil' via special form `let'."
+                )
+            } else {
+                symbol_id
+            }
+        }
         _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol."
         )
@@ -50,7 +55,15 @@ fn set_variable_via_cons(
     };
 
     match interpreter.get_cddr(cons_id) {
-        Ok(Value::Symbol(symbol)) if symbol.is_nil() => {},
+        Ok(Value::Symbol(symbol_id))  => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if !symbol.is_nil() {
+                return interpreter.make_invalid_argument_error(
+                    "The definitions of the special form `let' must have exactly two arguments."
+                )
+            }
+        },
         _ => return interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         )
@@ -58,7 +71,7 @@ fn set_variable_via_cons(
 
     interpreter.define_variable(
         definition_setting_environment,
-        &name,
+        name,
         value
     )
 }
@@ -66,9 +79,9 @@ fn set_variable_via_cons(
 fn set_variable_to_nil(
     interpreter: &mut Interpreter,
     definition_setting_environment: EnvironmentId,
-    symbol: &Symbol
+    symbol: SymbolId
 ) -> Result<(), Error> {
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
 
     interpreter.define_variable(definition_setting_environment, symbol, nil)
 }
@@ -86,14 +99,21 @@ fn set_definition(
             definition_setting_environment,
             cons_id
         ),
-        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
-            "It's not possible to redefine `nil' via special form `let'."
-        ),
-        Value::Symbol(symbol) => set_variable_to_nil(
-            interpreter,
-            definition_setting_environment,
-            &symbol
-        ),
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if symbol.is_nil() {
+                return interpreter.make_invalid_argument_error(
+                    "It's not possible to redefine `nil' via special form `let'."
+                )
+            } else {
+                set_variable_to_nil(
+                    interpreter,
+                    definition_setting_environment,
+                    symbol_id
+                )
+            }
+        },
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `let' must be a list of symbols, or lists."
         )
@@ -166,16 +186,16 @@ mod tests {
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
 
-        let symbol = interpreter.intern("symbol");
-        let nil = interpreter.intern_nil();
+        let symbol = interpreter.intern_symbol_value("symbol");
+        let nil = interpreter.intern_nil_symbol_value();
 
         let definitions = vec!(
             (Value::Integer(1), "1"),
             (Value::Float(1.1), "1.1"),
             (Value::Boolean(true), "#t"),
             (Value::Boolean(false), "#f"),
-            (interpreter.intern("symbol"), "'symbol"),
-            (interpreter.intern("symbol"), "(quote symbol)"),
+            (interpreter.intern_symbol_value("symbol"), "'symbol"),
+            (interpreter.intern_symbol_value("symbol"), "(quote symbol)"),
             (interpreter.intern_string_value(String::from("string")), "\"string\""),
             (interpreter.intern_keyword_value(String::from("keyword")), ":keyword"),
             (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
@@ -200,7 +220,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_eq!(
-            interpreter.intern_nil(),
+            interpreter.intern_nil_symbol_value(),
             interpreter.execute("(let (nil-symbol) nil-symbol)").unwrap()
         );
     }

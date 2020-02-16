@@ -28,9 +28,9 @@ mod tests {
     #[test]
     fn returns_list_of_execution_results() {
         let mut interpreter = Interpreter::new();
-        let nil = interpreter.intern_nil();
+        let nil = interpreter.intern_nil_symbol_value();
 
-        assert_eq!(interpreter.intern_nil(), interpreter.execute("(block)").unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(block)").unwrap());
 
         let expected = interpreter.make_cons_value(
             Value::Integer(1),

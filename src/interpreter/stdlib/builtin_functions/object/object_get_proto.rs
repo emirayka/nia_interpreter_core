@@ -26,7 +26,7 @@ pub fn object_get_proto(
 
     match proto_id {
         Some(proto_id) => Ok(Value::Object(proto_id)),
-        None => Ok(interpreter.intern_nil())
+        None => Ok(interpreter.intern_nil_symbol_value())
     }
 }
 
@@ -41,7 +41,7 @@ mod tests {
 
         let result = interpreter.execute("(let ((obj {})) (object:get-proto obj))");
 
-        assert_eq!(interpreter.intern_nil(), result.unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
     }
 
     #[test]

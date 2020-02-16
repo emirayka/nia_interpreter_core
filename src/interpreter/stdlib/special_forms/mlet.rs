@@ -21,11 +21,16 @@ fn set_macro_via_cons(
     };
 
     let name = match car {
-        Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(
-            "It's not possible to redefine `nil' via special form `mlet'."
-        ),
-        Value::Symbol(symbol) => {
-            symbol
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if symbol.is_nil() {
+                return interpreter.make_invalid_argument_error(
+                    "It's not possible to redefine `nil' via special form `mlet'."
+                )
+            } else {
+                symbol_id
+            }
         },
         _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol that represents macro name."
@@ -42,7 +47,17 @@ fn set_macro_via_cons(
 
     let arguments = match arguments {
         Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
-        Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if symbol.is_nil() {
+                Ok(Vec::new())
+            } else {
+                return interpreter.make_invalid_argument_error(
+                    "The macro definitions of the special form `mlet' must have at least two items."
+                )
+            }
+        },
         _ => return interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items."
         )
@@ -57,6 +72,7 @@ fn set_macro_via_cons(
     };
 
     let argument_names = match super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
+        interpreter,
         arguments
     ) {
         Ok(names) => names,
@@ -67,7 +83,17 @@ fn set_macro_via_cons(
 
     let code = match interpreter.get_cddr(cons_id) {
         Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
-        Ok(Value::Symbol(symbol)) if symbol.is_nil() => Ok(Vec::new()),
+        Ok(Value::Symbol(symbol_id)) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if symbol.is_nil() {
+                Ok(Vec::new())
+            } else {
+                return interpreter.make_invalid_argument_error(
+                    "The macro definitions of the special form `mlet' must have at least two items.",
+                )
+            }
+        },
         _ => return interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items.",
         )
@@ -92,7 +118,7 @@ fn set_macro_via_cons(
 
     interpreter.define_function(
         macro_definition_environment,
-        &name,
+        name,
         function_value
     )
 }
@@ -238,7 +264,7 @@ mod tests {
             "(mlet ((test-macro-1 () (quote (quote test)))) (test-macro-1))"
         );
 
-        assert_eq!(interpreter.intern("test"), result.unwrap());
+        assert_eq!(interpreter.intern_symbol_value("test"), result.unwrap());
     }
 
     #[test]

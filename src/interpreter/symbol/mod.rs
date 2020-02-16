@@ -1,6 +1,23 @@
 use std::hash::Hash;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SymbolId {
+    id: usize
+}
+
+impl SymbolId {
+    pub fn new(id: usize) -> SymbolId {
+        SymbolId {
+            id
+        }
+    }
+
+    pub fn get_id(&self) -> usize {
+        self.id
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Symbol {
     name: String,
@@ -22,15 +39,6 @@ impl Symbol {
         }
     }
 
-    // kostyl
-    // todo: remove ASAP
-    pub fn make_nil() -> Symbol {
-        Symbol {
-            name: String::from("nil"),
-            counter: 0
-        }
-    }
-
     pub fn get_name(&self) -> &String {
         &self.name
     }
@@ -46,36 +54,44 @@ impl Symbol {
 
 #[derive(Debug)]
 pub struct SymbolArena {
-    symbols: HashMap<String, Vec<Symbol>>,
+    symbols: HashMap<SymbolId, Symbol>,
+    mapping: HashMap<String, Vec<SymbolId>>,
+    next_id: usize,
 }
 
 impl SymbolArena {
     pub fn new() -> SymbolArena {
         SymbolArena {
             symbols: HashMap::new(),
+            mapping: HashMap::new(),
+            next_id: 0,
         }
     }
 
     fn ensure_symbol_defined(&mut self, symbol_name: &str) {
-        match self.symbols.get_mut(symbol_name) {
+        match self.mapping.get_mut(symbol_name) {
             Some(_) => (),
             None => {
                 let vector = Vec::new();
 
-                self.symbols.insert(String::from(symbol_name), vector);
+                self.mapping.insert(String::from(symbol_name), vector);
             }
         };
     }
 
     fn ensure_symbol_internable(&mut self, symbol_name: &str) {
-        match self.symbols.get_mut(symbol_name) {
+        match self.mapping.get_mut(symbol_name) {
             Some(vector) => {
                 match vector.get(0) {
                     Some(_) => (),
                     None => {
                         let symbol = Symbol::from(symbol_name);
+                        let symbol_id = SymbolId::new(self.next_id);
 
-                        vector.push(symbol);
+                        self.next_id += 1;
+
+                        vector.push(symbol_id);
+                        self.symbols.insert(symbol_id, symbol);
                     }
                 }
             },
@@ -86,26 +102,34 @@ impl SymbolArena {
         };
     }
 
-    pub fn intern(&mut self, symbol_name: &str) -> Symbol {
+    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Option<&Symbol> {
+        self.symbols.get(&symbol_id)
+    }
+
+    pub fn intern(&mut self, symbol_name: &str) -> SymbolId {
         self.ensure_symbol_defined(symbol_name);
         self.ensure_symbol_internable(symbol_name);
 
-        match self.symbols.get(symbol_name) {
+        match self.mapping.get(symbol_name) {
             Some(symbols) => symbols[0].clone(),
             _ => unreachable!()
         }
     }
 
-    pub fn gensym(&mut self, symbol_name: &str) -> Symbol {
+    pub fn gensym(&mut self, symbol_name: &str) -> SymbolId {
         self.ensure_symbol_defined(symbol_name);
         self.ensure_symbol_internable(symbol_name);
 
-        match self.symbols.get_mut(symbol_name) {
+        match self.mapping.get_mut(symbol_name) {
             Some(symbols) => {
                 let counter = symbols.len();
-
                 let symbol = Symbol::new(String::from(symbol_name), counter);
-                symbols.push(symbol);
+                let symbol_id = SymbolId::new(self.next_id);
+
+                self.next_id += 1;
+
+                symbols.push(symbol_id);
+                self.symbols.insert(symbol_id, symbol);
 
                 symbols[counter].clone()
             },
@@ -125,13 +149,8 @@ mod tests {
         let sym1 = arena.intern("test");
         let sym2 = arena.intern("test");
 
-        assert_eq!(sym1, sym2);
-
-        assert_eq!("test", &sym1.name);
-        assert_eq!(0usize, sym1.counter);
-
-        assert_eq!("test", &sym2.name);
-        assert_eq!(0usize, sym2.counter);
+        assert_eq!(SymbolId::new(0), sym1);
+        assert_eq!(SymbolId::new(0), sym2);
     }
 
     #[test]
@@ -146,13 +165,8 @@ mod tests {
         assert_ne!(sym, sym2);
         assert_ne!(sym1, sym2);
 
-        assert_eq!("test", &sym.name);
-        assert_eq!(0usize, sym.counter);
-
-        assert_eq!("test", &sym1.name);
-        assert_eq!(1usize, sym1.counter);
-
-        assert_eq!("test", &sym2.name);
-        assert_eq!(2usize, sym2.counter);
+        assert_eq!(SymbolId::new(0), sym);
+        assert_eq!(SymbolId::new(1), sym1);
+        assert_eq!(SymbolId::new(2), sym2);
     }
 }

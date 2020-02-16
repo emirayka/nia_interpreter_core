@@ -1,5 +1,5 @@
 use crate::interpreter::value::Value;
-use crate::interpreter::symbol::Symbol;
+use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment::LexicalEnvironment;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -68,83 +68,93 @@ impl EnvironmentArena {
         child_id
     }
 
-    pub fn has_variable(&self, id: EnvironmentId, symbol: &Symbol) -> bool {
+    pub fn has_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> bool {
         let env = self.get(id).unwrap();
 
-        env.has_variable(symbol)
+        env.has_variable(symbol_id)
     }
 
-    pub fn has_function(&self, id: EnvironmentId, symbol: &Symbol) -> bool {
+    pub fn has_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> bool {
         let env = self.get(id).unwrap();
 
-        env.has_function(symbol)
+        env.has_function(symbol_id)
     }
 
-    pub fn lookup_variable(&self, id: EnvironmentId, symbol: &Symbol) -> Option<&Value>{
+    pub fn lookup_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Option<Value> {
         let env = self.get(id).unwrap();
 
-        match env.lookup_variable(symbol) {
+        match env.lookup_variable(symbol_id) {
             Some(result) => Some(result),
             None => {
                 match env.get_parent() {
-                    Some(parent_id) => self.lookup_variable(parent_id, symbol),
+                    Some(parent_id) => self.lookup_variable(parent_id, symbol_id),
                     _ => None
                 }
             },
         }
     }
 
-    pub fn lookup_function(&self, id: EnvironmentId, symbol: &Symbol) -> Option<&Value> {
+    pub fn lookup_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Option<Value> {
         let env = self.get(id).unwrap();
 
-        match env.lookup_function(symbol) {
+        match env.lookup_function(symbol_id) {
             Some(result) => Some(result),
             None => {
                 match env.get_parent() {
-                    Some(parent_id) => self.lookup_function(parent_id, symbol),
+                    Some(parent_id) => self.lookup_function(parent_id, symbol_id),
                     _ => None
                 }
             },
         }
     }
 
-    pub fn define_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_variable(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
-        env.define_variable(symbol, value)
+        env.define_variable(symbol_id, value)
     }
 
-    pub fn define_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn define_function(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
-        env.define_function(symbol, value)
+        env.define_function(symbol_id, value)
     }
 
-    pub fn set_variable(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, id: EnvironmentId, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
-        if env.has_variable(symbol) {
-            match env.set_variable(symbol, value) {
+        if env.has_variable(symbol_id) {
+            match env.set_variable(symbol_id, value) {
                 Ok(()) => Ok(()),
                 Err(error) => Err(error)
             }
         } else if let Some(parent_id) = env.get_parent() {
-            self.set_variable(parent_id, symbol, value)
+            self.set_variable(parent_id, symbol_id, value)
         } else {
             Err(())
         }
     }
 
-    pub fn set_function(&mut self, id: EnvironmentId, symbol: &Symbol, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, id: EnvironmentId, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
         let env = self.get_mut(id).unwrap();
 
-        if env.has_function(symbol) {
-            match env.set_function(symbol, value) {
+        if env.has_function(symbol_id) {
+            match env.set_function(symbol_id, value) {
                 Ok(()) => Ok(()),
                 Err(error) => Err(error)
             }
         } else if let Some(parent_id) = env.get_parent() {
-            self.set_function(parent_id, symbol, value)
+            self.set_function(parent_id, symbol_id, value)
         } else {
             Err(())
         }
@@ -153,7 +163,7 @@ impl EnvironmentArena {
     pub fn lookup_environment_by_variable(
         &self,
         environment: EnvironmentId,
-        variable_name: &Symbol
+        variable_name: SymbolId
     ) -> Option<EnvironmentId > {
         match self.has_variable(environment, variable_name) {
             true => Some(environment),
@@ -167,7 +177,7 @@ impl EnvironmentArena {
     pub fn lookup_environment_by_function(
         &self,
         environment: EnvironmentId,
-        function_name: &Symbol
+        function_name: SymbolId
     ) -> Option<EnvironmentId > {
         match self.has_function(environment, function_name) {
             true => Some(environment),
@@ -184,46 +194,40 @@ mod tests {
     use super::*;
     use crate::interpreter::symbol::SymbolArena;
 
-    fn new_symbol(name: &str) -> Symbol {
-        let mut symbol_arena = SymbolArena::new();
-
-        symbol_arena.intern(name)
-    }
-
     #[test]
     fn test_define_works_correctly_for_a_single_environment() {
         let mut arena = EnvironmentArena::new();
-        let key = new_symbol("test");
+        let key = SymbolId::new(0);
 
         let parent_id = arena.alloc();
 
-        assert!(!arena.has_variable(parent_id, &key));
-        arena.define_variable(parent_id, &key, Value::Integer(1)).unwrap();
-        assert!(arena.has_variable(parent_id, &key));
-        assert_eq!(&Value::Integer(1), arena.lookup_variable(parent_id, &key).unwrap());
+        assert!(!arena.has_variable(parent_id, key));
+        arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
+        assert!(arena.has_variable(parent_id, key));
+        assert_eq!(Value::Integer(1), arena.lookup_variable(parent_id, key).unwrap());
 
-        assert!(!arena.has_function(parent_id, &key));
-        arena.define_function(parent_id, &key, Value::Integer(1)).unwrap();
-        assert!(arena.has_function(parent_id, &key));
-        assert_eq!(&Value::Integer(1), arena.lookup_function(parent_id, &key).unwrap());
+        assert!(!arena.has_function(parent_id, key));
+        arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
+        assert!(arena.has_function(parent_id, key));
+        assert_eq!(Value::Integer(1), arena.lookup_function(parent_id, key).unwrap());
     }
 
     #[test]
     fn test_set_works_correctly_for_a_single_environment() {
         let mut arena = EnvironmentArena::new();
-        let key = new_symbol("test");
+        let key = SymbolId::new(0);
 
         let parent_id = arena.alloc();
 
-        arena.define_variable(parent_id, &key, Value::Integer(1)).unwrap();
-        assert_eq!(&Value::Integer(1), arena.lookup_variable(parent_id, &key).unwrap());
-        arena.set_variable(parent_id, &key, Value::Integer(2)).unwrap();
-        assert_eq!(&Value::Integer(2), arena.lookup_variable(parent_id, &key).unwrap());
+        arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
+        assert_eq!(Value::Integer(1), arena.lookup_variable(parent_id, key).unwrap());
+        arena.set_variable(parent_id, key, Value::Integer(2)).unwrap();
+        assert_eq!(Value::Integer(2), arena.lookup_variable(parent_id, key).unwrap());
 
-        arena.define_function(parent_id, &key, Value::Integer(1)).unwrap();
-        assert_eq!(&Value::Integer(1), arena.lookup_function(parent_id, &key).unwrap());
-        arena.set_function(parent_id, &key, Value::Integer(2)).unwrap();
-        assert_eq!(&Value::Integer(2), arena.lookup_function(parent_id, &key).unwrap());
+        arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
+        assert_eq!(Value::Integer(1), arena.lookup_function(parent_id, key).unwrap());
+        arena.set_function(parent_id, key, Value::Integer(2)).unwrap();
+        assert_eq!(Value::Integer(2), arena.lookup_function(parent_id, key).unwrap());
     }
 
     #[test]
@@ -231,9 +235,9 @@ mod tests {
         let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = new_symbol("key");
+        let key = SymbolId::new(0);
 
-        assert!(arena.set_variable(env_id, &key, Value::Integer(2)).is_err());
+        assert!(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
     }
 
     #[test]
@@ -241,9 +245,9 @@ mod tests {
         let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = new_symbol("key");
+        let key = SymbolId::new(0);
 
-        assert!(arena.set_function(env_id, &key, Value::Integer(2)).is_err());
+        assert!(arena.set_function(env_id, key, Value::Integer(2)).is_err());
     }
 
     #[test]
@@ -251,10 +255,10 @@ mod tests {
         let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = new_symbol("key");
+        let key = SymbolId::new(0);
 
-        arena.define_variable(env_id, &key, Value::Integer(1)).unwrap();
-        assert!(arena.define_variable(env_id, &key, Value::Integer(1)).is_err());
+        arena.define_variable(env_id, key, Value::Integer(1)).unwrap();
+        assert!(arena.define_variable(env_id, key, Value::Integer(1)).is_err());
     }
 
     #[test]
@@ -262,10 +266,10 @@ mod tests {
         let mut arena = EnvironmentArena::new();
 
         let env_id = arena.alloc();
-        let key = new_symbol("key");
+        let key = SymbolId::new(0);
 
-        arena.define_function(env_id, &key, Value::Integer(1)).unwrap();
-        assert!(arena.define_function(env_id, &key, Value::Integer(1)).is_err());
+        arena.define_function(env_id, key, Value::Integer(1)).unwrap();
+        assert!(arena.define_function(env_id, key, Value::Integer(1)).is_err());
     }
 
     #[test]
@@ -275,35 +279,35 @@ mod tests {
         let parent_id = arena.alloc();
         let child_id = arena.alloc_child(parent_id);
 
-        let parent_key = new_symbol("parent_test");
-        let child_key = new_symbol("child_test");
+        let parent_key = SymbolId::new(0);
+        let child_key = SymbolId::new(1);
 
         let parent_value = Value::Integer(1);
         let child_value = Value::Integer(2);
 
         // variable
-        arena.define_variable(parent_id, &parent_key, parent_value.clone()).unwrap();
-        arena.define_variable(child_id, &child_key, child_value.clone()).unwrap();
+        arena.define_variable(parent_id, parent_key, parent_value.clone()).unwrap();
+        arena.define_variable(child_id, child_key, child_value.clone()).unwrap();
 
-        assert_eq!(&parent_value, arena.lookup_variable(parent_id, &parent_key).unwrap());
-        assert_eq!(&parent_value, arena.lookup_variable(child_id, &parent_key).unwrap());
-        assert_eq!(None, arena.lookup_variable(parent_id, &child_key));
-        assert_eq!(&child_value, arena.lookup_variable(child_id, &child_key).unwrap());
+        assert_eq!(parent_value, arena.lookup_variable(parent_id, parent_key).unwrap());
+        assert_eq!(parent_value, arena.lookup_variable(child_id, parent_key).unwrap());
+        assert_eq!(None, arena.lookup_variable(parent_id, child_key));
+        assert_eq!(child_value, arena.lookup_variable(child_id, child_key).unwrap());
 
         // function
-        arena.define_function(parent_id, &parent_key, parent_value.clone()).unwrap();
-        arena.define_function(child_id, &child_key, child_value.clone()).unwrap();
+        arena.define_function(parent_id, parent_key, parent_value.clone()).unwrap();
+        arena.define_function(child_id, child_key, child_value.clone()).unwrap();
 
-        assert_eq!(&parent_value, arena.lookup_function(parent_id, &parent_key).unwrap());
-        assert_eq!(&parent_value, arena.lookup_function(child_id, &parent_key).unwrap());
-        assert_eq!(None, arena.lookup_function(parent_id, &child_key));
-        assert_eq!(&child_value, arena.lookup_function(child_id, &child_key).unwrap());
+        assert_eq!(parent_value, arena.lookup_function(parent_id, parent_key).unwrap());
+        assert_eq!(parent_value, arena.lookup_function(child_id, parent_key).unwrap());
+        assert_eq!(None, arena.lookup_function(parent_id, child_key));
+        assert_eq!(child_value, arena.lookup_function(child_id, child_key).unwrap());
     }
 
     #[test]
     fn test_when_defined_only_in_parent_set_only_in_parent() {
         let mut arena = EnvironmentArena::new();
-        let key = new_symbol("test");
+        let key = SymbolId::new(0);
 
         let parent_id = arena.alloc();
         let child_id = arena.alloc_child(parent_id);
@@ -311,13 +315,13 @@ mod tests {
         let parent_value = Value::Integer(1);
         let child_value = Value::Integer(2);
 
-        arena.define_variable(parent_id, &key, parent_value.clone()).unwrap();
-        arena.set_variable(child_id, &key, child_value.clone()).unwrap();
-        assert_eq!(&child_value, arena.lookup_variable(parent_id, &key).unwrap());
+        arena.define_variable(parent_id, key, parent_value.clone()).unwrap();
+        arena.set_variable(child_id, key, child_value.clone()).unwrap();
+        assert_eq!(child_value, arena.lookup_variable(parent_id, key).unwrap());
 
-        arena.define_function(parent_id, &key, parent_value.clone()).unwrap();
-        arena.set_function(child_id, &key, child_value.clone()).unwrap();
-        assert_eq!(&child_value, arena.lookup_function(child_id,&key).unwrap());
+        arena.define_function(parent_id, key, parent_value.clone()).unwrap();
+        arena.set_function(child_id, key, child_value.clone()).unwrap();
+        assert_eq!(child_value, arena.lookup_function(child_id,key).unwrap());
     }
 
     #[cfg(test)]
@@ -331,15 +335,16 @@ mod tests {
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);
 
-            let variable_name = new_symbol("test");
+            let variable_name = SymbolId::new(0);
 
-            arena.define_variable(child_id, &variable_name, Value::Integer(1)).unwrap();
+            arena.define_variable(child_id, variable_name, Value::Integer(1)).unwrap();
 
             assert_eq!(
                 Some(child_id),
                 arena.lookup_environment_by_variable(
                     child_id,
-                    &variable_name)
+                    variable_name
+                )
             );
         }
 
@@ -350,15 +355,16 @@ mod tests {
             let parent_id = arena.alloc();
             let child_id = arena.alloc_child(parent_id);
 
-            let variable_name = new_symbol("test");
+            let variable_name = SymbolId::new(0);
 
-            arena.define_variable(parent_id, &variable_name, Value::Integer(1)).unwrap();
+            arena.define_variable(parent_id, variable_name, Value::Integer(1)).unwrap();
 
             assert_eq!(
                 Some(parent_id),
                 arena.lookup_environment_by_variable(
                     child_id,
-                    &variable_name)
+                    variable_name
+                )
             );
         }
 
@@ -370,15 +376,16 @@ mod tests {
             let child_id = arena.alloc_child(parent_id);
             let child_child_id = arena.alloc_child(child_id);
 
-            let variable_name = new_symbol("test");
+            let variable_name = SymbolId::new(0);
 
-            arena.define_variable(parent_id, &variable_name, Value::Integer(1)).unwrap();
+            arena.define_variable(parent_id, variable_name, Value::Integer(1)).unwrap();
 
             assert_eq!(
                 Some(parent_id),
                 arena.lookup_environment_by_variable(
                     child_child_id,
-                    &variable_name)
+                    variable_name
+                )
             );
         }
 
@@ -390,17 +397,15 @@ mod tests {
             let child_id = arena.alloc_child(parent_id);
             let child_child_id = arena.alloc_child(child_id);
 
-            let variable_name = new_symbol("test");
+            let variable_name = SymbolId::new(0);
 
             assert_eq!(
                 None,
                 arena.lookup_environment_by_variable(
                     child_child_id,
-                    &variable_name)
+                    variable_name
+                )
             );
         }
     }
-
-    // todo: add check of variable/function names?
-    // wat is it?
 }

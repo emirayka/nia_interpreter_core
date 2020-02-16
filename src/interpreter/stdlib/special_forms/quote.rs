@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn quote_works_correctly_when_used_quote_special_form() {
         let mut interpreter = Interpreter::new();
-        let nil = interpreter.intern_nil();
+        let nil = interpreter.intern_nil_symbol_value();
 
         let cdr = interpreter.make_cons_value(
             Value::Integer(2),
@@ -52,7 +52,7 @@ mod tests {
             expected,
             result
         );
-        assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("(quote cute-symbol)").unwrap());
+        assert_eq!(interpreter.intern_symbol_value("cute-symbol"), interpreter.execute("(quote cute-symbol)").unwrap());
 
         let expected = interpreter.intern_string_value(String::from("test"));
         let result = interpreter.execute("(quote \"test\")").unwrap();
@@ -78,7 +78,7 @@ mod tests {
     fn quote_works_correctly_when_used_quote_sign() {
         let mut interpreter = Interpreter::new();
 
-        let nil = interpreter.intern_nil();
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             Value::Integer(2),
             nil
@@ -100,7 +100,7 @@ mod tests {
             expected,
             result
         );
-        assert_eq!(interpreter.intern("cute-symbol"), interpreter.execute("'cute-symbol").unwrap());
+        assert_eq!(interpreter.intern_symbol_value("cute-symbol"), interpreter.execute("'cute-symbol").unwrap());
 
         let expected = interpreter.intern_string_value(String::from("test"));
         let result = interpreter.execute("'\"test\"").unwrap();
@@ -125,9 +125,9 @@ mod tests {
     fn quote_works_correctly_for_quote_invocation() {
         let mut interpreter = Interpreter::new();
 
-        let quote = interpreter.intern("quote");
-        let cute_symbol = interpreter.intern("cute-symbol");
-        let nil = interpreter.intern_nil();
+        let quote = interpreter.intern_symbol_value("quote");
+        let cute_symbol = interpreter.intern_symbol_value("cute-symbol");
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             cute_symbol,
             nil

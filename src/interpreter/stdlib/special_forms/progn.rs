@@ -32,6 +32,6 @@ mod tests {
     fn returns_nil_if_no_form_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(interpreter.intern_nil(), interpreter.execute("(progn)").unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(progn)").unwrap());
     }
 }

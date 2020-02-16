@@ -1,17 +1,17 @@
-use crate::interpreter::symbol::Symbol;
+use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::keyword::keyword_arena::KeywordId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::function::function_arena::FunctionId;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Value {
     Integer(i64),
     Float(f64),
     Boolean(bool),
     Keyword(KeywordId),
-    Symbol(Symbol),
+    Symbol(SymbolId),
     String(StringId),
     Cons(ConsId),
     Object(ObjectId),

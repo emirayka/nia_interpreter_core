@@ -17,12 +17,12 @@ pub fn lookup(
     let mut values = values;
 
     match values.remove(0) {
-        Value::Symbol(symbol) => {
-            let nil = interpreter.intern_nil();
+        Value::Symbol(symbol_id) => {
+            let nil = interpreter.intern_nil_symbol_value();
 
             match interpreter.lookup_variable(
                 _environment,
-                &symbol
+                symbol_id
             ) {
                 Ok(value) => Ok(value.clone()),
                 _ => Ok(nil)
@@ -54,7 +54,7 @@ mod tests {
 
         let result = interpreter.execute("(let ((a 1)) (lookup 'b))");
 
-        assert_eq!(interpreter.intern_nil(), result.unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
     }
 
     #[test]

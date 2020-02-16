@@ -26,14 +26,14 @@ mod tests {
 
         let result = interpreter.execute("(list)").unwrap();
 
-        assertion::assert_is_nil(result);
+        assertion::assert_is_nil(&mut interpreter, result);
     }
 
     #[test]
     fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
         for_value_pairs_evaluated_ifbsyk(
             |interpreter, string, value| {
-                let nil = interpreter.intern_nil();
+                let nil = interpreter.intern_nil_symbol_value();
 
                 let expected = interpreter.make_cons_value(
                     value,
@@ -53,7 +53,7 @@ mod tests {
                 let code = &format!("(list {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();
 
-                let nil = interpreter.intern_nil();
+                let nil = interpreter.intern_nil_symbol_value();
                 let expected = interpreter.make_cons_value(
                     val2,
                     nil

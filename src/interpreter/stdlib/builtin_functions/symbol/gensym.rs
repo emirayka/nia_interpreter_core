@@ -63,7 +63,7 @@ mod tests {
     fn returns_gensym_with_target_name() {
         let mut interpreter = Interpreter::new();
 
-        let interned = interpreter.intern("test");
+        let interned = interpreter.intern_symbol_value("test");
         let gensym1 = interpreter.execute(r#"(gensym "test")"#).unwrap();
         let gensym2 = interpreter.execute(r#"(gensym "test")"#).unwrap();
         let gensym3 = interpreter.execute(r#"(gensym "test")"#).unwrap();

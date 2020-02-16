@@ -17,7 +17,7 @@ pub fn execute_forms(
 
     match last_result {
         Some(value) => Ok(value),
-        None => Ok(interpreter.intern_nil())
+        None => Ok(interpreter.intern_nil_symbol_value())
     }
 }
 
@@ -27,15 +27,42 @@ pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Resu
             Ok(vec) => vec,
             _ => return interpreter.make_empty_error()
         },
-        Value::Symbol(symbol) if symbol.is_nil() => Vec::new(),
+        Value::Symbol(symbol_id) => {
+            let symbol = match interpreter.get_symbol(symbol_id) {
+                Ok(symbol) => symbol,
+                Err(error) => return interpreter.make_generic_execution_error_caused(
+                    "",
+                    error
+                )
+            };
+
+            if symbol.is_nil() {
+                Vec::new()
+            } else {
+                return interpreter.make_invalid_argument_error("")
+            }
+        }
         _ => return interpreter.make_invalid_argument_error("")
     };
 
     for definition in &definitions {
         match definition {
             Value::Cons(_) => {},
-            Value::Symbol(symbol) if symbol.is_nil() => return interpreter.make_invalid_argument_error(""),
-            Value::Symbol(_) => {},
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(*symbol_id);
+
+                let symbol = match symbol {
+                    Ok(symbol) => symbol,
+                    Err(error) => return interpreter.make_generic_execution_error_caused(
+                        "",
+                        error
+                    )
+                };
+
+                if symbol.is_nil() {
+                    return interpreter.make_invalid_argument_error("")
+                }
+            }
             _ => return interpreter.make_invalid_argument_error("")
         }
     };
@@ -43,12 +70,24 @@ pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Resu
     Ok(definitions)
 }
 
-pub fn convert_vector_of_values_to_vector_of_symbol_names(values: Vec<Value>) -> Result<Vec<String>, ()> {
+pub fn convert_vector_of_values_to_vector_of_symbol_names(
+    interpreter: &mut Interpreter,
+    values: Vec<Value>
+) -> Result<Vec<String>, ()> {
     let mut result = Vec::new();
 
     for value in values {
         let name = match value {
-            Value::Symbol(symbol) => String::from(symbol.get_name()),
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(symbol_id);
+
+                let symbol = match symbol {
+                    Ok(symbol) => symbol,
+                    Err(_) => return Err(())
+                };
+
+                String::from(symbol.get_name())
+            },
             _ => return Err(())
         };
 
@@ -70,17 +109,17 @@ mod tests {
         #[test]
         fn returns_the_result_of_execution_of_the_last_form() {
             let mut interpreter = Interpreter::new();
-            let name = interpreter.intern_symbol("test");
+            let symbol_id = interpreter.intern("test");
 
             interpreter.define_variable(
                 interpreter.get_root_environment(),
-                &name,
+                symbol_id,
                 Value::Integer(10)
             ).unwrap();
 
             let forms = vec!(
                 Value::Integer(1),
-                Value::Symbol(name)
+                Value::Symbol(symbol_id)
             );
 
             let root_env = interpreter.get_root_environment();
@@ -100,7 +139,7 @@ mod tests {
 
             let forms = vec!(
                 Value::Integer(1),
-                interpreter.intern("test")
+                interpreter.intern_symbol_value("test")
             );
 
             let root_env = interpreter.get_root_environment();
@@ -123,7 +162,7 @@ mod tests {
         #[test]
         fn returns_empty_vector_when_nil_was_provided() {
             let mut interpreter = Interpreter::new();
-            let nil = interpreter.intern_nil();
+            let nil = interpreter.intern_nil_symbol_value();
 
             let result = read_let_definitions(
                 &mut interpreter,
@@ -180,9 +219,9 @@ mod tests {
         fn returns_vector_of_symbol_names() {
             let mut interpreter = Interpreter::new();
             let values = vec!(
-                interpreter.intern("a"),
-                interpreter.intern("b"),
-                interpreter.intern("c"),
+                interpreter.intern_symbol_value("a"),
+                interpreter.intern_symbol_value("b"),
+                interpreter.intern_symbol_value("c"),
             );
 
             let expected = vec!(
@@ -192,6 +231,7 @@ mod tests {
             );
 
             let result = convert_vector_of_values_to_vector_of_symbol_names(
+                &mut interpreter,
                 values
             );
 
@@ -213,13 +253,14 @@ mod tests {
 
             for incorrect_item in incorrect_items {
                 let values = vec!(
-                    interpreter.intern("a"),
-                    interpreter.intern("b"),
-                    interpreter.intern("c"),
+                    interpreter.intern_symbol_value("a"),
+                    interpreter.intern_symbol_value("b"),
+                    interpreter.intern_symbol_value("c"),
                     incorrect_item
                 );
 
                 let result = convert_vector_of_values_to_vector_of_symbol_names(
+                    &mut interpreter,
                     values
                 );
 

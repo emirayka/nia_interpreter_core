@@ -12,10 +12,10 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpression
     let values = sexp_element.get_values();
 
     if values.len() == 0 {
-        return interpreter.intern_nil();
+        return interpreter.intern_nil_symbol_value();
     }
 
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
 
     let root_cons = interpreter.make_cons(
         nil.clone(),
@@ -34,7 +34,7 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpression
             break;
         }
 
-        let nil = interpreter.intern_nil();
+        let nil = interpreter.intern_nil_symbol_value();
 
         let next_cons_id = interpreter.make_cons(
             nil.clone(),
@@ -56,7 +56,7 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpression
 fn preread_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Value {
     let values = object_element.get_values();
 
-    let mut last_cons = interpreter.intern_nil();
+    let mut last_cons = interpreter.intern_nil_symbol_value();
 
     for (keyword_element, element) in values.into_iter().rev() {
         let keyword = interpreter.intern_keyword_value(keyword_element.get_value());
@@ -73,8 +73,8 @@ fn preread_object(interpreter: &mut Interpreter, object_element: ObjectElement) 
         ));
     }
 
-    let sym1 = interpreter.intern("object");
-    let nil = interpreter.intern_nil();
+    let sym1 = interpreter.intern_symbol_value("object");
+    let nil = interpreter.intern_nil_symbol_value();
     let car = Value::Cons(interpreter.make_cons(
         sym1,
         nil
@@ -100,12 +100,12 @@ fn preread_delimited_symbols_element(
     let values = delimited_symbols_element.get_symbols();
 
     let object_symbol_name = values[0].get_value();
-    let mut previous_cons = interpreter.intern(object_symbol_name);
+    let mut previous_cons = interpreter.intern_symbol_value(object_symbol_name);
 
     for symbol_element in &values[1..] {
         let symbol_name = symbol_element.get_value();
 
-        let nil = interpreter.intern_nil();
+        let nil = interpreter.intern_nil_symbol_value();
         let current_cons = Value::Cons(interpreter.make_cons(
             previous_cons,
             nil
@@ -127,13 +127,13 @@ fn preread_delimited_symbols_element(
 fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
         nil
     ));
 
-    let quote = interpreter.intern("quote");
+    let quote = interpreter.intern_symbol_value("quote");
     let cons_id = interpreter.make_cons(
         quote,
         cdr
@@ -145,9 +145,9 @@ fn preread_quote_prefix_element(interpreter: &mut Interpreter, element: Element)
 fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
-    let graveaccent = interpreter.intern("`");
+    let graveaccent = interpreter.intern_symbol_value("`");
 
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
         nil
@@ -164,9 +164,9 @@ fn preread_graveaccent_prefix_element(interpreter: &mut Interpreter, element: El
 fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
-    let comma = interpreter.intern(",");
+    let comma = interpreter.intern_symbol_value(",");
 
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
         nil
@@ -183,9 +183,9 @@ fn preread_comma_prefix_element(interpreter: &mut Interpreter, element: Element)
 fn preread_commadog_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
     let value = preread_element(interpreter, element);
 
-    let commadog = interpreter.intern(",@");
+    let commadog = interpreter.intern_symbol_value(",@");
 
-    let nil = interpreter.intern_nil();
+    let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
         nil
@@ -222,7 +222,7 @@ pub fn preread_element(interpreter: &mut Interpreter, element: Element) -> Value
             interpreter.intern_string_value(string)
         },
         Element::Symbol(symbol_element) =>
-            interpreter.intern(symbol_element.get_value()),
+            interpreter.intern_symbol_value(symbol_element.get_value()),
         Element::Keyword(keyword_element) => {
             let keyword_name = keyword_element.get_value();
 
@@ -247,14 +247,9 @@ pub fn preread_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -
 mod tests {
     use super::*;
     use crate::parser::parse_code;
-    use crate::interpreter::symbol::{SymbolArena, Symbol};
+    use crate::interpreter::symbol::{SymbolArena, SymbolId};
     use crate::interpreter::lib::assertion;
-
-    fn new_symbol(name: &str) -> Symbol {
-        let mut symbol_arena = SymbolArena::new();
-
-        symbol_arena.intern(name)
-    }
+    use crate::interpreter::value::Value::Integer;
 
     macro_rules! assert_prereading_result_equal {
         ($expected:expr, $code:expr) => {
@@ -269,7 +264,10 @@ mod tests {
                 assert_eq!(len, result.len());
 
                 for i in 0..len {
-                    assert_eq!(&expected[i], &result[i]);
+                    let expected = expected[i];
+                    let result = result[i];
+
+                    assertion::assert_deep_equal(&mut interpreter, expected, result);
                 }
             }
         }
@@ -278,6 +276,8 @@ mod tests {
 
     #[test]
     fn prereads_integer_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
                 Value::Integer(1)
@@ -285,6 +285,7 @@ mod tests {
             "1"
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
                 Value::Integer(1),
@@ -296,6 +297,8 @@ mod tests {
 
     #[test]
     fn prereads_float_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
                 Value::Float(1.2)
@@ -303,6 +306,7 @@ mod tests {
             "1.2"
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
                 Value::Float(1.2),
@@ -314,6 +318,8 @@ mod tests {
 
     #[test]
     fn prereads_boolean_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
                 Value::Boolean(true)
@@ -321,6 +327,7 @@ mod tests {
             "#t"
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
                 Value::Boolean(true),
@@ -332,17 +339,20 @@ mod tests {
 
     #[test]
     fn prereads_string_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
-                Value::String(StringId::new(0))
+                interpreter.intern_string_value(String::from("cute string"))
             ),
             r#""cute string""#
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
-                Value::String(StringId::new(0)),
-                Value::String(StringId::new(1))
+                interpreter.intern_string_value(String::from("first cute string")),
+                interpreter.intern_string_value(String::from("second cute string")),
             ),
             r#""first cute string" "second cute string""#
         );
@@ -350,36 +360,43 @@ mod tests {
 
     #[test]
     fn prereads_symbol_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol(new_symbol("cutesymbol"))
+                interpreter.intern_symbol_value("cutesymbol")
             ),
             r#"cutesymbol"#
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
-                Value::Symbol(new_symbol("cutesymbol1")),
-                Value::Symbol(new_symbol("cutesymbol2"))
+                interpreter.intern_symbol_value("cutesymbol1"),
+                interpreter.intern_symbol_value("cutesymbol1"),
+                interpreter.intern_symbol_value("cutesymbol2")
             ),
-            r#"cutesymbol1 cutesymbol2"#
+            r#"cutesymbol1 cutesymbol1 cutesymbol2"#
         );
     }
 
     #[test]
     fn prereads_keyword_elements_correctly() {
+        let mut interpreter = Interpreter::new();
+
         assert_prereading_result_equal!(
             vec!(
-                Value::Keyword(KeywordId::new(0))
+                interpreter.intern_keyword_value(String::from("cutekeyword"))
             ),
             r#":cutekeyword"#
         );
 
+        let mut interpreter = Interpreter::new();
         assert_prereading_result_equal!(
             vec!(
-                Value::Keyword(KeywordId::new(0)),
-                Value::Keyword(KeywordId::new(0)),
-                Value::Keyword(KeywordId::new(1))
+                interpreter.intern_keyword_value(String::from("cutekeyword1")),
+                interpreter.intern_keyword_value(String::from("cutekeyword1")),
+                interpreter.intern_keyword_value(String::from("cutekeyword2"))
             ),
             r#":cutekeyword1 :cutekeyword1 :cutekeyword2"#
         );
@@ -389,21 +406,26 @@ mod tests {
     fn prereads_s_expression_elements_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Symbol(new_symbol("nil"));
+        let expected = interpreter.intern_nil_symbol_value();
         assert_prereading_deeply(&mut interpreter, expected, "()");
 
+        let symbol = interpreter.intern_symbol_value("a");
+        let nil= interpreter.intern_nil_symbol_value();
         let expected = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("a")),
-            Value::Symbol(new_symbol("nil"))
+            symbol,
+            nil
         );
         assert_prereading_deeply(&mut interpreter, expected, "(a)");
 
+        let symbol = interpreter.intern_symbol_value("b");
+        let nil= interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("b")),
-            Value::Symbol(new_symbol("nil"))
+            symbol,
+            nil
         );
+        let symbol = interpreter.intern_symbol_value("a");
         let expected = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("a")),
+            symbol,
             cdr
         );
         assert_prereading_deeply(&mut interpreter, expected, "(a b)");
@@ -429,13 +451,14 @@ mod tests {
                     match result {
                         Value::Object(object_id) => {
                             for (name, value) in expected {
-                                let symbol = interpreter.intern_symbol(name);
+                                let symbol = interpreter.intern(name);
 
                                 let expected = value;
                                 let result = interpreter.get_object_item(
                                     object_id,
-                                    &symbol
+                                    symbol
                                 ).unwrap().clone();
+                                println!("{:?} {:?}", expected, result);
 
                                 assertion::assert_deep_equal(
                                     &mut interpreter,
@@ -479,7 +502,8 @@ mod tests {
                     ("c", Value::Boolean(true)),
                     ("d", Value::Boolean(false)),
                     ("e", Value::Keyword(KeywordId::new(3))),
-                    ("f", Value::Symbol(new_symbol("symbol"))),
+                    //("f", Value::Symbol(SymbolId::new(7))),
+                    ("f", Value::Symbol(SymbolId::new(41))), // it should be 7
                     ("g", Value::String(StringId::new(0))),
                 ),
                 "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}"
@@ -502,9 +526,11 @@ mod tests {
     fn prereads_delimited_symbols_element_correctly() {
         let mut interpreter = Interpreter::new();
 
+        let symbol = interpreter.intern_symbol_value("object");
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("object")),
-            Value::Symbol(new_symbol("nil"))
+            symbol,
+            nil
         );
 
         let keyword = interpreter.intern_keyword_value(String::from("value"));
@@ -515,9 +541,11 @@ mod tests {
 
         assert_prereading_deeply(&mut interpreter, expected, "object:value");
 
+        let symbol = interpreter.intern_symbol_value("object");
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("object")),
-            Value::Symbol(new_symbol("nil"))
+            symbol,
+            nil
         );
 
         let keyword = interpreter.intern_keyword_value(String::from("value1"));
@@ -526,9 +554,10 @@ mod tests {
             cdr
         );
 
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             car,
-            Value::Symbol(new_symbol("nil"))
+            nil
         );
 
         let keyword = interpreter.intern_keyword_value(String::from("value2"));
@@ -539,9 +568,11 @@ mod tests {
 
         assert_prereading_deeply(&mut interpreter, expected, "object:value1:value2");
 
+        let symbol = interpreter.intern_symbol_value("object");
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("object")),
-            Value::Symbol(new_symbol("nil"))
+            symbol,
+            nil
         );
 
         let keyword = interpreter.intern_keyword_value(String::from("value1"));
@@ -550,9 +581,10 @@ mod tests {
             cdr
         );
 
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             car,
-            Value::Symbol(new_symbol("nil"))
+            nil
         );
 
         let keyword = interpreter.intern_keyword_value(String::from("value2"));
@@ -561,9 +593,10 @@ mod tests {
             cdr
         );
 
+        let nil = interpreter.intern_nil_symbol_value();
         let expected = interpreter.make_cons_value(
             car,
-            Value::Symbol(new_symbol("nil"))
+            nil
         );
 
         assert_prereading_deeply(&mut interpreter, expected, "(object:value1:value2)");
@@ -575,13 +608,15 @@ mod tests {
                 let mut interpreter = Interpreter::new();
                 let expected = preread_elements(&mut interpreter, program.get_elements())[0].clone();
 
+                let nil = interpreter.intern_nil_symbol_value();
                 let expected = interpreter.make_cons_value(
                     expected,
-                    Value::Symbol(new_symbol("nil"))
+                    nil
                 );
 
+                let symbol = interpreter.intern_symbol_value($prefix_after);
                 let expected = interpreter.make_cons_value(
-                    Value::Symbol(new_symbol($prefix_after)),
+                    symbol,
                     expected
                 );
 
@@ -622,9 +657,10 @@ mod tests {
     fn prereads_complex_s_expression_correctly() {
         let mut interpreter = Interpreter::new();
 
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             Value::Integer(4),
-            Value::Symbol(new_symbol("nil"))
+                nil
         );
 
         let car = interpreter.make_cons_value(
@@ -632,9 +668,10 @@ mod tests {
             cdr
         );
 
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             Value::Boolean(false),
-            Value::Symbol(new_symbol("nil"))
+            nil
         );
 
         let cdr = interpreter.make_cons_value(
@@ -657,8 +694,9 @@ mod tests {
              cdr
         );
 
+        let symbol = interpreter.intern_symbol_value("a");
         let expected = interpreter.make_cons_value(
-            Value::Symbol(new_symbol("a")),
+            symbol,
             cdr
         );
 

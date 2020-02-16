@@ -22,19 +22,26 @@ pub fn object_get(
         )
     };
 
-    let symbol = match values.remove(0) {
-        Value::Symbol(symbol) => symbol,
+    let symbol_id = match values.remove(0) {
+        Value::Symbol(symbol_id) => symbol_id,
         _ => return interpreter.make_invalid_argument_error(
             "The second argument of built-in function `object:get' must be a symbol."
         )
     };
 
-    let value = match interpreter.get_object_item(object_id, &symbol) {
+    let value = match interpreter.get_object_item(object_id, symbol_id) {
         Some(value) => value,
         // todo: must return something other than execution error
-        None => return interpreter.make_generic_execution_error(
-            &format!("Cannot get item `{}' of object.", symbol.get_name())
-        )
+        None => {
+            let message = &format!(
+                "Cannot get item `{}' of object.",
+                interpreter.get_symbol_name(symbol_id)?
+            );
+
+            return interpreter.make_generic_execution_error(
+                message
+            )
+        }
     };
 
     Ok(value.clone())

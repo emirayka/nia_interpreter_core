@@ -22,7 +22,7 @@ pub fn object_set(
         )
     };
 
-    let symbol = match values.remove(0) {
+    let symbol_id = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "The second argument of built-in function `object:set!' must be a symbol."
@@ -33,7 +33,7 @@ pub fn object_set(
 
     interpreter.set_object_item(
         object_id,
-        &symbol,
+        symbol_id,
         value.clone()
     );
 

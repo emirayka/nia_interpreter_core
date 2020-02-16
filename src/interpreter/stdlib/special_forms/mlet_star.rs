@@ -107,7 +107,7 @@ mod tests {
             "(mlet* ((test-macro-1 () (quote (quote test)))) (test-macro-1))"
         );
 
-        assert_eq!(interpreter.intern("test"), result.unwrap());
+        assert_eq!(interpreter.intern_symbol_value("test"), result.unwrap());
     }
 
     #[test]

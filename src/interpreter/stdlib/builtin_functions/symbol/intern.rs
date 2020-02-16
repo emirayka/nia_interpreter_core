@@ -31,7 +31,7 @@ pub fn intern(
         )
     };
 
-    Ok(interpreter.intern(&symbol_name))
+    Ok(interpreter.intern_symbol_value(&symbol_name))
 }
 
 #[cfg(test)]
@@ -44,11 +44,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_eq!(
-            interpreter.intern("test"),
+            interpreter.intern_symbol_value("test"),
             interpreter.execute(r#"(intern "test")"#).unwrap()
         );
         assert_eq!(
-            interpreter.intern("a"),
+            interpreter.intern_symbol_value("a"),
             interpreter.execute(r#"(intern "a")"#).unwrap()
         );
     }

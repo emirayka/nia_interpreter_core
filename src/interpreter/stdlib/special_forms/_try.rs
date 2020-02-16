@@ -11,8 +11,12 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
         match clause {
             Value::Cons(cons_id) => {
                 match interpreter.get_car(cons_id) {
-                    Ok(Value::Symbol(symbol)) if symbol.get_name() == "catch" => {
-                        catch_clauses.push(cons_id)
+                    Ok(Value::Symbol(symbol_id))  => {
+                        let symbol = interpreter.get_symbol(symbol_id)?;
+
+                        if symbol.get_name() == "catch" {
+                            catch_clauses.push(cons_id)
+                        }
                     },
                     Ok(_) => return interpreter.make_invalid_argument_error(
                         "The first item of catch clauses must be a catch symbol."
@@ -96,7 +100,17 @@ pub fn _try(
                     };
 
                     match catch_code {
-                        Value::Symbol(symbol) if symbol.is_nil() => Ok(interpreter.intern_nil()),
+                        Value::Symbol(symbol_id) => {
+                            let symbol = interpreter.get_symbol(symbol_id)?;
+
+                            if symbol.is_nil() {
+                                Ok(interpreter.intern_nil_symbol_value())
+                            } else {
+                                return interpreter.make_generic_execution_error(
+                                    ""
+                                )
+                            }
+                        },
                         Value::Cons(cons_id) => {
                             let values = interpreter.cons_to_vec(cons_id);
 
@@ -161,13 +175,14 @@ mod tests {
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
 
+        let symbol_id = interpreter.execute("(try (progn 1 (throw not-a-cute-error)) (catch cute-error 1))")
+            .err()
+            .unwrap()
+            .get_symbol();
+
         assert_eq!(
             "not-a-cute-error",
-            interpreter.execute("(try (progn 1 (throw not-a-cute-error)) (catch cute-error 1))")
-                .err()
-                .unwrap()
-                .get_symbol()
-                .get_name()
+            interpreter.get_symbol_name(symbol_id).unwrap()
         );
     }
 
@@ -175,13 +190,14 @@ mod tests {
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
 
+        let symbol_id = interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error (throw not-a-cute-error)))")
+            .err()
+            .unwrap()
+            .get_symbol();
+
         assert_eq!(
             "not-a-cute-error",
-            interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error (throw not-a-cute-error)))")
-                .err()
-                .unwrap()
-                .get_symbol()
-                .get_name()
+            interpreter.get_symbol_name(symbol_id).unwrap()
         );
     }
 

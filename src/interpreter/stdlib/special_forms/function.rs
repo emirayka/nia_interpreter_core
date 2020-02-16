@@ -5,18 +5,31 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::special_forms::_lib::convert_vector_of_values_to_vector_of_symbol_names;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
  (lambda|macro ([arguments]) form1 form2 ...).";
 
-fn parse_argument_names(values: Vec<Value>) -> Result<Vec<String>, ()> {
+fn parse_argument_names(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<Vec<String>, Error> {
     let mut result = Vec::new();
 
     for value in values {
         match value {
-            Value::Symbol(symbol) => result.push(symbol.get_name().clone()),
-            _ => return Err(())
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(symbol_id);
+
+                let symbol = match symbol {
+                    Ok(symbol) => symbol,
+                    Err(error) => return interpreter.make_generic_execution_error_caused(
+                        "",
+                        error
+                    )
+                };
+
+                result.push(symbol.get_name().clone())
+            }
+            _ => return interpreter.make_generic_execution_error("")
         }
     }
 
@@ -94,7 +107,25 @@ pub fn function(
     let lambda_or_macro_symbol = values.remove(0);
     let arguments = match values.remove(0) {
         Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
-        Value::Symbol(symbol) if symbol.is_nil() => Ok(Vec::new()),
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id);
+
+            let symbol = match symbol {
+                Ok(symbol) => symbol,
+                Err(error) => return interpreter.make_generic_execution_error_caused(
+                    "",
+                    error
+                )
+            };
+
+            if symbol.is_nil() {
+                Ok(Vec::new())
+            } else {
+                return interpreter.make_invalid_argument_error(
+                    "The second element of first argument must be a list of symbols that represents argument names"
+                )
+            }
+        },
         _ => return interpreter.make_invalid_argument_error(
             "The second element of first argument must be a list of symbols that represents argument names"
         )
@@ -109,7 +140,7 @@ pub fn function(
     };
     let code = values;
 
-    let argument_names = match parse_argument_names(arguments) {
+    let argument_names = match parse_argument_names(interpreter, arguments) {
         Ok(argument_names) => argument_names,
         _ => return interpreter.make_invalid_argument_error(
             "The second element of the first argument must be a list of symbols that represents argument names"
@@ -117,23 +148,30 @@ pub fn function(
     };
 
     match lambda_or_macro_symbol {
-        Value::Symbol(symbol) if symbol.get_name() == "lambda" => {
-            Ok(construct_interpreted_function(
-                interpreter,
-                environment,
-                argument_names,
-                code
-            ))
+        Value::Symbol(symbol_id) => {
+            let name = interpreter.get_symbol_name(symbol_id)?;
+
+            if name == "lambda" {
+                Ok(construct_interpreted_function(
+                    interpreter,
+                    environment,
+                    argument_names,
+                    code
+                ))
+            } else if name == "macro" {
+                Ok(construct_macro_function(
+                    interpreter,
+                    environment,
+                    argument_names,
+                    code
+                ))
+            } else {
+                interpreter.make_invalid_argument_error(
+                    "The first element of the first argument must be a symbol `lambda' or `macro'"
+                )
+            }
         },
-        Value::Symbol(symbol) if symbol.get_name() == "macro" => {
-            Ok(construct_macro_function(
-                interpreter,
-                environment,
-                argument_names,
-                code
-            ))
-        },
-        _ => return interpreter.make_invalid_argument_error(
+        _ => interpreter.make_invalid_argument_error(
             "The first element of the first argument must be a symbol `lambda' or `macro'"
         )
     }
@@ -155,8 +193,8 @@ mod tests {
                 String::from("second-arg"),
             ),
             vec!(
-                interpreter.intern("first-arg"),
-                interpreter.intern("second-arg")
+                interpreter.intern_symbol_value("first-arg"),
+                interpreter.intern_symbol_value("second-arg")
             )
         ));
 
@@ -184,8 +222,8 @@ mod tests {
                 String::from("second-arg"),
             ),
             vec!(
-                interpreter.intern("first-arg"),
-                interpreter.intern("second-arg")
+                interpreter.intern_symbol_value("first-arg"),
+                interpreter.intern_symbol_value("second-arg")
             )
         ));
 

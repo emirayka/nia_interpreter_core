@@ -47,7 +47,7 @@ fn execute_part(
 }
 
 pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>) -> Result<Value, Error> {
-    let mut result = Ok(interpreter.intern_nil());
+    let mut result = Ok(interpreter.intern_nil_symbol_value());
 
     for value in values {
         if let Value::Cons(part) = value {
@@ -88,8 +88,8 @@ mod tests {
         assert_eq!(Value::Integer(1), interpreter.execute("(cond (#t 1) (#t 2) (#t 3))").unwrap());
         assert_eq!(Value::Integer(2), interpreter.execute("(cond (#f 1) (#t 2) (#t 3))").unwrap());
         assert_eq!(Value::Integer(3), interpreter.execute("(cond (#f 1) (#f 2) (#t 3))").unwrap());
-        assert_eq!(interpreter.intern_nil(), interpreter.execute("(cond (#f 1) (#f 2) (#f 3))").unwrap());
-        assert_eq!(interpreter.intern_nil(), interpreter.execute("(cond)").unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(cond (#f 1) (#f 2) (#f 3))").unwrap());
+        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(cond)").unwrap());
     }
 
     #[test]
@@ -138,10 +138,10 @@ mod tests {
     fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();
 
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
         interpreter.define_variable(
             interpreter.get_root_environment(),
-            &name,
+            name,
             Value::Integer(1)
         ).unwrap();
 

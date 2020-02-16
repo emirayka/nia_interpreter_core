@@ -23,7 +23,7 @@ pub fn define_function(
         None
     };
 
-    let function_name = match first_argument {
+    let function_symbol_id = match first_argument {
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "First form of `define-function' must be a symbol."
@@ -32,7 +32,7 @@ pub fn define_function(
 
     let evaluated_value = match second_argument {
         Some(value) => interpreter.evaluate_value(environment, value),
-        None => Ok(interpreter.intern_nil())
+        None => Ok(interpreter.intern_nil_symbol_value())
     };
 
     let result = match evaluated_value {
@@ -45,14 +45,21 @@ pub fn define_function(
 
     match interpreter.define_function(
         interpreter.get_root_environment(),
-        &function_name,
+        function_symbol_id,
         result
     ) {
         Ok(()) => Ok(Value::Boolean(true)),
-        Err(error) => interpreter.make_generic_execution_error_caused(
-            &format!("Cannot define function: {}.", function_name.get_name()),
-            error
-        )
+        Err(error) => {
+            let message = &format!(
+                "Cannot define function: {}.",
+                interpreter.get_symbol_name(function_symbol_id)?
+            );
+
+            interpreter.make_generic_execution_error_caused(
+                message,
+                error
+            )
+        }
     }
 
 }
@@ -67,16 +74,16 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test 2)").unwrap();
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         assert!(interpreter.has_function(
             interpreter.get_root_environment(),
-            &name));
+            name));
         assert_eq!(
             Value::Integer(2),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
-                &name
+                name
             ).unwrap());
     }
 
@@ -85,16 +92,16 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function test)").unwrap();
-        let name = interpreter.intern_symbol("test");
+        let name = interpreter.intern("test");
 
         assert!(interpreter.has_function(
             interpreter.get_root_environment(),
-            &name));
+            name));
         assert_eq!(
-            interpreter.intern_nil(),
+            interpreter.intern_nil_symbol_value(),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
-                &name
+                name
             ).unwrap());
     }
 
