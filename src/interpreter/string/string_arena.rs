@@ -20,6 +20,7 @@ impl StringId {
 
 pub struct StringArena {
     arena: HashMap<StringId, VString>,
+    mapping: HashMap<String, StringId>,
     next_id: usize,
 }
 
@@ -27,6 +28,7 @@ impl StringArena {
     pub fn new() -> StringArena {
         StringArena {
             arena: HashMap::new(),
+            mapping: HashMap::new(),
             next_id: 0
         }
     }
@@ -43,5 +45,14 @@ impl StringArena {
 
     pub fn get_string(&self, string_id: StringId) -> Option<&VString> {
         self.arena.get(&string_id)
+    }
+
+
+    pub fn intern_string(&mut self, string_name: String) -> StringId {
+        if self.mapping.contains_key(&string_name) {
+            self.mapping.get(&string_name).unwrap().clone()
+        } else {
+            self.make_string(string_name)
+        }
     }
 }

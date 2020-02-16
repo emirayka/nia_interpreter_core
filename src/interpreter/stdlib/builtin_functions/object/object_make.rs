@@ -22,7 +22,17 @@ pub fn object_make(
         let key = values.remove(0);
         let value = values.remove(0);
 
-        if let Value::Keyword(keyword_name) = key {
+        if let Value::Keyword(keyword_id) = key {
+            let symbol = interpreter.get_keyword(keyword_id);
+
+            let keyword_name = match symbol {
+                Ok(keyword) => keyword.get_name().clone(), // todo: fix, looks ugly
+                Err(error) => return interpreter.make_generic_execution_error_caused(
+                    "",
+                    error
+                )
+            };
+
             let symbol = interpreter.intern_symbol(&keyword_name);
 
             interpreter.set_object_item(

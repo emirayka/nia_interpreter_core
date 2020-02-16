@@ -1,5 +1,6 @@
-use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::symbol::Symbol;
+use crate::interpreter::string::string_arena::StringId;
+use crate::interpreter::keyword::keyword_arena::KeywordId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::object::object::ObjectId;
 use crate::interpreter::function::function_arena::FunctionId;
@@ -9,7 +10,7 @@ pub enum Value {
     Integer(i64),
     Float(f64),
     Boolean(bool),
-    Keyword(String),
+    Keyword(KeywordId),
     Symbol(Symbol),
     String(StringId),
     Cons(ConsId),

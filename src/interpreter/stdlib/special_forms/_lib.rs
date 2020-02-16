@@ -207,8 +207,8 @@ mod tests {
                 Value::Float(1.1),
                 Value::Boolean(true),
                 Value::Boolean(false),
-                interpreter.make_string_value(String::from("string")),
-                Value::Keyword(String::from("keyword")),
+                interpreter.intern_string_value(String::from("string")),
+                interpreter.intern_keyword_value(String::from("keyword")),
             );
 
             for incorrect_item in incorrect_items {

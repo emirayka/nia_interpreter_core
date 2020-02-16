@@ -195,6 +195,8 @@ mod tests {
         use super::*;
         use crate::interpreter::string::string_arena::StringId;
         use crate::interpreter::interpreter::Interpreter;
+        use crate::interpreter::keyword::keyword_arena::KeywordId;
+        use crate::interpreter::function::function_arena::FunctionId;
 
         #[test]
         fn test_returns_correct_vector_that_represents_values_in_cons_cells() {
@@ -238,8 +240,8 @@ mod tests {
                 Value::Boolean(false),
                 Value::Symbol(new_symbol("not-nil-symbol")),
                 Value::String(StringId::new(1024)),
-                Value::Keyword(String::from("string")),
-                //Value::Function() todo: fix
+                Value::Keyword(KeywordId::new(1025)),
+                Value::Function(FunctionId::new(1026))
             );
 
             for incorrect_cdr in incorrect_cudders {

@@ -17,14 +17,19 @@ use crate::interpreter::cons::cons_arena::{ConsArena, ConsId};
 use crate::interpreter::function::function_arena::{FunctionArena, FunctionId};
 use crate::interpreter::string::string_arena::{StringArena, StringId};
 use crate::interpreter::string::string::VString;
+use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
+use crate::interpreter::keyword::keyword::Keyword;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
+
     string_arena: StringArena,
+    keyword_arena: KeywordArena,
     symbol_arena: SymbolArena,
     cons_arena: ConsArena,
     object_arena: ObjectArena,
     function_arena: FunctionArena,
+
     root_environment: EnvironmentId,
     call_stack: (),
 }
@@ -35,6 +40,7 @@ impl Interpreter {
         let root_env_id = environment_arena.alloc();
 
         let string_arena = StringArena::new();
+        let keyword_arena = KeywordArena::new();
         let symbol_arena = SymbolArena::new();
         let cons_arena = ConsArena::new();
         let object_arena = ObjectArena::new();
@@ -43,6 +49,7 @@ impl Interpreter {
         Interpreter {
             environment_arena,
             string_arena,
+            keyword_arena,
             symbol_arena,
             cons_arena,
             object_arena,
@@ -230,6 +237,33 @@ impl Interpreter {
             Some(string) => Ok(string),
             _ => error
         }
+    }
+
+    pub fn intern_string_value(&mut self, string: String) -> Value {
+        Value::String(self.string_arena.intern_string(string))
+    }
+}
+
+impl Interpreter {
+    pub fn make_keyword(&mut self, keyword_name: String) -> KeywordId {
+        self.keyword_arena.make_keyword(keyword_name)
+    }
+
+    pub fn make_keyword_value(&mut self, keyword_name: String) -> Value {
+        Value::Keyword(self.make_keyword(keyword_name))
+    }
+
+    pub fn get_keyword(&mut self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
+        let error = self.make_empty_error(); // todo: fix, looks shitty
+
+        match self.keyword_arena.get_keyword(keyword_id) {
+            Some(keyword) => Ok(keyword),
+            _ => error
+        }
+    }
+
+    pub fn intern_keyword_value(&mut self, keyword_name: String) -> Value {
+        Value::Keyword(self.keyword_arena.intern_keyword(keyword_name))
     }
 }
 
@@ -724,10 +758,18 @@ impl Interpreter {
     fn evaluate_s_expression_keyword(
         &mut self,
         environment: EnvironmentId,
-        keyword_name: &String,
+        keyword_id: KeywordId,
         cons_id: ConsId
     ) -> Result<Value, Error> {
-        let name = self.intern_symbol(keyword_name);
+        let keyword_name = match self.get_keyword(keyword_id){
+            Ok(keyword) => keyword.get_name().clone(), // todo: fix, looks ugly
+            Err(error) => return self.make_generic_execution_error_caused(
+                "",
+                error
+            )
+        };
+
+        let symbol = self.intern_symbol(&keyword_name);
 
         let mut arguments = match self.extract_arguments(cons_id) {
             Ok(arguments) => arguments,
@@ -747,7 +789,7 @@ impl Interpreter {
 
         match evaluated_argument {
             Ok(Value::Object(object_id)) => {
-                match self.object_arena.get_item(object_id, &name) {
+                match self.object_arena.get_item(object_id, &symbol) {
                     Some(value) => Ok(value.clone()),
                     _ => return self.make_empty_error()
                 }
@@ -801,9 +843,9 @@ impl Interpreter {
                     s_expression
                 )
             }
-            Value::Keyword(keyword_name) => self.evaluate_s_expression_keyword(
+            Value::Keyword(keyword_id) => self.evaluate_s_expression_keyword(
                 environment,
-                &keyword_name,
+                keyword_id,
                 s_expression
             ),
             _ => return self.make_empty_error()
@@ -889,7 +931,7 @@ mod tests {
     pub fn executes_string_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.make_string_value(String::from("tas"));
+        let expected = interpreter.intern_string_value(String::from("tas"));
         let result = interpreter.execute(r#""tas""#).unwrap();
 
         assertion::assert_deep_equal(
@@ -917,7 +959,7 @@ mod tests {
 
     #[test]
     pub fn executes_keyword_correctly() {
-        assert_execution_result_eq!(Value::Keyword(String::from("tas")), r#":tas"#);
+        assert_execution_result_eq!(Value::Keyword(KeywordId::new(0)), r#":tas"#);
     }
 
     #[test]
@@ -967,12 +1009,15 @@ mod tests {
 
         for pair in pairs {
             let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
-            let result = interpreter.execute(&code);
+            let expected = pair.1;
+            let result = interpreter.execute(&code).unwrap();
+
+            println!("{:?} {:?} {:?}", code, expected, result);
 
             assertion::assert_deep_equal(
                 &mut interpreter,
-                pair.1,
-                result.unwrap()
+                expected,
+                result
             );
         }
     }

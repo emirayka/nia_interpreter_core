@@ -1,4 +1,5 @@
 use crate::interpreter::string::string_arena::StringId;
+use crate::interpreter::keyword::keyword_arena::KeywordId;
 use crate::interpreter::value::Value;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
@@ -58,7 +59,7 @@ fn preread_object(interpreter: &mut Interpreter, object_element: ObjectElement) 
     let mut last_cons = interpreter.intern_nil();
 
     for (keyword_element, element) in values.into_iter().rev() {
-        let keyword = Value::Keyword(String::from(keyword_element.get_value()));
+        let keyword = interpreter.intern_keyword_value(keyword_element.get_value());
         let value = preread_element(interpreter, element);
 
         last_cons = Value::Cons(interpreter.make_cons(
@@ -79,8 +80,10 @@ fn preread_object(interpreter: &mut Interpreter, object_element: ObjectElement) 
         nil
     ));
 
+    let keyword = interpreter.intern_keyword_value(String::from("make"));
+
     let car = Value::Cons(interpreter.make_cons(
-        Value::Keyword(String::from("make")),
+        keyword,
         car
     ));
 
@@ -108,8 +111,10 @@ fn preread_delimited_symbols_element(
             nil
         ));
 
+        let keyword = interpreter.intern_keyword_value(String::from(symbol_name));
+
         let current_cons = Value::Cons(interpreter.make_cons(
-            Value::Keyword(String::from(symbol_name)),
+            keyword,
             current_cons
         ));
 
@@ -214,12 +219,15 @@ pub fn preread_element(interpreter: &mut Interpreter, element: Element) -> Value
         Element::String(string_element) => {
             let string = string_element.get_value();
 
-            interpreter.make_string_value(string)
+            interpreter.intern_string_value(string)
         },
         Element::Symbol(symbol_element) =>
             interpreter.intern(symbol_element.get_value()),
-        Element::Keyword(keyword_element) =>
-            Value::Keyword(keyword_element.get_value().clone()),
+        Element::Keyword(keyword_element) => {
+            let keyword_name = keyword_element.get_value();
+
+            interpreter.intern_keyword_value(keyword_name)
+        },
         Element::SExpression(sexp_element) =>
             preread_s_expression(interpreter, sexp_element),
         Element::Object(object_element) =>
@@ -362,17 +370,18 @@ mod tests {
     fn prereads_keyword_elements_correctly() {
         assert_prereading_result_equal!(
             vec!(
-                Value::Keyword("cutekeyword".to_string())
+                Value::Keyword(KeywordId::new(0))
             ),
             r#":cutekeyword"#
         );
 
         assert_prereading_result_equal!(
             vec!(
-                Value::Keyword("cutekeyword1".to_string()),
-                Value::Keyword("cutekeyword2".to_string())
+                Value::Keyword(KeywordId::new(0)),
+                Value::Keyword(KeywordId::new(0)),
+                Value::Keyword(KeywordId::new(1))
             ),
-            r#":cutekeyword1 :cutekeyword2"#
+            r#":cutekeyword1 :cutekeyword1 :cutekeyword2"#
         );
     }
 
@@ -422,10 +431,17 @@ mod tests {
                             for (name, value) in expected {
                                 let symbol = interpreter.intern_symbol(name);
 
-                                assert_eq!(&value, interpreter.get_object_item(
+                                let expected = value;
+                                let result = interpreter.get_object_item(
                                     object_id,
                                     &symbol
-                                ).unwrap());
+                                ).unwrap().clone();
+
+                                assertion::assert_deep_equal(
+                                    &mut interpreter,
+                                    expected,
+                                    result
+                                );
                             }
                         },
                         _ => unreachable!()
@@ -462,11 +478,11 @@ mod tests {
                     ("b", Value::Float(1.1)),
                     ("c", Value::Boolean(true)),
                     ("d", Value::Boolean(false)),
-                    ("e", Value::Symbol(new_symbol("symbol"))),
-                    ("f", Value::String(StringId::new(0))),
-                    ("g", Value::Keyword(String::from("keyword"))),
+                    ("e", Value::Keyword(KeywordId::new(3))),
+                    ("f", Value::Symbol(new_symbol("symbol"))),
+                    ("g", Value::String(StringId::new(0))),
                 ),
-                "{:a 1 :b 1.1 :c #t :d #f :e 'symbol :f \"string\" :g :keyword}"
+                "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}"
             );
         }
     }
@@ -491,8 +507,9 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
+        let keyword = interpreter.intern_keyword_value(String::from("value"));
         let expected = interpreter.make_cons_value(
-            Value::Keyword(String::from("value")),
+            keyword,
             cdr
         );
 
@@ -503,8 +520,9 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
+        let keyword = interpreter.intern_keyword_value(String::from("value1"));
         let car = interpreter.make_cons_value(
-            Value::Keyword(String::from("value1")),
+            keyword,
             cdr
         );
 
@@ -513,8 +531,9 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
+        let keyword = interpreter.intern_keyword_value(String::from("value2"));
         let expected = interpreter.make_cons_value(
-            Value::Keyword(String::from("value2")),
+            keyword,
             cdr
         );
 
@@ -525,8 +544,9 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
+        let keyword = interpreter.intern_keyword_value(String::from("value1"));
         let car = interpreter.make_cons_value(
-            Value::Keyword(String::from("value1")),
+            keyword,
             cdr
         );
 
@@ -535,8 +555,9 @@ mod tests {
             Value::Symbol(new_symbol("nil"))
         );
 
+        let keyword = interpreter.intern_keyword_value(String::from("value2"));
         let car = interpreter.make_cons_value(
-            Value::Keyword(String::from("value2")),
+            keyword,
             cdr
         );
 

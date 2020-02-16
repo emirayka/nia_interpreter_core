@@ -176,8 +176,8 @@ mod tests {
             (Value::Boolean(false), "#f"),
             (interpreter.intern("symbol"), "'symbol"),
             (interpreter.intern("symbol"), "(quote symbol)"),
-            (interpreter.make_string_value(String::from("string")), "\"string\""),
-            (Value::Keyword(String::from("keyword")), ":keyword"),
+            (interpreter.intern_string_value(String::from("string")), "\"string\""),
+            (interpreter.intern_keyword_value(String::from("keyword")), ":keyword"),
             (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
         );
 
