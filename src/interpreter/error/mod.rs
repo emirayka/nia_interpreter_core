@@ -37,7 +37,7 @@ impl Error {
     }
 
     pub fn get_symbol(&self) -> SymbolId {
-        self.symbol.clone()
+        self.symbol
     }
 
     pub fn get_message(&self) -> &String {

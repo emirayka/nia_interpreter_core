@@ -59,14 +59,14 @@ impl ConsArena {
 
     pub fn get_car(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
-            Some(cons) => Ok(cons.get_car().clone()),
+            Some(cons) => Ok(cons.get_car()),
             None => Err(())
         }
     }
 
     pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
-            Some(cons) => Ok(cons.get_cdr().clone()),
+            Some(cons) => Ok(cons.get_cdr()),
             None => Err(())
         }
     }
@@ -112,7 +112,7 @@ impl ConsArena {
     pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cdr(cons_id) {
             Ok(Value::Cons(cons_id)) => match self.get_car(cons_id) {
-                Ok(value) => Ok(value.clone()),
+                Ok(value) => Ok(value),
                 _ => Err(())
             },
             _ => Err(())
@@ -122,7 +122,7 @@ impl ConsArena {
     pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cdr(cons_id) {
             Ok(Value::Cons(cons_id)) => match self.get_cdr(cons_id) {
-                Ok(value) => Ok(value.clone()),
+                Ok(value) => Ok(value),
                 _ => Err(())
             },
             _ => Err(())
@@ -248,7 +248,7 @@ mod tests {
             for incorrect_cdr in incorrect_cudders {
                 let cdr = Value::Cons(cons_arena.make_cons(
                     Value::Integer(3),
-                    incorrect_cdr.clone()
+                    incorrect_cdr
                 ));
 
                 let cdr = Value::Cons(cons_arena.make_cons(
@@ -298,7 +298,7 @@ mod tests {
                 let mut cons_arena = ConsArena::new();
 
                 assert_result_eq!(
-                    Value::Cons(cons_arena.make_cons(value.clone(), nil())),
+                    Value::Cons(cons_arena.make_cons(value, nil())),
                     vec!(value)
                 );
             }

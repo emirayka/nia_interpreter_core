@@ -34,7 +34,7 @@ pub fn object_set(
     interpreter.set_object_item(
         object_id,
         symbol_id,
-        value.clone()
+        value
     );
 
     Ok(value)

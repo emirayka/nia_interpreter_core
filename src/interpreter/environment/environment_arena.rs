@@ -286,8 +286,8 @@ mod tests {
         let child_value = Value::Integer(2);
 
         // variable
-        arena.define_variable(parent_id, parent_key, parent_value.clone()).unwrap();
-        arena.define_variable(child_id, child_key, child_value.clone()).unwrap();
+        arena.define_variable(parent_id, parent_key, parent_value).unwrap();
+        arena.define_variable(child_id, child_key, child_value).unwrap();
 
         assert_eq!(parent_value, arena.lookup_variable(parent_id, parent_key).unwrap());
         assert_eq!(parent_value, arena.lookup_variable(child_id, parent_key).unwrap());
@@ -295,8 +295,8 @@ mod tests {
         assert_eq!(child_value, arena.lookup_variable(child_id, child_key).unwrap());
 
         // function
-        arena.define_function(parent_id, parent_key, parent_value.clone()).unwrap();
-        arena.define_function(child_id, child_key, child_value.clone()).unwrap();
+        arena.define_function(parent_id, parent_key, parent_value).unwrap();
+        arena.define_function(child_id, child_key, child_value).unwrap();
 
         assert_eq!(parent_value, arena.lookup_function(parent_id, parent_key).unwrap());
         assert_eq!(parent_value, arena.lookup_function(child_id, parent_key).unwrap());
@@ -315,12 +315,12 @@ mod tests {
         let parent_value = Value::Integer(1);
         let child_value = Value::Integer(2);
 
-        arena.define_variable(parent_id, key, parent_value.clone()).unwrap();
-        arena.set_variable(child_id, key, child_value.clone()).unwrap();
+        arena.define_variable(parent_id, key, parent_value).unwrap();
+        arena.set_variable(child_id, key, child_value).unwrap();
         assert_eq!(child_value, arena.lookup_variable(parent_id, key).unwrap());
 
-        arena.define_function(parent_id, key, parent_value.clone()).unwrap();
-        arena.set_function(child_id, key, child_value.clone()).unwrap();
+        arena.define_function(parent_id, key, parent_value).unwrap();
+        arena.set_function(child_id, key, child_value).unwrap();
         assert_eq!(child_value, arena.lookup_function(child_id,key).unwrap());
     }
 

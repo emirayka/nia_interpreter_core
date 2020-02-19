@@ -18,7 +18,7 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpression
     let nil = interpreter.intern_nil_symbol_value();
 
     let root_cons = interpreter.make_cons(
-        nil.clone(),
+        nil,
         nil
     );
 
@@ -37,14 +37,14 @@ fn preread_s_expression(interpreter: &mut Interpreter, sexp_element: SExpression
         let nil = interpreter.intern_nil_symbol_value();
 
         let next_cons_id = interpreter.make_cons(
-            nil.clone(),
+            nil,
             nil
         );
 
         interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id)); // todo: check error here
 
         if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(current_cons_id) {
-            current_cons_id = next_cons.clone();
+            current_cons_id = next_cons;
         } else {
             unreachable!(); //todo: check
         }
@@ -215,7 +215,7 @@ pub fn preread_element(interpreter: &mut Interpreter, element: Element) -> Value
         Element::Float(float_element) =>
             Value::Float(float_element.get_value()),
         Element::Boolean(boolean_element) =>
-            Value::Boolean(boolean_element.get_value().clone()),
+            Value::Boolean(boolean_element.get_value()),
         Element::String(string_element) => {
             let string = string_element.get_value();
 
@@ -457,7 +457,7 @@ mod tests {
                                 let result = interpreter.get_object_item(
                                     object_id,
                                     symbol
-                                ).unwrap().clone();
+                                ).unwrap();
                                 println!("{:?} {:?}", expected, result);
 
                                 assertion::assert_deep_equal(
@@ -606,7 +606,7 @@ mod tests {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
             if let Ok((_, program)) = parse_code($code) {
                 let mut interpreter = Interpreter::new();
-                let expected = preread_elements(&mut interpreter, program.get_elements())[0].clone();
+                let expected = preread_elements(&mut interpreter, program.get_elements())[0];
 
                 let nil = interpreter.intern_nil_symbol_value();
                 let expected = interpreter.make_cons_value(

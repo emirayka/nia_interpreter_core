@@ -13,7 +13,7 @@ fn set_function_via_cons(
     cons_id: ConsId
 ) -> Result<(), Error> {
     let car = match interpreter.get_car(cons_id){
-        Ok(value) => value.clone(),
+        Ok(value) => value,
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "",
             error
@@ -39,7 +39,7 @@ fn set_function_via_cons(
 
     let cadr = interpreter.get_cadr(cons_id);
     let arguments = match cadr {
-        Ok(value) => value.clone(),
+        Ok(value) => value,
         Err(_) => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
         )

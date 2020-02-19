@@ -34,7 +34,7 @@ mod tests {
 
         let expected = interpreter.make_cons_value(
             Value::Integer(1),
-            nil.clone()
+            nil
         );
         let result = interpreter.execute("(block 1)").unwrap();
 
@@ -46,7 +46,7 @@ mod tests {
 
         let cdr = interpreter.make_cons_value(
             Value::Integer(2),
-            nil.clone()
+            nil
         );
 
         let expected = interpreter.make_cons_value(
@@ -64,7 +64,7 @@ mod tests {
 
         let cdr = interpreter.make_cons_value(
             Value::Integer(3),
-            nil.clone()
+            nil
         );
 
         let cdr = interpreter.make_cons_value(

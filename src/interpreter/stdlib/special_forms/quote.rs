@@ -138,13 +138,13 @@ mod tests {
         );
 
         let result = interpreter.execute("(quote (quote cute-symbol))").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result); // todo: remove clone here
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
 
         let result = interpreter.execute("(quote 'cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
 
         let result = interpreter.execute("'(quote cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected.clone(), result);
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
 
         let result = interpreter.execute("''cute-symbol").unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);

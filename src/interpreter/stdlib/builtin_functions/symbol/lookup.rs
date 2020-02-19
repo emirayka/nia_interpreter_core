@@ -24,7 +24,7 @@ pub fn lookup(
                 _environment,
                 symbol_id
             ) {
-                Ok(value) => Ok(value.clone()),
+                Ok(value) => Ok(value),
                 _ => Ok(nil)
             }
         }

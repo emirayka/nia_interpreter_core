@@ -13,7 +13,7 @@ fn set_macro_via_cons(
     cons_id: ConsId
 ) -> Result<(), Error> {
     let car = match interpreter.get_car(cons_id){
-        Ok(car) => car.clone(),
+        Ok(car) => car,
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "",
             error

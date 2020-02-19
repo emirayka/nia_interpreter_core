@@ -111,7 +111,7 @@ impl SymbolArena {
         self.ensure_symbol_internable(symbol_name);
 
         match self.mapping.get(symbol_name) {
-            Some(symbols) => symbols[0].clone(),
+            Some(symbols) => symbols[0],
             _ => unreachable!()
         }
     }
@@ -131,7 +131,7 @@ impl SymbolArena {
                 symbols.push(symbol_id);
                 self.symbols.insert(symbol_id, symbol);
 
-                symbols[counter].clone()
+                symbols[counter]
             },
             _ => unreachable!()
         }

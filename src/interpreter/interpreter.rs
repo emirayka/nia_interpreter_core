@@ -189,17 +189,17 @@ impl Interpreter {
             (Keyword(val1), Keyword(val2)) => Ok(val1 == val2),
             (Symbol(val1), Symbol(val2)) => Ok(val1 == val2),
             (String(val1), String(val2)) => {
-                let string1 = self.get_string(val1)?.clone(); // todo: fix that clone?
+                let string1 = self.get_string(val1)?.clone();
                 let string2 = self.get_string(val2)?.clone();
 
                 Ok(string1 == string2)
             },
             (Cons(val1), Cons(val2)) => {
-                let car1 = self.get_car(val1)?.clone();
-                let car2 = self.get_car(val2)?.clone();
+                let car1 = self.get_car(val1)?;
+                let car2 = self.get_car(val2)?;
 
-                let cdr1 = self.get_cdr(val1)?.clone();
-                let cdr2 = self.get_cdr(val2)?.clone();
+                let cdr1 = self.get_cdr(val1)?;
+                let cdr2 = self.get_cdr(val2)?;
 
                 let car_equals = self.deep_equal(car1, car2)?;
                 let cdr_equals = self.deep_equal(cdr1, cdr2)?;
@@ -339,14 +339,14 @@ impl Interpreter {
 
     pub fn get_car(&mut self, cons_id: ConsId) -> Result<Value, Error> {
         match self.cons_arena.get_car(cons_id) {
-            Ok(value) => Ok(value.clone()),
+            Ok(value) => Ok(value),
             _ => self.make_empty_error()
         }
     }
 
     pub fn get_cdr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
         match self.cons_arena.get_cdr(cons_id) {
-            Ok(value) => Ok(value.clone()),
+            Ok(value) => Ok(value),
             _ => self.make_empty_error()
         }
     }
@@ -544,7 +544,7 @@ impl Interpreter {
         symbol_id: SymbolId
     ) -> Result<Value, Error> {
         match self.environment_arena.lookup_variable(environment, symbol_id) {
-            Some(value) => Ok(value.clone()),
+            Some(value) => Ok(value),
             None => self.make_empty_error()
         }
     }
@@ -555,7 +555,7 @@ impl Interpreter {
         symbol_id: SymbolId
     ) -> Result<Value, Error> {
         match self.environment_arena.lookup_function(environment, symbol_id) {
-            Some(value) => Ok(value.clone()),
+            Some(value) => Ok(value),
             None => self.make_empty_error()
         }
     }
@@ -570,7 +570,7 @@ impl Interpreter {
         let result = self.lookup_variable(environment, symbol_id);
 
         match result {
-            Ok(value) => Ok(value.clone()),
+            Ok(value) => Ok(value),
             Err(error) => Err(error)
         }
     }
@@ -624,7 +624,7 @@ impl Interpreter {
             let name = self.intern(name);
             let variable = &variables[i];
 
-            match self.define_variable(execution_environment, name, variable.clone()) {
+            match self.define_variable(execution_environment, name, *variable) {
                 Ok(()) => (),
                 Err(error) => return Err(error)
             };
@@ -637,7 +637,7 @@ impl Interpreter {
         let mut last_result = None;
 
         for value in code {
-            last_result = match self.evaluate_value(execution_environment, value.clone()) { // todo: change to *
+            last_result = match self.evaluate_value(execution_environment, *value) { // todo: change to *
                 Ok(value) => Some(value),
                 _ => return self.make_empty_error()
             };
@@ -854,7 +854,7 @@ impl Interpreter {
         match evaluated_argument {
             Ok(Value::Object(object_id)) => {
                 match self.object_arena.get_item(object_id, symbol_id) {
-                    Some(value) => Ok(value.clone()),
+                    Some(value) => Ok(value),
                     _ => return self.make_empty_error()
                 }
             },
@@ -868,7 +868,7 @@ impl Interpreter {
         s_expression: ConsId
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
-        let car = self.cons_arena.get_car(s_expression).clone();
+        let car = self.cons_arena.get_car(s_expression);
 
         let car = match car {
             Ok(value) => value,
@@ -920,7 +920,7 @@ impl Interpreter {
         match value {
             Value::Symbol(symbol_name) => self.evaluate_symbol(environment, symbol_name),
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
-            _ => Ok(value.clone())
+            _ => Ok(value)
         }
     }
 }
@@ -955,7 +955,7 @@ impl Interpreter {
             }
         }
 
-        Ok(results.last().unwrap().clone())
+        Ok(*results.last().unwrap())
     }
 }
 
@@ -1055,7 +1055,7 @@ mod tests {
             };
 
             let expected = pair.1;
-            let result = interpreter.get_object_item(object_id, key).unwrap().clone();
+            let result = interpreter.get_object_item(object_id, key).unwrap();
 
             assertion::assert_deep_equal(
                 &mut interpreter,

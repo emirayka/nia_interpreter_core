@@ -38,7 +38,7 @@ pub fn fset(
 
     match target_env {
         Some(target_env) => {
-            match interpreter.set_function(target_env, function_symbol_id, value.clone()) {
+            match interpreter.set_function(target_env, function_symbol_id, value) {
                 Ok(()) => Ok(value),
                 Err(error) => {
                     let message = &format!(

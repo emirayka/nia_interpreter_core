@@ -30,7 +30,7 @@ pub fn for_value_pairs_evaluated_ifbsyk<F: Fn(&mut Interpreter, String, Value) -
     let pairs = make_value_pairs_ifbsyk(&mut interpreter);
 
     for pair in pairs {
-        func(&mut interpreter, pair.0.clone(), pair.1.clone());
+        func(&mut interpreter, pair.0.clone(), pair.1);
     }
 }
 
@@ -42,7 +42,7 @@ pub fn for_meta_value_pairs_evaluated_ifbsyk<F: Fn(&mut Interpreter, String, Val
 
     for pair1 in &pairs {
         for pair2 in &pairs {
-            func(&mut interpreter, pair1.0.clone(), pair1.1.clone(), pair2.0.clone(), pair2.1.clone());
+            func(&mut interpreter, pair1.0.clone(), pair1.1, pair2.0.clone(), pair2.1);
         }
     }
 }

@@ -44,7 +44,7 @@ pub fn object_get(
         }
     };
 
-    Ok(value.clone())
+    Ok(value)
 }
 
 #[cfg(test)]

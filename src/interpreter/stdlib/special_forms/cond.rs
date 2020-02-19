@@ -15,7 +15,7 @@ fn execute_part(
     };
 
     let part_predicate = match interpreter.get_car(part_cons_id) {
-        Ok(value) => value.clone(),
+        Ok(value) => value,
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "",
             error

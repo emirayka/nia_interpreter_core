@@ -24,7 +24,7 @@ pub fn car(
     };
 
     match cons {
-        Ok(value) => Ok(value.clone()),
+        Ok(value) => Ok(value),
         Err(error) => interpreter.make_generic_execution_error_caused(
             "",
             error

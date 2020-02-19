@@ -11,10 +11,10 @@ fn set_variable_via_cons(
     definition_setting_environment: EnvironmentId,
     cons_id: ConsId
 ) -> Result<(), Error> {
-    let car = interpreter.get_car(cons_id).clone();
+    let car = interpreter.get_car(cons_id);
 
     let car = match car {
-        Ok(car) => car.clone(),
+        Ok(car) => car,
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "",
             error
@@ -40,7 +40,7 @@ fn set_variable_via_cons(
 
     let cadr = interpreter.get_cadr(cons_id);
     let value = match cadr {
-        Ok(value) => value.clone(),
+        Ok(value) => value,
         Err(_) => return interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         )

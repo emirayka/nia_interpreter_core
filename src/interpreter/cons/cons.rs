@@ -16,12 +16,12 @@ impl Cons {
 }
 
 impl Cons {
-    pub fn get_car(&self) -> &Value {
-        &self.car
+    pub fn get_car(&self) -> Value {
+        self.car
     }
 
-    pub fn get_cdr(&self) -> &Value {
-        &self.cdr
+    pub fn get_cdr(&self) -> Value {
+        self.cdr
     }
 
     pub fn get_car_mut(&mut self) -> &mut Value {
@@ -77,7 +77,7 @@ mod tests {
             let string1 = interpreter.intern_string_value(String::from("car"));
             let string2 = interpreter.intern_string_value(String::from("cdr"));
 
-            let mut l = Cons::new(string1.clone(), string2.clone());
+            let mut l = Cons::new(string1, string2);
 
             assertion::assert_vectors_deep_equal(
                 &mut interpreter,
@@ -86,16 +86,16 @@ mod tests {
                     string2,
                 ),
                 vec!(
-                    l.get_car().clone(),
-                    l.get_cdr().clone()
+                    l.get_car(),
+                    l.get_cdr()
                 )
             );
 
             l.set_car(Value::Integer(1));
             l.set_cdr(Value::Integer(2));
 
-            assert_eq!(&Value::Integer(1), l.get_car());
-            assert_eq!(&Value::Integer(2), l.get_cdr());
+            assert_eq!(Value::Integer(1), l.get_car());
+            assert_eq!(Value::Integer(2), l.get_cdr());
         }
     }
 }
