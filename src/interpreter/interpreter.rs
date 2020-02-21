@@ -1,6 +1,6 @@
 use crate::interpreter::value::Value;
 use crate::parser::parse_code;
-use crate::interpreter::pre_reader::preread_elements;
+use crate::interpreter::reader::read_elements;
 use crate::interpreter::function::{Function};
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::builtin_function::BuiltinFunction;
@@ -940,7 +940,7 @@ impl Interpreter {
 
         // second step: read forms
         let values = if let Ok((_, code)) = parsed {
-            preread_elements(self, code.get_elements())
+            read_elements(self, code.get_elements())
         } else {
             return self.make_empty_error();
         };

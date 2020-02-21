@@ -75,23 +75,88 @@ pub fn parse_s_expression_element(s: &str) -> Result<(&str, SExpressionElement),
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parser::integer_element::IntegerElement;
+    use crate::parser::float_element::FloatElement;
+    use crate::parser::string_element::StringElement;
+    use crate::parser::boolean_element::BooleanElement;
+    use crate::parser::keyword_element::KeywordElement;
+    use crate::parser::symbol_element::SymbolElement;
+
+    fn assert_s_expression_parsed_correctly(expected: Vec<Element>, code: &str) {
+        assert_eq!(expected, parse_s_expression_element(code).ok().unwrap().1.values);
+    }
 
     #[test]
     fn test_simple_s_expression() {
-        println!("{:?}", parse_s_expression_element(r#"(test 1 1.0 "test" #t #f :keyword)"#));
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+                Element::Integer(IntegerElement::new(1)),
+                Element::Float(FloatElement::new(1.0)),
+                Element::String(StringElement::new(String::from("test"))),
+                Element::Boolean(BooleanElement::new(true)),
+                Element::Boolean(BooleanElement::new(false)),
+                Element::Keyword(KeywordElement::new(String::from("keyword"))),
+            ),
+            r#"(test 1 1.0 "test" #t #f :keyword)"#
+        );
     }
 
     #[test]
     fn test_spaces_are_processed_correctly() {
-        println!("{:?}", parse_s_expression_element(r#"(test)"#));
-        println!("{:?}", parse_s_expression_element(r#"( test)"#));
-        println!("{:?}", parse_s_expression_element(r#"(test )"#));
-        println!("{:?}", parse_s_expression_element(r#"( test )"#));
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+            ),
+            r#"(test)"#
+        );
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+            ),
+            r#"( test)"#
+        );
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+            ),
+            r#"(test )"#
+        );
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+            ),
+            r#"( test )"#
+        );
     }
 
     #[test]
     fn test_nested_s_expressions_are_processed() {
-        println!("{:?}", parse_s_expression_element(r#"(test :list (b 1 2))"#));
-        println!("{:?}", parse_s_expression_element(r#"(test (test (b 1 2)))"#));
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+                Element::Keyword(KeywordElement::new(String::from("list"))),
+                Element::SExpression(SExpressionElement::new(vec!(
+                    Element::Symbol(SymbolElement::new(String::from("b"))),
+                    Element::Integer(IntegerElement::new(1)),
+                    Element::Integer(IntegerElement::new(2)),
+                )))
+            ),
+            r#"(test :list (b 1 2))"#
+        );
+        assert_s_expression_parsed_correctly(
+            vec!(
+                Element::Symbol(SymbolElement::new(String::from("test"))),
+                Element::SExpression(SExpressionElement::new(vec!(
+                    Element::Symbol(SymbolElement::new(String::from("test"))),
+                    Element::SExpression(SExpressionElement::new(vec!(
+                        Element::Symbol(SymbolElement::new(String::from("b"))),
+                        Element::Integer(IntegerElement::new(1)),
+                        Element::Integer(IntegerElement::new(2)),
+                    )))
+                )))
+            ),
+            r#"(test (test (b 1 2)))"#
+        );
     }
 }

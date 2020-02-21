@@ -8,6 +8,6 @@ mod object;
 mod value;
 mod error;
 mod environment;
-mod pre_reader;
+mod reader;
 mod stdlib;
 pub mod interpreter;
