@@ -10,6 +10,7 @@ pub mod s_expression_element;
 pub mod object_element;
 pub mod prefix_element;
 pub mod delimited_symbols_element;
+pub mod short_lambda_element;
 
 use nom::{
     bytes::complete::tag,
@@ -39,6 +40,7 @@ pub enum Element {
     Symbol(symbol_element::SymbolElement),
     Keyword(keyword_element::KeywordElement),
     SExpression(s_expression_element::SExpressionElement),
+    ShortLambda(short_lambda_element::ShortLambdaElement),
     Object(object_element::ObjectElement),
     DelimitedSymbols(delimited_symbols_element::DelimitedSymbolsElement),
     Prefix(prefix_element::PrefixElement),
@@ -116,6 +118,18 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
                 all_consuming(tag(""))
             ))),
         |el| Ok(Element::Boolean(el))
+    );
+
+    let short_lambda_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
+        terminated(
+            short_lambda_element::parse_short_lambda_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                peek(tag("}")),
+                all_consuming(tag(""))
+            ))),
+        |el| Ok(Element::ShortLambda(el))
     );
 
     let symbol_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
@@ -198,6 +212,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
 
     let parser = alt((
         boolean_parser,
+        short_lambda_parser,
         float_parser,
         int_parser,
         string_parser,
@@ -361,7 +376,7 @@ mod tests {
 
         assert_is_ok!(parse_code("1 :t"));
         assert_is_ok!(parse_code("1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
-        // todo: maybe change that
+        // todo: likely it's need to change that
 
         assert_is_ok!(parse_code("1 t"));
         assert_is_ok!(parse_code("1t")); // because, "1t" is a valid symbol
@@ -377,6 +392,9 @@ mod tests {
 
         assert_is_ok!(parse_code("1 {}"));
         assert_is_err!(parse_code("1{}"));
+
+        assert_is_ok!(parse_code("1 #()"));
+        assert_is_err!(parse_code("1#()"));
     }
 
     #[test]
@@ -410,6 +428,9 @@ mod tests {
 
         assert_is_ok!(parse_code("1.1 {}"));
         assert_is_err!(parse_code("1.1{}"));
+
+        assert_is_ok!(parse_code("1.1 #()"));
+        assert_is_err!(parse_code("1.1#()"));
     }
 
     #[test]
@@ -442,6 +463,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#t {}"));
         assert_is_err!(parse_code("#t{}"));
+
+        assert_is_ok!(parse_code("#t #()"));
+        assert_is_err!(parse_code("#t#()"));
     }
 
     #[test]
@@ -474,6 +498,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#f {}"));
         assert_is_err!(parse_code("#f{}"));
+
+        assert_is_ok!(parse_code("#f #()"));
+        assert_is_err!(parse_code("#f#()"));
     }
 
     #[test]
@@ -506,6 +533,9 @@ mod tests {
 
         assert_is_ok!(parse_code(":key {}"));
         assert_is_err!(parse_code(":key{}"));
+
+        assert_is_ok!(parse_code(":key #()"));
+        assert_is_err!(parse_code(":key#()"));
     }
 
     #[test]
@@ -538,6 +568,9 @@ mod tests {
 
         assert_is_ok!(parse_code("\"str\" {}"));
         assert_is_err!(parse_code("\"str\"{}"));
+
+        assert_is_ok!(parse_code("\"str\" #()"));
+        assert_is_err!(parse_code("\"str\"#()"));
     }
 
     #[test]
@@ -570,6 +603,9 @@ mod tests {
 
         assert_is_ok!(parse_code("sym {}"));
         assert_is_err!(parse_code("sym{}"));
+
+        assert_is_ok!(parse_code("sym #()"));
+        assert_is_err!(parse_code("sym#()"));
     }
 
     #[test]
@@ -602,6 +638,9 @@ mod tests {
 
         assert_is_ok!(parse_code("() {}"));
         assert_is_err!(parse_code("(){}"));
+
+        assert_is_ok!(parse_code("() #()"));
+        assert_is_err!(parse_code("()#()"));
     }
 
     #[test]
@@ -634,6 +673,44 @@ mod tests {
 
         assert_is_ok!(parse_code("{} {}"));
         assert_is_err!(parse_code("{}{}"));
+
+        assert_is_ok!(parse_code("{} #()"));
+        assert_is_err!(parse_code("{}#()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_short_lambda_literal() {
+        assert_is_ok!(parse_code("#() 1"));
+        assert_is_err!(parse_code("#()1"));
+
+        assert_is_ok!(parse_code("#() 1.1"));
+        assert_is_err!(parse_code("#()1.1"));
+
+        assert_is_ok!(parse_code("#() #t"));
+        assert_is_err!(parse_code("#()#t"));
+        assert_is_ok!(parse_code("#() #f"));
+        assert_is_err!(parse_code("#()#f"));
+
+        assert_is_ok!(parse_code("#() :t"));
+        assert_is_err!(parse_code("#():t"));
+
+        assert_is_ok!(parse_code("#() t"));
+        assert_is_err!(parse_code("#()t"));
+
+        assert_is_ok!(parse_code("#() a:b"));
+        assert_is_err!(parse_code("#()a:b"));
+
+        assert_is_ok!(parse_code("#() \"\""));
+        assert_is_err!(parse_code("#()\"\""));
+
+        assert_is_ok!(parse_code("#() ()"));
+        assert_is_err!(parse_code("#()()"));
+
+        assert_is_ok!(parse_code("#() {}"));
+        assert_is_err!(parse_code("#(){}"));
+
+        assert_is_ok!(parse_code("#() #()"));
+        assert_is_err!(parse_code("#()#()"));
     }
 
     #[test]

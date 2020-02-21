@@ -219,6 +219,62 @@ impl Interpreter {
             _ => Ok(false)
         }
     }
+
+    pub fn print_value(&mut self, offset: usize, value: Value) {
+        print!("{}", std::iter::repeat(" ").take(offset).collect::<String>());
+
+        match value {
+            Value::Integer(value) => print!("{}\n", value),
+            Value::Float(value) => print!("{}\n", value),
+            Value::Boolean(value) => print!("{}\n", if value {"#t"} else {"#f"}),
+            Value::Keyword(keyword_id) => {
+                let keyword_name = self.get_keyword(keyword_id).unwrap().get_name();
+
+                print!("{}\n", keyword_name)
+            },
+            Value::Symbol(symbol_id) => {
+                let symbol_name = self.get_symbol_name(symbol_id).unwrap();
+
+                print!("{}\n", symbol_name)
+            },
+            Value::String(string_id) => {
+                let string = self.get_string(string_id).unwrap().get_string();
+
+                print!("{}\n", string)
+            },
+            Value::Cons(cons_id) => {
+                let mut car = self.get_car(cons_id).unwrap();
+                let mut cdr = self.get_cdr(cons_id).unwrap();
+
+                print!("(");
+
+                loop {
+                    self.print_value(offset + 1, car);
+
+                    match cdr {
+                        Value::Cons(cons_id) => {
+                            car = self.get_car(cons_id).unwrap();
+                            cdr = self.get_cdr(cons_id).unwrap();
+                        },
+                        Value::Symbol(symbol_id) => {
+                            let symbol = self.get_symbol(symbol_id).unwrap();
+
+                            if !symbol.is_nil() {
+                                self.print_value(offset + 1, cdr);
+                            }
+                            print!(")");
+
+                            break;
+                        },
+                        value => self.print_value(offset + 1, value)
+                    }
+                }
+            },
+            _ => unimplemented!(),
+//            Object(ObjectId),
+//            Function(FunctionId),
+        }
+    }
 }
 
 impl Interpreter {
@@ -615,16 +671,38 @@ impl Interpreter {
         &mut self,
         execution_environment: EnvironmentId,
         names: &Vec<String>,
-        variables: Vec<Value>
+        variables: &Vec<Value>
     ) -> Result<(), Error> {
         let len = names.len();
 
         for i in 0..len {
             let name = &names[i];
             let name = self.intern(name);
-            let variable = &variables[i];
+            let variable = variables[i];
 
-            match self.define_variable(execution_environment, name, *variable) {
+            match self.define_variable(execution_environment, name, variable) {
+                Ok(()) => (),
+                Err(error) => return Err(error)
+            };
+        }
+
+        Ok(())
+    }
+
+    fn define_environment_functions(
+        &mut self,
+        execution_environment: EnvironmentId,
+        names: &Vec<String>,
+        functions: &Vec<Value>
+    ) -> Result<(), Error> {
+        let len = names.len();
+
+        for i in 0..len {
+            let name = &names[i];
+            let name = self.intern(name);
+            let function = functions[i];
+
+            match self.define_function(execution_environment, name, function) {
                 Ok(()) => (),
                 Err(error) => return Err(error)
             };
@@ -662,7 +740,16 @@ impl Interpreter {
         match self.define_environment_variables(
             execution_environment,
             func.get_argument_names(),
-            evaluated_arguments
+            &evaluated_arguments
+        ) {
+            Ok(()) => (),
+            Err(error) => return Err(error)
+        };
+
+        match self.define_environment_functions(
+            execution_environment,
+            func.get_argument_names(),
+            &evaluated_arguments
         ) {
             Ok(()) => (),
             Err(error) => return Err(error)
@@ -717,7 +804,16 @@ impl Interpreter {
         match self.define_environment_variables(
             execution_environment,
             func.get_argument_names(),
-            arguments
+            &arguments
+        ) {
+            Ok(()) => (),
+            Err(error) => return Err(error)
+        };
+
+        match self.define_environment_functions(
+            execution_environment,
+            func.get_argument_names(),
+            &arguments
         ) {
             Ok(()) => (),
             Err(error) => return Err(error)
@@ -965,6 +1061,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::testing_helpers::make_value_pairs_ifbsyk;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::assertion::assert_deep_equal;
 
     macro_rules! assert_execution_result_eq {
         ($expected:expr, $code:expr) => {
@@ -1083,6 +1180,46 @@ mod tests {
                 expected,
                 result
             );
+        }
+    }
+
+    #[cfg(test)]
+    mod short_lambda {
+        use super::*;
+
+        #[test]
+        fn executes_short_lambda_expressions_correctly() {
+            let mut interpreter = Interpreter::new();
+            let nil = interpreter.intern_nil_symbol_value();
+
+            let result = interpreter.execute("(#())").unwrap();
+            assert_deep_equal(&mut interpreter, nil, result);
+
+            let result = interpreter.execute("(#(+ 3 2))").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+            let result = interpreter.execute("(#(+ %1 2) 1)").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(3), result);
+
+            let result = interpreter.execute("(#(+ %1 %2) 1 3)").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(4), result);
+
+            let result = interpreter.execute("(#(+ 0 %5) 1 2 3 4 5)").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+        }
+
+        #[test]
+        fn able_to_use_short_lambda_in_flet() {
+            let mut interpreter = Interpreter::new();
+
+            let result = interpreter.execute("(flet ((test () #((lookup '%1)))) ((test) #(+ 3 2)))").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+            let result = interpreter.execute("(flet ((test () #((flookup '%1)))) ((test) #(+ 3 2)))").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+            let result = interpreter.execute("(flet ((test () #(%1))) ((test) #(+ 3 2)))").unwrap();
+            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
         }
     }
 

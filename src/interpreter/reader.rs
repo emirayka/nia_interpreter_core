@@ -7,6 +7,9 @@ use crate::parser::Element;
 use crate::interpreter::interpreter::Interpreter;
 use crate::parser::object_element::ObjectElement;
 use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
+use std::cmp::max;
+use crate::parser::short_lambda_element::ShortLambdaElement;
+use crate::interpreter::error::Error;
 
 fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Value {
     let values = sexp_element.get_values();
@@ -51,6 +54,82 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
     }
 
     Value::Cons(root_cons)
+}
+
+fn count_short_lambda_argument_count(
+    interpreter: &mut Interpreter,
+    value: Value
+) -> Result<u8, Error> {
+    let count = match value {
+        Value::Symbol(symbol_id) => {
+            let symbol_name = interpreter.get_symbol_name(symbol_id)?;
+
+            match symbol_name.chars().next() {
+                Some(c) => {
+                    if c == '%' {
+                        match (&symbol_name['%'.len_utf8()..]).parse::<u8>() {
+                            Ok(count) => count,
+                            _ => 0
+                        }
+                    } else {
+                        0
+                    }
+                },
+                _ => 0
+            }
+        }
+        Value::Cons(cons) => {
+            let car = interpreter.get_car(cons)?;
+            let cdr = interpreter.get_cdr(cons)?;
+
+            let car_count = count_short_lambda_argument_count(interpreter, car)?;
+            let cdr_count = count_short_lambda_argument_count(interpreter, cdr)?;
+
+            max(car_count, cdr_count)
+        },
+        _ => 0,
+    };
+
+    Ok(count)
+}
+
+fn make_short_lambda_argument_list(
+    interpreter: &mut Interpreter,
+    count: u8
+) -> Value {
+    let mut last_cons = interpreter.intern_nil_symbol_value();
+
+    for i in 0..count {
+        let current_argument_index = count - i;
+        let symbol_name = format!("%{}", current_argument_index);
+        let symbol = interpreter.intern_symbol_value(&symbol_name);
+
+        last_cons = interpreter.make_cons_value(symbol, last_cons);
+    }
+
+    last_cons
+}
+
+fn read_short_lambda(
+    interpreter: &mut Interpreter,
+    short_lambda_element: ShortLambdaElement
+) -> Result<Value, Error> {
+    let function = interpreter.intern_symbol_value("function");
+    let lambda = interpreter.intern_symbol_value("lambda");
+    let nil = interpreter.intern_nil_symbol_value();
+
+    let code = read_s_expression(interpreter, short_lambda_element.get_value());
+    let argument_count = count_short_lambda_argument_count(interpreter, code)?;
+    let arguments = make_short_lambda_argument_list(interpreter, argument_count);
+
+    let cdr = interpreter.make_cons_value(code, nil);
+    let cdr = interpreter.make_cons_value(arguments, cdr);
+    let car = interpreter.make_cons_value(lambda, cdr);
+
+    let cdr = interpreter.make_cons_value(car, nil);
+    let value = interpreter.make_cons_value(function, cdr);
+
+    Ok(value)
 }
 
 fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Value {
@@ -236,6 +315,12 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Value {
             read_delimited_symbols_element(interpreter, delimited_symbols_element),
         Element::Prefix(prefix_element) =>
             read_prefix_element(interpreter, prefix_element),
+        Element::ShortLambda(short_lambda_element) => {
+            match read_short_lambda(interpreter, short_lambda_element) {
+                Ok(value) => value,
+                _ => panic!()
+            }
+        }
     }
 }
 
@@ -429,6 +514,77 @@ mod tests {
             cdr
         );
         assert_reading_deeply(&mut interpreter, expected, "(a b)");
+    }
+
+    #[cfg(test)]
+    mod short_lambda {
+        use super::*;
+        use std::process::exit;
+
+        fn assert_short_lambda_valid(
+            interpreter: &mut Interpreter,
+            arguments: Value,
+            body: Value,
+            code: &str
+        ) {
+            let nil = interpreter.intern_nil_symbol_value();
+            let function = interpreter.intern_symbol_value("function");
+            let lambda = interpreter.intern_symbol_value("lambda");
+
+            let cdr= interpreter.make_cons_value(body, nil);
+            let cdr= interpreter.make_cons_value(arguments, cdr);
+            let car = interpreter.make_cons_value(lambda, cdr);
+
+            let cdr = interpreter.make_cons_value(car, nil);
+            let expected = interpreter.make_cons_value(function, cdr);
+
+            assert_reading_deeply(interpreter, expected, code);
+        }
+
+        #[test]
+        fn reads_short_lambda_without_arguments_correctly() {
+            let mut interpreter = Interpreter::new();
+            let nil = interpreter.intern_nil_symbol_value();
+
+            assert_short_lambda_valid(&mut interpreter, nil, nil, "#()");
+        }
+
+        #[test]
+        fn reads_short_lambda_with_an_argument_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let plus = interpreter.intern_symbol_value("+");
+            let one = Value::Integer(1);
+            let arg1 = interpreter.intern_symbol_value("%1");
+            let nil = interpreter.intern_nil_symbol_value();
+
+            let cdr = interpreter.make_cons_value(arg1, nil);
+            let cdr = interpreter.make_cons_value(one, cdr);
+            let body = interpreter.make_cons_value(plus, cdr);
+
+            let arguments = interpreter.make_cons_value(arg1, nil);
+
+            assert_short_lambda_valid(&mut interpreter, arguments, body, "#(+ 1 %1)");
+        }
+
+        #[test]
+        fn reads_short_lambda_with_two_arguments_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let plus = interpreter.intern_symbol_value("+");
+            let arg1 = interpreter.intern_symbol_value("%1");
+            let arg2 = interpreter.intern_symbol_value("%2");
+            let nil = interpreter.intern_nil_symbol_value();
+
+            let cdr = interpreter.make_cons_value(arg2, nil);
+            let cdr = interpreter.make_cons_value(arg1, cdr);
+            let body = interpreter.make_cons_value(plus, cdr);
+
+            let cdr = interpreter.make_cons_value(arg2, nil);
+            let arguments = interpreter.make_cons_value(arg1, cdr);
+
+            assert_short_lambda_valid(&mut interpreter, arguments, body, "#(+ %1 %2)");
+        }
     }
 
     #[cfg(test)]
