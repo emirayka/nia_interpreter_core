@@ -456,6 +456,10 @@ impl Interpreter {
         self.object_arena.make()
     }
 
+    pub fn make_object_value(&mut self) -> Value {
+        Value::Object(self.object_arena.make())
+    }
+
     pub fn make_child_object(&mut self, prototype_id: ObjectId) -> ObjectId {
         self.object_arena.make_child(prototype_id)
     }

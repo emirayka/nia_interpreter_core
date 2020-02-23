@@ -6,7 +6,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::special_form_function::{SpecialFormFunctionType, SpecialFormFunction};
 use crate::interpreter::object::object::ObjectId;
 
-pub fn infect_object_function(
+pub fn infect_object_builtin_function(
     interpreter: &mut Interpreter,
     object_id: ObjectId,
     item_name: &str,

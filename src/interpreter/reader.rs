@@ -659,16 +659,21 @@ mod tests {
 
         #[test]
         fn evaluates_items_correctly() {
+            let mut interpreter = Interpreter::new();
+
+//            let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
+            let symbol_value = interpreter.intern_symbol_value("symbol");
+            let string_value = interpreter.intern_string_value(String::from("string"));
+
             assert_object_has_items!(
                 vec!(
                     ("a", Value::Integer(1)),
                     ("b", Value::Float(1.1)),
                     ("c", Value::Boolean(true)),
                     ("d", Value::Boolean(false)),
-                    ("e", Value::Keyword(KeywordId::new(3))),
-                    //("f", Value::Symbol(SymbolId::new(7))),
-                    ("f", Value::Symbol(SymbolId::new(41))), // it should be 7
-                    ("g", Value::String(StringId::new(0))),
+//                    ("e", keyword_value),
+                    ("f", symbol_value),
+                    ("g", string_value),
                 ),
                 "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}"
             );

@@ -8,6 +8,7 @@ use std::io::{self, BufRead, Write};
 
 use crate::interpreter::interpreter::Interpreter;
 
+// todo: fix #(#(%1) %1). Reader doesn't count amount of arguments correctly in the case of nested shorthand lambdas.
 // todo: implement reference counting
 // todo: add variadic args
 // todo: add key word args
