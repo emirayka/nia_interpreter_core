@@ -220,21 +220,19 @@ impl Interpreter {
         }
     }
 
-    pub fn print_value(&mut self, offset: usize, value: Value) {
-        print!("{}", std::iter::repeat(" ").take(offset).collect::<String>());
-
+    pub fn print_value(&mut self, value: Value) {
         match value {
-            Value::Integer(value) => print!("{}\n", value),
-            Value::Float(value) => print!("{}\n", value),
-            Value::Boolean(value) => print!("{}\n", if value {"#t"} else {"#f"}),
+            Value::Integer(value) => print!("{}", value),
+            Value::Float(value) => print!("{}", value),
+            Value::Boolean(value) => print!("{}", if value {"#t"} else {"#f"}),
             Value::Keyword(keyword_id) => {
-                print!("{}\n", self.get_keyword(keyword_id).unwrap().get_name());
+                print!("{}", self.get_keyword(keyword_id).unwrap().get_name());
             },
             Value::Symbol(symbol_id) => {
-                print!("{}\n", self.get_symbol_name(symbol_id).unwrap());
+                print!("{}", self.get_symbol_name(symbol_id).unwrap());
             },
             Value::String(string_id) => {
-                print!("{}\n", self.get_string(string_id).unwrap().get_string());
+                print!("{}", self.get_string(string_id).unwrap().get_string());
             },
             Value::Cons(cons_id) => {
                 let mut car = self.get_car(cons_id).unwrap();
@@ -243,7 +241,7 @@ impl Interpreter {
                 print!("(");
 
                 loop {
-                    self.print_value(offset + 1, car);
+                    self.print_value(car);
 
                     match cdr {
                         Value::Cons(cons_id) => {
@@ -254,13 +252,15 @@ impl Interpreter {
                             let symbol = self.get_symbol(symbol_id).unwrap();
 
                             if !symbol.is_nil() {
-                                self.print_value(offset + 1, cdr);
+                                self.print_value(cdr);
+                                print!(" ");
+                            } else {
+                                print!(")");
                             }
-                            print!(")");
 
                             break;
                         },
-                        value => self.print_value(offset + 1, value)
+                        value => self.print_value(value)
                     }
                 }
             },
@@ -268,6 +268,8 @@ impl Interpreter {
 //            Object(ObjectId),
 //            Function(FunctionId),
         }
+
+        print!(" ");
     }
 }
 
@@ -1116,8 +1118,6 @@ mod tests {
             let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
             let expected = pair.1;
             let result = interpreter.execute(&code).unwrap();
-
-            println!("{:?} {:?} {:?}", code, expected, result);
 
             assertion::assert_deep_equal(
                 &mut interpreter,
