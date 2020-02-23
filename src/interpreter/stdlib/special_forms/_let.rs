@@ -35,7 +35,7 @@ fn set_variable_via_cons(
     };
 
     let cadr = interpreter.get_cadr(cons_id)
-        .map_err(|err| interpreter.make_invalid_argument_error(
+        .map_err(|_| interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         ))?;
 
@@ -145,7 +145,7 @@ pub fn _let(
     let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ).map_err(|err| interpreter.make_invalid_argument_error(
+    ).map_err(|_| interpreter.make_invalid_argument_error(
         "The first argument of special form `let' must be a list of definitions: symbol, or 2-element lists."
     ))?;
 

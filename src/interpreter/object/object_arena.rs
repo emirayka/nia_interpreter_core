@@ -70,7 +70,6 @@ impl ObjectArena {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::SymbolArena;
 
     #[allow(non_snake_case)]
     #[cfg(test)]
@@ -84,7 +83,7 @@ mod tests {
             let key = SymbolId::new(0);
             let object_id = arena.make();
 
-            arena.set_item(object_id, key, Value::Integer(1));
+            arena.set_item(object_id, key, Value::Integer(1)).unwrap();
 
             assert_eq!(Value::Integer(1), arena.get_item(object_id, key).unwrap().unwrap());
         }
@@ -98,7 +97,7 @@ mod tests {
             let prototype_id = arena.make();
             let child_id = arena.make_child(prototype_id);
 
-            arena.set_item(prototype_id, key, Value::Integer(1));
+            arena.set_item(prototype_id, key, Value::Integer(1)).unwrap();
 
             assert_eq!(Ok(Some(Value::Integer(1))), arena.get_item(child_id, key));
         }
@@ -112,8 +111,8 @@ mod tests {
             let prototype_id = arena.make();
             let child_id = arena.make_child(prototype_id);
 
-            arena.set_item(prototype_id, key, Value::Integer(1));
-            arena.set_item(child_id, key, Value::Integer(2));
+            arena.set_item(prototype_id, key, Value::Integer(1)).unwrap();
+            arena.set_item(child_id, key, Value::Integer(2)).unwrap();
 
             assert_eq!(Ok(Some(Value::Integer(1))), arena.get_item(prototype_id, key));
             assert_eq!(Ok(Some(Value::Integer(2))), arena.get_item(child_id, key));

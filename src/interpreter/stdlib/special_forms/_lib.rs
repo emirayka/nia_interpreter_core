@@ -185,7 +185,7 @@ mod tests {
             expected.push(interpreter.execute("(quote (1 2))").unwrap());
 
             let value = interpreter.execute("(quote ((1 2) (1 2)))").unwrap();
-            let mut result = read_let_definitions(
+            let result = read_let_definitions(
                 &mut interpreter,
                 value
             ).unwrap();

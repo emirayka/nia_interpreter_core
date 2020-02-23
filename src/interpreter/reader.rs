@@ -11,11 +11,11 @@ use std::cmp::max;
 use crate::parser::short_lambda_element::ShortLambdaElement;
 use crate::interpreter::error::Error;
 
-fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Value {
+fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
     let values = sexp_element.get_values();
 
     if values.len() == 0 {
-        return interpreter.intern_nil_symbol_value();
+        return Ok(interpreter.intern_nil_symbol_value());
     }
 
     let nil = interpreter.intern_nil_symbol_value();
@@ -29,9 +29,9 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
     let mut current_cons_id = root_cons;
 
     for (index, element) in values.into_iter().enumerate() {
-        let value = read_element(interpreter, element);
+        let value = read_element(interpreter, element)?;
 
-        interpreter.set_car(current_cons_id, value); // todo: check error here
+        interpreter.set_car(current_cons_id, value)?;
 
         if index == len - 1 {
             break;
@@ -44,7 +44,11 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
             nil
         );
 
-        interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id)); // todo: check error here
+        interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id))
+            .map_err(|err| interpreter.make_generic_execution_error_caused(
+                "",
+                err
+            ))?;
 
         if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(current_cons_id) {
             current_cons_id = next_cons;
@@ -53,7 +57,7 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
         }
     }
 
-    Value::Cons(root_cons)
+    Ok(Value::Cons(root_cons))
 }
 
 fn count_short_lambda_argument_count(
@@ -118,7 +122,10 @@ fn read_short_lambda(
     let lambda = interpreter.intern_symbol_value("lambda");
     let nil = interpreter.intern_nil_symbol_value();
 
-    let code = read_s_expression(interpreter, short_lambda_element.get_value());
+    let code = read_s_expression(
+        interpreter,
+        short_lambda_element.get_value()
+    )?;
     let argument_count = count_short_lambda_argument_count(interpreter, code)?;
     let arguments = make_short_lambda_argument_list(interpreter, argument_count);
 
@@ -132,14 +139,14 @@ fn read_short_lambda(
     Ok(value)
 }
 
-fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Value {
+fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Result<Value, Error> {
     let values = object_element.get_values();
 
     let mut last_cons = interpreter.intern_nil_symbol_value();
 
     for (keyword_element, element) in values.into_iter().rev() {
         let keyword = interpreter.intern_keyword_value(keyword_element.get_value());
-        let value = read_element(interpreter, element);
+        let value = read_element(interpreter, element)?;
 
         last_cons = Value::Cons(interpreter.make_cons(
             value,
@@ -166,10 +173,12 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
         car
     ));
 
-    Value::Cons(interpreter.make_cons(
+    let cons_id = interpreter.make_cons(
         car,
         last_cons
-    ))
+    );
+
+    Ok(Value::Cons(cons_id))
 }
 
 fn read_delimited_symbols_element(
@@ -203,8 +212,8 @@ fn read_delimited_symbols_element(
     previous_cons
 }
 
-fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
-    let value = read_element(interpreter, element);
+fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = read_element(interpreter, element)?;
 
     let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
@@ -218,11 +227,11 @@ fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) ->
         cdr
     );
 
-    Value::Cons(cons_id)
+    Ok(Value::Cons(cons_id))
 }
 
-fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
-    let value = read_element(interpreter, element);
+fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = read_element(interpreter, element)?;
 
     let graveaccent = interpreter.intern_symbol_value("`");
 
@@ -237,11 +246,11 @@ fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Eleme
         cdr
     );
 
-    Value::Cons(cons_id)
+    Ok(Value::Cons(cons_id))
 }
 
-fn read_comma_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
-    let value = read_element(interpreter, element);
+fn read_comma_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = read_element(interpreter, element)?;
 
     let comma = interpreter.intern_symbol_value(",");
 
@@ -256,11 +265,11 @@ fn read_comma_prefix_element(interpreter: &mut Interpreter, element: Element) ->
         cdr
     );
 
-    Value::Cons(cons_id)
+    Ok(Value::Cons(cons_id))
 }
 
-fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element) -> Value {
-    let value = read_element(interpreter, element);
+fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = read_element(interpreter, element)?;
 
     let commadog = interpreter.intern_symbol_value(",@");
 
@@ -275,10 +284,10 @@ fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element)
         cdr
     );
 
-    Value::Cons(cons_id)
+    Ok(Value::Cons(cons_id))
 }
 
-fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElement) -> Value {
+fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElement) -> Result<Value, Error> {
     match prefix_element.get_prefix() {
         Prefix::Quote => read_quote_prefix_element(interpreter, prefix_element.get_value()),
         Prefix::GraveAccent => read_graveaccent_prefix_element(interpreter, prefix_element.get_value()),
@@ -287,8 +296,8 @@ fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElem
     }
 }
 
-pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Value {
-    match element {
+pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = match element {
         Element::Integer(integer_element) =>
             Value::Integer(integer_element.get_value()),
         Element::Float(float_element) =>
@@ -308,33 +317,40 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Value {
             interpreter.intern_keyword_value(keyword_name)
         },
         Element::SExpression(sexp_element) =>
-            read_s_expression(interpreter, sexp_element),
+            read_s_expression(interpreter, sexp_element)?,
         Element::Object(object_element) =>
-            read_object(interpreter, object_element),
+            read_object(interpreter, object_element)?,
         Element::DelimitedSymbols(delimited_symbols_element) =>
             read_delimited_symbols_element(interpreter, delimited_symbols_element),
         Element::Prefix(prefix_element) =>
-            read_prefix_element(interpreter, prefix_element),
-        Element::ShortLambda(short_lambda_element) => {
-            match read_short_lambda(interpreter, short_lambda_element) {
-                Ok(value) => value,
-                _ => panic!()
-            }
-        }
-    }
+            read_prefix_element(interpreter, prefix_element)?,
+        Element::ShortLambda(short_lambda_element) =>
+            read_short_lambda(interpreter, short_lambda_element)?
+
+    };
+
+    Ok(value)
 }
 
-pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> Vec<Value> {
-    elements.into_iter().map(|e| read_element(interpreter, e)).collect()
+pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> Result<Vec<Value>, Error> {
+    let mut result = Vec::new();
+
+    for element in elements {
+        match read_element(interpreter, element) {
+            Ok(value) => result.push(value),
+            Err(error) => return Err(error)
+        }
+    }
+
+    Ok(result)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::parse_code;
-    use crate::interpreter::symbol::{SymbolArena, SymbolId};
+    use crate::interpreter::symbol::{SymbolId};
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::value::Value::Integer;
 
     macro_rules! assert_reading_result_equal {
         ($expected:expr, $code:expr) => {
@@ -342,7 +358,7 @@ mod tests {
             let expected = $expected;
 
             if let Ok((_, program)) = parse_code($code) {
-                let result = read_elements(&mut interpreter, program.get_elements());
+                let result = read_elements(&mut interpreter, program.get_elements()).unwrap();
 
                 let len = expected.len();
 
@@ -361,8 +377,6 @@ mod tests {
 
     #[test]
     fn reads_integer_elements_correctly() {
-        let mut interpreter = Interpreter::new();
-
         assert_reading_result_equal!(
             vec!(
                 Value::Integer(1)
@@ -370,7 +384,6 @@ mod tests {
             "1"
         );
 
-        let mut interpreter = Interpreter::new();
         assert_reading_result_equal!(
             vec!(
                 Value::Integer(1),
@@ -382,8 +395,6 @@ mod tests {
 
     #[test]
     fn reads_float_elements_correctly() {
-        let mut interpreter = Interpreter::new();
-
         assert_reading_result_equal!(
             vec!(
                 Value::Float(1.2)
@@ -391,7 +402,6 @@ mod tests {
             "1.2"
         );
 
-        let mut interpreter = Interpreter::new();
         assert_reading_result_equal!(
             vec!(
                 Value::Float(1.2),
@@ -403,8 +413,6 @@ mod tests {
 
     #[test]
     fn reads_boolean_elements_correctly() {
-        let mut interpreter = Interpreter::new();
-
         assert_reading_result_equal!(
             vec!(
                 Value::Boolean(true)
@@ -412,7 +420,6 @@ mod tests {
             "#t"
         );
 
-        let mut interpreter = Interpreter::new();
         assert_reading_result_equal!(
             vec!(
                 Value::Boolean(true),
@@ -519,7 +526,6 @@ mod tests {
     #[cfg(test)]
     mod short_lambda {
         use super::*;
-        use std::process::exit;
 
         fn assert_short_lambda_valid(
             interpreter: &mut Interpreter,
@@ -596,7 +602,9 @@ mod tests {
                 let mut interpreter = Interpreter::new();
 
                 if let Ok((_, code)) = parse_code($code) {
-                    let result = read_elements(&mut interpreter, code.get_elements()).remove(0);
+                    let result = read_elements(&mut interpreter, code.get_elements())
+                        .unwrap()
+                        .remove(0);
 
                     let result = interpreter.evaluate_value(
                         interpreter.get_root_environment(),
@@ -672,7 +680,7 @@ mod tests {
             let result = read_elements(
                 interpreter,
                 program.get_elements()
-            ).remove(0);
+            ).unwrap().remove(0);
 
             assertion::assert_deep_equal(interpreter, expected, result);
         }
@@ -762,7 +770,7 @@ mod tests {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
             if let Ok((_, program)) = parse_code($code) {
                 let mut interpreter = Interpreter::new();
-                let expected = read_elements(&mut interpreter, program.get_elements())[0];
+                let expected = read_elements(&mut interpreter, program.get_elements()).unwrap()[0];
 
                 let nil = interpreter.intern_nil_symbol_value();
                 let expected = interpreter.make_cons_value(

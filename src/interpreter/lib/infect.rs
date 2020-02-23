@@ -22,7 +22,7 @@ pub fn infect_object_function(
         object_id,
         name,
         function_value
-    );
+    )?;
 
     Ok(())
 }

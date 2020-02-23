@@ -125,7 +125,6 @@ impl LexicalEnvironment {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::SymbolArena;
 
     #[test]
     fn test_makes_new_bindings() {

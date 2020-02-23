@@ -979,7 +979,7 @@ impl Interpreter {
             .map_err(|_| self.make_empty_error())?;
 
         // second step: read forms
-        let values = read_elements(self, code.get_elements());
+        let values = read_elements(self, code.get_elements())?;
 
         // third step: evaluate
         let mut results: Vec<Value> = Vec::new();

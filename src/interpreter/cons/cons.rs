@@ -51,17 +51,6 @@ impl PartialEq for Cons {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::{SymbolArena, SymbolId};
-
-    fn new_symbol(symbol_name: &str) -> SymbolId {
-        let mut arena = SymbolArena::new();
-
-        arena.intern(symbol_name)
-    }
-
-    fn nil() -> Value {
-        Value::Symbol(new_symbol("nil"))
-    }
 
     #[allow(non_snake_case)]
     #[cfg(test)]

@@ -182,7 +182,7 @@ impl ConsArena {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::{SymbolArena, SymbolId};
+    use crate::interpreter::symbol::{SymbolId};
 
     fn new_symbol(name: &str) -> SymbolId {
         if name == "nil" {
@@ -200,7 +200,6 @@ mod tests {
     mod cons_to_vec {
         use super::*;
         use crate::interpreter::string::string_arena::StringId;
-        use crate::interpreter::interpreter::Interpreter;
         use crate::interpreter::keyword::keyword_arena::KeywordId;
         use crate::interpreter::function::function_arena::FunctionId;
 

@@ -76,7 +76,6 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::function::Function;
     use crate::interpreter::function::interpreted_function::InterpretedFunction;
-    use crate::interpreter::lib::assertion::assert_deep_equal;
 
     #[test]
     fn returns_value_that_was_set_to_function() {

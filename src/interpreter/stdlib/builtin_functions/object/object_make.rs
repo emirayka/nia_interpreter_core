@@ -1,4 +1,3 @@
-use crate::interpreter::string::string_arena::StringId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
@@ -37,7 +36,10 @@ pub fn object_make(
                 object_id,
                 symbol_id,
                 value
-            );
+            ).map_err(|err| interpreter.make_generic_execution_error_caused(
+                "",
+                err
+            ))?;
         } else {
             return interpreter.make_invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword."
@@ -52,6 +54,7 @@ pub fn object_make(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::string::string_arena::StringId;
 
     macro_rules! assert_object_has_values {
         ($expected:expr, $code:expr) => {

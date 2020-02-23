@@ -91,7 +91,7 @@ pub fn _try(
             match found_clause {
                 Some(catch_clause) => {
                     let catch_code = interpreter.get_cddr(catch_clause)
-                        .map_err(|err| interpreter.make_invalid_argument_error(
+                        .map_err(|_| interpreter.make_invalid_argument_error(
                             "The catch clauses of special form `try' must have two items at least."
                         ))?;
 

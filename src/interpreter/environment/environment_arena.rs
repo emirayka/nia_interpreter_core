@@ -211,7 +211,6 @@ impl EnvironmentArena {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::SymbolArena;
 
     #[test]
     fn test_define_works_correctly_for_a_single_environment() {

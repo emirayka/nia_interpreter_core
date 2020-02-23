@@ -72,7 +72,6 @@ impl Object {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::SymbolArena;
 
     #[test]
     fn gets_and_sets_items() {

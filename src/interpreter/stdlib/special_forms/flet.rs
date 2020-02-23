@@ -36,7 +36,7 @@ fn set_function_via_cons(
     };
 
     let cadr = interpreter.get_cadr(cons_id)
-        .map_err(|err| interpreter.make_invalid_argument_error(
+        .map_err(|_| interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
         ))?;
 
@@ -62,7 +62,7 @@ fn set_function_via_cons(
         interpreter.make_generic_execution_error_caused(
             "",
             err
-        ))?;;
+        ))?;
 
     let argument_names = super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
         interpreter,

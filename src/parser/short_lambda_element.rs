@@ -1,20 +1,13 @@
 use nom::{
-    character::complete::{
-        space0
-    },
     bytes::complete::tag,
     combinator::{
         map_res
     },
-    multi::{
-        many0
-    },
+    sequence::preceded
 };
 
-use crate::parser::{Element, parse_element};
-use nom::sequence::{preceded, terminated};
+use crate::parser::{Element};
 use crate::parser::s_expression_element::{SExpressionElement, parse_s_expression_element};
-use nom::branch::alt;
 
 #[derive(Debug)]
 pub struct ShortLambdaElement {

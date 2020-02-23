@@ -5,7 +5,6 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::stdlib::special_forms::_lib::convert_vector_of_values_to_vector_of_symbol_names;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
@@ -130,7 +129,7 @@ pub fn function(
     let code = values;
 
     let argument_names = parse_argument_names(interpreter, arguments)
-        .map_err(|err| interpreter.make_invalid_argument_error(
+        .map_err(|_| interpreter.make_invalid_argument_error(
             "The second element of the first argument must be a list of symbols that represents argument names"
         ))?;
 

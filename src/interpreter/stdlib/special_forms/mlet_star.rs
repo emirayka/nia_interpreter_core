@@ -19,7 +19,7 @@ pub fn mlet_star(
     let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ).map_err(|err| interpreter.make_invalid_argument_error(
+    ).map_err(|_| interpreter.make_invalid_argument_error(
         "Special form `mlet*' must have a first argument of macro definitions"
     ))?;
 

@@ -66,7 +66,7 @@ fn set_macro_via_cons(
     let argument_names = super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
         interpreter,
         arguments
-    ).map_err(|err| interpreter.make_invalid_argument_error(
+    ).map_err(|_| interpreter.make_invalid_argument_error(
         "The second item of a macro definition must be a list of symbols."
     ))?;
 

@@ -10,7 +10,7 @@ fn execute_part(
     part_cons_id: ConsId
 ) -> Result<Option<Value>, Error> {
     let part_action = interpreter.get_cadr(part_cons_id)
-        .map_err(|err| interpreter.make_invalid_argument_error("Invalid action part."))?;
+        .map_err(|_| interpreter.make_invalid_argument_error("Invalid action part."))?;
 
     let part_predicate = interpreter.get_car(part_cons_id)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
