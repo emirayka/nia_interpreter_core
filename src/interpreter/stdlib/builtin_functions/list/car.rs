@@ -11,25 +11,23 @@ pub fn car(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `car' must take exactly one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let cons = match values.remove(0) {
-        Value::Cons(cons_id) => interpreter.get_car(cons_id),
+    let car = match values.remove(0) {
+        Value::Cons(cons_id) => interpreter.get_car(cons_id)
+            .map_err(|err| interpreter.make_generic_execution_error_caused(
+                "",
+                err
+            ))?,
         _ => return interpreter.make_invalid_argument_error(
             ""
-        )
+        ).into_result()
     };
 
-    match cons {
-        Ok(value) => Ok(value),
-        Err(error) => interpreter.make_generic_execution_error_caused(
-            "",
-            error
-        )
-    }
+    Ok(car)
 }
 
 #[cfg(test)]

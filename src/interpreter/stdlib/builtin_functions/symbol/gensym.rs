@@ -11,7 +11,7 @@ pub fn gensym(
     if values.len() > 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `gensym' must take exactly one string argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -23,18 +23,18 @@ pub fn gensym(
             Value::String(string_id) => string_id,
             _ => return interpreter.make_invalid_argument_error(
                 "Built-in function `gensym' must take exactly one string argument."
-            )
+            ).into_result()
         };
 
         let string = match interpreter.get_string(string_id) {
-            Ok(string) => string.get_string(),
+            Ok(string) => String::from(string.get_string()),
             Err(error) => return interpreter.make_generic_execution_error_caused(
                 "",
                 error
-            )
+            ).into_result()
         };
 
-        String::from(string)
+        string
     };
 
     Ok(Value::Symbol(interpreter.gensym(&name)))

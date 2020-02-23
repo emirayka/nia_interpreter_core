@@ -10,7 +10,6 @@ extern crate nom;
 // todo: Should "(()t t)" be able to be parsed? It works in emacs lisp. From the other hand, "()t" does not.
 // todo: check test on arithmetic operations
 // todo: implement reference counting
-// todo: add clojure-like "#(+ %1 %2)" -> "(function (lambda (%1 %2) (+ %1 %2)))" function definition
 // todo: add variadic args
 // todo: add key word args
 // todo: add checking of the same argument name

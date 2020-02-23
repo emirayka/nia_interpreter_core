@@ -50,6 +50,10 @@ impl Error {
             None => self
         }
     }
+
+    pub fn into_result<T>(self) -> Result<T, Error> {
+        Err(self)
+    }
 }
 
 impl Error {

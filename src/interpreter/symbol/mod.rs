@@ -102,8 +102,8 @@ impl SymbolArena {
         };
     }
 
-    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Option<&Symbol> {
-        self.symbols.get(&symbol_id)
+    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Result<&Symbol, ()> {
+        self.symbols.get(&symbol_id).ok_or(())
     }
 
     pub fn intern(&mut self, symbol_name: &str) -> SymbolId {

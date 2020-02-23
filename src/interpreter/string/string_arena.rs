@@ -43,8 +43,8 @@ impl StringArena {
         string_id
     }
 
-    pub fn get_string(&self, string_id: StringId) -> Option<&VString> {
-        self.arena.get(&string_id)
+    pub fn get_string(&self, string_id: StringId) -> Result<&VString, ()> {
+        self.arena.get(&string_id).ok_or(())
     }
 
 
@@ -56,3 +56,5 @@ impl StringArena {
         }
     }
 }
+
+// todo: arena tests

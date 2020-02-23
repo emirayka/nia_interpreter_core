@@ -11,7 +11,7 @@ pub fn intern(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `intern' must take exactly one string argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -20,7 +20,7 @@ pub fn intern(
         Value::String(string_id) => string_id,
         _ => return interpreter.make_invalid_argument_error(
             "Built-in function `intern' must take exactly one string argument."
-        )
+        ).into_result()
     };
 
     let symbol_name = match interpreter.get_string(string_id) {
@@ -28,7 +28,7 @@ pub fn intern(
         Err(error) => return interpreter.make_generic_execution_error_caused(
             "",
             error
-        )
+        ).into_result()
     };
 
     Ok(interpreter.intern_symbol_value(&symbol_name))

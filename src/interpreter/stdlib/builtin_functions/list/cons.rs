@@ -11,7 +11,7 @@ pub fn cons(
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `cons' must take exactly two arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;

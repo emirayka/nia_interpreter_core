@@ -12,7 +12,7 @@ pub fn object_make(
     if values.len() % 2 != 0 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:make' must take even count of arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -23,15 +23,13 @@ pub fn object_make(
         let value = values.remove(0);
 
         if let Value::Keyword(keyword_id) = key {
-            let symbol = interpreter.get_keyword(keyword_id);
-
-            let keyword_name = match symbol {
-                Ok(keyword) => keyword.get_name().clone(), // todo: fix, looks ugly
-                Err(error) => return interpreter.make_generic_execution_error_caused(
+            let keyword = interpreter.get_keyword(keyword_id)
+                .map_err(|err| interpreter.make_generic_execution_error_caused(
                     "",
-                    error
-                )
-            };
+                    err
+                ))?;
+
+            let keyword_name = keyword.get_name().clone(); // todo: fix, looks ugly
 
             let symbol_id = interpreter.intern(&keyword_name);
 
@@ -43,7 +41,7 @@ pub fn object_make(
         } else {
             return interpreter.make_invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword."
-            );
+            ).into_result();
         }
     }
 
@@ -69,7 +67,7 @@ mod tests {
             for (key, value) in expected {
                 let symbol_id = interpreter.intern(key);
 
-                assert_eq!(value, interpreter.get_object_item(object_id, symbol_id).unwrap());
+                assert_eq!(value, interpreter.get_object_item(object_id, symbol_id).unwrap().unwrap());
             }
         }
     }

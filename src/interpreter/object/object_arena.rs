@@ -1,60 +1,69 @@
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::object::object::{Object, ObjectId};
+use nom::lib::std::collections::HashMap;
 
 pub struct ObjectArena {
-    objects: Vec<Object>,
+    arena: HashMap<ObjectId, Object>,
+    next_id: usize,
 }
 
 impl ObjectArena {
     pub fn new() -> ObjectArena {
         ObjectArena {
-            objects: Vec::new()
+            arena: HashMap::new(),
+            next_id: 0
         }
     }
 }
 
 impl ObjectArena {
     pub fn make(&mut self) -> ObjectId {
-        let object_id = ObjectId::new(self.objects.len());
+        let id = self.next_id;
+        let object_id = ObjectId::new(id);
 
-        self.objects.push(Object::new());
+        self.arena.insert(object_id, Object::new());
+        self.next_id += 1;
 
         object_id
     }
 
     pub fn make_child(&mut self, prototype_id: ObjectId) -> ObjectId {
-        let object_id = ObjectId::new(self.objects.len());
+        let id = self.next_id;
+        let object_id = ObjectId::new(id);
 
-        self.objects.push(Object::new_child(prototype_id));
+        self.arena.insert(object_id, Object::new_child(prototype_id));
+        self.next_id += 1;
 
         object_id
     }
 
-    pub fn get_object(&self, object_id: ObjectId) -> &Object {
-        self.objects.get(object_id.get_index()).unwrap()
+    pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, ()> {
+        self.arena.get(&object_id).ok_or(())
     }
 
-    pub fn get_object_mut(&mut self, object_id: ObjectId) -> &mut Object {
-        self.objects.get_mut(object_id.get_index()).unwrap()
+    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, ()> {
+        self.arena.get_mut(&object_id).ok_or(())
     }
 
-    pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Option<Value> {
-        let object = self.get_object(object_id);
+    pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, ()> {
+        let object = self.get_object(object_id)?;
 
         match object.get_item(key) {
-            Some(value) => Some(value),
+            Some(value) => Ok(Some(value)),
             None => match object.get_prototype() {
                 Some(prototype_id) => self.get_item(prototype_id, key),
-                None => None
+                None => Ok(None)
             }
         }
     }
 
-    pub fn set_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) {
-        let object = self.get_object_mut(object_id);
+    pub fn set_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) -> Result<(), ()> {
+        let object = self.get_object_mut(object_id)?;
 
         object.set_item(key, value);
+
+        Ok(())
     }
 }
 
@@ -77,7 +86,7 @@ mod tests {
 
             arena.set_item(object_id, key, Value::Integer(1));
 
-            assert_eq!(Value::Integer(1), arena.get_item(object_id, key).unwrap());
+            assert_eq!(Value::Integer(1), arena.get_item(object_id, key).unwrap().unwrap());
         }
 
         #[test]
@@ -91,7 +100,7 @@ mod tests {
 
             arena.set_item(prototype_id, key, Value::Integer(1));
 
-            assert_eq!(Value::Integer(1), arena.get_item(child_id, key).unwrap());
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.get_item(child_id, key));
         }
 
         #[test]
@@ -106,8 +115,8 @@ mod tests {
             arena.set_item(prototype_id, key, Value::Integer(1));
             arena.set_item(child_id, key, Value::Integer(2));
 
-            assert_eq!(Value::Integer(1), arena.get_item(prototype_id, key).unwrap());
-            assert_eq!(Value::Integer(2), arena.get_item(child_id, key).unwrap());
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.get_item(prototype_id, key));
+            assert_eq!(Ok(Some(Value::Integer(2))), arena.get_item(child_id, key));
         }
     }
 

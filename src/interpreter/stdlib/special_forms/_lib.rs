@@ -23,9 +23,12 @@ pub fn execute_forms(
 
 pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Result<Vec<Value>, Error> {
     let definitions = match value {
-        Value::Cons(cons_id) => match interpreter.cons_to_vec(cons_id) {
-            Ok(vec) => vec,
-            _ => return interpreter.make_empty_error()
+        Value::Cons(cons_id) => {
+            interpreter.cons_to_vec(cons_id)
+                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    "",
+                    err
+                ))?
         },
         Value::Symbol(symbol_id) => {
             let symbol = match interpreter.get_symbol(symbol_id) {
@@ -33,37 +36,36 @@ pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Resu
                 Err(error) => return interpreter.make_generic_execution_error_caused(
                     "",
                     error
-                )
+                ).into_result()
             };
 
             if symbol.is_nil() {
                 Vec::new()
             } else {
                 return interpreter.make_invalid_argument_error("")
+                    .into_result();
             }
         }
-        _ => return interpreter.make_invalid_argument_error("")
+        _ => return interpreter.make_invalid_argument_error("").into_result()
     };
 
     for definition in &definitions {
         match definition {
             Value::Cons(_) => {},
             Value::Symbol(symbol_id) => {
-                let symbol = interpreter.get_symbol(*symbol_id);
-
-                let symbol = match symbol {
+                let symbol = match interpreter.get_symbol(*symbol_id) {
                     Ok(symbol) => symbol,
                     Err(error) => return interpreter.make_generic_execution_error_caused(
                         "",
                         error
-                    )
+                    ).into_result()
                 };
 
                 if symbol.is_nil() {
-                    return interpreter.make_invalid_argument_error("")
+                    return interpreter.make_invalid_argument_error("").into_result()
                 }
             }
-            _ => return interpreter.make_invalid_argument_error("")
+            _ => return interpreter.make_invalid_argument_error("").into_result()
         }
     };
 

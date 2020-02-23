@@ -11,24 +11,25 @@ pub fn mlet_star(
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `mlet*' must have at least one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let definitions = match super::_lib::read_let_definitions(
+    let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ) {
-        Ok(values) => values,
-        Err(_) => return interpreter.make_invalid_argument_error(
-            "Special form `mlet*' must have a first argument of macro definitions"
-        )
-    };
+    ).map_err(|err| interpreter.make_invalid_argument_error(
+        "Special form `mlet*' must have a first argument of macro definitions"
+    ))?;
+
     let forms = values;
     let macro_definition_environment = interpreter.make_environment(
         special_form_calling_environment
-    );
+    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
 
     super::mlet::set_definitions(
         interpreter,

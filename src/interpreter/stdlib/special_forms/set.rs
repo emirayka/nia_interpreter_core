@@ -11,7 +11,7 @@ pub fn set(
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `set!' must be used with exactly two arguments"
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -20,20 +20,24 @@ pub fn set(
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of special form `set!' must be a symbol."
-        )
+        ).into_result()
     };
     let value = values.remove(0);
 
-    let value = match interpreter.execute_value(environment, value) {
-        Ok(value) => value,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
+    let value = interpreter.execute_value(environment, value)
+        .map_err(|err| return interpreter.make_generic_execution_error_caused(
             "Cannot execute value: \"{}\"",
-            error
-        )
-    };
+            err
+        ))?;
 
-    let target_env = interpreter.lookup_environment_by_variable(environment, variable_symbol_id);
+    let target_env = interpreter.lookup_environment_by_variable(
+        environment,
+        variable_symbol_id
+    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
 
     match target_env {
         Some(target_env) => {
@@ -48,7 +52,7 @@ pub fn set(
                     interpreter.make_generic_execution_error_caused(
                         message,
                         error
-                    )
+                    ).into_result()
                 }
             }
         },
@@ -60,7 +64,7 @@ pub fn set(
 
             interpreter.make_generic_execution_error(
                 message
-            )
+            ).into_result()
         }
     }
 }

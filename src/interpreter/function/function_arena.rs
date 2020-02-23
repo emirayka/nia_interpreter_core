@@ -36,7 +36,7 @@ impl FunctionArena {
         function_id
     }
 
-    pub fn get_function(&mut self, function_id: FunctionId) -> Option<&Function> {
-        self.arena.get(&function_id)
+    pub fn get_function(&mut self, function_id: FunctionId) -> Result<&Function, ()> {
+        self.arena.get(&function_id).ok_or(())
     }
 }

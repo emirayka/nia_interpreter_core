@@ -13,7 +13,7 @@ pub fn quote(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `quote' must be called with exactly one argument."
-        );
+        ).into_result();
     }
 
     let first_argument = values.remove(0);

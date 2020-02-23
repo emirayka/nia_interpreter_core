@@ -11,7 +11,7 @@ pub fn div(
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `/' must take exactly two arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -20,32 +20,32 @@ pub fn div(
         (Value::Integer(int1), Value::Integer(int2)) => match int2 {
             0 => return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", int1, int2)
-            ),
+            ).into_result(),
             _ => Value::Integer(int1 / int2),
         },
         (Value::Integer(int1), Value::Float(float2)) => if float2 == 0.0 {
             return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", int1, float2)
-            );
+            ).into_result();
         } else {
             Value::Float((int1 as f64) / float2)
         },
         (Value::Float(float1), Value::Integer(int2)) => match int2 {
             0 => return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", float1, int2)
-            ),
+            ).into_result(),
             _ => Value::Float(float1 / (int2 as f64)),
         },
         (Value::Float(float1), Value::Float(float2)) => if float2 == 0.0 {
             return interpreter.make_zero_division_error(
                 &format!("Can't divide {} on {}.", float1, float2)
-            );
+            ).into_result();
         } else {
             Value::Float(float1 / float2)
         },
         _ => return interpreter.make_invalid_argument_error(
             "Built-in function `/' must take only integer or float values."
-        )
+        ).into_result()
     };
 
     Ok(result)

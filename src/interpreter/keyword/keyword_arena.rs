@@ -44,8 +44,8 @@ impl KeywordArena {
         keyword_id
     }
 
-    pub fn get_keyword(&self, keyword_id: KeywordId) -> Option<&Keyword> {
-        self.arena.get(&keyword_id)
+    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, ()> {
+        self.arena.get(&keyword_id).ok_or(())
     }
 
     pub fn intern_keyword(&mut self, keyword_name: String) -> KeywordId {
@@ -56,3 +56,5 @@ impl KeywordArena {
         }
     }
 }
+
+// todo: arena tests

@@ -613,7 +613,7 @@ mod tests {
                                 let result = interpreter.get_object_item(
                                     object_id,
                                     symbol
-                                ).unwrap();
+                                ).unwrap().unwrap();
                                 println!("{:?} {:?}", expected, result);
 
                                 assertion::assert_deep_equal(

@@ -11,24 +11,25 @@ pub fn flet_star(
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `flet*' must have at least one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let definitions = match super::_lib::read_let_definitions(
+    let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ) {
-        Ok(values) => values,
-        Err(_) => return interpreter.make_invalid_argument_error(
-            "Special form `flet*' must have a first argument of function definitions"
-        )
-    };
+    ).map_err(|_| interpreter.make_invalid_argument_error(
+        "Special form `flet*' must have a first argument of function definitions"
+    ))?;
+
     let forms = values;
     let function_definition_environment = interpreter.make_environment(
         special_form_calling_environment
-    );
+    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
 
     super::flet::set_definitions(
         interpreter,

@@ -11,7 +11,7 @@ pub fn mul(
     if values.len() < 2 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `*' must take at least two arguments"
-        );
+        ).into_result();
     }
 
     let mut result = Value::Integer(1);
@@ -22,14 +22,14 @@ pub fn mul(
                 Some(int_result) => Value::Integer(int_result),
                 None => return interpreter.make_overflow_error(
                     &format!("Attempt to multiply values {} {} leads to overflow", int1, int2)
-                )
+                ).into_result()
             },
             (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) * float2),
             (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 * (int2 as f64)),
             (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 * float2),
             _ => return interpreter.make_invalid_argument_error(
                 "Built-in function `*' must take only integers or float."
-            )
+            ).into_result()
         };
     }
 

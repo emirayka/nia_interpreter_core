@@ -12,13 +12,11 @@ fn set_function_via_cons(
     function_definition_environment: EnvironmentId,
     cons_id: ConsId
 ) -> Result<(), Error> {
-    let car = match interpreter.get_car(cons_id){
-        Ok(value) => value,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
+    let car = interpreter.get_car(cons_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
             "",
-            error
-        )
-    };
+            err
+        ))?;
 
     let name = match car {
         Value::Symbol(symbol_id)  => {
@@ -27,25 +25,22 @@ fn set_function_via_cons(
             if symbol.is_nil() {
                 return interpreter.make_invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `flet'."
-                )
+                ).into_result()
             } else {
                 symbol_id
             }
         },
         _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `flet' must be a symbol that represents function name."
-        )
+        ).into_result()
     };
 
-    let cadr = interpreter.get_cadr(cons_id);
-    let arguments = match cadr {
-        Ok(value) => value,
-        Err(_) => return interpreter.make_invalid_argument_error(
+    let cadr = interpreter.get_cadr(cons_id)
+        .map_err(|err| interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
-        )
-    };
+        ))?;
 
-    let arguments = match arguments {
+    let arguments = match cadr {
         Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
         Value::Symbol(symbol_id) => {
             let symbol = interpreter.get_symbol(symbol_id)?;
@@ -55,36 +50,36 @@ fn set_function_via_cons(
             } else {
                 return interpreter.make_invalid_argument_error(
                     "The function definitions of the special form `flet' must have at least two items."
-                )
+                ).into_result()
             }
         },
         _ => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
-        )
+        ).into_result()
     };
 
-    let arguments = match arguments {
-        Ok(arguments) => arguments,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
+    let arguments = arguments.map_err(|err|
+        interpreter.make_generic_execution_error_caused(
             "",
-            error
-        )
-    };
+            err
+        ))?;;
 
-    let argument_names = match super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
+    let argument_names = super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
         interpreter,
         arguments
-    ) {
-        Ok(names) => names,
-        Err(_) => return interpreter.make_invalid_argument_error(
-            "The second item of a function definition must be a list of symbols."
-        )
-    };
+    ).map_err(|_| interpreter.make_invalid_argument_error(
+        "The second item of a function definition must be a list of symbols."
+    ))?;
 
-    let cddr = interpreter.get_cddr(cons_id);
+    let cddr = interpreter.get_cddr(cons_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
+
     let code = match cddr {
-        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
-        Ok(Value::Symbol(symbol_id)) => {
+        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
+        Value::Symbol(symbol_id) => {
             let symbol = interpreter.get_symbol(symbol_id)?;
 
             if symbol.is_nil() {
@@ -92,21 +87,18 @@ fn set_function_via_cons(
             } else {
                 return interpreter.make_invalid_argument_error(
                     "The function definitions of the special form `flet' must have at least two items.",
-                )
+                ).into_result()
             }
         },
         _ => return interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items.",
-        )
+        ).into_result()
     };
 
-    let code = match code {
-        Ok(code) => code,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "",
-            error
-        )
-    };
+    let code = code.map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
 
     let function = Function::Interpreted(InterpretedFunction::new(
         function_parent_environment,
@@ -137,9 +129,9 @@ fn set_definition(
             function_definition_environment,
             cons_id
         ),
-        _ => return interpreter.make_invalid_argument_error(
+        _ => interpreter.make_invalid_argument_error(
             "The first argument of special form `flet' must be a list of lists that represent functions."
-        )
+        ).into_result()
     }
 }
 
@@ -169,24 +161,25 @@ pub fn flet(
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
             "Special form flet must have at least one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let definitions = match super::_lib::read_let_definitions(
+    let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ) {
-        Ok(values) => values,
-        Err(_) => return interpreter.make_invalid_argument_error(
-            "Special form `flet' must have a first argument of function definitions"
-        )
-    };
+    ).map_err(|_| interpreter.make_invalid_argument_error(
+        "Special form `flet' must have a first argument of function definitions"
+    ))?;
+
     let forms = values;
     let function_definition_environment = interpreter.make_environment(
         special_form_calling_environment
-    );
+    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
 
     set_definitions(
         interpreter,

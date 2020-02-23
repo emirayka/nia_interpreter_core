@@ -11,24 +11,25 @@ pub fn let_star(
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `let*' must have at least one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let definitions = match super::_lib::read_let_definitions(
+    let definitions = super::_lib::read_let_definitions(
         interpreter,
         values.remove(0)
-    ) {
-        Ok(definitions) => definitions,
-        Err(_) => return interpreter.make_invalid_argument_error(
-            "The first argument of special form `let*' must be a list of definitions: symbol, or 2-element lists."
-        )
-    };
+    ).map_err(|_| interpreter.make_invalid_argument_error(
+        "The first argument of special form `let*' must be a list of definitions: symbol, or 2-element lists."
+    ))?;
 
     let forms = values;
 
-    let execution_environment = interpreter.make_environment(environment);
+    let execution_environment = interpreter.make_environment(environment)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
 
     super::_let::set_definitions(
         interpreter,

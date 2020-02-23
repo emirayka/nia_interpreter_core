@@ -13,7 +13,7 @@ pub fn define_variable(
     if values.len() < 1 || values.len() > 2 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `define-variable' must be used with one or two forms."
-        );
+        ).into_result();
     }
 
     let first_argument = values.remove(0);
@@ -27,41 +27,42 @@ pub fn define_variable(
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "First form of `define-variable' must be a symbol."
-        )
+        ).into_result()
     };
 
     let evaluated_value = match second_argument {
-        Some(value) => interpreter.evaluate_value(environment, value),
-        None => Ok(interpreter.intern_nil_symbol_value())
+        Some(value) => {
+            interpreter.evaluate_value(environment, value)
+                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    "Cannot evaluate the second form of define-variable.",
+                    err
+                ))?
+        },
+        None => interpreter.intern_nil_symbol_value()
     };
 
-    let result = match evaluated_value {
-        Ok(value) => value,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "Cannot evaluate the second form of define-variable.",
-            error
-        )
-    };
-
-    match interpreter.define_variable(
+    interpreter.define_variable(
         interpreter.get_root_environment(),
         variable_symbol_id,
-        result
-    ) {
-        Ok(()) => Ok(Value::Boolean(true)),
-        Err(error) => {
-            let variable_name = &format!(
-                "Cannot define variable: {}.",
-                interpreter.get_symbol_name(variable_symbol_id)?
-            );
+        evaluated_value
+    ).map_err(|err| {
+        let symbol_name = match interpreter.get_symbol_name(variable_symbol_id) {
+            Ok(symbol_name) => symbol_name,
+            _ => return interpreter.make_generic_execution_error("")
+        };
 
-            interpreter.make_generic_execution_error_caused(
-                variable_name,
-                error
-            )
-        }
-    }
+        let variable_name = &format!(
+            "Cannot define variable: {}.",
+            symbol_name
+        );
 
+        interpreter.make_generic_execution_error_caused(
+            variable_name,
+            err
+        )
+    })?;
+
+    Ok(Value::Boolean(true))
 }
 
 #[cfg(test)]
@@ -79,7 +80,7 @@ mod tests {
         assert!(interpreter.has_variable(
             interpreter.get_root_environment(),
             name
-        ));
+        ).unwrap());
         assert_eq!(
             Value::Integer(2),
             interpreter.lookup_variable(
@@ -99,7 +100,7 @@ mod tests {
         assert!(interpreter.has_variable(
             interpreter.get_root_environment(),
             name
-        ));
+        ).unwrap());
         assert_eq!(
             interpreter.intern_nil_symbol_value(),
             interpreter.lookup_variable(

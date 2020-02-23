@@ -93,7 +93,7 @@ mod tests {
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
             let name = interpreter.intern("test");
-            assert!(interpreter.has_function(interpreter.get_root_environment(), name));
+            assert!(interpreter.has_function(interpreter.get_root_environment(), name).unwrap());
         }
 
         #[test]

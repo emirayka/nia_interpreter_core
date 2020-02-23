@@ -13,7 +13,7 @@ pub fn define_function(
     if values.len() < 1 || values.len() > 2 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `define-function' must be used with one or two forms."
-        );
+        ).into_result();
     }
 
     let first_argument = values.remove(0);
@@ -27,41 +27,38 @@ pub fn define_function(
         Value::Symbol(symbol) => symbol,
         _ => return interpreter.make_invalid_argument_error(
             "First form of `define-function' must be a symbol."
-        )
+        ).into_result()
     };
 
     let evaluated_value = match second_argument {
         Some(value) => interpreter.evaluate_value(environment, value),
         None => Ok(interpreter.intern_nil_symbol_value())
-    };
+    }.map_err(|err| interpreter.make_generic_execution_error_caused(
+        "Cannot evaluate the second form of define-function.",
+        err
+    ))?;
 
-    let result = match evaluated_value {
-        Ok(value) => value,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "Cannot evaluate the second form of define-function.",
-            error
-        )
-    };
-
-    match interpreter.define_function(
+    interpreter.define_function(
         interpreter.get_root_environment(),
         function_symbol_id,
-        result
-    ) {
-        Ok(()) => Ok(Value::Boolean(true)),
-        Err(error) => {
-            let message = &format!(
-                "Cannot define function: {}.",
-                interpreter.get_symbol_name(function_symbol_id)?
-            );
+        evaluated_value
+    ).map_err(|err| {
+        let symbol_name = match interpreter.get_symbol_name(function_symbol_id) {
+            Ok(symbol_name) => symbol_name,
+            _ => return interpreter.make_generic_execution_error("")
+        };
 
-            interpreter.make_generic_execution_error_caused(
-                message,
-                error
-            )
-        }
-    }
+        let message = &format!(
+            "Cannot define function: {}.",
+            symbol_name
+        );
+        interpreter.make_generic_execution_error_caused(
+            message,
+            err
+        )
+    })?;
 
+    Ok(Value::Boolean(true))
 }
 
 #[cfg(test)]
@@ -78,7 +75,8 @@ mod tests {
 
         assert!(interpreter.has_function(
             interpreter.get_root_environment(),
-            name));
+            name
+        ).unwrap());
         assert_eq!(
             Value::Integer(2),
             interpreter.lookup_function(
@@ -96,7 +94,8 @@ mod tests {
 
         assert!(interpreter.has_function(
             interpreter.get_root_environment(),
-            name));
+            name)
+            .unwrap());
         assert_eq!(
             interpreter.intern_nil_symbol_value(),
             interpreter.lookup_function(

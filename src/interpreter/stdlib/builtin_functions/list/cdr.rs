@@ -11,25 +11,23 @@ pub fn cdr(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `cdr' must take exactly two arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;
 
-    let cons = match values.remove(0) {
-        Value::Cons(cons_id) => interpreter.get_cdr(cons_id),
+    let cdr = match values.remove(0) {
+        Value::Cons(cons_id) => interpreter.get_cdr(cons_id)
+            .map_err(|err| interpreter.make_generic_execution_error_caused(
+                "",
+                err
+            ))?,
         _ => return interpreter.make_invalid_argument_error(
             ""
-        )
+        ).into_result()
     };
 
-    match cons {
-        Ok(value) => Ok(value),
-        Err(error) => interpreter.make_generic_execution_error_caused(
-            "",
-            error
-        )
-    }
+    Ok(cdr)
 }
 
 #[cfg(test)]

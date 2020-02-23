@@ -11,7 +11,7 @@ pub fn lookup(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `lookup' must take exactly one string argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -30,7 +30,7 @@ pub fn lookup(
         }
         _ => return interpreter.make_invalid_argument_error(
             "Built-in function `lookup' must take exactly one string argument."
-        )
+        ).into_result()
     }
 }
 

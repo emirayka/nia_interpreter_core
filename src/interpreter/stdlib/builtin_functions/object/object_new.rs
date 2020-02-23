@@ -11,7 +11,7 @@ pub fn object_new(
     if values.len() > 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:new' must take zero or one arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -22,14 +22,18 @@ pub fn object_new(
             Value::Object(proto_id) => Some(proto_id),
             _ => return interpreter.make_invalid_argument_error(
                 "The first argument of `object:new' must be an object."
-            )
+            ).into_result()
         }
     } else {
         None
     };
 
     match proto_id {
-        Some(proto_id) => interpreter.set_object_proto(object_id, proto_id),
+        Some(proto_id) => interpreter.set_object_proto(object_id, proto_id)
+            .map_err(|err| interpreter.make_generic_execution_error_caused(
+                "",
+                err
+            ))?,
         None => {}
     }
 

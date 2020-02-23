@@ -9,40 +9,34 @@ fn execute_part(
     environment: EnvironmentId,
     part_cons_id: ConsId
 ) -> Result<Option<Value>, Error> {
-    let part_action = match interpreter.get_cadr(part_cons_id) {
-        Ok(value) => value, // todo: check error
-        _ => return interpreter.make_invalid_argument_error("Invalid action part.")
-    };
+    let part_action = interpreter.get_cadr(part_cons_id)
+        .map_err(|err| interpreter.make_invalid_argument_error("Invalid action part."))?;
 
-    let part_predicate = match interpreter.get_car(part_cons_id) {
-        Ok(value) => value,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
+    let part_predicate = interpreter.get_car(part_cons_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
             "",
-            error
-        )
-    };
+            err
+        ))?;
 
-    let predicate_result = interpreter.execute_value(environment, part_predicate);
+    let predicate_result = interpreter.execute_value(
+        environment,
+        part_predicate
+    )?;
 
     match predicate_result {
-        Ok(value) => match value {
-            Value::Boolean(true) => {
-                let action_result = interpreter.execute_value(environment, part_action);
+        Value::Boolean(true) => {
+            let action_result = interpreter.execute_value(environment, part_action)
+                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    "Cannot evaluate the action part.",
+                    err
+                ))?;
 
-                match action_result {
-                    Ok(result) => Ok(Some(result)),
-                    Err(error) => interpreter.make_generic_execution_error_caused(
-                        "Cannot evaluate the action part.",
-                        error
-                    )
-                }
-            },
-            Value::Boolean(false) => Ok(None),
-            _ => interpreter.make_invalid_argument_error(
-                "Predicate must evaluate to boolean value."
-            )
+            Ok(Some(action_result))
         },
-        Err(error) => Err(error)
+        Value::Boolean(false) => Ok(None),
+        _ => interpreter.make_invalid_argument_error(
+            "Predicate must evaluate to boolean value."
+        ).into_result()
     }
 }
 
@@ -60,7 +54,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
                     result = interpreter.make_generic_execution_error_caused(
                         "Cannot execute special form `cond' clause.",
                         error
-                    );
+                    ).into_result();
                     break;
                 },
                 _ => ()
@@ -68,7 +62,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
         } else {
             result = interpreter.make_invalid_argument_error(
                 "Invalid usage of special form `cond'."
-            );
+            ).into_result();
             break;
         }
     }

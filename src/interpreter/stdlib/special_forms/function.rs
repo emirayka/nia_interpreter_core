@@ -17,19 +17,17 @@ fn parse_argument_names(interpreter: &mut Interpreter, values: Vec<Value>) -> Re
     for value in values {
         match value {
             Value::Symbol(symbol_id) => {
-                let symbol = interpreter.get_symbol(symbol_id);
-
-                let symbol = match symbol {
+                let symbol = match interpreter.get_symbol(symbol_id) {
                     Ok(symbol) => symbol,
                     Err(error) => return interpreter.make_generic_execution_error_caused(
                         "",
                         error
-                    )
+                    ).into_result()
                 };
 
                 result.push(symbol.get_name().clone())
             }
-            _ => return interpreter.make_generic_execution_error("")
+            _ => return interpreter.make_generic_execution_error("").into_result()
         }
     }
 
@@ -80,42 +78,35 @@ pub fn function(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `function' must be called with exactly one argument."
-        );
+        ).into_result();
     }
 
-    let values = match values.remove(0) {
+    let mut values = match values.remove(0) {
         Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
         _ => return interpreter.make_invalid_argument_error(
             ERROR_MESSAGE_INCORRECT_ARGUMENT
-        )
-    };
-
-    let mut values = match values {
-        Ok(values) => values,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "Cannot execute function special form",
-            error
-        )
-    };
+        ).into_result()
+    }.map_err(|err| interpreter.make_generic_execution_error_caused(
+        "Cannot execute function special form",
+        err
+    ))?;
 
     if values.len() < 3 {
         return interpreter.make_invalid_argument_error(
             ERROR_MESSAGE_INCORRECT_ARGUMENT
-        );
+        ).into_result();
     }
 
     let lambda_or_macro_symbol = values.remove(0);
     let arguments = match values.remove(0) {
         Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id);
-
-            let symbol = match symbol {
+            let symbol = match interpreter.get_symbol(symbol_id) {
                 Ok(symbol) => symbol,
                 Err(error) => return interpreter.make_generic_execution_error_caused(
                     "",
                     error
-                )
+                ).into_result()
             };
 
             if symbol.is_nil() {
@@ -123,29 +114,25 @@ pub fn function(
             } else {
                 return interpreter.make_invalid_argument_error(
                     "The second element of first argument must be a list of symbols that represents argument names"
-                )
+                ).into_result()
             }
         },
         _ => return interpreter.make_invalid_argument_error(
             "The second element of first argument must be a list of symbols that represents argument names"
-        )
+        ).into_result()
     };
 
-    let arguments = match arguments {
-        Ok(arguments) => arguments,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "",
-            error
-        )
-    };
+    let arguments = arguments.map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
+
     let code = values;
 
-    let argument_names = match parse_argument_names(interpreter, arguments) {
-        Ok(argument_names) => argument_names,
-        _ => return interpreter.make_invalid_argument_error(
+    let argument_names = parse_argument_names(interpreter, arguments)
+        .map_err(|err| interpreter.make_invalid_argument_error(
             "The second element of the first argument must be a list of symbols that represents argument names"
-        )
-    };
+        ))?;
 
     match lambda_or_macro_symbol {
         Value::Symbol(symbol_id) => {
@@ -168,12 +155,12 @@ pub fn function(
             } else {
                 interpreter.make_invalid_argument_error(
                     "The first element of the first argument must be a symbol `lambda' or `macro'"
-                )
+                ).into_result()
             }
         },
         _ => interpreter.make_invalid_argument_error(
             "The first element of the first argument must be a symbol `lambda' or `macro'"
-        )
+        ).into_result()
     }
 }
 

@@ -49,45 +49,51 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn get_cons(&self, cons_id: ConsId) -> Option<&Cons> {
-        self.arena.get(&cons_id)
+    pub fn get_cons(&self, cons_id: ConsId) -> Result<&Cons, ()> {
+        match self.arena.get(&cons_id) {
+            Some(value) => Ok(value),
+            None => Err(())
+        }
     }
 
-    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Option<&mut Cons> {
-        self.arena.get_mut(&cons_id)
+    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Result<&mut Cons, ()> {
+        match self.arena.get_mut(&cons_id) {
+            Some(value) => Ok(value),
+            None => Err(())
+        }
     }
 
     pub fn get_car(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
-            Some(cons) => Ok(cons.get_car()),
-            None => Err(())
+            Ok(cons) => Ok(cons.get_car()),
+            _ => Err(())
         }
     }
 
     pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, ()> {
         match self.get_cons(cons_id) {
-            Some(cons) => Ok(cons.get_cdr()),
-            None => Err(())
+            Ok(cons) => Ok(cons.get_cdr()),
+            _ => Err(())
         }
     }
 
     pub fn get_car_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
         match self.get_cons_mut(cons_id) {
-            Some(cons) => Ok(cons.get_car_mut()),
-            None => Err(())
+            Ok(cons) => Ok(cons.get_car_mut()),
+            _ => Err(())
         }
     }
 
     pub fn get_cdr_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
         match self.get_cons_mut(cons_id) {
-            Some(cons) => Ok(cons.get_cdr_mut()),
-            None => Err(())
+            Ok(cons) => Ok(cons.get_cdr_mut()),
+            _ => Err(())
         }
     }
 
     pub fn set_car(&mut self, cons_id: ConsId, new_car: Value) -> Result<(), ()> {
         match self.get_cons_mut(cons_id) {
-            Some(cons) => {
+            Ok(cons) => {
                 cons.set_car(new_car);
 
                 Ok(())
@@ -98,7 +104,7 @@ impl ConsArena {
 
     pub fn set_cdr(&mut self, cons_id: ConsId, new_cdr: Value) -> Result<(), ()> {
         match self.get_cons_mut(cons_id) {
-            Some(cons) => {
+            Ok(cons) => {
                 cons.set_cdr(new_cdr);
 
                 Ok(())

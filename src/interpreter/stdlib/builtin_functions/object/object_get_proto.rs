@@ -11,7 +11,7 @@ pub fn object_get_proto(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:get-proto' must take only one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -19,10 +19,14 @@ pub fn object_get_proto(
         Value::Object(object_id) => object_id,
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:get-proto' must be an object."
-        )
+        ).into_result()
     };
 
-    let proto_id = interpreter.get_object_proto(object_id);
+    let proto_id = interpreter.get_object_proto(object_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
 
     match proto_id {
         Some(proto_id) => Ok(Value::Object(proto_id)),

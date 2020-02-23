@@ -11,7 +11,7 @@ pub fn floor(
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `floor' must take exactly one argument."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -21,7 +21,7 @@ pub fn floor(
         Value::Float(float) => Ok(Value::Integer(float.floor() as i64)),
         _ => return interpreter.make_invalid_argument_error(
             "Built-in function `floor' must take only integer or float values."
-        )
+        ).into_result()
     }
 }
 

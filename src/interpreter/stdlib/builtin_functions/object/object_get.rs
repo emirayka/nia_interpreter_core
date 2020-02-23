@@ -11,7 +11,7 @@ pub fn object_get(
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `object:get' must take even count of arguments."
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -19,18 +19,24 @@ pub fn object_get(
         Value::Object(object_id) => object_id,
         _ => return interpreter.make_invalid_argument_error(
             "The first argument of built-in function `object:get' must be an object."
-        )
+        ).into_result()
     };
 
     let symbol_id = match values.remove(0) {
         Value::Symbol(symbol_id) => symbol_id,
         _ => return interpreter.make_invalid_argument_error(
             "The second argument of built-in function `object:get' must be a symbol."
-        )
+        ).into_result()
     };
 
-    let value = match interpreter.get_object_item(object_id, symbol_id) {
-        Some(value) => value,
+    let value = interpreter.get_object_item(object_id, symbol_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
+
+    match value {
+        Some(value) => Ok(value),
         // todo: must return something other than execution error
         None => {
             let message = &format!(
@@ -40,11 +46,9 @@ pub fn object_get(
 
             return interpreter.make_generic_execution_error(
                 message
-            )
+            ).into_result()
         }
-    };
-
-    Ok(value)
+    }
 }
 
 #[cfg(test)]

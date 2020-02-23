@@ -11,7 +11,7 @@ pub fn throw(
     if values.len() > 2 {
         return interpreter.make_invalid_argument_count_error(
             "Special form `throw' must be called with no more than two arguments"
-        );
+        ).into_result();
     }
 
     let mut values = values;
@@ -23,7 +23,7 @@ pub fn throw(
             Value::Symbol(symbol) => symbol,
             _ => return interpreter.make_invalid_argument_error(
                 "The first argument of special form `throw' (if any) must be a symbol."
-            )
+            ).into_result()
         }
     } else {
         interpreter.intern("generic-error")
@@ -36,16 +36,15 @@ pub fn throw(
             Value::String(string_id) => interpreter.get_string(string_id),
             _ => return interpreter.make_invalid_argument_error(
                 "The second argument of special form `throw' (if any) must be a string."
-            )
+            ).into_result()
         };
 
-        match string {
-            Ok(string) => String::from(string.get_string()), // tood: fix, looks shitty
-            Err(error) => return interpreter.make_generic_execution_error_caused(
+        string
+            .map(|string| String::from(string.get_string()))
+            .map_err(|err| interpreter.make_generic_execution_error_caused(
                 "Cannot yield a string",
-                error
-            )
-        }
+                err
+            ))?
     } else {
         String::from("")
     };
@@ -53,7 +52,7 @@ pub fn throw(
     interpreter.make_generic_error(
         symbol,
         &message
-    )
+    ).into_result()
 }
 
 #[cfg(test)]
