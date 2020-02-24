@@ -4,6 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::stdlib::_lib;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,
@@ -17,17 +18,11 @@ fn set_variable_via_cons(
             err
         ))?;
 
-    let name = match car {
+    let variable_symbol_id = match car {
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
+            _lib::check_if_symbol_assignable(interpreter, symbol_id)?;
 
-            if symbol.is_nil() {
-                return interpreter.make_invalid_argument_error(
-                    "It's not possible to redefine `nil' via special form `let'."
-                ).into_result()
-            } else {
-                symbol_id
-            }
+            symbol_id
         }
         _ => return interpreter.make_invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol."
@@ -62,7 +57,7 @@ fn set_variable_via_cons(
 
     interpreter.define_variable(
         definition_setting_environment,
-        name,
+        variable_symbol_id,
         value
     )
 }
@@ -70,11 +65,13 @@ fn set_variable_via_cons(
 fn set_variable_to_nil(
     interpreter: &mut Interpreter,
     definition_setting_environment: EnvironmentId,
-    symbol: SymbolId
+    symbol_id: SymbolId
 ) -> Result<(), Error> {
+    _lib::check_if_symbol_assignable(interpreter, symbol_id)?;
+
     let nil = interpreter.intern_nil_symbol_value();
 
-    interpreter.define_variable(definition_setting_environment, symbol, nil)
+    interpreter.define_variable(definition_setting_environment, symbol_id, nil)
 }
 
 fn set_definition(
@@ -142,7 +139,7 @@ pub fn _let(
 
     let mut values = values;
 
-    let definitions = super::_lib::read_let_definitions(
+    let definitions = _lib::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -163,7 +160,7 @@ pub fn _let(
         definitions
     )?;
 
-    super::_lib::execute_forms(
+    _lib::execute_forms(
         interpreter,
         execution_environment,
         forms
@@ -174,6 +171,7 @@ pub fn _let(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
     #[test]
     fn sets_symbol_with_executed_value() {
@@ -236,6 +234,40 @@ mod tests {
             Value::Integer(3),
             interpreter.execute("(let ((a 1)) (let ((a 2) (b 3)) b))").unwrap()
         );
+    }
+
+    #[test]
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(let (({} 2)) {})", constant, constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(let (({} 2)) {})", special_symbol, special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+    }
+
+    #[test]
+    fn returns_error_when_definition_is_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(let ({}) {})", constant, constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(let ({}) {})", special_symbol, special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
     }
 
     #[test]

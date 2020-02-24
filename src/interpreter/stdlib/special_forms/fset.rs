@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::_lib;
 
 pub fn fset(
     interpreter: &mut Interpreter,
@@ -22,6 +23,8 @@ pub fn fset(
             "The first argument of built-in function `fset!' must be a symbol."
         ).into_result()
     };
+
+    _lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let value = values.remove(0);
 
@@ -76,6 +79,7 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::function::Function;
     use crate::interpreter::function::interpreted_function::InterpretedFunction;
+    use crate::interpreter::lib::testing_helpers::{for_special_symbols, for_constants};
 
     #[test]
     fn returns_value_that_was_set_to_function() {
@@ -124,6 +128,23 @@ mod tests {
         let result = interpreter.execute("(b)").unwrap();
 
         assert_eq!(Value::Integer(2), result);
+    }
+
+    #[test]
+    fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(fset! {} 2)", constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(fset! {} 2)", special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
     }
 
     #[test]

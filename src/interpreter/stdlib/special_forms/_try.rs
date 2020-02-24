@@ -3,6 +3,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::stdlib::_lib;
 
 fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<ConsId>, Error> {
     let mut catch_clauses = Vec::new();
@@ -114,7 +115,7 @@ pub fn _try(
                                     err
                                 ))?;
 
-                            super::_lib::execute_forms(
+                            _lib::execute_forms(
                                 interpreter,
                                 environment_id,
                                 values

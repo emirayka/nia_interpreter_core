@@ -19,6 +19,7 @@ use crate::interpreter::string::string_arena::{StringArena, StringId};
 use crate::interpreter::string::string::VString;
 use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
+use std::collections::HashMap;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -206,10 +207,29 @@ impl Interpreter {
 
                 Ok(car_equals && cdr_equals)
             },
-            (Object(val1), Object(val2)) => {
-                // todo: fix, make it checking objects and not references to them
-                Ok(val1 == val2)
-            },
+            (Object(object1_id), Object(object2_id)) => {
+                let object1_items = self.get_items(object1_id)?.clone();
+                let object2_items = self.get_items(object2_id)?.clone();
+
+                if object1_items.len() != object2_items.len() {
+                    return Ok(false)
+                }
+
+                for (item_symbol, value1) in object1_items.iter() {
+                    let result = match object2_items.get(item_symbol) {
+                        Some(value2) => self.deep_equal(*value1, *value2),
+                        None => return Ok(false)
+                    };
+
+                    match result {
+                        Ok(false) => return Ok(false),
+                        Err(error) => return Err(error),
+                        _ => {}
+                    }
+                }
+
+                Ok(true)
+            }
             (Function(val1), Function(val2)) => {
                 let function_1 = self.get_function(val1)?.clone();
                 let function_2 = self.get_function(val2)?.clone();
@@ -373,6 +393,49 @@ impl Interpreter {
 
         Value::Symbol(symbol_id)
     }
+
+    pub fn check_if_symbol_special(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let symbol_name = match self.get_symbol_name(symbol_id) {
+            Ok(name) => name,
+            Err(error) => return self.make_generic_execution_error_caused(
+                "",
+                error
+            ).into_result()
+        };
+
+        let result = symbol_name == "#opt" ||
+            symbol_name == "#rest" ||
+            symbol_name == "#keys";
+
+        Ok(result)
+    }
+
+    pub fn check_if_symbol_constant(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let symbol_name = match self.get_symbol_name(symbol_id) {
+            Ok(name) => name,
+            Err(error) => return self.make_generic_execution_error_caused(
+                "",
+                error
+            ).into_result()
+        };
+
+        let result = symbol_name == "nil";
+
+        Ok(result)
+    }
+
+    pub fn check_if_symbol_assignable(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let is_not_constant = !self.check_if_symbol_constant(symbol_id)?;
+        let is_not_special = !self.check_if_symbol_special(symbol_id)?;
+
+        Ok(is_not_constant && is_not_special)
+    }
+
+    pub fn check_if_symbol_internable(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let is_not_special = !self.check_if_symbol_special(symbol_id)?;
+
+        Ok(is_not_special)
+    }
 }
 
 impl Interpreter {
@@ -464,15 +527,15 @@ impl Interpreter {
         self.object_arena.make_child(prototype_id)
     }
 
-    pub fn get_object_item(&mut self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, Error> {
+    pub fn get_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         self.object_arena
-            .get_item(object_id, key)
+            .get_item(object_id, key_symbol_id)
             .map_err(|_| self.make_empty_error())
     }
 
-    pub fn set_object_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn set_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         self.object_arena
-            .set_item(object_id, key, value)
+            .set_item(object_id, key_symbol_id, value)
             .map_err(|_| self.make_empty_error())
     }
 
@@ -492,6 +555,15 @@ impl Interpreter {
         }
 
         Ok(())
+    }
+
+    pub fn get_items(&mut self, object_id: ObjectId) -> Result<&HashMap<SymbolId, Value>, Error> {
+        let error = self.make_empty_error().into_result();
+
+        match self.object_arena.get_object(object_id) {
+            Ok(object) => Ok(object.get_items()),
+            Err(_) => error
+        }
     }
 }
 
@@ -518,98 +590,98 @@ impl Interpreter {
     pub fn lookup_environment_by_variable(
         &mut self,
         environment_id: EnvironmentId,
-        variable_name: SymbolId
+        variable_symbol_id: SymbolId
     ) -> Result<Option<EnvironmentId>, Error> {
         self.environment_arena.lookup_environment_by_variable(
             environment_id,
-            variable_name
+            variable_symbol_id
         ).map_err(|_| self.make_empty_error())
     }
 
     pub fn lookup_environment_by_function(
         &mut self,
         environment_id: EnvironmentId,
-        function_name: SymbolId
+        function_symbol_id: SymbolId
     ) -> Result<Option<EnvironmentId>, Error> {
         self.environment_arena.lookup_environment_by_function(
             environment_id,
-            function_name
+            function_symbol_id
         ).map_err(|_| self.make_empty_error())
     }
 
     pub fn has_variable(
         &mut self,
         environment_id: EnvironmentId,
-        symbol: SymbolId
+        variable_symbol_id: SymbolId
     ) -> Result<bool, Error> {
         self.environment_arena.has_variable(
             environment_id,
-            symbol
+            variable_symbol_id
         ).map_err(|_| self.make_empty_error())
     }
 
     pub fn has_function(
         &mut self,
         environment_id: EnvironmentId,
-        symbol: SymbolId
+        function_symbol_id: SymbolId
     ) -> Result<bool, Error> {
         self.environment_arena.has_function(
             environment_id,
-            symbol
+            function_symbol_id
         ).map_err(|_| self.make_empty_error())
     }
 
     pub fn define_variable(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId,
+        variable_symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
         self.environment_arena
-            .define_variable(environment_id, symbol_id, value)
+            .define_variable(environment_id, variable_symbol_id, value)
             .map_err(|_| self.make_empty_error())
     }
 
     pub fn define_function(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId,
+        function_symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
         self.environment_arena
-            .define_function(environment_id, symbol_id, value)
+            .define_function(environment_id, function_symbol_id, value)
             .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_variable(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId,
+        variable_symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
         self.environment_arena
-            .set_variable(environment_id, symbol_id, value)
+            .set_variable(environment_id, variable_symbol_id, value)
             .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_function(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId,
+        function_symbol_id: SymbolId,
         value: Value
     ) -> Result<(), Error> {
         self.environment_arena
-            .set_function(environment_id, symbol_id, value)
+            .set_function(environment_id, function_symbol_id, value)
             .map_err(|_| self.make_empty_error())
     }
 
     pub fn lookup_variable(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId
+        variable_symbol_id: SymbolId
     ) -> Result<Value, Error> {
         self.environment_arena
-            .lookup_variable(environment_id, symbol_id)
+            .lookup_variable(environment_id, variable_symbol_id)
             .map_err(|_| self.make_empty_error())?
             .ok_or_else(|| self.make_empty_error())
     }
@@ -617,10 +689,10 @@ impl Interpreter {
     pub fn lookup_function(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId
+        function_symbol_id: SymbolId
     ) -> Result<Value, Error> {
         self.environment_arena
-            .lookup_function(environment_id, symbol_id)
+            .lookup_function(environment_id, function_symbol_id)
             .map_err(|_| self.make_empty_error())?
             .ok_or_else(|| self.make_empty_error())
     }
@@ -633,28 +705,12 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn is_symbol_special(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
-        let symbol_name = match self.get_symbol_name(symbol_id) {
-            Ok(name) => name,
-            Err(error) => return self.make_generic_execution_error_caused(
-                "",
-                error
-            ).into_result()
-        };
-
-        let result = symbol_name == "#opt" ||
-            symbol_name == "#rest" ||
-            symbol_name == "#keys";
-
-        Ok(result)
-    }
-
     fn evaluate_symbol(
         &mut self,
         environment_id: EnvironmentId,
         symbol_id: SymbolId
     ) -> Result<Value, Error> {
-        match self.is_symbol_special(symbol_id) {
+        match self.check_if_symbol_special(symbol_id) {
             Ok(false) => self.lookup_variable(environment_id, symbol_id)
                 .map_err(|err| self.make_generic_execution_error_caused(
                     "",
@@ -1036,7 +1092,7 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::make_value_pairs_ifbsyk;
+    use crate::interpreter::lib::testing_helpers::make_value_pairs_evaluated_ifbsyko;
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::assertion::assert_deep_equal;
 
@@ -1135,7 +1191,7 @@ mod tests {
     fn executes_object_expression_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = make_value_pairs_ifbsyk(&mut interpreter);
+        let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
 
         let key = interpreter.intern("value");
 
@@ -1165,7 +1221,7 @@ mod tests {
     fn executes_delimited_symbols_expression_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = make_value_pairs_ifbsyk(&mut interpreter);
+        let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
 
         for pair in pairs {
             let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";

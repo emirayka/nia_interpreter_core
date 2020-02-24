@@ -2,8 +2,6 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::lib::infect::infect_special_form;
 
-mod _lib;
-
 mod cond;
 mod quote;
 mod define_variable;

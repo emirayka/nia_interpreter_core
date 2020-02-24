@@ -28,7 +28,7 @@ pub fn assert_error<V, E>(error: &Result<V, E>) {
 
 macro_rules! make_assertion_function {
     ($name:ident, $error_kind:pat, $symbol_name:expr) => {
-        pub fn $name(error: &Result<Value, Error>) {
+        pub fn $name<T>(error: &Result<T, Error>) {
             assert!(error.is_err());
 
             let error = error.as_ref().err().unwrap().get_total_cause();

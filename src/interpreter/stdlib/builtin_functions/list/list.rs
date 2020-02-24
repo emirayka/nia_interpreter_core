@@ -16,8 +16,8 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{
-        for_value_pairs_evaluated_ifbsyk,
-        for_meta_value_pairs_evaluated_ifbsyk
+        for_value_pairs_evaluated_ifbsyko,
+        for_meta_value_pairs_evaluated_ifbsyko
     };
 
     #[test]
@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
-        for_value_pairs_evaluated_ifbsyk(
+        for_value_pairs_evaluated_ifbsyko(
             |interpreter, string, value| {
                 let nil = interpreter.intern_nil_symbol_value();
 
@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn returns_a_list_of_two_values_when_was_called_with_two_arguments() {
-        for_meta_value_pairs_evaluated_ifbsyk(
+        for_meta_value_pairs_evaluated_ifbsyko(
             |interpreter, str1, val1, str2, val2| {
                 let code = &format!("(list {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();

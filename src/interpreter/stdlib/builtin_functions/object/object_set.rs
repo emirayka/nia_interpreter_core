@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
 
 pub fn object_set(
     interpreter: &mut Interpreter,
@@ -29,6 +30,8 @@ pub fn object_set(
         ).into_result()
     };
 
+    check_if_symbol_assignable(interpreter, symbol_id)?;
+
     let value = values.remove(0);
 
     interpreter.set_object_item(
@@ -44,6 +47,7 @@ pub fn object_set(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::for_special_symbols;
 
     #[test]
     fn sets_item_to_object() {
@@ -76,6 +80,16 @@ mod tests {
         ).unwrap();
 
         assert_eq!(Value::Integer(2), result);
+    }
+
+    #[test]
+    fn returns_invalid_argument_when_attempt_get_item_by_special_symbol() {
+        for_special_symbols(|interpreter, string| {
+            let result = interpreter.execute(
+                    &(String::from("(let ((obj {:item 1})) (object:set! obj '") + &string +" 2))")
+            );
+            assertion::assert_invalid_argument_error(&result);
+        })
     }
 
     #[test]

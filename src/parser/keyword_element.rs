@@ -90,8 +90,8 @@ mod tests {
 
     #[test]
     fn test_able_to_parse_all_fine_escaped_symbols() {
-        let example = r##":::test1\"\#\,\`\ \(\)\\\{\}"##;
-        let expected = r##"::test1"#,` ()\{}"##;
+        let example = r##":::test1\"\,\`\ \(\)\\\{\}"##;
+        let expected = r##"::test1",` ()\{}"##;
 
         assert_eq!(
             Ok(("", KeywordElement {value: String::from(expected)})),

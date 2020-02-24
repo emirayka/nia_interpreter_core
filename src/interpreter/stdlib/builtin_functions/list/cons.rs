@@ -27,12 +27,12 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{
-        for_meta_value_pairs_evaluated_ifbsyk
+        for_meta_value_pairs_evaluated_ifbsyko
     };
 
     #[test]
     fn returns_a_cons_cell() {
-        for_meta_value_pairs_evaluated_ifbsyk(
+        for_meta_value_pairs_evaluated_ifbsyko(
             |interpreter, str1, val1, str2, val2| {
                 let code = &format!("(cons {} {})", str1, str2);
                 let result = interpreter.execute(code).unwrap();

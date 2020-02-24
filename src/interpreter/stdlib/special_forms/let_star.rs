@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::_lib;
 
 pub fn let_star(
     interpreter: &mut Interpreter,
@@ -16,7 +17,7 @@ pub fn let_star(
 
     let mut values = values;
 
-    let definitions = super::_lib::read_let_definitions(
+    let definitions = _lib::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -38,7 +39,7 @@ pub fn let_star(
         definitions
     )?;
 
-    super::_lib::execute_forms(
+    _lib::execute_forms(
         interpreter,
         execution_environment,
         forms
@@ -50,6 +51,7 @@ pub fn let_star(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -134,6 +136,40 @@ mod tests {
         let result = interpreter.execute("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)").unwrap();
 
         assert_eq!(Value::Integer(1), result);
+    }
+
+    #[test]
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(let* (({} 2)) {})", constant, constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(let* (({} 2)) {})", special_symbol, special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+    }
+
+    #[test]
+    fn returns_error_when_definition_is_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(let* ({}) {})", constant, constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(let* ({}) {})", special_symbol, special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
     }
 
     #[test]

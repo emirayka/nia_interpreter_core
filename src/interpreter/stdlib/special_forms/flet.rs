@@ -5,6 +5,8 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::stdlib::_lib;
+use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
@@ -18,7 +20,7 @@ fn set_function_via_cons(
             err
         ))?;
 
-    let name = match car {
+    let function_symbol_id = match car {
         Value::Symbol(symbol_id)  => {
             let symbol = interpreter.get_symbol(symbol_id)?;
 
@@ -34,6 +36,8 @@ fn set_function_via_cons(
             "The first element of lists in the first argument of the special form `flet' must be a symbol that represents function name."
         ).into_result()
     };
+
+    check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let cadr = interpreter.get_cadr(cons_id)
         .map_err(|_| interpreter.make_invalid_argument_error(
@@ -64,7 +68,7 @@ fn set_function_via_cons(
             err
         ))?;
 
-    let argument_names = super::_lib::convert_vector_of_values_to_vector_of_symbol_names(
+    let argument_names = _lib::convert_vector_of_values_to_vector_of_symbol_names(
         interpreter,
         arguments
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -111,7 +115,7 @@ fn set_function_via_cons(
 
     interpreter.define_function(
         function_definition_environment,
-        name,
+        function_symbol_id,
         function_value
     )
 }
@@ -166,7 +170,7 @@ pub fn flet(
 
     let mut values = values;
 
-    let definitions = super::_lib::read_let_definitions(
+    let definitions = _lib::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -188,7 +192,7 @@ pub fn flet(
         definitions
     )?;
 
-    super::_lib::execute_forms(
+    _lib::execute_forms(
         interpreter,
         function_definition_environment,
         forms
@@ -199,6 +203,7 @@ pub fn flet(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -268,6 +273,23 @@ mod tests {
             Value::Integer(3),
             interpreter.execute("(flet ((a () 1)) (flet ((a () 2) (b () 3)) (b)))").unwrap()
         );
+    }
+
+    #[test]
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(flet (({} () 2)) {})", constant, constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(flet (({} () 2)) {})", special_symbol, special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
     }
 
     #[test]

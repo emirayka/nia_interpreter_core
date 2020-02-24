@@ -35,12 +35,12 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{
-        for_value_pairs_evaluated_ifbsyk
+        for_value_pairs_evaluated_ifbsyko
     };
 
     #[test]
     fn returns_cdr_of_cons() {
-        for_value_pairs_evaluated_ifbsyk(
+        for_value_pairs_evaluated_ifbsyko(
             |interpreter, string, value| {
                 let code = &format!("(cdr (cons 1 {}))", string);
 
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons() {
-        for_value_pairs_evaluated_ifbsyk(
+        for_value_pairs_evaluated_ifbsyko(
             |interpreter, string,_value| {
                 let code = &format!("(cdr {})", string);
                 let result = interpreter.execute(code);

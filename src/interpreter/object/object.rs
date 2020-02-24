@@ -67,6 +67,10 @@ impl Object {
             self.items.insert(symbol_id, value);
         }
     }
+
+    pub fn get_items(&self) -> &HashMap<SymbolId, Value> {
+        &self.items
+    }
 }
 
 #[cfg(test)]

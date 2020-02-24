@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::_lib;
 
 pub fn define_function(
     interpreter: &mut Interpreter,
@@ -29,6 +30,8 @@ pub fn define_function(
             "First form of `define-function' must be a symbol."
         ).into_result()
     };
+
+    _lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let evaluated_value = match second_argument {
         Some(value) => interpreter.evaluate_value(environment, value),
@@ -65,6 +68,7 @@ pub fn define_function(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
     #[test]
     fn defines_function_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
@@ -82,7 +86,8 @@ mod tests {
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 name
-            ).unwrap());
+            ).unwrap()
+        );
     }
 
     #[test]
@@ -101,7 +106,8 @@ mod tests {
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 name
-            ).unwrap());
+            ).unwrap()
+        );
     }
 
     // todo: move to higher module test
@@ -124,6 +130,23 @@ mod tests {
         interpreter.execute("(define-function test2 (test 2))").unwrap();
 
         assert_eq!(Value::Integer(2), interpreter.execute("(test2)").unwrap());
+    }
+
+    #[test]
+    fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(define-function {} #(% 2 3))", constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(define-function {} #(% 2 3))", special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
     }
 
     #[test]

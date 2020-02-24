@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::stdlib::_lib;
 
 pub fn define_variable(
     interpreter: &mut Interpreter,
@@ -29,6 +30,8 @@ pub fn define_variable(
             "First form of `define-variable' must be a symbol."
         ).into_result()
     };
+
+    _lib::check_if_symbol_assignable(interpreter, variable_symbol_id)?;
 
     let evaluated_value = match second_argument {
         Some(value) => {
@@ -69,6 +72,7 @@ pub fn define_variable(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::testing_helpers::{for_special_symbols, for_constants};
 
     #[test]
     fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
@@ -108,6 +112,24 @@ mod tests {
                 name
             ).unwrap());
     }
+
+    #[test]
+    fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
+        for_constants(|interpreter, constant| {
+            let code = &format!("(define-variable {} 2)", constant);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+
+        for_special_symbols(|interpreter, special_symbol| {
+            let code = &format!("(define-variable {} 2)", special_symbol);
+            let result = interpreter.execute(code);
+
+            assertion::assert_invalid_argument_error(&result);
+        });
+    }
+
 
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {

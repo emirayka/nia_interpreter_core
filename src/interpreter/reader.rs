@@ -1,5 +1,3 @@
-use crate::interpreter::string::string_arena::StringId;
-use crate::interpreter::keyword::keyword_arena::KeywordId;
 use crate::interpreter::value::Value;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
@@ -349,7 +347,6 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
 mod tests {
     use super::*;
     use crate::parser::parse_code;
-    use crate::interpreter::symbol::{SymbolId};
     use crate::interpreter::lib::assertion;
 
     macro_rules! assert_reading_result_equal {
