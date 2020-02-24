@@ -633,13 +633,40 @@ impl Interpreter {
 }
 
 impl Interpreter {
+    fn is_symbol_special(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let symbol_name = match self.get_symbol_name(symbol_id) {
+            Ok(name) => name,
+            Err(error) => return self.make_generic_execution_error_caused(
+                "",
+                error
+            ).into_result()
+        };
+
+        let result = symbol_name == "#opt" ||
+            symbol_name == "#rest" ||
+            symbol_name == "#keys";
+
+        Ok(result)
+    }
+
     fn evaluate_symbol(
         &mut self,
         environment_id: EnvironmentId,
         symbol_id: SymbolId
     ) -> Result<Value, Error> {
-        self.lookup_variable(environment_id, symbol_id)
-            .map_err(|err| self.make_generic_execution_error_caused("", err))
+        match self.is_symbol_special(symbol_id) {
+            Ok(false) => self.lookup_variable(environment_id, symbol_id)
+                .map_err(|err| self.make_generic_execution_error_caused(
+                    "",
+                    err
+                )),
+            Ok(true) => self.make_generic_execution_error("")
+                .into_result(),
+            Err(error) => self.make_generic_execution_error_caused(
+                "",
+                error
+            ).into_result(),
+        }
     }
 
     fn extract_arguments(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
@@ -1066,6 +1093,28 @@ mod tests {
         let result = interpreter.execute("test");
 
         assert_eq!(Value::Integer(1), result.unwrap());
+    }
+
+    #[test]
+    pub fn returns_error_during_execution_of_special_symbols() {
+        let special_symbol_names = vec!(
+            "#opt",
+            "#rest",
+            "#keys",
+        );
+        for special_symbol_name in special_symbol_names {
+            let mut interpreter = Interpreter::new();
+            let symbol_id = interpreter.intern(special_symbol_name);
+
+            interpreter.environment_arena.define_variable(
+                interpreter.root_environment,
+                symbol_id,
+                Value::Integer(1)
+            ).unwrap();
+
+            let result = interpreter.execute(special_symbol_name);
+            assertion::assert_error(&result);
+        }
     }
 
     #[test]
