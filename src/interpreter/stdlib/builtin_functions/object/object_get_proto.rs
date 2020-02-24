@@ -39,6 +39,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_no_proto_exists() {
         let mut interpreter = Interpreter::new();
@@ -48,6 +49,7 @@ mod tests {
         assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_proto_when_it_exists() {
         let mut interpreter = Interpreter::new();
@@ -64,6 +66,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
@@ -79,6 +82,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();

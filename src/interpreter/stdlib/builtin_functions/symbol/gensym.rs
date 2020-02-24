@@ -45,6 +45,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_gensym_without_provided_name() {
         let mut interpreter = Interpreter::new();
@@ -59,6 +60,7 @@ mod tests {
         assert_ne!(gensym2, gensym3);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_gensym_with_target_name() {
         let mut interpreter = Interpreter::new();
@@ -78,6 +80,7 @@ mod tests {
         assert_ne!(gensym2, gensym3);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -89,6 +92,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();

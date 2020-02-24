@@ -81,6 +81,7 @@ mod tests {
     use crate::interpreter::function::interpreted_function::InterpretedFunction;
     use crate::interpreter::lib::testing_helpers::{for_special_symbols, for_constants};
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_value_that_was_set_to_function() {
         let mut interpreter = Interpreter::new();
@@ -103,6 +104,7 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_to_current_environment_when_function_is_defined_here() {
         let mut interpreter = Interpreter::new();
@@ -118,6 +120,7 @@ mod tests {
         assert_eq!(Value::Integer(2), result2);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_to_parent_environment_when_function_is_defined_here() {
         let mut interpreter = Interpreter::new();
@@ -130,6 +133,7 @@ mod tests {
         assert_eq!(Value::Integer(2), result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -147,6 +151,7 @@ mod tests {
         });
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
@@ -158,6 +163,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_arguments_were_passed() {
         let mut interpreter = Interpreter::new();

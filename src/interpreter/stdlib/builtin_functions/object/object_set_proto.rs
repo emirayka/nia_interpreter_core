@@ -43,6 +43,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_proto_correctly() {
         let mut interpreter = Interpreter::new();
@@ -54,6 +55,7 @@ mod tests {
         assert_eq!(Value::Integer(1), result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_proto_is_set() {
         let mut interpreter = Interpreter::new();
@@ -65,6 +67,7 @@ mod tests {
         assert_eq!(Value::Boolean(true), result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
@@ -85,6 +88,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
@@ -95,6 +99,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();

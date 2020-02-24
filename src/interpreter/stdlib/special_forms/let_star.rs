@@ -53,6 +53,7 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::new();
@@ -60,6 +61,7 @@ mod tests {
         assert_eq!(Value::Integer(1), interpreter.execute("(let* () 3 2 1)").unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
@@ -98,6 +100,7 @@ mod tests {
     }
 
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::new();
@@ -108,6 +111,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn possible_to_nest_let_invocations() {
         let mut interpreter = Interpreter::new();
@@ -129,6 +133,7 @@ mod tests {
     }
 
     // the only difference between `let' `let*'
+    // todo: ensure this test is fine
     #[test]
     fn able_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::new();
@@ -138,6 +143,7 @@ mod tests {
         assert_eq!(Value::Integer(1), result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -155,6 +161,7 @@ mod tests {
         });
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -172,6 +179,7 @@ mod tests {
         });
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::new();
@@ -195,6 +203,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
         let mut interpreter = Interpreter::new();
@@ -219,6 +228,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_part_of_definitions_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
@@ -242,6 +252,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::new();
@@ -251,6 +262,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
         let mut interpreter = Interpreter::new();
@@ -264,6 +276,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempt_to_redefine_already_defined_value() {
         let mut interpreter = Interpreter::new();

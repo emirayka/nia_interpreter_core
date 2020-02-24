@@ -30,6 +30,7 @@ mod tests {
     use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_symbol_was_passed() {
         let mut interpreter = Interpreter::new();
@@ -40,6 +41,7 @@ mod tests {
         assert_eq!(expected, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_false_when_not_an_symbol_was_passed() {
         for_value_pairs_evaluated_ifbsykcou(
@@ -57,6 +59,7 @@ mod tests {
         )
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();

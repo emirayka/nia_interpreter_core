@@ -20,6 +20,7 @@ mod tests {
         for_meta_value_pairs_evaluated_ifbsyko
     };
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {
         let mut interpreter = Interpreter::new();
@@ -29,6 +30,7 @@ mod tests {
         assertion::assert_is_nil(&mut interpreter, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
         for_value_pairs_evaluated_ifbsyko(
@@ -46,6 +48,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_a_list_of_two_values_when_was_called_with_two_arguments() {
         for_meta_value_pairs_evaluated_ifbsyko(

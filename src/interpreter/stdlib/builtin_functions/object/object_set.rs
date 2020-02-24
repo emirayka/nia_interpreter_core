@@ -49,6 +49,7 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::for_special_symbols;
 
+    // todo: ensure this test is fine
     #[test]
     fn sets_item_to_object() {
         let mut interpreter = Interpreter::new();
@@ -60,6 +61,7 @@ mod tests {
         assert_eq!(Value::Integer(2), result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_value_that_were_set() {
         let mut interpreter = Interpreter::new();
@@ -71,6 +73,7 @@ mod tests {
         assert_eq!(Value::Integer(2), result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn able_to_set_values_that_were_not_in_the_object_initially() {
         let mut interpreter = Interpreter::new();
@@ -82,6 +85,7 @@ mod tests {
         assert_eq!(Value::Integer(2), result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_attempt_get_item_by_special_symbol() {
         for_special_symbols(|interpreter, string| {
@@ -92,6 +96,7 @@ mod tests {
         })
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
@@ -117,6 +122,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
@@ -127,6 +133,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();

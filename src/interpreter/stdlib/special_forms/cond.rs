@@ -75,6 +75,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn cond_works_correctly() {
         let mut interpreter = Interpreter::new();
@@ -86,6 +87,7 @@ mod tests {
         assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(cond)").unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();
@@ -107,6 +109,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond_2() {
         let mut interpreter = Interpreter::new();
@@ -128,6 +131,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();

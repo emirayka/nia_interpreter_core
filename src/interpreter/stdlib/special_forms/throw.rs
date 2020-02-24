@@ -60,6 +60,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_generic_error_when_no_symbol_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -76,6 +77,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_with_correct_symbol_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -92,6 +94,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_with_correct_message_when_it_was_provided() {
         let mut interpreter = Interpreter::new();

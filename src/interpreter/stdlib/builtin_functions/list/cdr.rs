@@ -38,6 +38,7 @@ mod tests {
         for_value_pairs_evaluated_ifbsyko
     };
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_cdr_of_cons() {
         for_value_pairs_evaluated_ifbsyko(
@@ -52,6 +53,7 @@ mod tests {
         )
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
         let mut interpreter = Interpreter::new();
@@ -63,6 +65,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons() {
         for_value_pairs_evaluated_ifbsyko(

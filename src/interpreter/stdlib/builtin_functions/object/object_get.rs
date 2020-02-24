@@ -60,6 +60,7 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::for_special_symbols;
 
+    // todo: ensure this test is fine
     #[test]
     fn fetchs_item_of_object_correctly() {
         let mut interpreter = Interpreter::new();
@@ -70,6 +71,7 @@ mod tests {
         )
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_attempt_get_item_by_special_symbol() {
         for_special_symbols(|interpreter, string| {
@@ -80,6 +82,7 @@ mod tests {
         })
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
@@ -100,6 +103,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
@@ -110,6 +114,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
@@ -120,6 +125,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_fetched_symbol_is_not_in_the_object() {
         let mut interpreter = Interpreter::new();

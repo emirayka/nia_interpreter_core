@@ -123,7 +123,8 @@ mod tests {
         use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
         use crate::interpreter::lib::assertion;
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_ok_on_ordinary_symbols() {
             let mut interpreter = Interpreter::new();
             let symbol_id = interpreter.intern("test");
@@ -133,7 +134,8 @@ mod tests {
             assert!(result.is_ok());
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_error_on_constants() {
             for_constants(|interpreter, string| {
                 let symbol_id = interpreter.intern(&string);
@@ -144,7 +146,8 @@ mod tests {
             })
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_error_on_special_symbols() {
             for_special_symbols(|interpreter, string| {
                 let symbol_id = interpreter.intern(&string);
@@ -161,7 +164,8 @@ mod tests {
         use super::*;
         use crate::interpreter::lib::assertion;
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_the_result_of_execution_of_the_last_form() {
             let mut interpreter = Interpreter::new();
             let symbol_id = interpreter.intern("test");
@@ -188,7 +192,8 @@ mod tests {
             assert_eq!(Value::Integer(10), result.unwrap());
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_err_when_execution_failed() {
             let mut interpreter = Interpreter::new();
 
@@ -214,7 +219,8 @@ mod tests {
         use super::*;
         use crate::interpreter::lib::assertion;
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_empty_vector_when_nil_was_provided() {
             let mut interpreter = Interpreter::new();
             let nil = interpreter.intern_nil_symbol_value();
@@ -229,7 +235,8 @@ mod tests {
             assert_eq!(expected, result.unwrap());
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_vector_of_cons_cells_when_a_list_was_provided() {
             let mut interpreter = Interpreter::new();
 
@@ -250,7 +257,8 @@ mod tests {
             );
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_err_when_neither_a_cons_nor_symbol_were_provided() {
             let mut interpreter = Interpreter::new();
 
@@ -270,7 +278,8 @@ mod tests {
         use super::*;
         use crate::interpreter::lib::assertion;
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_vector_of_symbol_names() {
             let mut interpreter = Interpreter::new();
             let values = vec!(
@@ -293,7 +302,8 @@ mod tests {
             assert_eq!(expected, result.unwrap());
         }
 
-        #[test]
+        // todo: ensure this test is fine
+    #[test]
         fn returns_err_when_not_a_symbol_were_provided() {
             let mut interpreter = Interpreter::new();
 

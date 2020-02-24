@@ -45,6 +45,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn makes_new_object() {
         let mut interpreter = Interpreter::new();
@@ -54,6 +55,7 @@ mod tests {
         assertion::assert_is_object(result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn makes_new_object_with_a_proto() {
         let mut interpreter = Interpreter::new();
@@ -63,6 +65,7 @@ mod tests {
         assertion::assert_is_object(result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_odd_count_of_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -71,6 +74,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_an_even_argument_is_not_a_keyword() {
         let mut interpreter = Interpreter::new();

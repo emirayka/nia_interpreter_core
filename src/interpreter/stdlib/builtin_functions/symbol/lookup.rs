@@ -39,6 +39,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_associated_value() {
         let mut interpreter = Interpreter::new();
@@ -48,6 +49,7 @@ mod tests {
         assert_eq!(Value::Integer(1), result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_nothing_was_found() {
         let mut interpreter = Interpreter::new();
@@ -57,6 +59,7 @@ mod tests {
         assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -71,6 +74,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();

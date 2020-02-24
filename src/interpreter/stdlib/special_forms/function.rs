@@ -168,6 +168,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn constructs_simple_function() {
         let mut interpreter = Interpreter::new();
@@ -197,6 +198,7 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn constructs_simple_macro() {
         let mut interpreter = Interpreter::new();
@@ -226,6 +228,7 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -251,6 +254,7 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -276,6 +280,7 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_amount_of_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -290,6 +295,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_not_a_cons_cell_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -313,6 +319,7 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_element_is_not_lambda_nor_macro() {
         let mut interpreter = Interpreter::new();
@@ -321,6 +328,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -332,6 +340,7 @@ mod tests {
         assertion::assert_invalid_argument_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_constructed_function_arguments_were_provided() {
         let mut interpreter = Interpreter::new();

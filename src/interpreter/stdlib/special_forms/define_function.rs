@@ -70,6 +70,7 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
+    // todo: ensure this test is fine
     #[test]
     fn defines_function_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -90,6 +91,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn defines_function_with_nil_when_one_form_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -111,6 +113,7 @@ mod tests {
     }
 
     // todo: move to higher module test
+    // todo: ensure this test is fine
     #[test]
     fn defines_function_that_can_be_executed() {
         let mut interpreter = Interpreter::new();
@@ -122,6 +125,7 @@ mod tests {
     }
 
     // todo: move to higher module test
+    // todo: ensure this test is fine
     #[test]
     fn possible_to_make_a_closure() {
         let mut interpreter = Interpreter::new();
@@ -132,6 +136,7 @@ mod tests {
         assert_eq!(Value::Integer(2), interpreter.execute("(test2)").unwrap());
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -149,6 +154,7 @@ mod tests {
         });
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::new();
@@ -160,6 +166,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_an_incorrect_form_were_provided() {
         let mut interpreter = Interpreter::new();

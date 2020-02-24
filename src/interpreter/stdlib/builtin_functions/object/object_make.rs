@@ -75,11 +75,13 @@ mod tests {
         }
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn makes_new_object() {
         assert_object_has_values!(vec!(), "(object:make)");
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn correctly_sets_object_values() {
         assert_object_has_values!(
@@ -98,6 +100,7 @@ mod tests {
          );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_odd_count_of_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -109,6 +112,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_an_even_argument_is_not_a_keyword() {
         let mut interpreter = Interpreter::new();

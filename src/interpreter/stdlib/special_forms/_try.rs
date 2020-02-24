@@ -135,6 +135,7 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_result_of_try_clause_if_it_was_ok() {
         let mut interpreter = Interpreter::new();
@@ -149,6 +150,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn able_to_catch_error() {
         let mut interpreter = Interpreter::new();
@@ -164,6 +166,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
@@ -179,6 +182,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
@@ -194,6 +198,7 @@ mod tests {
         );
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_not_enough_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -202,6 +207,7 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
+    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_catch_clause_has_invalid_count_of_items() {
         let mut interpreter = Interpreter::new();
