@@ -3,6 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::Function;
+use crate::interpreter::function::arguments::Arguments;
 
 // i -> Integer
 // f -> Float
@@ -38,9 +39,10 @@ pub fn make_value_pairs_evaluated_ifbsykcou(interpreter: & mut Interpreter) -> V
     let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
     let cons_value = interpreter.make_cons_value(Value::Integer(1), Value::Integer(2));
     let object_value = interpreter.make_object_value();
+    let arguments = Arguments::new();
     let function_value = Value::Function(interpreter.register_function(Function::Interpreted(InterpretedFunction::new(
         interpreter.get_root_environment(),
-        vec!(),
+        arguments,
         vec!(
             Value::Integer(1)
         )
@@ -84,9 +86,10 @@ pub fn make_value_pairs_ifbsykcou(interpreter: & mut Interpreter) -> Vec<(String
     let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
     let cons_value = interpreter.make_cons_value(Value::Integer(1), Value::Integer(2));
     let object_value = interpreter.make_object_value();
+    let arguments = Arguments::new();
     let function_value = Value::Function(interpreter.register_function(Function::Interpreted(InterpretedFunction::new(
         interpreter.get_root_environment(),
-        vec!(),
+        arguments,
         vec!(
             Value::Integer(1)
         )

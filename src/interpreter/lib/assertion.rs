@@ -101,3 +101,16 @@ pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
         }
     );
 }
+
+pub fn assert_results_are_equal(interpreter: &mut Interpreter, pairs: Vec<(&str, &str)>) {
+    for (code, code_expected) in pairs {
+        let expected = interpreter.execute(code_expected).unwrap();
+        let result = interpreter.execute(code).unwrap();
+
+        assert_deep_equal(
+            interpreter,
+            expected,
+            result
+        );
+    }
+}

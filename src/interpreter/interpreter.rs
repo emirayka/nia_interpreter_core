@@ -20,6 +20,8 @@ use crate::interpreter::string::string::VString;
 use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
 use std::collections::HashMap;
+use crate::interpreter::function::arguments::Arguments;
+use nom::combinator::opt;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -31,21 +33,25 @@ pub struct Interpreter {
     object_arena: ObjectArena,
     function_arena: FunctionArena,
 
+    exclusive_nil: SymbolId,
+    exclusive_nil_value: Value,
     root_environment: EnvironmentId,
-    call_stack: (),
 }
 
 impl Interpreter {
     pub fn raw() -> Interpreter {
         let mut environment_arena = EnvironmentArena::new();
-        let root_env_id = environment_arena.alloc();
+        let root_environment = environment_arena.alloc();
 
         let string_arena = StringArena::new();
         let keyword_arena = KeywordArena::new();
-        let symbol_arena = SymbolArena::new();
+        let mut symbol_arena = SymbolArena::new();
         let cons_arena = ConsArena::new();
         let object_arena = ObjectArena::new();
         let function_arena = FunctionArena::new();
+
+        let exclusive_nil = symbol_arena.gensym("saika");
+        let exclusive_nil_value = Value::Symbol(exclusive_nil);
 
         Interpreter {
             environment_arena,
@@ -55,8 +61,10 @@ impl Interpreter {
             cons_arena,
             object_arena,
             function_arena,
-            root_environment: root_env_id,
-            call_stack: (),
+
+            exclusive_nil,
+            exclusive_nil_value,
+            root_environment,
         }
     }
 
@@ -653,6 +661,28 @@ impl Interpreter {
             .map_err(|_| self.make_empty_error())
     }
 
+    pub fn set_environment_variable(
+        &mut self,
+        environment_id: EnvironmentId,
+        variable_symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), Error> {
+        self.environment_arena
+            .set_environment_variable(environment_id, variable_symbol_id, value)
+            .map_err(|_| self.make_empty_error())
+    }
+
+    pub fn set_environment_function(
+        &mut self,
+        environment_id: EnvironmentId,
+        function_symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), Error> {
+        self.environment_arena
+            .set_environment_function(environment_id, function_symbol_id, value)
+            .map_err(|_| self.make_empty_error())
+    }
+
     pub fn set_variable(
         &mut self,
         environment_id: EnvironmentId,
@@ -768,16 +798,161 @@ impl Interpreter {
     fn define_environment_variables(
         &mut self,
         execution_environment_id: EnvironmentId,
-        variable_names: &Vec<String>,
-        variables: &Vec<Value>
+        arguments: &Arguments,
+        values: &Vec<Value>
     ) -> Result<(), Error> {
-        for (i, variable_name) in variable_names.iter().enumerate() {
-            let symbol_id = self.intern(variable_name);
-            let variable = variables[i];
+        let mut current_argument = 0;
+
+        // ordinary
+        for variable_name in arguments.get_ordinary_arguments().iter() {
+            let variable_symbol_id = self.intern(variable_name);
+            let value = values[current_argument];
 
             self
-                .define_variable(execution_environment_id, symbol_id, variable)
+                .define_variable(execution_environment_id, variable_symbol_id, value)
                 .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+            current_argument += 1;
+        }
+
+        // optional
+        for optional_argument in arguments.get_optional_arguments().iter() {
+            let variable_symbol_id = self.intern(optional_argument.get_name());
+
+            if current_argument < values.len() {
+                let value = values[current_argument];
+
+                self.define_variable(execution_environment_id, variable_symbol_id, value)
+                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+                if let Some(provided_name) = optional_argument.get_provided() {
+                    let variable_symbol_id = self.intern(provided_name);
+
+                    self.define_variable(execution_environment_id, variable_symbol_id, Value::Boolean(true))
+                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                }
+
+                current_argument += 1;
+            } else {
+                let value = match optional_argument.get_default() {
+                    Some(default_value) => {
+                        self.evaluate_value(execution_environment_id, default_value)?
+                    },
+                    None => self.intern_nil_symbol_value()
+                };
+
+                self.define_variable(execution_environment_id, variable_symbol_id, value)
+                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+                if let Some(provided_name) = optional_argument.get_provided() {
+                    let variable_symbol_id = self.intern(provided_name);
+
+                    self.define_variable(execution_environment_id, variable_symbol_id, Value::Boolean(false))
+                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                }
+            }
+        }
+
+        // rest
+        if let Some(rest_argument_name) = arguments.get_rest_argument() {
+            let variable_symbol_id = self.intern(rest_argument_name);
+
+            let rest_values_slice = &values[current_argument..];
+            let rest_values = Vec::from(rest_values_slice);
+            let rest_values_cons = self.cons_from_vec(rest_values);
+
+            self.define_variable(execution_environment_id, variable_symbol_id, rest_values_cons)
+                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+            return Ok(());
+        }
+
+        // key arguments
+        let key_values = &values[current_argument..];
+        let mut current_argument = 0;
+
+        if key_values.len() % 2 != 0 {
+            return self.make_generic_execution_error("")
+                .into_result()
+        }
+
+        for key_argument in arguments.get_key_arguments() {
+            let variable_symbol_id = self.intern(key_argument.get_name());
+            let value = self.exclusive_nil_value;
+
+            self.define_variable(execution_environment_id, variable_symbol_id, value)
+                .map_err(|err| self.make_generic_execution_error_caused(
+                    "",
+                    err
+                ))?;
+        }
+
+        loop {
+            if current_argument >= key_values.len() {
+                break;
+            }
+
+            let keyword = key_values[current_argument];
+
+            let variable_symbol_id = if let Value::Keyword(keyword_id) = keyword {
+                let keyword = self.get_keyword(keyword_id)?;
+
+                self.intern(keyword.get_name())
+            } else {
+                return self.make_generic_execution_error("")
+                    .into_result()
+            };
+
+            let value = key_values[current_argument + 1];
+
+            self.set_environment_variable(execution_environment_id, variable_symbol_id, value)
+                .map_err(|err| self.make_generic_execution_error_caused(
+                    "",
+                    err
+                ))?;
+
+            current_argument += 2;
+        }
+
+        for key_argument in arguments.get_key_arguments() {
+            let variable_symbol_id = self.intern(key_argument.get_name());
+            let looked_up_variable = self.lookup_variable(execution_environment_id, variable_symbol_id)?;
+
+            if looked_up_variable == self.exclusive_nil_value {
+                let value = if let Some(default_value) = key_argument.get_default() {
+                    self.evaluate_value(execution_environment_id, default_value)?
+                } else {
+                    self.intern_nil_symbol_value()
+                };
+
+                self.set_environment_variable(execution_environment_id, variable_symbol_id, value)
+                    .map_err(|err| self.make_generic_execution_error_caused(
+                        "",
+                        err
+                    ))?;
+
+                if let Some(provided_name) = key_argument.get_provided() {
+                    let variable_symbol_id = self.intern(provided_name);
+                    let value = Value::Boolean(false);
+
+                    self.define_variable(execution_environment_id, variable_symbol_id, value)
+                        .map_err(|err| self.make_generic_execution_error_caused(
+                            "",
+                            err
+                        ))?;
+                }
+            } else {
+                if let Some(provided_name) = key_argument.get_provided() {
+                    let variable_symbol_id = self.intern(provided_name);
+                    let value = Value::Boolean(true);
+
+                    self.define_variable(execution_environment_id, variable_symbol_id, value)
+                        .map_err(|err| self.make_generic_execution_error_caused(
+                            "",
+                            err
+                        ))?;
+                }
+            }
         }
 
         Ok(())
@@ -786,16 +961,59 @@ impl Interpreter {
     fn define_environment_functions(
         &mut self,
         execution_environment_id: EnvironmentId,
-        function_names: &Vec<String>,
-        functions: &Vec<Value>
+        arguments: &Arguments,
+        values: &Vec<Value>
     ) -> Result<(), Error> {
-        for (i, function_name) in function_names.iter().enumerate() {
-            let symbol_id = self.intern(function_name);
-            let function = functions[i];
+        let mut current_argument = 0;
+
+        // ordinary
+        for function_name in arguments.get_ordinary_arguments().iter() {
+            let function_symbol_id = self.intern(function_name);
+            let value = values[current_argument];
 
             self
-                .define_function(execution_environment_id, symbol_id, function)
+                .define_function(execution_environment_id, function_symbol_id, value)
                 .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+            current_argument += 1;
+        }
+
+        // optional
+        for optional_argument in arguments.get_optional_arguments().iter() {
+            let function_symbol_id = self.intern(optional_argument.get_name());
+
+            if current_argument < values.len() {
+                let value = values[current_argument];
+
+                self.define_function(execution_environment_id, function_symbol_id, value)
+                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+                if let Some(provided_name) = optional_argument.get_provided() {
+                    let function_symbol_id = self.intern(provided_name);
+
+                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(true))
+                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                }
+
+                current_argument += 1;
+            } else {
+                let value = match optional_argument.get_default() {
+                    Some(default_value) => {
+                        self.evaluate_value(execution_environment_id, default_value)?
+                    },
+                    None => self.intern_nil_symbol_value()
+                };
+
+                self.define_function(execution_environment_id, function_symbol_id, value)
+                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+
+                if let Some(provided_name) = optional_argument.get_provided() {
+                    let function_symbol_id = self.intern(provided_name);
+
+                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(false))
+                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                }
+            }
         }
 
         Ok(())
@@ -818,7 +1036,7 @@ impl Interpreter {
         func: &InterpretedFunction,
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        if func.get_argument_names().len() != evaluated_arguments.len() {
+        if func.get_arguments().required_len() > evaluated_arguments.len() {
             return self.make_empty_error()
                 .into_result();
         }
@@ -830,13 +1048,13 @@ impl Interpreter {
         // 2) setup environment variables and functions
         self.define_environment_variables(
             execution_environment_id,
-            func.get_argument_names(),
+            func.get_arguments(),
             &evaluated_arguments
         ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
 
         self.define_environment_functions(
             execution_environment_id,
-            func.get_argument_names(),
+            func.get_arguments(),
             &evaluated_arguments
         ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
 
@@ -874,7 +1092,7 @@ impl Interpreter {
         func: &MacroFunction,
         arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        if func.get_argument_names().len() != arguments.len() {
+        if func.get_arguments().required_len() != arguments.len() {
             return self.make_empty_error().into_result();
         }
 
@@ -885,13 +1103,13 @@ impl Interpreter {
         // 2) set arguments in that environment
         self.define_environment_variables(
             execution_environment_id,
-            func.get_argument_names(),
+            func.get_arguments(),
             &arguments
         ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
 
         self.define_environment_functions(
             execution_environment_id,
-            func.get_argument_names(),
+            func.get_arguments(),
             &arguments
         ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
 
@@ -1322,10 +1540,14 @@ mod tests {
         );
 
         let name = interpreter.intern("test");
+        let mut arguments = Arguments::new();
+
+        arguments.add_ordinary_argument(String::from("a"));
+        arguments.add_ordinary_argument(String::from("b"));
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.root_environment,
-            vec!("a".to_string(), "b".to_string()),
+            arguments,
             code
         ));
 
@@ -1339,6 +1561,79 @@ mod tests {
 
         let result = interpreter.execute("(test 3 2)");
         assert_eq!(Value::Integer(5), result.unwrap());
+    }
+
+    #[test]
+    fn executes_functions_with_optional_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("((function (lambda (#opt a b c) (list a b c))))", "(list nil nil nil)"),
+            ("((function (lambda (#opt a b c) (list a b c))) 1)", "(list 1 nil nil)"),
+            ("((function (lambda (#opt a b c) (list a b c))) 1 2)", "(list 1 2 nil)"),
+            ("((function (lambda (#opt a b c) (list a b c))) 1 2 3)", "(list 1 2 3)"),
+
+            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))))", "(list 4 5 6)"),
+            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1)", "(list 1 5 6)"),
+            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2)", "(list 1 2 6)"),
+            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2 3)", "(list 1 2 3)"),
+
+            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
+            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1)", "(list 1 #t 4 #f)"),
+            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1 2)", "(list 1 #t 2 #t)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn executes_functions_with_rest_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("((function (lambda (#rest a) a)))", "nil"),
+            ("((function (lambda (#rest a) a)) 1)", "(list 1)"),
+            ("((function (lambda (#rest a) a)) 1 2)", "(list 1 2)"),
+            ("((function (lambda (#rest a) a)) 1 2 3)", "(list 1 2 3)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn executes_functions_with_key_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("((function (lambda (#keys a b) (list a b))))", "(list nil nil)"),
+            ("((function (lambda (#keys a b) (list a b))) :a 1)", "(list 1 nil)"),
+            ("((function (lambda (#keys a b) (list a b))) :b 2)", "(list nil 2)"),
+            ("((function (lambda (#keys a b) (list a b))) :a 1 :b 2)", "(list 1 2)"),
+            ("((function (lambda (#keys a b) (list a b))) :b 2 :a 1)", "(list 1 2)"),
+
+            ("((function (lambda (#keys (a 3) (b 4)) (list a b))))", "(list 3 4)"),
+            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1)", "(list 1 4)"),
+            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2)", "(list 3 2)"),
+            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1 :b 2)", "(list 1 2)"),
+            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2 :a 1)", "(list 1 2)"),
+
+            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
+            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1)", "(list 1 #t 4 #f)"),
+            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2)", "(list 3 #f 2 #t)"),
+            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1 :b 2)", "(list 1 #t 2 #t)"),
+            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2 :a 1)", "(list 1 #t 2 #t)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
     }
 
     #[test]

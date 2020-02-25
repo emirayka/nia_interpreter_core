@@ -7,6 +7,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::stdlib::_lib;
 use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
+use crate::interpreter::function::arguments::Arguments;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
@@ -104,9 +105,15 @@ fn set_function_via_cons(
         err
     ))?;
 
+    let mut arguments = Arguments::new();
+
+    for argument_name in argument_names {
+        arguments.add_ordinary_argument(argument_name);
+    }
+
     let function = Function::Interpreted(InterpretedFunction::new(
         function_parent_environment,
-        argument_names,
+        arguments,
         code
     ));
 

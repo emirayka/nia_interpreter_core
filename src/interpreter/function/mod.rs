@@ -1,3 +1,4 @@
+pub mod arguments;
 pub mod builtin_function;
 pub mod interpreted_function;
 pub mod macro_function;

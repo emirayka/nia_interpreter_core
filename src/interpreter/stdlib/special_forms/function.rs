@@ -5,17 +5,128 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::cons::cons::Cons;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
  (lambda|macro ([arguments]) form1 form2 ...).";
 
-fn parse_argument_names(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<Vec<String>, Error> {
-    let mut result = Vec::new();
+enum ArgumentParsingMode {
+    Ordinary,
+    Optional,
+    Rest,
+    Keys,
+}
+
+fn extract_three_items_from_cons(
+    interpreter: &mut Interpreter,
+    cons_id: ConsId
+) -> Result<(Value, Option<Value>, Option<Value>), Error> {
+    let first = interpreter.get_car(cons_id)?;
+    let mut second = None;
+    let mut third = None;
+
+    let cdr = interpreter.get_cdr(cons_id)?;
+
+    let cons_id = match cdr {
+        Value::Cons(cons_id) => {
+            second = Some(interpreter.get_car(cons_id)?);
+
+            Some(cons_id)
+        },
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(symbol_id)?;
+
+            if !symbol.is_nil() {
+                second = Some(Value::Symbol(symbol_id));
+            }
+
+            None
+        },
+        value @ _ => {
+            second = Some(value);
+
+            None
+        }
+    };
+
+    if let Some(cons_id) = cons_id {
+        let cdr = interpreter.get_cdr(cons_id)?;
+
+        match cdr {
+            Value::Cons(cons_id) => {
+                third = Some(interpreter.get_car(cons_id)?);
+            },
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(symbol_id)?;
+
+                if !symbol.is_nil() {
+                    third = Some(Value::Symbol(symbol_id));
+                }
+            },
+            value @ _ => {
+                third = Some(value);
+            }
+        }
+    }
+
+    Ok((first, second, third))
+}
+
+fn extract_argument_name(interpreter: &mut Interpreter, value: Value) -> Result<String, Error> {
+    match value {
+        Value::Symbol(symbol_id) => {
+            if !interpreter.check_if_symbol_assignable(symbol_id)? {
+                return interpreter.make_invalid_argument_error("")
+                    .into_result()
+            }
+
+            let symbol_name = interpreter.get_symbol_name(symbol_id)?;
+
+            Ok(String::from(symbol_name))
+        },
+        _ => return interpreter.make_invalid_argument_error("")
+            .into_result()
+    }
+}
+
+fn extract_optional_argument_from_cons(
+    interpreter: &mut Interpreter,
+    cons_id: ConsId
+) -> Result<(String, Option<Value>, Option<String>), Error> {
+    let triplet = extract_three_items_from_cons(interpreter, cons_id)?;
+    
+    let first = extract_argument_name(interpreter, triplet.0)?;
+    
+    let second = triplet.1;
+    
+    let third = match triplet.2 {
+        Some(value) => {
+            let argument_name = extract_argument_name(interpreter, value)?;
+
+            Some(argument_name)
+        },
+        None => None
+    };
+
+    Ok((first, second, third))
+}
+
+fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<Arguments, Error> {
+    let mut arguments = Arguments::new();
+    let mut mode = ArgumentParsingMode::Ordinary;
 
     for value in values {
         match value {
             Value::Symbol(symbol_id) => {
+                let is_constant = interpreter.check_if_symbol_constant(symbol_id)
+                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                        "",
+                        err
+                    ))?;
+
                 let symbol = match interpreter.get_symbol(symbol_id) {
                     Ok(symbol) => symbol,
                     Err(error) => return interpreter.make_generic_execution_error_caused(
@@ -24,24 +135,101 @@ fn parse_argument_names(interpreter: &mut Interpreter, values: Vec<Value>) -> Re
                     ).into_result()
                 };
 
-                result.push(symbol.get_name().clone())
-            }
+                if is_constant {
+                    return interpreter.make_invalid_argument_error(
+                        "Cannot set constants as arguments"
+                    ).into_result()
+                }
+
+                let symbol_name = symbol.get_name();
+
+                if symbol_name == "#opt" {
+                    mode = ArgumentParsingMode::Optional;
+                    continue;
+                } else if symbol_name == "#rest" {
+                    mode = ArgumentParsingMode::Rest;
+                    continue;
+                } else if symbol_name == "#keys" {
+                    mode = ArgumentParsingMode::Keys;
+                    continue;
+                }
+
+                match mode {
+                    ArgumentParsingMode::Ordinary => {
+                        arguments.add_ordinary_argument(symbol.get_name().clone());
+                    },
+                    ArgumentParsingMode::Optional => {
+                        arguments.add_optional_argument(
+                            symbol.get_name().clone(),
+                            None,
+                            None
+                        );
+                    },
+                    ArgumentParsingMode::Rest => {
+                        arguments.add_rest_argument(symbol.get_name().clone());
+                    },
+                    ArgumentParsingMode::Keys => {
+                        arguments.add_key_argument(
+                            symbol.get_name().clone(),
+                            None,
+                            None
+                        );
+                    },
+                }
+
+            },
+            Value::Cons(cons_id) => {
+                match mode {
+                    ArgumentParsingMode::Ordinary => {
+                        return interpreter.make_invalid_argument_error("")
+                            .into_result();
+                    },
+                    ArgumentParsingMode::Optional => {
+                        let triplet = extract_optional_argument_from_cons(
+                            interpreter,
+                            cons_id
+                        )?;
+
+                        arguments.add_optional_argument(
+                            triplet.0,
+                            triplet.1,
+                            triplet.2
+                        );
+                    },
+                    ArgumentParsingMode::Rest => {
+                        return interpreter.make_invalid_argument_error("")
+                            .into_result();
+                    },
+                    ArgumentParsingMode::Keys => {
+                        let triplet = extract_optional_argument_from_cons(
+                            interpreter,
+                            cons_id
+                        )?;
+
+                        arguments.add_key_argument(
+                            triplet.0,
+                            triplet.1,
+                            triplet.2
+                        );
+                    },
+                }
+            },
             _ => return interpreter.make_generic_execution_error("").into_result()
         }
     }
 
-    Ok(result)
+    Ok(arguments)
 }
 
 fn construct_interpreted_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    argument_names: Vec<String>,
+    arguments: Arguments,
     code: Vec<Value>
 ) -> Value {
     let function = Function::Interpreted(InterpretedFunction::new(
         environment,
-        argument_names,
+        arguments,
         code
     ));
 
@@ -53,12 +241,12 @@ fn construct_interpreted_function(
 fn construct_macro_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    argument_names: Vec<String>,
+    arguments: Arguments,
     code: Vec<Value>
 ) -> Value {
     let function = Function::Macro(MacroFunction::new(
         environment,
-        argument_names,
+        arguments,
         code
     ));
 
@@ -128,7 +316,7 @@ pub fn function(
 
     let code = values;
 
-    let argument_names = parse_argument_names(interpreter, arguments)
+    let arguments = parse_arguments(interpreter, arguments)
         .map_err(|_| interpreter.make_invalid_argument_error(
             "The second element of the first argument must be a list of symbols that represents argument names"
         ))?;
@@ -141,14 +329,14 @@ pub fn function(
                 Ok(construct_interpreted_function(
                     interpreter,
                     environment,
-                    argument_names,
+                    arguments,
                     code
                 ))
             } else if name == "macro" {
                 Ok(construct_macro_function(
                     interpreter,
                     environment,
-                    argument_names,
+                    arguments,
                     code
                 ))
             } else {
@@ -172,13 +360,14 @@ mod tests {
     #[test]
     fn constructs_simple_function() {
         let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_ordinary_argument(String::from("first-arg"));
+        arguments.add_ordinary_argument(String::from("second-arg"));
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
-            vec!(
-                String::from("first-arg"),
-                String::from("second-arg"),
-            ),
+            arguments,
             vec!(
                 interpreter.intern_symbol_value("first-arg"),
                 interpreter.intern_symbol_value("second-arg")
@@ -192,7 +381,6 @@ mod tests {
         let result = interpreter.execute(
             "(function (lambda (first-arg second-arg) first-arg second-arg))"
         );
-        assert!(result.is_ok());
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -202,13 +390,14 @@ mod tests {
     #[test]
     fn constructs_simple_macro() {
         let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_ordinary_argument(String::from("first-arg"));
+        arguments.add_ordinary_argument(String::from("second-arg"));
 
         let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
-            vec!(
-                String::from("first-arg"),
-                String::from("second-arg"),
-            ),
+            arguments,
             vec!(
                 interpreter.intern_symbol_value("first-arg"),
                 interpreter.intern_symbol_value("second-arg")
@@ -222,7 +411,6 @@ mod tests {
         let result = interpreter.execute(
             "(function (macro (first-arg second-arg) first-arg second-arg))"
         );
-        assert!(result.is_ok());
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -232,10 +420,11 @@ mod tests {
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
-            vec!(),
+            arguments,
             vec!(
                 Value::Integer(1)
             )
@@ -248,7 +437,6 @@ mod tests {
         let result = interpreter.execute(
             "(function (lambda () 1))"
         );
-        assert!(result.is_ok());
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -258,10 +446,11 @@ mod tests {
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
 
         let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
-            vec!(),
+            arguments,
             vec!(
                 Value::Integer(1)
             )
@@ -274,9 +463,158 @@ mod tests {
         let result = interpreter.execute(
             "(function (macro () 1))"
         );
-        assert!(result.is_ok());
 
         let result = result.unwrap();
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
+    }
+
+    #[test]
+    fn able_to_construct_functions_with_optional_arguments() {
+        let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_optional_argument(
+            String::from("a"),
+            None,
+            None
+        ).unwrap();
+        arguments.add_optional_argument(
+            String::from("b"),
+            Some(Value::Integer(1)),
+            None
+        ).unwrap();
+        arguments.add_optional_argument(
+            String::from("c"),
+            Some(Value::Integer(1)),
+            Some(String::from("c-provided?")
+            )).unwrap();
+
+        let function = Function::Interpreted(InterpretedFunction::new(
+            interpreter.get_root_environment(),
+            arguments,
+            vec!(
+                Value::Integer(1)
+            )
+        ));
+
+        let function_id = interpreter.register_function( function);
+
+        let expected = Value::Function(function_id);
+        let result = interpreter.execute(
+            "(function (lambda (#opt a (b 1) (c 1 c-provided?)) 1))"
+        );
+
+        let result = result.unwrap();
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
+    }
+
+    #[test]
+    fn able_to_construct_functions_with_rest_arguments() {
+        let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_rest_argument(
+            String::from("a"),
+        ).unwrap();
+
+        let function = Function::Interpreted(InterpretedFunction::new(
+            interpreter.get_root_environment(),
+            arguments,
+            vec!(
+                Value::Integer(1)
+            )
+        ));
+
+        let function_id = interpreter.register_function( function);
+
+        let expected = Value::Function(function_id);
+        let result = interpreter.execute(
+            "(function (lambda (#rest a) 1))"
+        );
+
+        let result = result.unwrap();
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
+    }
+
+    #[test]
+    fn able_to_construct_functions_with_key_arguments() {
+        let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_key_argument(
+            String::from("a"),
+            None,
+            None
+        ).unwrap();
+        arguments.add_key_argument(
+            String::from("b"),
+            Some(Value::Integer(1)),
+            None
+        ).unwrap();
+        arguments.add_key_argument(
+            String::from("c"),
+            Some(Value::Integer(1)),
+            Some(String::from("c-provided?")
+            )).unwrap();
+
+        let function = Function::Interpreted(InterpretedFunction::new(
+            interpreter.get_root_environment(),
+            arguments,
+            vec!(
+                Value::Integer(1)
+            )
+        ));
+
+        let function_id = interpreter.register_function( function);
+
+        let expected = Value::Function(function_id);
+        let result = interpreter.execute(
+            "(function (lambda (#keys a (b 1) (c 1 c-provided?)) 1))"
+        );
+
+        let result = result.unwrap();
+
+        assertion::assert_deep_equal(&mut interpreter, expected, result);
+    }
+
+    #[test]
+    fn able_to_construct_functions_with_rest_arguments_after_optional_arguments() {
+        let mut interpreter = Interpreter::new();
+        let mut arguments = Arguments::new();
+
+        arguments.add_optional_argument(
+            String::from("a"),
+            None,
+            None
+        ).unwrap();
+
+        arguments.add_optional_argument(
+            String::from("b"),
+            Some(Value::Integer(1)),
+            None
+        ).unwrap();
+
+        arguments.add_rest_argument(
+            String::from("c"),
+        ).unwrap();
+
+        let function = Function::Interpreted(InterpretedFunction::new(
+            interpreter.get_root_environment(),
+            arguments,
+            vec!(
+                Value::Integer(1)
+            )
+        ));
+
+        let function_id = interpreter.register_function( function);
+
+        let expected = Value::Function(function_id);
+        let result = interpreter.execute(
+            "(function (lambda (#opt a (b 1) #rest c) 1))"
+        );
+
+        let result = result.unwrap();
+
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
@@ -300,20 +638,18 @@ mod tests {
     fn returns_error_when_not_a_cons_cell_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let not_valid_first_arguments = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "symbol",
-            "\"string\"",
-            ":keyword",
+        let not_valid_code = vec!(
+            "(function 1)",
+            "(function 1.1)",
+            "(function #t)",
+            "(function #f)",
+            "(function symbol)",
+            "(function \"string\")",
+            "(function :keyword)",
         );
 
-        for not_valid_first_argument in not_valid_first_arguments {
-            let result = interpreter.execute(
-                &format!("(function {})", not_valid_first_argument)
-            );
+        for code in not_valid_code {
+            let result = interpreter.execute(&code);
 
             assertion::assert_invalid_argument_error(&result);
         }

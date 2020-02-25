@@ -135,6 +135,36 @@ impl EnvironmentArena {
         env.define_function(symbol_id, value)
     }
 
+    pub fn set_environment_variable(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), ()> {
+        let env = self.get_mut(id)?;
+
+        if env.has_variable(symbol_id) {
+            env.set_variable(symbol_id, value)
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn set_environment_function(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), ()> {
+        let env = self.get_mut(id)?;
+
+        if env.has_function(symbol_id) {
+            env.set_function(symbol_id, value)
+        } else {
+            Err(())
+        }
+    }
+
     pub fn set_variable(
         &mut self,
         id: EnvironmentId,
@@ -144,10 +174,7 @@ impl EnvironmentArena {
         let env = self.get_mut(id)?;
 
         if env.has_variable(symbol_id) {
-            match env.set_variable(symbol_id, value) {
-                Ok(()) => Ok(()),
-                Err(error) => Err(error)
-            }
+            env.set_variable(symbol_id, value)
         } else if let Some(parent_id) = env.get_parent() {
             self.set_variable(parent_id, symbol_id, value)
         } else {
@@ -164,10 +191,7 @@ impl EnvironmentArena {
         let env = self.get_mut(id)?;
 
         if env.has_function(symbol_id) {
-            match env.set_function(symbol_id, value) {
-                Ok(()) => Ok(()),
-                Err(error) => Err(error)
-            }
+            env.set_function(symbol_id, value)
         } else if let Some(parent_id) = env.get_parent() {
             self.set_function(parent_id, symbol_id, value)
         } else {

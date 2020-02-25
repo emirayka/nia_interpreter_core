@@ -6,6 +6,7 @@ use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::stdlib::_lib;
+use crate::interpreter::function::arguments::Arguments;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,
@@ -96,9 +97,15 @@ fn set_macro_via_cons(
         err
     ))?;
 
+    let mut arguments = Arguments::new();
+
+    for argument_name in argument_names {
+        arguments.add_ordinary_argument(argument_name);
+    }
+
     let function = Function::Macro(MacroFunction::new(
         macro_parent_environment,
-        argument_names,
+        arguments,
         code
     ));
 
