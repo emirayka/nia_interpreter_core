@@ -10,13 +10,10 @@ use crate::interpreter::interpreter::Interpreter;
 
 // todo: fix #(#(%1) %1). Reader doesn't count amount of arguments correctly in the case of nested shorthand lambdas.
 // todo: implement reference counting
-// todo: add variadic args
-// todo: add key word args
 // todo: Add better error handling
 // todo: Write stdlib
 // todo: Implement keyboard listening
 // todo: check tests on arithmetic operations
-// todo: add checking of the same argument name
 // todo: binary plugins
 // todo: ordinary plugins
 // todo: file system

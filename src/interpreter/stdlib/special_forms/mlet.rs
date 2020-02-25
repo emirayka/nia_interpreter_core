@@ -6,7 +6,6 @@ use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::stdlib::_lib;
-use crate::interpreter::function::arguments::Arguments;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,
@@ -44,35 +43,7 @@ fn set_macro_via_cons(
             "The macro definitions of the special form `mlet' must have at least two items."
         ))?;
 
-    let arguments = match cadr {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
-        Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
-                Ok(Vec::new())
-            } else {
-                return interpreter.make_invalid_argument_error(
-                    "The macro definitions of the special form `mlet' must have at least two items."
-                ).into_result()
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The macro definitions of the special form `mlet' must have at least two items."
-        ).into_result()
-    };
-
-    let arguments = arguments.map_err(|err| interpreter.make_generic_execution_error_caused(
-        "",
-        err
-    ))?;
-
-    let argument_names = _lib::convert_vector_of_values_to_vector_of_symbol_names(
-        interpreter,
-        arguments
-    ).map_err(|_| interpreter.make_invalid_argument_error(
-        "The second item of a macro definition must be a list of symbols."
-    ))?;
+    let arguments = _lib::parse_arguments_from_value(interpreter, cadr)?;
 
     let code = match interpreter.get_cddr(cons_id) {
         Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
@@ -96,12 +67,6 @@ fn set_macro_via_cons(
         "",
         err
     ))?;
-
-    let mut arguments = Arguments::new();
-
-    for argument_name in argument_names {
-        arguments.add_ordinary_argument(argument_name);
-    }
 
     let function = Function::Macro(MacroFunction::new(
         macro_parent_environment,

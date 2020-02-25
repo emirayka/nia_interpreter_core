@@ -1,6 +1,5 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::error::Error;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::Function;
 use crate::interpreter::function::arguments::Arguments;

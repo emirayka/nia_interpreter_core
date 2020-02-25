@@ -7,7 +7,6 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::stdlib::_lib;
 use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
-use crate::interpreter::function::arguments::Arguments;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
@@ -45,36 +44,7 @@ fn set_function_via_cons(
             "The function definitions of the special form `flet' must have at least two items."
         ))?;
 
-    let arguments = match cadr {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
-        Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
-                Ok(Vec::new())
-            } else {
-                return interpreter.make_invalid_argument_error(
-                    "The function definitions of the special form `flet' must have at least two items."
-                ).into_result()
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The function definitions of the special form `flet' must have at least two items."
-        ).into_result()
-    };
-
-    let arguments = arguments.map_err(|err|
-        interpreter.make_generic_execution_error_caused(
-            "",
-            err
-        ))?;
-
-    let argument_names = _lib::convert_vector_of_values_to_vector_of_symbol_names(
-        interpreter,
-        arguments
-    ).map_err(|_| interpreter.make_invalid_argument_error(
-        "The second item of a function definition must be a list of symbols."
-    ))?;
+    let arguments = _lib::parse_arguments_from_value(interpreter, cadr)?;
 
     let cddr = interpreter.get_cddr(cons_id)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
@@ -104,12 +74,6 @@ fn set_function_via_cons(
         "",
         err
     ))?;
-
-    let mut arguments = Arguments::new();
-
-    for argument_name in argument_names {
-        arguments.add_ordinary_argument(argument_name);
-    }
 
     let function = Function::Interpreted(InterpretedFunction::new(
         function_parent_environment,
@@ -212,77 +176,57 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(flet () 3)").unwrap());
-        assert_eq!(Value::Integer(2), interpreter.execute("(flet () 3 2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(flet () 3 2 1)").unwrap());
+        let pairs = vec!(
+            ("(flet () 3)", Value::Integer(3)),
+            ("(flet () 3 2)", Value::Integer(2)),
+            ("(flet () 3 2 1)", Value::Integer(1)),
+        );
+
+        assertion::assert_results_are_correct(&mut interpreter, pairs);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn able_to_execute_defined_functions() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(flet ((test-func () 1)) (test-func))").unwrap()
+        let pairs = vec!(
+            ("(flet ((test-func () 1)) (test-func))", Value::Integer(1)),
+            ("(flet ((test-func (a) a)) (test-func 2))", Value::Integer(2)),
         );
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(flet ((test-func (a) a)) (test-func 2))").unwrap()
-        );
+        assertion::assert_results_are_correct(&mut interpreter, pairs);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn able_to_define_several_functions() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute(
-                 "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-1))"
-            ).unwrap()
+        let pairs = vec!(
+            ("(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-1))", Value::Integer(1)),
+            ("(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-2))", Value::Integer(2)),
+            ("(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-3))", Value::Integer(3)),
         );
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute(
-                "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-2))"
-            ).unwrap()
-        );
-
-        assert_eq!(
-            Value::Integer(3),
-            interpreter.execute(
-                "(flet ((test-func-1 () 1) (test-func-2 () 2) (test-func-3 () 3)) (test-func-3))"
-            ).unwrap()
-        );
+        assertion::assert_results_are_correct(&mut interpreter, pairs);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn possible_to_nest_let_invocations() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(flet ((a () 1)) (a))").unwrap()
+        let pairs = vec!(
+            ("(flet ((a () 1)) (a))", Value::Integer(1)),
+            ("(flet ((a () 1)) (flet ((a () 2) (b () 3)) (a)))", Value::Integer(2)),
+            ("(flet ((a () 1)) (flet ((a () 2) (b () 3)) (b)))", Value::Integer(3))
         );
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(flet ((a () 1)) (flet ((a () 2) (b () 3)) (a)))").unwrap()
-        );
-
-        assert_eq!(
-            Value::Integer(3),
-            interpreter.execute("(flet ((a () 1)) (flet ((a () 2) (b () 3)) (b)))").unwrap()
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         );
     }
 
@@ -304,140 +248,140 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
+        let code_vector = vec!(
+            "(flet 1)",
+            "(flet 1.1)",
+            "(flet #t)",
+            "(flet #f)",
+            "(flet \"string\")",
+            "(flet :keyword)",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(&format!(
-                "(flet {})",
-                incorrect_string
-            ));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "()",
-            "nil",
+        let code_vector = vec!(
+            "(flet 1)",
+            "(flet 1.1)",
+            "(flet #t)",
+            "(flet #f)",
+            "(flet \"string\")",
+            "(flet :keyword)",
+            "(flet {})",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(
-                &format!("(flet ({}))", incorrect_string)
-            );
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_part_of_function_definition_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "(quote symbol)",
+        let code_vector = vec!(
+            "(flet ((1 () 2)) 1)",
+            "(flet ((1.1 () 2)) 1.1)",
+            "(flet ((#t () 2)) #t)",
+            "(flet ((#f () 2)) #f)",
+            "(flet ((\"string\" () 2)) \"string\")",
+            "(flet ((:keyword () 2)) :keyword)",
+            "(flet (((quote symbol) () 2)) (quote symbol))",
+            "(flet (({} () 2)) {})",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(
-                &format!("(flet (({} () 2)) {})", incorrect_string, incorrect_string)
-            );
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_arguments_is_not_a_list() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "some-symbol",
+        let code_vector = vec!(
+            "(flet ((func 1)) (func))",
+            "(flet ((func 1.1)) (func))",
+            "(flet ((func #t)) (func))",
+            "(flet ((func #f)) (func))",
+            "(flet ((func \"string\")) (func))",
+            "(flet ((func :keyword)) (func))",
+            "(flet ((func some-symbol)) (func))",
+            "(flet ((func {})) (func))",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(
-                &format!("(flet ((func {} 2)) (func))", incorrect_string)
-            );
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((nil () 2)) nil)");
+        let code_vector = vec!(
+            "(flet ((nil () 2)) nil)"
+        );
 
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((sym)) nil)");
+        let code_vector = vec!(
+            "(flet ((sym)) nil)"
+        );
 
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempts_to_use_previously_defined_functions() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))");
+        let code_vector = vec!(
+            "(flet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))"
+        );
 
-        assertion::assert_error(&result);
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempts_to_redefine_already_defined_function() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((sym-1 () 1) (sym-1 () 2)) (sym-1))");
+        let code_vector = vec!(
+            "(flet ((sym-1 () 1) (sym-1 () 2)) (sym-1))"
+        );
 
-        assertion::assert_error(&result);
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 }

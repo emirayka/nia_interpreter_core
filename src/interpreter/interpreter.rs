@@ -21,7 +21,6 @@ use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
 use std::collections::HashMap;
 use crate::interpreter::function::arguments::Arguments;
-use nom::combinator::opt;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -1169,6 +1168,8 @@ impl Interpreter {
                 let arguments = self.extract_arguments(cons_id)?;
                 let evaluation_result = self.evaluate_macro_invocation(&macro_function, arguments)?;
 
+                self.print_value(evaluation_result);
+
                 self.evaluate_value(environment_id, evaluation_result)
             }
         }
@@ -1542,8 +1543,8 @@ mod tests {
         let name = interpreter.intern("test");
         let mut arguments = Arguments::new();
 
-        arguments.add_ordinary_argument(String::from("a"));
-        arguments.add_ordinary_argument(String::from("b"));
+        arguments.add_ordinary_argument(String::from("a")).unwrap();
+        arguments.add_ordinary_argument(String::from("b")).unwrap();
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.root_environment,
@@ -1668,42 +1669,31 @@ mod tests {
             function_value
         ).unwrap();
 
-        let result = interpreter.execute("(testif #t 1 2)");
-        assert_eq!(Value::Integer(1), result.unwrap());
+        let pairs = vec!(
+            ("(testif #t 1 2)", Value::Integer(1)),
+            ("(testif #f 1 2)", Value::Integer(2)),
+            ("(testif (testif #t #t #f) 1 2)", Value::Integer(1)),
+            ("(testif (testif #f #t #f) 1 2)", Value::Integer(2)),
+        );
 
-        let result = interpreter.execute("(testif #f 1 2)");
-        assert_eq!(Value::Integer(2), result.unwrap());
+        for (code, expected) in pairs {
+            let result = interpreter.execute(code).unwrap();
 
-        let result = interpreter.execute("(testif (testif #t #t #f) 1 2)");
-        assert_eq!(Value::Integer(1), result.unwrap());
-
-        let result = interpreter.execute("(testif (testif #f #t #f) 1 2)");
-        assert_eq!(Value::Integer(2), result.unwrap());
+            assertion::assert_deep_equal(&mut interpreter, expected, result);
+        }
     }
 
-//    #[test]
-//    pub fn macro_invocation_evaluates_correctly() {
-//        use crate::interpreter::stdlib::infect_interpreter;
-//
-//        let mut interpreter = Interpreter::new();
-//
-//        infect_interpreter(&mut interpreter);
-//
-//        let macro_name = interpreter.intern_symbol("if");
-//        let argument_names = vec!(
-//            String::from("condition"),
-//            String::from("then-clause"),
-//            String::from("else-clause"),
-//        );
-//
-//        interpreter.define_function(
-//            interpreter.get_root_environment(),
-//            macro_name,
-//            Value::Function(Function::Macro(MacroFunction::new(
-//                interpreter.root_environment,
-//                argument_names,
-//
-//            )))
-//        )
-//    }
+    #[test]
+    pub fn macro_invocation_evaluates_correctly() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)", "(list 'aa 'bb 'cc)")
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
 }

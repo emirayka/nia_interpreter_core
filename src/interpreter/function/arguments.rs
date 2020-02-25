@@ -1,5 +1,4 @@
 use crate::interpreter::value::Value;
-use crate::interpreter::keyword::keyword_arena::KeywordArena;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OptionalArgument {

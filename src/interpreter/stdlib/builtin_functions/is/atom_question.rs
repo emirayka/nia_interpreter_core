@@ -30,44 +30,57 @@ mod tests {
     use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_atom_was_passed() {
-        for_value_pairs_evaluated_ifbsykcou(
-            |interpreter, code, value| {
-                if let Value::Cons(_) = value {
-                    return;
-                }
+        let mut interpreter = Interpreter::new();
 
-                let code = format!("(is:atom? {})", code);
-                let result = interpreter.execute(&code).unwrap();
-                let expected = Value::Boolean(true);
+        let pairs = vec!(
+            ("(is:atom? 1)", Value::Boolean(true)),
+            ("(is:atom? 1.1)", Value::Boolean(true)),
+            ("(is:atom? #t)", Value::Boolean(true)),
+            ("(is:atom? #f)", Value::Boolean(true)),
+            ("(is:atom? \"string\")", Value::Boolean(true)),
+            ("(is:atom? 'symbol)", Value::Boolean(true)),
+            ("(is:atom? :keyword)", Value::Boolean(true)),
+            ("(is:atom? {})", Value::Boolean(true)),
+            ("(is:atom? #())", Value::Boolean(true)),
+        );
 
-                assert_eq!(expected, result);
-            }
-        )
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_false_when_not_an_atom_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Boolean(false);
-        let result = interpreter.execute("(is:atom? (cons 1 2))").unwrap();
+        let pairs = vec!(
+            ("(is:atom? (cons 1 nil))", Value::Boolean(false)),
+            ("(is:atom? (cons 1 2))", Value::Boolean(false)),
+            ("(is:atom? (cons 1 (cons 2 nil)))", Value::Boolean(false)),
+            ("(is:atom? (cons 1 (cons 2 3)))", Value::Boolean(false)),
+        );
 
-        assert_eq!(expected, result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(is:atom?)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(is:atom?)",
+            "(is:atom? 1 2)"
+        );
 
-        let result = interpreter.execute("(is:atom? 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }
