@@ -241,6 +241,7 @@ impl Interpreter {
                 let function_1 = self.get_function(val1)?.clone();
                 let function_2 = self.get_function(val2)?.clone();
 
+                // todo: doesn't work correctly because it's not deep equal
                 Ok(function_1 == function_2)
             },
             _ => Ok(false)

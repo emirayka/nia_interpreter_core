@@ -15,64 +15,62 @@ pub fn list(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
-        for_value_pairs_evaluated_ifbsyko,
-        for_meta_value_pairs_evaluated_ifbsyko
-    };
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(list)").unwrap();
+        let pairs = vec!(
+            ("(list)", interpreter.intern_nil_symbol_value())
+        );
 
-        assertion::assert_is_nil(&mut interpreter, result);
-    }
-
-    // todo: ensure this test is fine
-    #[test]
-    fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
-        for_value_pairs_evaluated_ifbsyko(
-            |interpreter, string, value| {
-                let nil = interpreter.intern_nil_symbol_value();
-
-                let expected = interpreter.make_cons_value(
-                    value,
-                    nil
-                );
-                let result = interpreter.execute(&format!("(list {})", string)).unwrap();
-
-                assertion::assert_deep_equal(interpreter, expected, result);
-            }
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         );
     }
 
-    // todo: ensure this test is fine
+    #[test]
+    fn returns_a_list_of_one_value_when_was_called_with_one_argument() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(list 1)", "(cons 1 nil)"),
+            ("(list 1.1)", "(cons 1.1 nil)"),
+            ("(list #t)", "(cons #t nil)"),
+            ("(list #f)", "(cons #f nil)"),
+            ("(list \"string\")", "(cons \"string\" nil)"),
+            ("(list 'symbol)", "(cons 'symbol nil)"),
+            ("(list :keyword)", "(cons :keyword nil)"),
+            ("(list {})", "(cons {} nil)"),
+            ("(list #())", "(cons #() nil)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
     #[test]
     fn returns_a_list_of_two_values_when_was_called_with_two_arguments() {
-        for_meta_value_pairs_evaluated_ifbsyko(
-            |interpreter, str1, val1, str2, val2| {
-                let code = &format!("(list {} {})", str1, str2);
-                let result = interpreter.execute(code).unwrap();
+        let mut interpreter = Interpreter::new();
 
-                let nil = interpreter.intern_nil_symbol_value();
-                let expected = interpreter.make_cons_value(
-                    val2,
-                    nil
-                );
+        let pairs = vec!(
+            ("(list 1 2)", "(cons 1 (cons 2 nil))"),
+            ("(list 1.1 2.2)", "(cons 1.1 (cons 2.2 nil))"),
+            ("(list #t #f)", "(cons #t (cons #f nil))"),
+            ("(list #f #t)", "(cons #f (cons #t nil))"),
+            ("(list \"string-1\" \"string-2\")", "(cons \"string-1\" (cons \"string-2\" nil))"),
+            ("(list 'symbol-1 'symbol-2)", "(cons 'symbol-1 (cons 'symbol-2 nil))"),
+            ("(list :keyword-1 :keyword-2)", "(cons :keyword-1 (cons :keyword-2 nil))"),
+            ("(list {:a 1} {:b 2})", "(cons {:a 1} (cons {:b 2} nil))"),
+//            ("(list #(+ %1 %2) #(+ %2 %1))", "(cons #(+ %1 %2) (cons #(+ %2 %1) nil))"),
+        );
 
-                let expected = interpreter.make_cons_value(
-                    val1,
-                    expected
-                );
-
-                assertion::assert_deep_equal(
-                    interpreter,
-                    expected,
-                    result
-                );
-            }
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
         );
     }
 }

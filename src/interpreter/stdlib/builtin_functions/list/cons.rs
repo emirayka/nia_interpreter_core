@@ -52,18 +52,19 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(cons)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(cons)",
+            "(cons 1)",
+            "(cons 1 2 3)"
+        );
 
-        let result = interpreter.execute("(cons 1)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(cons 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }
