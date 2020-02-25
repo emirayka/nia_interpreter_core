@@ -38,43 +38,61 @@ mod tests {
         for_value_pairs_evaluated_ifbsyko
     };
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_cdr_of_cons() {
-        for_value_pairs_evaluated_ifbsyko(
-            |interpreter, string, value| {
-                let code = &format!("(cdr (cons 1 {}))", string);
+        let mut interpreter = Interpreter::new();
 
-                let expected = value;
-                let result = interpreter.execute(code).unwrap();
+        let pairs = vec!(
+            ("(cdr (cons 1 1))", Value::Integer(1)),
+            ("(cdr (cons 1 1.1))", Value::Float(1.1)),
+            ("(cdr (cons 1 #t))", Value::Boolean(true)),
+            ("(cdr (cons 1 #f))", Value::Boolean(false)),
+            ("(cdr (cons 1 \"string\"))", interpreter.intern_string_value(String::from("string"))),
+            ("(cdr (cons 1 'symbol))", interpreter.intern_symbol_value("symbol")),
+            ("(cdr (cons 1 :keyword))", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(cdr (cons 1 {}))", interpreter.make_object_value()),
+            ("(cdr (cons 1 (cons 1 2)))", interpreter.make_cons_value(Value::Integer(1), Value::Integer(2))),
+        );
 
-                assertion::assert_deep_equal(interpreter, expected, result);
-            }
-        )
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(cdr)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(cdr)",
+            "(cdr (cons 1 2) 3)"
+        );
 
-        let result = interpreter.execute("(cdr (cons 1 2) 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons() {
-        for_value_pairs_evaluated_ifbsyko(
-            |interpreter, string,_value| {
-                let code = &format!("(cdr {})", string);
-                let result = interpreter.execute(code);
+        let mut interpreter = Interpreter::new();
 
-                assertion::assert_invalid_argument_error(&result);
-            }
-        )
+        let code_vector = vec!(
+            "(cdr 1)",
+            "(cdr 1.1)",
+            "(cdr #t)",
+            "(cdr #f)",
+            "(cdr \"string\")",
+            "(cdr 'symbol)",
+            "(cdr :keyword)",
+            "(cdr {})",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

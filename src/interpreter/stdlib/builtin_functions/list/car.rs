@@ -34,47 +34,62 @@ pub fn car(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
-        for_value_pairs_evaluated_ifbsyko
-    };
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_car_of_cons() {
-        for_value_pairs_evaluated_ifbsyko(
-            |interpreter, string, value| {
-                let code = &format!("(car (cons {} 1))", string);
+        let mut interpreter = Interpreter::new();
 
-                let expected = value;
-                let result = interpreter.execute(code).unwrap();
+        let pairs = vec!(
+            ("(car (cons 1 1))", Value::Integer(1)),
+            ("(car (cons 1.1 1))", Value::Float(1.1)),
+            ("(car (cons #t 1))", Value::Boolean(true)),
+            ("(car (cons #f 1))", Value::Boolean(false)),
+            ("(car (cons \"string\" 1))", interpreter.intern_string_value(String::from("string"))),
+            ("(car (cons 'symbol 1))", interpreter.intern_symbol_value("symbol")),
+            ("(car (cons :keyword 1))", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(car (cons {} 1))", interpreter.make_object_value()),
+            ("(car (cons (cons 1 2) 1))", interpreter.make_cons_value(Value::Integer(1), Value::Integer(2))),
+        );
 
-                assertion::assert_deep_equal(interpreter, expected, result);
-            }
-        )
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(car)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(car)",
+            "(car (cons 1 2) 3)"
+        );
 
-        let result = interpreter.execute("(car (cons 1 2) 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons() {
-        for_value_pairs_evaluated_ifbsyko(
-            |interpreter, string,_value| {
-                let code = &format!("(car {})", string);
-                let result = interpreter.execute(code);
+        let mut interpreter = Interpreter::new();
 
-                assertion::assert_invalid_argument_error(&result);
-            }
-        )
+        let code_vector = vec!(
+            "(car 1)",
+            "(car 1.1)",
+            "(car #t)",
+            "(car #f)",
+            "(car \"string\")",
+            "(car 'symbol)",
+            "(car :keyword)",
+            "(car {})",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }
