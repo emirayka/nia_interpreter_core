@@ -28,56 +28,56 @@ pub fn number_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_int_or_float_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Boolean(true);
-        let result = interpreter.execute("(is:number? 1)").unwrap();
+        let pairs = vec!(
+            ("(is:number? 1)", Value::Boolean(true)),
+            ("(is:number? 1.1)", Value::Boolean(true)),
+        );
 
-        assert_eq!(expected, result);
-
-        let expected = Value::Boolean(true);
-        let result = interpreter.execute("(is:number? 1.1)").unwrap();
-
-        assert_eq!(expected, result);
-    }
-
-    // todo: ensure this test is fine
-    #[test]
-    fn returns_false_when_not_an_int_was_passed() {
-        for_value_pairs_evaluated_ifbsykcou(
-            |interpreter, code, value| {
-                if let Value::Integer(_) = value {
-                    return;
-                }
-
-                if let Value::Float(_) = value {
-                    return;
-                }
-
-                let code = format!("(is:number? {})", code);
-                let result = interpreter.execute(&code).unwrap();
-                let expected = Value::Boolean(false);
-
-                assert_eq!(expected, result);
-            }
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         )
     }
 
-    // todo: ensure this test is fine
+    #[test]
+    fn returns_false_when_not_an_int_was_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(is:number? #t)", Value::Boolean(false)),
+            ("(is:number? #f)", Value::Boolean(false)),
+            ("(is:number? \"string\")", Value::Boolean(false)),
+            ("(is:number? 'symbol)", Value::Boolean(false)),
+            ("(is:number? :keyword)", Value::Boolean(false)),
+            ("(is:number? (cons 1 2))", Value::Boolean(false)),
+            ("(is:number? {})", Value::Boolean(false)),
+            ("(is:number? #())", Value::Boolean(false)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        )
+    }
+
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(is:number?)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(is:number?)",
+            "(is:number? 1 2)"
+        );
 
-        let result = interpreter.execute("(is:number? 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 }

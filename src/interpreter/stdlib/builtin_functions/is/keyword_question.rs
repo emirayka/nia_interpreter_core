@@ -27,47 +27,56 @@ pub fn keyword_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_keyword_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Boolean(true);
-        let result = interpreter.execute("(is:keyword? :keyword)").unwrap();
+        let pairs = vec!(
+            ("(is:keyword? :keyword)", Value::Boolean(true)),
+        );
 
-        assert_eq!(expected, result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_false_when_not_an_keyword_was_passed() {
-        for_value_pairs_evaluated_ifbsykcou(
-            |interpreter, code, value| {
-                if let Value::Keyword(_) = value {
-                    return;
-                }
+        let mut interpreter = Interpreter::new();
 
-                let code = format!("(is:keyword? {})", code);
-                let result = interpreter.execute(&code).unwrap();
-                let expected = Value::Boolean(false);
+        let pairs = vec!(
+            ("(is:keyword? 1)", Value::Boolean(false)),
+            ("(is:keyword? 1.1)", Value::Boolean(false)),
+            ("(is:keyword? #t)", Value::Boolean(false)),
+            ("(is:keyword? #f)", Value::Boolean(false)),
+            ("(is:keyword? \"string\")", Value::Boolean(false)),
+            ("(is:keyword? 'symbol)", Value::Boolean(false)),
+            ("(is:keyword? {})", Value::Boolean(false)),
+            ("(is:keyword? #())", Value::Boolean(false)),
+            ("(is:keyword? (cons 1 2))", Value::Boolean(false)),
+        );
 
-                assert_eq!(expected, result);
-            }
-        )
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(is:keyword?)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(is:keyword?)",
+            "(is:keyword? 1 2)"
+        );
 
-        let result = interpreter.execute("(is:keyword? 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

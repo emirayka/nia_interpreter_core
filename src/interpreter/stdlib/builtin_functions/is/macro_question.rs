@@ -41,47 +41,59 @@ pub fn macro_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_macro_function_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Boolean(true);
-        let result = interpreter.execute("(is:macro? (function (macro () 2)))").unwrap();
+        let pairs = vec!(
+            ("(is:macro? (function (macro () 2)))", Value::Boolean(true)),
+        );
 
-        assert_eq!(expected, result);
-    }
-
-    // todo: ensure this test is fine
-    #[test]
-    fn returns_false_when_not_an_macro_function_was_passed() {
-        for_value_pairs_evaluated_ifbsykcou(
-            |interpreter, code, value| {
-                if let Value::Function(_) = value {
-                    return;
-                }
-
-                let code = format!("(is:macro? {})", code);
-                let result = interpreter.execute(&code).unwrap();
-                let expected = Value::Boolean(false);
-
-                assert_eq!(expected, result);
-            }
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         )
     }
 
-    // todo: ensure this test is fine
+    #[test]
+    fn returns_false_when_not_an_macro_function_was_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(is:macro? 1)", Value::Boolean(false)),
+            ("(is:macro? 1.1)", Value::Boolean(false)),
+            ("(is:macro? #t)", Value::Boolean(false)),
+            ("(is:macro? #f)", Value::Boolean(false)),
+            ("(is:macro? \"string\")", Value::Boolean(false)),
+            ("(is:macro? 'symbol)", Value::Boolean(false)),
+            ("(is:macro? :keyword)", Value::Boolean(false)),
+            ("(is:macro? (cons 1 2))", Value::Boolean(false)),
+            ("(is:macro? {})", Value::Boolean(false)),
+            ("(is:macro? (flookup 'flookup))", Value::Boolean(false)),
+            ("(is:macro? (flookup 'cond))", Value::Boolean(false)),
+            ("(is:macro? #())", Value::Boolean(false)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        )
+    }
+
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(is:macro?)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(is:macro?)",
+            "(is:macro? 1 2)"
+        );
 
-        let result = interpreter.execute("(is:macro? 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 }

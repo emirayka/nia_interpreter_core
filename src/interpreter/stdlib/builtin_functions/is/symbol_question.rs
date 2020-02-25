@@ -27,47 +27,56 @@ pub fn symbol_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::for_value_pairs_evaluated_ifbsykcou;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_an_symbol_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let expected = Value::Boolean(true);
-        let result = interpreter.execute("(is:symbol? 'symbol)").unwrap();
+        let pairs = vec!(
+            ("(is:symbol? 'symbol)", Value::Boolean(true)),
+        );
 
-        assert_eq!(expected, result);
-    }
-
-    // todo: ensure this test is fine
-    #[test]
-    fn returns_false_when_not_an_symbol_was_passed() {
-        for_value_pairs_evaluated_ifbsykcou(
-            |interpreter, code, value| {
-                if let Value::Symbol(_) = value {
-                    return;
-                }
-
-                let code = format!("(is:symbol? {})", code);
-                let result = interpreter.execute(&code).unwrap();
-                let expected = Value::Boolean(false);
-
-                assert_eq!(expected, result);
-            }
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         )
     }
 
-    // todo: ensure this test is fine
+    #[test]
+    fn returns_false_when_not_an_symbol_was_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(is:symbol? 1)", Value::Boolean(false)),
+            ("(is:symbol? 1.1)", Value::Boolean(false)),
+            ("(is:symbol? #t)", Value::Boolean(false)),
+            ("(is:symbol? #f)", Value::Boolean(false)),
+            ("(is:symbol? \"string\")", Value::Boolean(false)),
+            ("(is:symbol? :keyword)", Value::Boolean(false)),
+            ("(is:symbol? (cons 1 2))", Value::Boolean(false)),
+            ("(is:symbol? {})", Value::Boolean(false)),
+            ("(is:symbol? #())", Value::Boolean(false)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        )
+    }
+
     #[test]
     fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(is:symbol?)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(is:symbol?)",
+            "(is:symbol? 1 2)"
+        );
 
-        let result = interpreter.execute("(is:symbol? 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 }
