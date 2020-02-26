@@ -30,63 +30,72 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_the_integer_itself_if_it_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(ceiling 3)").unwrap());
+        let pairs = vec!(
+            ("(ceiling 3)", Value::Integer(3))
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn computes_a_ceiling_of_a_float_correctly() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(ceiling 0.2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(ceiling 0.5)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(ceiling 0.7)").unwrap());
-        assert_eq!(Value::Integer(2), interpreter.execute("(ceiling 1.2)").unwrap());
+        let pairs = vec!(
+            ("(ceiling 0.2)", Value::Integer(1)),
+            ("(ceiling 0.5)", Value::Integer(1)),
+            ("(ceiling 0.7)", Value::Integer(1)),
+            ("(ceiling 1.2)", Value::Integer(2)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(ceiling)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(ceiling)",
+            "(ceiling 1 2)",
+            "(ceiling 1 2 3)"
+        );
 
-        let result = interpreter.execute("(ceiling 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(ceiling 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "#t",
-            "#f",
-            "'symbol",
-            "\"string\"",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+             "(ceiling #t)",
+             "(ceiling #f)",
+             "(ceiling 'symbol)",
+             "(ceiling \"string\")",
+             "(ceiling :keyword)",
+             "(ceiling '(s-expression))",
+             "(ceiling {})",
+             "(ceiling (function (lambda () 1)))",
+             "(ceiling (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(ceiling {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

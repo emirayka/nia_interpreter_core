@@ -49,28 +49,32 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::for_special_symbols;
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_item_to_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj {:a 1})) (object:set! obj 'a 2) (object:get obj 'a))"
-        ).unwrap();
+        let pairs = vec!(
+            ("(let ((obj {:a 1})) (object:set! obj 'a 2) (object:get obj 'a))", Value::Integer(2))
+        );
 
-        assert_eq!(Value::Integer(2), result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_value_that_were_set() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj {:a 1})) (object:set! obj 'a 2))"
-        ).unwrap();
+        let pairs = vec!(
+            ("(let ((obj {:a 1})) (object:set! obj 'a 2))", Value::Integer(2))
+        );
 
-        assert_eq!(Value::Integer(2), result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
     // todo: ensure this test is fine
@@ -78,11 +82,14 @@ mod tests {
     fn able_to_set_values_that_were_not_in_the_object_initially() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj {:a 1})) (object:set! obj 'b 2) (object:get obj 'b))"
-        ).unwrap();
+        let pairs = vec!(
+            ("(let ((obj {:a 1})) (object:set! obj 'b 2) (object:get obj 'b))", Value::Integer(2))
+        );
 
-        assert_eq!(Value::Integer(2), result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
     // todo: ensure this test is fine
@@ -96,41 +103,35 @@ mod tests {
         })
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj {:item 1})) (object:set!))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
-            "(let ((obj {:item 1})) (object:set! obj))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
-            "(let ((obj {:item 1})) (object:set! obj 'item))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
+        let code_vector = vec!(
+            "(let ((obj {:item 1})) (object:set!))",
+            "(let ((obj {:item 1})) (object:set! obj))",
+            "(let ((obj {:item 1})) (object:set! obj 'item))",
             "(let ((obj {:item 1})) (object:set! obj 'item 'sym2 'sym3))"
         );
-        assertion::assert_invalid_argument_count_error(&result);
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj 2)) (object:set! obj 'item 2))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
     // todo: ensure this test is fine
@@ -138,9 +139,13 @@ mod tests {
     fn returns_invalid_argument_when_second_argument_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj {:a 1})) (object:set! obj 2 2))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

@@ -25,7 +25,8 @@ pub fn lookup(
                 symbol_id
             ) {
                 Ok(value) => Ok(value),
-                _ => Ok(nil)
+                _ => interpreter.make_generic_execution_error("")
+                    .into_result()
             }
         }
         _ => return interpreter.make_invalid_argument_error(
@@ -39,65 +40,70 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_associated_value() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let ((a 1)) (lookup 'a))");
+        let pairs = vec!(
+            ("(let ((a 1)) (lookup 'a))", Value::Integer(1))
+        );
 
-        assert_eq!(Value::Integer(1), result.unwrap());
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_nothing_was_found() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let ((a 1)) (lookup 'b))");
+        let code_vector = vec!(
+            "(let ((a 1)) (lookup 'b))"
+        );
 
-        assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(lookup)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(lookup)",
+            "(lookup 1 2)",
+            "(lookup 1 2 3)"
+        );
 
-        let result = interpreter.execute("(lookup 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(lookup 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "1",
-            "1.0",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+            "(lookup 1)",
+            "(lookup 1.0)",
+            "(lookup #t)",
+            "(lookup #f)",
+            "(lookup \"string\")",
+            "(lookup :keyword)",
+            "(lookup '(s-expression))",
+            "(lookup {})",
+            "(lookup (function (lambda () 1)))",
+            "(lookup (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(lookup {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

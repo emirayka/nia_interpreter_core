@@ -60,15 +60,18 @@ mod tests {
     use crate::interpreter::lib::assertion;
     use crate::interpreter::lib::testing_helpers::for_special_symbols;
 
-    // todo: ensure this test is fine
     #[test]
     fn fetchs_item_of_object_correctly() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(let ((obj {:a 1})) (object:get obj 'a))").unwrap()
-        )
+        let pairs = vec!(
+            ("(let ((obj {:a 1})) (object:get obj 'a))", Value::Integer(1))
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
     // todo: ensure this test is fine
@@ -87,52 +90,57 @@ mod tests {
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj {:item 1})) (object:get))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
-            "(let ((obj {:item 1})) (object:get obj))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
+        let code_vector = vec!(
+            "(let ((obj {:item 1})) (object:get))",
+            "(let ((obj {:item 1})) (object:get obj))",
             "(let ((obj {:item 1})) (object:get obj 'item 'smth-else))"
         );
-        assertion::assert_invalid_argument_count_error(&result);
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj 2)) (object:get obj 'item))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj {:a 1})) (object:get obj 2))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_fetched_symbol_is_not_in_the_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj {:item 1})) (object:get obj 'not-item))"
         );
-        assertion::assert_error(&result);
+
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

@@ -45,7 +45,6 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn makes_new_object() {
         let mut interpreter = Interpreter::new();
@@ -55,7 +54,6 @@ mod tests {
         assertion::assert_is_object(result.unwrap());
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn makes_new_object_with_a_proto() {
         let mut interpreter = Interpreter::new();
@@ -65,35 +63,37 @@ mod tests {
         assertion::assert_is_object(result.unwrap());
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_odd_count_of_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(object:new {} 1)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(object:new {} 1)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_an_even_argument_is_not_a_keyword() {
         let mut interpreter = Interpreter::new();
 
         let invalid_arguments = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "'symbol",
-            "\"string\"",
-            ":keyword",
+            "(object:new 1)",
+            "(object:new 1.1)",
+            "(object:new #t)",
+            "(object:new #f)",
+            "(object:new 'symbol)",
+            "(object:new \"string\")",
+            "(object:new :keyword)",
         );
 
-        for invalid_argument in invalid_arguments {
-            let result = interpreter.execute(
-                &format!("(object:new {})", invalid_argument)
-            );
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            invalid_arguments
+        );
     }
 }

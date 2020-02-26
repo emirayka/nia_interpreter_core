@@ -39,60 +39,57 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_interned_symbol() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            interpreter.intern_symbol_value("test"),
-            interpreter.execute(r#"(intern "test")"#).unwrap()
+        let pairs = vec!(
+            (r#"(intern "test")"#, interpreter.intern_symbol_value("test")),
+            (r#"(intern "a")"#, interpreter.intern_symbol_value("a"))
         );
-        assert_eq!(
-            interpreter.intern_symbol_value("a"),
-            interpreter.execute(r#"(intern "a")"#).unwrap()
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(intern)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let pairs = vec!(
+            "(intern)",
+            "(intern 1 2)",
+            "(intern 1 2 3)"
+        );
 
-        let result = interpreter.execute("(intern 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(intern 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "1",
-            "1.0",
-            "#t",
-            "#f",
-            "'symbol",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+            "(intern 1)",
+            "(intern 1.0)",
+            "(intern #t)",
+            "(intern #f)",
+            "(intern 'symbol)",
+            "(intern :keyword)",
+            "(intern '(s-expression))",
+            "(intern {})",
+            "(intern (function (lambda () 1)))",
+            "(intern (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(intern {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

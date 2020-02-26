@@ -133,6 +133,17 @@ pub fn assert_results_are_errors(
     }
 }
 
+pub fn assert_results_are_functions(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>
+) {
+    for code in code_vector {
+        let result = interpreter.execute(code);
+
+        assert_is_function(result.unwrap())
+    }
+}
+
 pub fn assert_results_are_just_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
@@ -156,4 +167,18 @@ pub fn assert_results_are_invalid_argument_count_errors(
     code_vector: Vec<&str>
 ) {
     assert_results_are_errors(interpreter, code_vector, ErrorKind::InvalidArgumentCount)
+}
+
+pub fn assert_results_are_zero_division_errors(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>
+) {
+    assert_results_are_errors(interpreter, code_vector, ErrorKind::ZeroDivision)
+}
+
+pub fn assert_results_are_overflow_errors(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>
+) {
+    assert_results_are_errors(interpreter, code_vector, ErrorKind::Overflow)
 }

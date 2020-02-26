@@ -73,76 +73,90 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_power_of_two_integers() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(81), interpreter.execute("(pow 3 4)").unwrap());
+        let pairs = vec!(
+            ("(pow 3 4)", Value::Integer(81))
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_float_power() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Float(81.0), interpreter.execute("(pow 3 4.0)").unwrap());
-        assert_eq!(Value::Float(81.0), interpreter.execute("(pow 3.0 4)").unwrap());
-        assert_eq!(Value::Float(81.0), interpreter.execute("(pow 3.0 4.0)").unwrap());
+        let pairs = vec!(
+            ("(pow 3 4.0)", Value::Float(81.0)),
+            ("(pow 3.0 4)", Value::Float(81.0)),
+            ("(pow 3.0 4.0)", Value::Float(81.0)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn should_be_able_to_handle_float_and_negative_values() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Float(2.0), interpreter.execute("(pow 4 0.5)").unwrap());
-        assert_eq!(Value::Float(0.25), interpreter.execute("(pow 4 -1)").unwrap());
-        assert_eq!(Value::Float(0.25), interpreter.execute("(pow 2 -2)").unwrap());
+        let pairs = vec!(
+            ("(pow 4 0.5)", Value::Float(2.0)),
+            ("(pow 4 -1)", Value::Float(0.25)),
+            ("(pow 2 -2)", Value::Float(0.25)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(pow)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(pow)",
+            "(pow 1)",
+            "(pow 1 2 3)"
+        );
 
-        let result = interpreter.execute("(pow 1)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(pow 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "#t",
-            "#f",
-            "'symbol",
-            "\"string\"",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+            "(pow 1 #t)",
+            "(pow 1 #f)",
+            "(pow 1 'symbol)",
+            "(pow 1 \"string\")",
+            "(pow 1 :keyword)",
+            "(pow 1 '(s-expression))",
+            "(pow 1 {})",
+            "(pow 1 (function (lambda () 1)))",
+            "(pow 1 (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(pow 1 {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_overflow_error_when_an_overflow_occurred() {
         let mut interpreter = Interpreter::new();
@@ -152,10 +166,9 @@ mod tests {
             "(pow 4 33)",
         );
 
-        for code in code_vector {
-            let result = interpreter.execute(code);
-
-            assertion::assert_overflow_error(&result);
-        }
+        assertion::assert_results_are_overflow_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

@@ -43,70 +43,75 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_proto_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2) obj-1:a)"
+        let pairs = vec!(
+            ("(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2) obj-1:a)", Value::Integer(1))
         );
 
-        assert_eq!(Value::Integer(1), result.unwrap());
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_true_when_proto_is_set() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2))"
+        let pairs = vec!(
+            ("(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2))", Value::Boolean(true))
         );
 
-        assert_eq!(Value::Boolean(true), result.unwrap());
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto!))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
-            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1))"
-        );
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute(
+        let code_vector = vec!(
+            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto!))",
+            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1))",
             "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1 obj-2 'sym2))"
         );
-        assertion::assert_invalid_argument_count_error(&result);
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
+        let code_vector = vec!(
             "(let ((obj-1 2) (obj-2 {})) (object:set-proto! obj-1 obj-2))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute(
-        "(let ((obj-1 {}) (obj-2 2)) (object:set-proto! obj-1 obj-2))"
+        let code_vector = vec!(
+            "(let ((obj-1 {}) (obj-2 2)) (object:set-proto! obj-1 obj-2))"
         );
-        assertion::assert_invalid_argument_error(&result);
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

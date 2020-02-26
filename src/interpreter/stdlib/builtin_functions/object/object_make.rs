@@ -75,13 +75,11 @@ mod tests {
         }
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn makes_new_object() {
         assert_object_has_values!(vec!(), "(object:make)");
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn correctly_sets_object_values() {
         assert_object_has_values!(
@@ -100,38 +98,38 @@ mod tests {
          );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_odd_count_of_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(object:make :a)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(object:make :a)",
+            "(object:make :a 1 :b)"
+        );
 
-        let result = interpreter.execute("(object:make :a 1 :b)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_an_even_argument_is_not_a_keyword() {
         let mut interpreter = Interpreter::new();
 
-        let invalid_arguments = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "'symbol",
-            "\"string\"",
-            "{}",
+        let code_vector = vec!(
+            "(object:make 1 1)",
+            "(object:make 1.1 1)",
+            "(object:make #t 1)",
+            "(object:make #f 1)",
+            "(object:make 'symbol 1)",
+            "(object:make \"string\" 1)",
+            "(object:make {} 1)",
         );
 
-        for invalid_argument in invalid_arguments {
-            let result = interpreter.execute(
-                &format!("(object:make {} 1)", invalid_argument)
-            );
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

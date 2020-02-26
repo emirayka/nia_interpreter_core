@@ -25,7 +25,8 @@ pub fn flookup(
                 symbol_id
             ) {
                 Ok(value) => Ok(value),
-                _ => Ok(nil)
+                _ => return interpreter.make_generic_execution_error("")
+                    .into_result()
             }
         }
         _ => return interpreter.make_invalid_argument_error(
@@ -38,67 +39,73 @@ pub fn flookup(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
+    use crate::interpreter::lib::assertion::assert_vectors_deep_equal;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_associated_value() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((a () 1)) (flookup 'a))");
-        assertion::assert_is_function(result.unwrap());
+        let code_vector = vec!(
+            "(flet ((a () 1)) (flookup 'a))",
+            "(flet ((a () 1)) (flookup 'flookup))"
+        );
 
-        let result = interpreter.execute("(flet ((a () 1)) (flookup 'flookup))");
-        assertion::assert_is_function(result.unwrap());
+        assertion::assert_results_are_functions(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_nil_when_nothing_was_found() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flet ((a () 1)) (flookup 'b))");
-        assert_eq!(interpreter.intern_nil_symbol_value(), result.unwrap());
+        let code_vector = vec!(
+            "(flet ((a () 1)) (flookup 'b))"
+        );
+
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(flookup)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(flookup)",
+            "(flookup 1 2)",
+            "(flookup 1 2 3)"
+        );
 
-        let result = interpreter.execute("(flookup 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(flookup 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "1",
-            "1.0",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+            "(flookup 1)",
+            "(flookup 1.0)",
+            "(flookup #t)",
+            "(flookup #f)",
+            "(flookup \"string\")",
+            "(flookup :keyword)",
+            "(flookup '(s-expression))",
+            "(flookup {})",
+            "(flookup (function (lambda () 1)))",
+            "(flookup (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(flookup {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }

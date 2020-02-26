@@ -41,83 +41,105 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_integer_multiplication() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(2), interpreter.execute("(* 1 2)").unwrap());
+        let pairs = vec!(
+            ("(* 1 2)", Value::Integer(2))
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_float_multiplication() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Float(2.0), interpreter.execute("(* 1 2.0)").unwrap());
-        assert_eq!(Value::Float(2.0), interpreter.execute("(* 1.0 2)").unwrap());
-        assert_eq!(Value::Float(2.0), interpreter.execute("(* 1.0 2.0)").unwrap());
+        let pairs = vec!(
+            ("(* 1 2.0)", Value::Float(2.0)),
+            ("(* 1.0 2)", Value::Float(2.0)),
+            ("(* 1.0 2.0)", Value::Float(2.0)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn is_variadic() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(2), interpreter.execute("(* 1 2)").unwrap());
-        assert_eq!(Value::Integer(6), interpreter.execute("(* 1 2 3)").unwrap());
-        assert_eq!(Value::Integer(24), interpreter.execute("(* 1 2 3 4)").unwrap());
+        let pairs = vec!(
+            ("(* 1 2)", Value::Integer(2)),
+            ("(* 1 2 3)", Value::Integer(6)),
+            ("(* 1 2 3 4)", Value::Integer(24)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn converts_to_float_if_any_was_present() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Float(6.0), interpreter.execute("(* 1 2 3.0)").unwrap());
-        assert_eq!(Value::Float(6.0), interpreter.execute("(* 1.0 2 3)").unwrap());
-        assert_eq!(Value::Float(6.0), interpreter.execute("(* 1 2.0 3)").unwrap());
+        let pairs = vec!(
+            ("(* 1 2 3.0)", Value::Float(6.0)),
+            ("(* 1.0 2 3)", Value::Float(6.0)),
+            ("(* 1 2.0 3)", Value::Float(6.0)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(*)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let code_vector = vec!(
+            "(*)",
+            "(* 1)"
+        );
 
-        let result = interpreter.execute("(* 1)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_incorrect_value_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_values = vec!(
-            "#t",
-            "#f",
-            "'symbol",
-            "\"string\"",
-            ":keyword",
-            "'(s-expression)",
-            "{}",
-            "(function (lambda () 1))",
-            "(function (macro () 1))",
+        let code_vector = vec!(
+            "(* 1 #t)",
+            "(* 1 #f)",
+            "(* 1 'symbol)",
+            "(* 1 \"string\")",
+            "(* 1 :keyword)",
+            "(* 1 '(s-expression))",
+            "(* 1 {})",
+            "(* 1 (function (lambda () 1)))",
+            "(* 1 (function (macro () 1)))",
         );
 
-        for incorrect_value in incorrect_values {
-            let incorrect_code = format!("(* 1 {})", incorrect_value);
-
-            let result = interpreter.execute(&incorrect_code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_overflow_error_when_an_overflow_occurred() {
         let mut interpreter = Interpreter::new();
@@ -128,10 +150,9 @@ mod tests {
             "(* 922337203685477580 10 10)",
         );
 
-        for code in code_vector {
-            let result = interpreter.execute(code);
-
-            assertion::assert_overflow_error(&result);
-        }
+        assertion::assert_results_are_overflow_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 }
