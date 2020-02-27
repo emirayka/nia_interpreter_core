@@ -5,10 +5,12 @@ use crate::interpreter::value::Value;
 mod _lib;
 mod special_forms;
 mod builtin_functions;
+mod builtin_objects;
 
 pub fn infect_stdlib(interpreter: &mut Interpreter) -> Result<(), Error> {
     special_forms::infect(interpreter)?;
     builtin_functions::infect(interpreter)?;
+    builtin_objects::infect(interpreter)?;
 
     let root = interpreter.get_root_environment();
     let nil_value = interpreter.intern_nil_symbol_value();

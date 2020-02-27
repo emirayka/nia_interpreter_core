@@ -10,7 +10,7 @@ pub fn floor(
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `floor' must take exactly one argument."
+            "Built-in function `math:floor' must take exactly one argument."
         ).into_result();
     }
 
@@ -20,7 +20,7 @@ pub fn floor(
         Value::Integer(int) => Ok(Value::Integer(int)),
         Value::Float(float) => Ok(Value::Integer(float.floor() as i64)),
         _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `floor' must take only integer or float values."
+            "Built-in function `math:floor' must take only integer or float values."
         ).into_result()
     }
 }
@@ -36,7 +36,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(floor 3)", Value::Integer(3)),
+            ("(math:floor 3)", Value::Integer(3)),
         );
 
         assertion::assert_results_are_correct(
@@ -50,10 +50,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(floor 0.2)", Value::Integer(0)),
-            ("(floor 0.5)", Value::Integer(0)),
-            ("(floor 0.7)", Value::Integer(0)),
-            ("(floor 1.2)", Value::Integer(1)),
+            ("(math:floor 0.2)", Value::Integer(0)),
+            ("(math:floor 0.5)", Value::Integer(0)),
+            ("(math:floor 0.7)", Value::Integer(0)),
+            ("(math:floor 1.2)", Value::Integer(1)),
         );
 
         assertion::assert_results_are_correct(
@@ -67,9 +67,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(floor)",
-            "(floor 1 2)",
-            "(floor 1 2 3)"
+            "(math:floor)",
+            "(math:floor 1 2)",
+            "(math:floor 1 2 3)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
@@ -83,15 +83,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-             "(floor #t)",
-             "(floor #f)",
-             "(floor 'symbol)",
-             "(floor \"string\")",
-             "(floor :keyword)",
-             "(floor '(s-expression))",
-             "(floor {})",
-             "(floor (function (lambda () 1)))",
-             "(floor (function (macro () 1)))",
+             "(math:floor #t)",
+             "(math:floor #f)",
+             "(math:floor 'symbol)",
+             "(math:floor \"string\")",
+             "(math:floor :keyword)",
+             "(math:floor '(s-expression))",
+             "(math:floor {})",
+             "(math:floor (function (lambda () 1)))",
+             "(math:floor (function (macro () 1)))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(

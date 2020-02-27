@@ -46,7 +46,7 @@ pub fn pow(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `pow' must take exactly two argument"
+            "Built-in function `math:pow' must take exactly two argument"
         ).into_result();
     }
 
@@ -63,7 +63,7 @@ pub fn pow(
         (Value::Float(float1), Value::Integer(int2)) => Ok(Value::Float(float1.powf(int2 as f64))),
         (Value::Float(float1), Value::Float(float2)) => Ok(Value::Float(float1.powf(float2))),
         _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `pow' must take either integers or float."
+            "Built-in function `math:pow' must take either integers or float."
         ).into_result()
     }
 }
@@ -78,7 +78,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(pow 3 4)", Value::Integer(81))
+            ("(math:pow 3 4)", Value::Integer(81))
         );
 
         assertion::assert_results_are_correct(
@@ -92,9 +92,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(pow 3 4.0)", Value::Float(81.0)),
-            ("(pow 3.0 4)", Value::Float(81.0)),
-            ("(pow 3.0 4.0)", Value::Float(81.0)),
+            ("(math:pow 3 4.0)", Value::Float(81.0)),
+            ("(math:pow 3.0 4)", Value::Float(81.0)),
+            ("(math:pow 3.0 4.0)", Value::Float(81.0)),
         );
 
         assertion::assert_results_are_correct(
@@ -108,9 +108,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(pow 4 0.5)", Value::Float(2.0)),
-            ("(pow 4 -1)", Value::Float(0.25)),
-            ("(pow 2 -2)", Value::Float(0.25)),
+            ("(math:pow 4 0.5)", Value::Float(2.0)),
+            ("(math:pow 4 -1)", Value::Float(0.25)),
+            ("(math:pow 2 -2)", Value::Float(0.25)),
         );
 
         assertion::assert_results_are_correct(
@@ -124,9 +124,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(pow)",
-            "(pow 1)",
-            "(pow 1 2 3)"
+            "(math:pow)",
+            "(math:pow 1)",
+            "(math:pow 1 2 3)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
@@ -140,15 +140,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(pow 1 #t)",
-            "(pow 1 #f)",
-            "(pow 1 'symbol)",
-            "(pow 1 \"string\")",
-            "(pow 1 :keyword)",
-            "(pow 1 '(s-expression))",
-            "(pow 1 {})",
-            "(pow 1 (function (lambda () 1)))",
-            "(pow 1 (function (macro () 1)))",
+            "(math:pow 1 #t)",
+            "(math:pow 1 #f)",
+            "(math:pow 1 'symbol)",
+            "(math:pow 1 \"string\")",
+            "(math:pow 1 :keyword)",
+            "(math:pow 1 '(s-expression))",
+            "(math:pow 1 {})",
+            "(math:pow 1 (function (lambda () 1)))",
+            "(math:pow 1 (function (macro () 1)))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -162,8 +162,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(pow 2 65)",
-            "(pow 4 33)",
+            "(math:pow 2 65)",
+            "(math:pow 4 33)",
         );
 
         assertion::assert_results_are_overflow_errors(

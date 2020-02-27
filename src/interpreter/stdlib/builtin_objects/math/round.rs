@@ -3,14 +3,14 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-pub fn ceiling(
+pub fn round(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `ceiling' must take exactly one argument."
+            "Built-in function `math:round' must take exactly one argument."
         ).into_result();
     }
 
@@ -18,9 +18,9 @@ pub fn ceiling(
 
     match values.remove(0) {
         Value::Integer(int) => Ok(Value::Integer(int)),
-        Value::Float(float) => Ok(Value::Integer(float.ceil() as i64)),
+        Value::Float(float) => Ok(Value::Integer(float.round() as i64)),
         _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `ceiling' must take only integer or float values."
+            "Built-in function `math:round' must take only integer or float values."
         ).into_result()
     }
 }
@@ -35,7 +35,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(ceiling 3)", Value::Integer(3))
+            ("(math:round 3)", Value::Integer(3))
         );
 
         assertion::assert_results_are_correct(
@@ -45,14 +45,13 @@ mod tests {
     }
 
     #[test]
-    fn computes_a_ceiling_of_a_float_correctly() {
+    fn computes_a_correct_round_of_a_float_correctly() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(ceiling 0.2)", Value::Integer(1)),
-            ("(ceiling 0.5)", Value::Integer(1)),
-            ("(ceiling 0.7)", Value::Integer(1)),
-            ("(ceiling 1.2)", Value::Integer(2)),
+            ("(math:round 0.2)", Value::Integer(0)),
+            ("(math:round 0.5)", Value::Integer(1)),
+            ("(math:round 0.7)", Value::Integer(1)),
         );
 
         assertion::assert_results_are_correct(
@@ -66,9 +65,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(ceiling)",
-            "(ceiling 1 2)",
-            "(ceiling 1 2 3)"
+            "(math:round)",
+            "(math:round 1 2)",
+            "(math:round 1 2 3)",
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
@@ -82,20 +81,20 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-             "(ceiling #t)",
-             "(ceiling #f)",
-             "(ceiling 'symbol)",
-             "(ceiling \"string\")",
-             "(ceiling :keyword)",
-             "(ceiling '(s-expression))",
-             "(ceiling {})",
-             "(ceiling (function (lambda () 1)))",
-             "(ceiling (function (macro () 1)))",
+            "(math:round #t)",
+            "(math:round #f)",
+            "(math:round 'symbol)",
+            "(math:round \"string\")",
+            "(math:round :keyword)",
+            "(math:round '(s-expression))",
+            "(math:round {})",
+            "(math:round (function (lambda () 1)))",
+            "(math:round (function (macro () 1)))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector
-        );
+        )
     }
 }
