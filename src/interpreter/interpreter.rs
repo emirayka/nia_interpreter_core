@@ -259,10 +259,9 @@ impl Interpreter {
         Value::String(self.make_string(string))
     }
 
-    pub fn get_string(&mut self, string_id: StringId) -> Result<VString, Error> {
+    pub fn get_string(&self, string_id: StringId) -> Result<&VString, Error> {
         self.string_arena
             .get_string(string_id)
-            .map(|string| string.clone())
             .map_err(|_| self.make_empty_error())
     }
 
