@@ -29,6 +29,10 @@ impl SExpressionElement {
     pub fn get_values(self) -> Vec<Element> {
         self.values
     }
+
+    pub fn get_values_ref(&self) -> &Vec<Element> {
+        &self.values
+    }
 }
 
 impl PartialEq for SExpressionElement {

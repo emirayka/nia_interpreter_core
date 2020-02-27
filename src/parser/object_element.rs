@@ -21,6 +21,10 @@ impl ObjectElement {
     pub fn get_values(self) -> Vec<(KeywordElement, Element)> {
         self.values
     }
+
+    pub fn get_values_ref(&self) -> &Vec<(KeywordElement, Element)> {
+        &self.values
+    }
 }
 
 impl PartialEq for ObjectElement {

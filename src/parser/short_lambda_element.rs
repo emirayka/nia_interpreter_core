@@ -24,6 +24,10 @@ impl ShortLambdaElement {
     pub fn get_value(self) -> SExpressionElement {
         self.s_expression
     }
+
+    pub fn get_value_ref(&self) -> &SExpressionElement {
+        &self.s_expression
+    }
 }
 
 impl PartialEq for ShortLambdaElement {

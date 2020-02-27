@@ -56,6 +56,10 @@ impl PrefixElement {
     pub fn get_value(self) -> Element {
         *self.value
     }
+
+    pub fn get_value_ref(&self) -> &Element {
+        self.value.as_ref()
+    }
 }
 
 impl PartialEq for PrefixElement {
