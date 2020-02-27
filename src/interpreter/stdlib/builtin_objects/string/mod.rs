@@ -36,10 +36,11 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("compare", compare::compare),
         ("concat", concat::concat),
-        ("contains", contains::contains),
+        ("contains?", contains::contains),
         ("equal?", equal_question::equal_question),
         ("greater?", greater_question::greater_question),
         ("less?", less_question::less_question),
+        ("find", find::find),
     );
 
     for (name, func) in bindings {

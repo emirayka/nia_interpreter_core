@@ -11,7 +11,7 @@ pub fn contains(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `contains' takes two strings exactly"
+            "Built-in function `string:contains?' takes two strings exactly"
         ).into_result();
     }
 
@@ -44,16 +44,18 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            (r#"(string:contains "a" "abc")"#, Value::Boolean(true)),
-            (r#"(string:contains "b" "abc")"#, Value::Boolean(true)),
-            (r#"(string:contains "c" "abc")"#, Value::Boolean(true)),
-            (r#"(string:contains "ab" "abc")"#, Value::Boolean(true)),
-            (r#"(string:contains "ac" "abc")"#, Value::Boolean(false)),
-            (r#"(string:contains "bc" "abc")"#, Value::Boolean(true)),
-            (r#"(string:contains "abc" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "" "abc")"#, Value::Boolean(true)),
 
-            (r#"(string:contains "d" "abc")"#, Value::Boolean(false)),
-            (r#"(string:contains "abcc" "abc")"#, Value::Boolean(false)),
+            (r#"(string:contains? "a" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "b" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "c" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "ab" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "ac" "abc")"#, Value::Boolean(false)),
+            (r#"(string:contains? "bc" "abc")"#, Value::Boolean(true)),
+            (r#"(string:contains? "abc" "abc")"#, Value::Boolean(true)),
+
+            (r#"(string:contains? "d" "abc")"#, Value::Boolean(false)),
+            (r#"(string:contains? "abcc" "abc")"#, Value::Boolean(false)),
         );
 
         assertion::assert_results_are_correct(
@@ -67,9 +69,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            r#"(string:contains)"#,
-            r#"(string:contains "a")"#,
-            r#"(string:contains "a" "b" "c")"#
+            r#"(string:contains?)"#,
+            r#"(string:contains? "a")"#,
+            r#"(string:contains? "a" "b" "c")"#
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
@@ -83,25 +85,25 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            r#"(string:contains "a" 1)"#,
-            r#"(string:contains "a" 1.1)"#,
-            r#"(string:contains "a" #t)"#,
-            r#"(string:contains "a" #f)"#,
-            r#"(string:contains "a" 'symbol)"#,
-            r#"(string:contains "a" :keyword)"#,
-            r#"(string:contains "a" {:object-key 'value})"#,
-            r#"(string:contains "a" (cons 1 2))"#,
-            r#"(string:contains "a" #(+ %1 %2))"#,
+            r#"(string:contains? "a" 1)"#,
+            r#"(string:contains? "a" 1.1)"#,
+            r#"(string:contains? "a" #t)"#,
+            r#"(string:contains? "a" #f)"#,
+            r#"(string:contains? "a" 'symbol)"#,
+            r#"(string:contains? "a" :keyword)"#,
+            r#"(string:contains? "a" {:object-key 'value})"#,
+            r#"(string:contains? "a" (cons 1 2))"#,
+            r#"(string:contains? "a" #(+ %1 %2))"#,
 
-            r#"(string:contains 1 "b")"#,
-            r#"(string:contains 1.1 "b")"#,
-            r#"(string:contains #t "b")"#,
-            r#"(string:contains #f "b")"#,
-            r#"(string:contains 'symbol "b")"#,
-            r#"(string:contains :keyword "b")"#,
-            r#"(string:contains {:object-key 'value} "b")"#,
-            r#"(string:contains (cons 1 2) "b")"#,
-            r#"(string:contains #(+ %1 %2) "b")"#,
+            r#"(string:contains? 1 "b")"#,
+            r#"(string:contains? 1.1 "b")"#,
+            r#"(string:contains? #t "b")"#,
+            r#"(string:contains? #f "b")"#,
+            r#"(string:contains? 'symbol "b")"#,
+            r#"(string:contains? :keyword "b")"#,
+            r#"(string:contains? {:object-key 'value} "b")"#,
+            r#"(string:contains? (cons 1 2) "b")"#,
+            r#"(string:contains? #(+ %1 %2) "b")"#,
         );
 
         assertion::assert_results_are_invalid_argument_errors(

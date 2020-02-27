@@ -43,6 +43,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
+            (r#"(string:compare "" "abc")"#, Value::Integer(-1)),
+            (r#"(string:compare "abc" "")"#, Value::Integer(1)),
+
             (r#"(string:compare "abc" "abc")"#, Value::Integer(0)),
             (r#"(string:compare "abc" "def")"#, Value::Integer(-1)),
             (r#"(string:compare "def" "def")"#, Value::Integer(0)),

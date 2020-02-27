@@ -41,6 +41,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
+            (r#"(string:greater? "" "a")"#,  Value::Boolean(false)),
+            (r#"(string:greater? "a" "")"#,  Value::Boolean(true)),
+
             (r#"(string:greater? "abc" "abc")"#, Value::Boolean(false)),
             (r#"(string:greater? "abc" "def")"#, Value::Boolean(false)),
             (r#"(string:greater? "def" "def")"#, Value::Boolean(false)),
