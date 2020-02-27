@@ -49,8 +49,15 @@ pub fn throw(
         String::from("")
     };
 
+    let symbol_name = interpreter.get_symbol_name(
+        symbol
+    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+        "",
+        err
+    ))?;
+
     interpreter.make_generic_error(
-        symbol,
+        symbol_name.clone(),
         &message
     ).into_result()
 }
@@ -72,8 +79,8 @@ mod tests {
         let error = result.err().unwrap();
 
         assert_eq!(
-            interpreter.intern("generic-error"),
-            error.get_symbol()
+            "generic-error",
+            error.get_symbol_name()
         );
     }
 
@@ -89,8 +96,8 @@ mod tests {
         let error = result.err().unwrap();
 
         assert_eq!(
-            interpreter.intern("cute-error-symbol"),
-            error.get_symbol()
+            "cute-error-symbol",
+            error.get_symbol_name()
         );
     }
 

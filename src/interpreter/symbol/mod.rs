@@ -21,21 +21,21 @@ impl SymbolId {
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Symbol {
     name: String,
-    counter: usize
+    gensym_id: usize
 }
 
 impl Symbol {
     fn new(name: String, counter: usize) -> Symbol {
         Symbol {
             name,
-            counter
+            gensym_id: counter
         }
     }
 
     fn from(name: &str) -> Symbol {
         Symbol {
             name: String::from(name),
-            counter: 0
+            gensym_id: 0
         }
     }
 
@@ -43,8 +43,8 @@ impl Symbol {
         &self.name
     }
 
-    pub fn get_counter(&self) -> usize {
-        self.counter
+    pub fn get_gensym_id(&self) -> usize {
+        self.gensym_id
     }
 
     pub fn is_nil(&self) -> bool {
@@ -102,7 +102,7 @@ impl SymbolArena {
         };
     }
 
-    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Result<&Symbol, ()> {
+    pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, ()> {
         self.symbols.get(&symbol_id).ok_or(())
     }
 

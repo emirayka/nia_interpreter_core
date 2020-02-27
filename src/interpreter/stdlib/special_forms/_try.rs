@@ -76,14 +76,20 @@ pub fn _try(
                         "The catch clauses of special form `try' must have two items at least."
                     ))?;
 
-                let catch_symbol = match catch_value {
+                let catch_symbol_id = match catch_value {
                     Value::Symbol(symbol) => symbol,
                     _ => return interpreter.make_invalid_argument_error(
                         "The first item of catch clause of the special form `try' must be a symbol."
                     ).into_result(),
                 };
 
-                if catch_symbol == error.get_symbol() {
+                let catch_symbol_name = interpreter.get_symbol_name(catch_symbol_id)
+                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                        "",
+                        err
+                    ))?;
+
+                if catch_symbol_name == error.get_symbol_name() {
                     found_clause = Some(catch_clause);
                     break;
                 }
@@ -171,14 +177,13 @@ mod tests {
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
 
-        let symbol_id = interpreter.execute("(try (progn 1 (throw not-a-cute-error)) (catch cute-error 1))")
+        let error = interpreter.execute("(try (progn 1 (throw not-a-cute-error)) (catch cute-error 1))")
             .err()
-            .unwrap()
-            .get_symbol();
+            .unwrap();
 
         assert_eq!(
             "not-a-cute-error",
-            interpreter.get_symbol_name(symbol_id).unwrap()
+            error.get_symbol_name()
         );
     }
 
@@ -187,14 +192,13 @@ mod tests {
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
 
-        let symbol_id = interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error (throw not-a-cute-error)))")
+        let error = interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error (throw not-a-cute-error)))")
             .err()
-            .unwrap()
-            .get_symbol();
+            .unwrap();
 
         assert_eq!(
             "not-a-cute-error",
-            interpreter.get_symbol_name(symbol_id).unwrap()
+            error.get_symbol_name()
         );
     }
 

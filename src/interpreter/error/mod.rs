@@ -1,5 +1,3 @@
-use crate::interpreter::symbol::SymbolId;
-
 pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
 pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
 pub const SYMBOL_NAME_ZERO_DIVISION_ERROR: &'static str = "zero-division-error";
@@ -28,7 +26,7 @@ pub struct Error {
     error_kind: ErrorKind,
     message: String,
     caused_by: Option<Box<Error>>,
-    symbol: SymbolId,
+    symbol_name: String,
 }
 
 impl Error {
@@ -36,8 +34,8 @@ impl Error {
         self.error_kind
     }
 
-    pub fn get_symbol(&self) -> SymbolId {
-        self.symbol
+    pub fn get_symbol_name(&self) -> &String {
+        &self.symbol_name
     }
 
     pub fn get_message(&self) -> &String {
@@ -57,7 +55,7 @@ impl Error {
 }
 
 impl Error {
-    pub fn from(caused_by: Option<Error>, kind: ErrorKind, message: &str, symbol: SymbolId) -> Error {
+    pub fn from(caused_by: Option<Error>, kind: ErrorKind, message: &str, symbol_name: String) -> Error {
         Error {
             error_kind: kind,
             message: String::from(message),
@@ -65,130 +63,130 @@ impl Error {
                 Some(error) => Some(Box::new(error)),
                 None => None
             },
-            symbol
+            symbol_name
         }
     }
 
-    pub fn empty(symbol: SymbolId) -> Error {
+    pub fn empty(symbol_name: String) -> Error {
         Error {
             error_kind: ErrorKind::Empty,
             message: String::from(""),
             caused_by: None,
-            symbol
+            symbol_name
         }
     }
 
-    pub fn generic_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn generic_error(symbol_name: String, message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::GenericError,
             message,
-            symbol
+            symbol_name
         )
     }
 
-    pub fn generic_execution_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn generic_execution_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::GenericExecution,
             message,
-            symbol
+            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
         )
     }
-    pub fn generic_execution_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn generic_execution_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::GenericExecution,
             message,
-            symbol
+            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
         )
     }
 
-    pub fn overflow_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn overflow_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::Overflow,
             message,
-            symbol
+        String::from(SYMBOL_NAME_OVERFLOW_ERROR)
         )
     }
 
-    pub fn overflow_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn overflow_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::Overflow,
             message,
-            symbol
+            String::from(SYMBOL_NAME_OVERFLOW_ERROR)
         )
     }
 
-    pub fn zero_division_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn zero_division_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::ZeroDivision,
             message,
-            symbol
+            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR)
         )
     }
 
-    pub fn zero_division_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn zero_division_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::ZeroDivision,
             message,
-            symbol
+            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR)
         )
     }
 
-    pub fn invalid_cons_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn invalid_cons_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::InvalidCons,
             message,
-            symbol
+            String::from(SYMBOL_NAME_INVALID_CONS_ERROR)
         )
     }
 
-    pub fn invalid_cons_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn invalid_cons_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::InvalidCons,
             message,
-            symbol
+            String::from(SYMBOL_NAME_INVALID_CONS_ERROR)
         )
     }
 
-    pub fn invalid_argument_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn invalid_argument_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::InvalidArgument,
             message,
-            symbol
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR)
         )
     }
-    pub fn invalid_argument_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn invalid_argument_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::InvalidArgument,
             message,
-            symbol
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR)
         )
     }
 
-    pub fn invalid_argument_count_error(symbol: SymbolId, message: &str) -> Error {
+    pub fn invalid_argument_count_error(message: &str) -> Error {
         Error::from(
             None,
             ErrorKind::InvalidArgumentCount,
             message,
-            symbol
+        String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
         )
     }
-    pub fn invalid_argument_count_error_caused(symbol: SymbolId, message: &str, cause: Error) -> Error {
+    pub fn invalid_argument_count_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::InvalidArgumentCount,
             message,
-            symbol
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
         )
     }
 }

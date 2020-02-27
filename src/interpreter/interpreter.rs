@@ -78,111 +78,60 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn make_empty_error(&mut self) -> Error {
-        let symbol = self.intern_nil();
-
-        Error::generic_error(symbol, "")
+    pub fn make_empty_error(&self) -> Error {
+        Error::generic_error(String::from(""), "")
     }
 
-    pub fn make_generic_error(&mut self, symbol: SymbolId, message: &str) -> Error {
-        Error::generic_error(symbol, message)
+    pub fn make_generic_error(&self, symbol_name: String, message: &str) -> Error {
+        Error::generic_error(symbol_name, message)
     }
 
-    pub fn make_generic_execution_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
-        );
-
-        Error::generic_execution_error(symbol, message)
+    pub fn make_generic_execution_error(&self, message: &str) -> Error {
+        Error::generic_execution_error(message)
     }
 
-    pub fn make_generic_execution_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_GENERIC_EXECUTION_ERROR
-        );
-
-        Error::generic_execution_error_caused(symbol, message, cause)
+    pub fn make_generic_execution_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::generic_execution_error_caused(message, cause)
     }
 
-    pub fn make_overflow_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
-        );
-
-        Error::overflow_error(symbol, message)
+    pub fn make_overflow_error(&self, message: &str) -> Error {
+        Error::overflow_error(message)
     }
 
-    pub fn make_overflow_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_OVERFLOW_ERROR
-        );
-
-        Error::overflow_error_caused(symbol, message, cause)
+    pub fn make_overflow_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::overflow_error_caused(message, cause)
     }
 
-    pub fn make_zero_division_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
-        );
-
-        Error::zero_division_error(symbol, message)
+    pub fn make_zero_division_error(&self, message: &str) -> Error {
+        Error::zero_division_error(message)
     }
 
-    pub fn make_zero_division_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_ZERO_DIVISION_ERROR
-        );
-
-        Error::zero_division_error_caused(symbol, message, cause)
+    pub fn make_zero_division_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::zero_division_error_caused(message, cause)
     }
 
-    pub fn make_invalid_cons_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
-        );
-
-        Error::invalid_cons_error(symbol, message)
+    pub fn make_invalid_cons_error(&self, message: &str) -> Error {
+        Error::invalid_cons_error(message)
     }
 
-    pub fn make_invalid_cons_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_CONS_ERROR
-        );
-
-        Error::invalid_cons_error_caused(symbol, message, cause)
+    pub fn make_invalid_cons_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::invalid_cons_error_caused(message, cause)
     }
 
-    pub fn make_invalid_argument_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
-        );
-
-        Error::invalid_argument_error(symbol, message)
+    pub fn make_invalid_argument_error(&self, message: &str) -> Error {
+        Error::invalid_argument_error(message)
     }
 
-    pub fn make_invalid_argument_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_ERROR
-        );
-
-        Error::invalid_argument_error_caused(symbol, message, cause)
+    pub fn make_invalid_argument_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::invalid_argument_error_caused(message, cause)
     }
 
-
-    pub fn make_invalid_argument_count_error(&mut self, message: &str) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
-        );
-
-        Error::invalid_argument_count_error(symbol, message)
+    pub fn make_invalid_argument_count_error(&self, message: &str) -> Error {
+        Error::invalid_argument_count_error(message)
     }
 
-    pub fn make_invalid_argument_count_error_caused(&mut self, message: &str, cause: Error) -> Error {
-        let symbol = self.intern(
-            crate::interpreter::error::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
-        );
-
-        Error::invalid_argument_count_error_caused(symbol, message, cause)
+    pub fn make_invalid_argument_count_error_caused(&self, message: &str, cause: Error) -> Error {
+        Error::invalid_argument_count_error_caused(message, cause)
     }
 }
 
@@ -344,7 +293,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn get_symbol(&mut self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
+    pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
         let error = self.make_generic_execution_error(
             ""
         ).into_result();
@@ -354,7 +303,7 @@ impl Interpreter {
             .or(error)
     }
     
-    pub fn get_symbol_name(&mut self, symbol_id: SymbolId) -> Result<&String, Error> {
+    pub fn get_symbol_name(&self, symbol_id: SymbolId) -> Result<&String, Error> {
         let symbol = self.get_symbol(symbol_id)?;
 
         Ok(symbol.get_name())
