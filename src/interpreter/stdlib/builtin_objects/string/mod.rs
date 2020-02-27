@@ -41,6 +41,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("greater?", greater_question::greater_question),
         ("less?", less_question::less_question),
         ("find", find::find),
+        ("join", join::join),
     );
 
     for (name, func) in bindings {

@@ -445,7 +445,7 @@ impl Interpreter {
         self.cons_arena.cons_from_vec(nil, vector)
     }
 
-    pub fn cons_to_vec(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
+    pub fn cons_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
         let mut vector = self.cons_arena
             .cons_to_vec(cons_id)
             .map_err(|_| self.make_empty_error())?;
