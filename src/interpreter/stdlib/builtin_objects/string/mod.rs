@@ -39,6 +39,13 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         compare::compare
     )?;
 
+    infect_object_builtin_function(
+        interpreter,
+        string_object_id,
+        "concat",
+        concat::concat
+    )?;
+
     interpreter.define_variable(
         interpreter.get_root_environment(),
         string_symbol_id,

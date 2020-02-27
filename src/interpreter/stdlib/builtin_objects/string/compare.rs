@@ -6,22 +6,8 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::string::string_arena::StringId;
 
-fn read_as_string(interpreter: &Interpreter, value: Value) -> Result<&String, Error> {
-    let string_id = match value {
-        Value::String(string_id) => string_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `string:compare' must be called with two strings"
-        ).into_result()
-    };
+use crate::interpreter::stdlib::_lib;
 
-    let string = interpreter.get_string(string_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
-            "",
-            err
-        ))?;
-
-    Ok(string.get_string())
-}
 
 pub fn compare(
     interpreter: &mut Interpreter,
@@ -36,8 +22,8 @@ pub fn compare(
 
     let mut values = values;
 
-    let string1 = read_as_string(interpreter, values.remove(0))?;
-    let string2 = read_as_string(interpreter, values.remove(0))?;
+    let string1 = _lib::read_as_string(interpreter, values.remove(0))?;
+    let string2 = _lib::read_as_string(interpreter, values.remove(0))?;
 
     let result = match string1.cmp(string2) {
         Ordering::Less => Value::Integer(-1),

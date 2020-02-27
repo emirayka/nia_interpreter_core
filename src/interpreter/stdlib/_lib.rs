@@ -13,6 +13,23 @@ enum ArgumentParsingMode {
     Keys,
 }
 
+pub fn read_as_string(interpreter: &Interpreter, value: Value) -> Result<&String, Error> {
+    let string_id = match value {
+        Value::String(string_id) => string_id,
+        _ => return interpreter.make_invalid_argument_error(
+            "Built-in function `string:compare' must be called with two strings"
+        ).into_result()
+    };
+
+    let string = interpreter.get_string(string_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
+
+    Ok(string.get_string())
+}
+
 fn extract_three_items_from_cons(
     interpreter: &mut Interpreter,
     cons_id: ConsId
@@ -322,36 +339,60 @@ pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Resu
     Ok(definitions)
 }
 
-pub fn convert_vector_of_values_to_vector_of_symbol_names(
-    interpreter: &mut Interpreter,
-    values: Vec<Value>
-) -> Result<Vec<String>, ()> {
-    let mut result = Vec::new();
-
-    for value in values {
-        let name = match value {
-            Value::Symbol(symbol_id) => {
-                let symbol = interpreter.get_symbol(symbol_id);
-
-                let symbol = match symbol {
-                    Ok(symbol) => symbol,
-                    Err(_) => return Err(())
-                };
-
-                String::from(symbol.get_name())
-            },
-            _ => return Err(())
-        };
-
-        result.push(name);
-    }
-
-    Ok(result)
-}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(test)]
+    mod read_as_string {
+        use super::*;
+        use crate::interpreter::lib::assertion;
+
+        #[test]
+        fn returns_correct_string() {
+            let mut interpreter = Interpreter::new();
+
+            let value = interpreter.make_string_value(String::from("test"));
+            let result = read_as_string(
+                &mut interpreter,
+                value
+            );
+
+            assert_eq!("test", result.unwrap());
+        }
+
+        #[test]
+        fn returns_invalid_argument_when_not_a_string_value_were_passed() {
+            let mut interpreter = Interpreter::new();
+
+            let not_string_values = vec!(
+                Value::Integer(1),
+                Value::Float(1.1),
+                Value::Boolean(true),
+                Value::Boolean(false),
+                interpreter.intern_symbol_value("test"),
+                interpreter.make_keyword_value(String::from("test")),
+                interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
+                interpreter.make_object_value(),
+                interpreter.execute("#(+ %1 %2)").unwrap()
+            );
+
+            for not_string_value in not_string_values {
+                let result = read_as_string(
+                    &mut interpreter,
+                    not_string_value
+                );
+                assertion::assert_invalid_argument_error(&result);
+            }
+        }
+    }
+
+    // todo: add tests here
+    #[cfg(test)]
+    mod parse_arguments {
+        use super::*;
+    }
 
     #[cfg(test)]
     mod check_if_symbol_is_assignable {
@@ -360,7 +401,7 @@ mod tests {
         use crate::interpreter::lib::assertion;
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_ok_on_ordinary_symbols() {
             let mut interpreter = Interpreter::new();
             let symbol_id = interpreter.intern("test");
@@ -371,7 +412,7 @@ mod tests {
         }
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_error_on_constants() {
             for_constants(|interpreter, string| {
                 let symbol_id = interpreter.intern(&string);
@@ -383,7 +424,7 @@ mod tests {
         }
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_error_on_special_symbols() {
             for_special_symbols(|interpreter, string| {
                 let symbol_id = interpreter.intern(&string);
@@ -401,7 +442,7 @@ mod tests {
         use crate::interpreter::lib::assertion;
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_the_result_of_execution_of_the_last_form() {
             let mut interpreter = Interpreter::new();
             let symbol_id = interpreter.intern("test");
@@ -429,7 +470,7 @@ mod tests {
         }
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_err_when_execution_failed() {
             let mut interpreter = Interpreter::new();
 
@@ -456,7 +497,7 @@ mod tests {
         use crate::interpreter::lib::assertion;
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_empty_vector_when_nil_was_provided() {
             let mut interpreter = Interpreter::new();
             let nil = interpreter.intern_nil_symbol_value();
@@ -472,7 +513,7 @@ mod tests {
         }
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_vector_of_cons_cells_when_a_list_was_provided() {
             let mut interpreter = Interpreter::new();
 
@@ -494,7 +535,7 @@ mod tests {
         }
 
         // todo: ensure this test is fine
-    #[test]
+        #[test]
         fn returns_err_when_neither_a_cons_nor_symbol_were_provided() {
             let mut interpreter = Interpreter::new();
 
@@ -509,65 +550,5 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    mod convert_vector_of_values_to_vector_of_symbol_names {
-        use super::*;
-        use crate::interpreter::lib::assertion;
-
-        // todo: ensure this test is fine
-    #[test]
-        fn returns_vector_of_symbol_names() {
-            let mut interpreter = Interpreter::new();
-            let values = vec!(
-                interpreter.intern_symbol_value("a"),
-                interpreter.intern_symbol_value("b"),
-                interpreter.intern_symbol_value("c"),
-            );
-
-            let expected = vec!(
-                String::from("a"),
-                String::from("b"),
-                String::from("c"),
-            );
-
-            let result = convert_vector_of_values_to_vector_of_symbol_names(
-                &mut interpreter,
-                values
-            );
-
-            assert_eq!(expected, result.unwrap());
-        }
-
-        // todo: ensure this test is fine
-    #[test]
-        fn returns_err_when_not_a_symbol_were_provided() {
-            let mut interpreter = Interpreter::new();
-
-            let incorrect_items = vec!(
-                Value::Integer(1),
-                Value::Float(1.1),
-                Value::Boolean(true),
-                Value::Boolean(false),
-                interpreter.intern_string_value(String::from("string")),
-                interpreter.intern_keyword_value(String::from("keyword")),
-            );
-
-            for incorrect_item in incorrect_items {
-                let values = vec!(
-                    interpreter.intern_symbol_value("a"),
-                    interpreter.intern_symbol_value("b"),
-                    interpreter.intern_symbol_value("c"),
-                    incorrect_item
-                );
-
-                let result = convert_vector_of_values_to_vector_of_symbol_names(
-                    &mut interpreter,
-                    values
-                );
-
-                assertion::assert_error(&result);
-            }
-        }
-    }
 }
 
