@@ -8,7 +8,6 @@ use crate::interpreter::string::string_arena::StringId;
 
 use crate::interpreter::stdlib::_lib;
 
-
 pub fn compare(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -16,7 +15,7 @@ pub fn compare(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `string:compare' must be called with two arguments exactly"
+            "Built-in function `string:compare' takes two arguments exactly"
         ).into_result();
     }
 

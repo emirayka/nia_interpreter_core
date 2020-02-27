@@ -11,7 +11,7 @@ pub fn contains(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `contains' takes two strings"
+            "Built-in function `contains' takes two strings exactly"
         ).into_result();
     }
 
