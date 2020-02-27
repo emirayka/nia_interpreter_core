@@ -13,7 +13,7 @@ pub fn equal_question(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-        "Built-in function `string:equal?' takes two arguments exactly"
+        "Built-in function `string:equal?' takes two arguments exactly."
         ).into_result();
     }
 

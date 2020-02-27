@@ -15,7 +15,7 @@ pub fn compare(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `string:compare' takes two arguments exactly"
+            "Built-in function `string:compare' takes two arguments exactly."
         ).into_result();
     }
 
