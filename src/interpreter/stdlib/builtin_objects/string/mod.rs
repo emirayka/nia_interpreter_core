@@ -46,6 +46,13 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         concat::concat
     )?;
 
+    infect_object_builtin_function(
+        interpreter,
+        string_object_id,
+        "contains",
+        contains::contains
+    )?;
+
     interpreter.define_variable(
         interpreter.get_root_environment(),
         string_symbol_id,
