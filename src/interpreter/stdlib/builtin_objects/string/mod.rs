@@ -14,7 +14,7 @@ mod format;
 mod greater_question;
 mod join;
 mod left;
-mod len;
+mod length;
 mod less_question;
 mod lower;
 mod pad;
@@ -43,7 +43,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("greater?", greater_question::greater_question),
         ("join", join::join),
         ("left", left::left),
-        ("len", len::len),
+        ("length", length::length),
         ("less?", less_question::less_question),
         ("lower", lower::lower),
         ("pad", pad::pad),

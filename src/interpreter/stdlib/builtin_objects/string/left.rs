@@ -128,6 +128,7 @@ mod tests {
             r#"(string:left 1.1 "test")"#,
             r#"(string:left #t "test")"#,
             r#"(string:left #f "test")"#,
+            r#"(string:left "test" "test")"#,
             r#"(string:left 'symbol "test")"#,
             r#"(string:left :keyword "test")"#,
             r#"(string:left {:object-key 'value} "test")"#,
