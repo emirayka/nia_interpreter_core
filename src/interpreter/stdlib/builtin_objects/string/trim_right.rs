@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn capitalize(
+pub fn trim_right(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

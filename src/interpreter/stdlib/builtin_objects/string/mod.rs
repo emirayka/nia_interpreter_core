@@ -42,7 +42,21 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("format", format::format),
         ("greater?", greater_question::greater_question),
         ("join", join::join),
+        ("left", left::left),
+        ("len", len::len),
         ("less?", less_question::less_question),
+        ("lower", lower::lower),
+        ("pad", pad::pad),
+        ("pad-left", pad_left::pad_left),
+        ("pad-right", pad_right:pad_right),
+        ("repeat", repeat::repeat),
+        ("right", right::right),
+        ("split", split::split),
+        ("trim", trim::trim),
+        ("trim-left", trim_left::trim_left),
+        ("trim-right", trim_right::trim_right),
+        ("truncate", truncate::truncate),
+        ("upper", upper::upper),
     );
 
     for (name, func) in bindings {
