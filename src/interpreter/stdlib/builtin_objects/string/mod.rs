@@ -26,7 +26,6 @@ mod split;
 mod trim;
 mod trim_left;
 mod trim_right;
-mod truncate;
 mod upper;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -55,7 +54,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("trim", trim::trim),
         ("trim-left", trim_left::trim_left),
         ("trim-right", trim_right::trim_right),
-        ("truncate", truncate::truncate),
         ("upper", upper::upper),
     );
 
