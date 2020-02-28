@@ -279,7 +279,7 @@ impl Interpreter {
         Value::Keyword(self.make_keyword(keyword_name))
     }
 
-    pub fn get_keyword(&mut self, keyword_id: KeywordId) -> Result<Keyword, Error> {
+    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<Keyword, Error> {
         self.keyword_arena
             .get_keyword(keyword_id)
             .map(|keyword| keyword.clone())
@@ -403,25 +403,25 @@ impl Interpreter {
         Value::Cons(self.cons_arena.make_cons(car, cdr))
     }
 
-    pub fn get_car(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+    pub fn get_car(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_car(cons_id)
             .map_err(|_| self.make_empty_error())
     }
 
-    pub fn get_cdr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+    pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_cdr(cons_id)
             .map_err(|_| self.make_empty_error())
     }
 
-    pub fn get_cadr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+    pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_cadr(cons_id)
             .map_err(|_| self.make_empty_error())
     }
 
-    pub fn get_cddr(&mut self, cons_id: ConsId) -> Result<Value, Error> {
+    pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_cddr(cons_id)
             .map_err(|_| self.make_empty_error())
@@ -513,7 +513,7 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn get_items(&mut self, object_id: ObjectId) -> Result<&HashMap<SymbolId, Value>, Error> {
+    pub fn get_items(&self, object_id: ObjectId) -> Result<&HashMap<SymbolId, Value>, Error> {
         let error = self.make_empty_error().into_result();
 
         match self.object_arena.get_object(object_id) {
@@ -528,7 +528,7 @@ impl Interpreter {
         self.function_arena.register_function(function)
     }
 
-    pub fn get_function(&mut self, function_id: FunctionId) -> Result<&Function, Error> {
+    pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
         let error = self.make_empty_error()
             .into_result();
 

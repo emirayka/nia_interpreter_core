@@ -38,10 +38,11 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("concat", concat::concat),
         ("contains?", contains::contains),
         ("equal?", equal_question::equal_question),
-        ("greater?", greater_question::greater_question),
-        ("less?", less_question::less_question),
         ("find", find::find),
+        ("format", format::format),
+        ("greater?", greater_question::greater_question),
         ("join", join::join),
+        ("less?", less_question::less_question),
     );
 
     for (name, func) in bindings {
