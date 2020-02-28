@@ -23,6 +23,7 @@ mod pad_right;
 mod repeat;
 mod right;
 mod split;
+mod substr;
 mod trim;
 mod trim_left;
 mod trim_right;
@@ -51,6 +52,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("repeat", repeat::repeat),
         ("right", right::right),
         ("split", split::split),
+        ("substr", substr::substr),
         ("trim", trim::trim),
         ("trim-left", trim_left::trim_left),
         ("trim-right", trim_right::trim_right),
