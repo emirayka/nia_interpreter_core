@@ -2,20 +2,99 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::stdlib::_lib;
 
 pub fn trim(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    interpreter.make_empty_error()
-        .into_result()
+    if values.len() != 1 {
+        return interpreter.make_invalid_argument_count_error(
+            "Built-in function `string:trim' takes only one argument."
+        ).into_result();
+    }
+
+    let mut values = values;
+
+    let string = _lib::read_as_string(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let trimmed_string = String::from(string.trim());
+
+    Ok(interpreter.intern_string_value(trimmed_string))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::assertion;
 
+    #[test]
+    fn returns_correct_trimmed_string() {
+        let mut interpreter = Interpreter::new();
 
+        let pairs = vec!(
+            (r#"(string:trim " abc")"#, r#""abc""#),
+            (r#"(string:trim "abc ")"#, r#""abc""#),
+            (r#"(string:trim " abc ")"#, r#""abc""#),
+
+            (r#"(string:trim "\n abc")"#, r#""abc""#),
+            (r#"(string:trim "abc\n ")"#, r#""abc""#),
+            (r#"(string:trim "\n abc\n ")"#, r#""abc""#),
+
+            (r#"(string:trim "\r\n abc")"#, r#""abc""#),
+            (r#"(string:trim "abc\r\n ")"#, r#""abc""#),
+            (r#"(string:trim "\r\n abc\r\n ")"#, r#""abc""#),
+
+            (r#"(string:trim "\r\n 猫猫猫")"#, r#""猫猫猫""#),
+            (r#"(string:trim "猫猫猫\r\n ")"#, r#""猫猫猫""#),
+            (r#"(string:trim "\r\n 猫猫猫\r\n ")"#, r#""猫猫猫""#),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_count_error_when_was_called_with_invalid_count_of_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            r#"(string:trim)"#,
+            r#"(string:trim "a" "b")"#
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_was_called_with_invalid_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            r#"(string:trim 1)"#,
+            r#"(string:trim 1.1)"#,
+            r#"(string:trim #t)"#,
+            r#"(string:trim #f)"#,
+            r#"(string:trim 'symbol)"#,
+            r#"(string:trim :keyword)"#,
+            r#"(string:trim {:object-key 'value})"#,
+            r#"(string:trim (cons 1 2))"#,
+            r#"(string:trim #(+ %1 %2))"#,
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
 }
 

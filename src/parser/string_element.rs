@@ -48,7 +48,12 @@ fn make_string_element(value: String) -> Result<StringElement, String> {
 }
 
 pub fn parse_string_element(s: &str) -> Result<(&str, StringElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_escaped_character = preceded(tag(r#"\"#), one_of(r#"\""#));
+    let parse_escaped_character = alt((
+        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\\\"), |_| Ok('\\')),
+        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\\""), |_| Ok('\"')),
+        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\n"), |_| Ok('\n')),
+        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\r"), |_| Ok('\r')),
+        ));
     let parse_not_escaped_character = none_of::<_, _, (&str, ErrorKind)>(r#"\""#);
     let parse_inner_character = alt((parse_escaped_character, parse_not_escaped_character));
     let parse_inner_characters = map_res::<_, _, _, _, (&str, ErrorKind), _, _>(
@@ -79,10 +84,12 @@ mod tests {
     }
 
     #[test]
-    fn test_escapes_behave_correctly() {
-        assert_eq!(Ok(("", StringElement{value: r"\".to_string()})), parse_string_element(r#""\\""#));
-        assert_eq!(Ok(("", StringElement{value: r#"""#.to_string()})), parse_string_element(r#""\"""#));
-        assert_eq!(Ok(("", StringElement{value: r#"knock"knockknock"#.to_string()})), parse_string_element(r#""knock\"knockknock""#));
+    fn test_escape_behaves_correctly() {
+        assert_eq!(Ok(("", StringElement{value: "\\".to_string()})), parse_string_element(r#""\\""#));
+        assert_eq!(Ok(("", StringElement{value: "\"".to_string()})), parse_string_element(r#""\"""#));
+        assert_eq!(Ok(("", StringElement{value: "\n".to_string()})), parse_string_element(r#""\n""#));
+        assert_eq!(Ok(("", StringElement{value: "\r".to_string()})), parse_string_element(r#""\r""#));
+        assert_eq!(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse_string_element(r#""knock\"knockknock""#));
     }
 
 //    #[test]
