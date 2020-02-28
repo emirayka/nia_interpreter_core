@@ -31,6 +31,21 @@ pub fn join(
                         err
                     ))?
             },
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(symbol_id)
+                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                        "",
+                        err
+                    ))?;
+
+                if symbol.is_nil() {
+                    Vec::new()
+                } else {
+                    return interpreter.make_invalid_argument_error(
+                        "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
+                    ).into_result();
+                }
+            },
             value @ Value::String(_) => vec!(value),
             _ => return interpreter.make_invalid_argument_error(
                 "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
@@ -72,6 +87,10 @@ mod tests {
             (r#"(string:join "" "b")"#, r#""b""#),
             (r#"(string:join "" "b" "c")"#, r#""bc""#),
             (r#"(string:join "" "b" "c" "d")"#, r#""bcd""#),
+
+            (r#"(string:join "" '())"#, r#""""#),
+            (r#"(string:join "|" '())"#, r#""""#),
+            (r#"(string:join "||" '())"#, r#""""#),
 
             (r#"(string:join "|" "b")"#, r#""b""#),
             (r#"(string:join "|" "b" "c")"#, r#""b|c""#),
