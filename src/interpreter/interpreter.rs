@@ -9,7 +9,7 @@ use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::infect_stdlib;
+use crate::interpreter::stdlib::{infect_stdlib, _lib};
 use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
 use crate::interpreter::object::object_arena::ObjectArena;
 use crate::interpreter::object::object::ObjectId;
@@ -198,55 +198,12 @@ impl Interpreter {
     }
 
     pub fn print_value(&mut self, value: Value) {
-        match value {
-            Value::Integer(value) => print!("{}", value),
-            Value::Float(value) => print!("{}", value),
-            Value::Boolean(value) => print!("{}", if value {"#t"} else {"#f"}),
-            Value::Keyword(keyword_id) => {
-                print!("{}", self.get_keyword(keyword_id).unwrap().get_name());
-            },
-            Value::Symbol(symbol_id) => {
-                print!("{}", self.get_symbol_name(symbol_id).unwrap());
-            },
-            Value::String(string_id) => {
-                print!("{}", self.get_string(string_id).unwrap().get_string());
-            },
-            Value::Cons(cons_id) => {
-                let mut car = self.get_car(cons_id).unwrap();
-                let mut cdr = self.get_cdr(cons_id).unwrap();
-
-                print!("(");
-
-                loop {
-                    self.print_value(car);
-
-                    match cdr {
-                        Value::Cons(cons_id) => {
-                            car = self.get_car(cons_id).unwrap();
-                            cdr = self.get_cdr(cons_id).unwrap();
-                        },
-                        Value::Symbol(symbol_id) => {
-                            let symbol = self.get_symbol(symbol_id).unwrap();
-
-                            if !symbol.is_nil() {
-                                self.print_value(cdr);
-                                print!(" ");
-                            } else {
-                                print!(")");
-                            }
-
-                            break;
-                        },
-                        value => self.print_value(value)
-                    }
-                }
-            },
-            _ => unimplemented!(),
-//            Object(ObjectId),
-//            Function(FunctionId),
+        match _lib::value_to_string(self, value) {
+            Ok(string) => print!("{}", string),
+            Err(e) => {
+                print!("Cannot print value")
+            }
         }
-
-        print!(" ");
     }
 }
 

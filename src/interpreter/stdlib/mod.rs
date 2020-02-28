@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 
-mod _lib;
+pub mod _lib;
 mod special_forms;
 mod builtin_functions;
 mod builtin_objects;

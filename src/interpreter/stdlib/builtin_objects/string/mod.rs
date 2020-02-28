@@ -48,7 +48,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("lower", lower::lower),
         ("pad", pad::pad),
         ("pad-left", pad_left::pad_left),
-        ("pad-right", pad_right:pad_right),
+        ("pad-right", pad_right::pad_right),
         ("repeat", repeat::repeat),
         ("right", right::right),
         ("split", split::split),
