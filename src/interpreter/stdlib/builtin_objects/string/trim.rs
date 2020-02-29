@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::stdlib::_lib;
+use crate::interpreter::lib::_lib;
 
 pub fn trim(
     interpreter: &mut Interpreter,
@@ -17,10 +17,7 @@ pub fn trim(
 
     let mut values = values;
 
-    let string = _lib::read_as_string(
-        interpreter,
-        values.remove(0)
-    )?;
+    let string = _lib::read_as_string(interpreter, values.remove(0))?;
 
     let trimmed_string = String::from(string.trim());
 

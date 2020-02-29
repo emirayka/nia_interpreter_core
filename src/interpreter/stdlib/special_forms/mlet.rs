@@ -5,7 +5,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::stdlib::_lib;
+use crate::interpreter::lib::_lib;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,

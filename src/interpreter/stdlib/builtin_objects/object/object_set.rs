@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
+use crate::interpreter::lib::_lib;
 
 pub fn object_set(
     interpreter: &mut Interpreter,
@@ -30,7 +30,7 @@ pub fn object_set(
         ).into_result()
     };
 
-    check_if_symbol_assignable(interpreter, symbol_id)?;
+    _lib::check_if_symbol_assignable(interpreter, symbol_id)?;
 
     let value = values.remove(0);
 

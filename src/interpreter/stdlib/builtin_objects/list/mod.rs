@@ -12,6 +12,8 @@ mod butlast;
 mod contains_question;
 mod filter;
 mod first;
+mod foldl;
+mod foldr;
 mod head;
 mod head_while;
 mod join;
@@ -20,7 +22,6 @@ mod length;
 mod map;
 mod none_question;
 mod nth;
-mod reduce;
 mod remove;
 mod repeat;
 mod replace;
@@ -34,13 +35,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let list_symbol_id = interpreter.intern("list");
 
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
-        ("all?", all_question::stub),
+        ("all?", all_question::all_question),
         ("any?", any_question::stub),
         ("butfirst", butfirst::stub),
         ("butlast", butlast::stub),
         ("contains?", contains_question::stub),
         ("filter", filter::stub),
         ("first", first::stub),
+        ("foldl", foldl::stub),
+        ("foldr", foldr::stub),
         ("head", head::stub),
         ("head-while", head_while::stub),
         ("join", join::stub),
@@ -49,7 +52,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("map", map::stub),
         ("none?", none_question::stub),
         ("nth", nth::stub),
-        ("reduce", reduce::stub),
         ("remove", remove::stub),
         ("repeat", repeat::stub),
         ("replace", replace::stub),

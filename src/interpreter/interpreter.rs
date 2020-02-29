@@ -9,7 +9,7 @@ use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::stdlib::{infect_stdlib, _lib};
+use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
 use crate::interpreter::object::object_arena::ObjectArena;
 use crate::interpreter::object::object::ObjectId;
@@ -21,6 +21,7 @@ use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
 use std::collections::HashMap;
 use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::lib::_lib;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -1027,7 +1028,7 @@ impl Interpreter {
             .ok_or_else(|| self.make_empty_error())
     }
 
-    fn evaluate_s_expression_function_invocation(
+    pub fn evaluate_s_expression_function_invocation(
         &mut self,
         environment_id: EnvironmentId,
         function: FunctionId,

@@ -4,7 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::stdlib::_lib;
+use crate::interpreter::lib::_lib;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,

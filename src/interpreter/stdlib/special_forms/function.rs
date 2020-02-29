@@ -6,7 +6,7 @@ use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::function::arguments::Arguments;
-use crate::interpreter::stdlib::_lib;
+use crate::interpreter::lib::_lib;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \

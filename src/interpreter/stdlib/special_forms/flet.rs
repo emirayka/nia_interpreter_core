@@ -5,8 +5,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::stdlib::_lib;
-use crate::interpreter::stdlib::_lib::check_if_symbol_assignable;
+use crate::interpreter::lib::_lib;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
@@ -37,7 +36,7 @@ fn set_function_via_cons(
         ).into_result()
     };
 
-    check_if_symbol_assignable(interpreter, function_symbol_id)?;
+    _lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let cadr = interpreter.get_cadr(cons_id)
         .map_err(|_| interpreter.make_invalid_argument_error(

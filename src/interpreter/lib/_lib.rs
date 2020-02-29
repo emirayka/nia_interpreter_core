@@ -6,12 +6,53 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::function::arguments::Arguments;
 use crate::interpreter::function::Function;
+use crate::interpreter::function::function_arena::FunctionId;
 
 enum ArgumentParsingMode {
     Ordinary,
     Optional,
     Rest,
     Keys,
+}
+
+pub fn iterate_through_list(
+    interpreter: &mut Interpreter,
+    cons_id: ConsId,
+    mut closure: impl FnMut(&mut Interpreter, Value) -> Result<bool, Error>
+) -> Result<(), Error> {
+    let mut car = interpreter.get_car(cons_id)?;
+    let mut cdr = interpreter.get_cdr(cons_id)?;
+
+    loop {
+        let should_continue = closure(interpreter, car)?;
+
+        if !should_continue {
+            break;
+        }
+
+        match cdr {
+            Value::Symbol(symbol_id) => {
+                let symbol = interpreter.get_symbol(symbol_id)?;
+
+                if symbol.is_nil() {
+                    break;
+                } else {
+                    return interpreter.make_generic_execution_error(
+                        "Invalid list"
+                    ).into_result()
+                }
+            },
+            Value::Cons(cons_id) => {
+                car = interpreter.get_car(cons_id)?;
+                cdr = interpreter.get_cdr(cons_id)?;
+            },
+            _ => return interpreter.make_generic_execution_error(
+                "Invalid list"
+            ).into_result()
+        };
+    }
+
+    Ok(())
 }
 
 pub fn value_to_string(interpreter: &Interpreter, value: Value) -> Result<String, Error> {
@@ -94,6 +135,15 @@ pub fn value_to_string(interpreter: &Interpreter, value: Value) -> Result<String
     }
 }
 
+pub fn read_as_int(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
+    match value {
+        Value::Integer(int) => Ok(int),
+        _ => interpreter.make_invalid_argument_error(
+            "Expected int."
+        ).into_result()
+    }
+}
+
 pub fn read_as_string(interpreter: &Interpreter, value: Value) -> Result<&String, Error> {
     let string_id = match value {
         Value::String(string_id) => string_id,
@@ -111,13 +161,26 @@ pub fn read_as_string(interpreter: &Interpreter, value: Value) -> Result<&String
     Ok(string.get_string())
 }
 
-pub fn read_as_int(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
-    match value {
-        Value::Integer(int) => Ok(int),
-        _ => interpreter.make_invalid_argument_error(
-        "Expected int."
+pub fn read_as_cons(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {
+    let cons_id = match value {
+        Value::Cons(cons_id) => cons_id,
+        _ => return interpreter.make_invalid_argument_error(
+            "Expected cons cell."
         ).into_result()
-    }
+    };
+
+    Ok(cons_id)
+}
+
+pub fn read_as_function(interpreter: &Interpreter, value: Value) -> Result<FunctionId, Error> {
+    let function_id = match value {
+        Value::Function(function_id) => function_id,
+        _ => return interpreter.make_invalid_argument_error(
+            "Expected a function."
+        ).into_result()
+    };
+
+    Ok(function_id)
 }
 
 fn extract_three_items_from_cons(
@@ -435,6 +498,63 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
+    mod iterate_through_list {
+        use super::*;
+
+        #[test]
+        fn executes_once_for_each_item_in_list() {
+            let mut result = 0;
+
+            let closure = |interpreter: &mut Interpreter, value: Value| {
+                if let Value::Integer(int) = value {
+                    result += int;
+
+                    Ok(true)
+                } else {
+                    unreachable!();
+                }
+            };
+
+            let mut interpreter = Interpreter::new();
+            let value = interpreter.execute("(list 1 2 3 4)").unwrap();
+            let list = read_as_cons(
+                &interpreter,
+                value
+            ).unwrap();
+
+            iterate_through_list(&mut interpreter, list, closure).unwrap();
+
+            assert_eq!(10, result);
+        }
+
+        #[test]
+        fn able_to_determine_if_need_to_continue() {
+            let mut result = 0;
+
+            let closure = |interpreter: &mut Interpreter, value: Value| {
+                if let Value::Integer(int) = value {
+                    result += int;
+
+                    Ok(int % 2 != 0)
+                } else {
+                    unreachable!();
+                }
+            };
+
+            let mut interpreter = Interpreter::new();
+            let value = interpreter.execute("(list 1 2 3 4)").unwrap();
+            let list = read_as_cons(
+                &interpreter,
+                value
+            ).unwrap();
+
+            iterate_through_list(&mut interpreter, list, closure).unwrap();
+
+            assert_eq!(3, result);
+        }
+    }
+
+    #[cfg(test)]
     mod value_to_string {
         use super::*;
 
@@ -463,6 +583,50 @@ mod tests {
                 let result = value_to_string(&mut interpreter, value).unwrap();
 
                 assert_eq!(expected, result);
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod read_as_int {
+        use super::*;
+        use crate::interpreter::lib::assertion;
+
+        #[test]
+        fn returns_correct_int() {
+            let mut interpreter = Interpreter::new();
+
+            let value = Value::Integer(3);
+            let result = read_as_int(
+                &mut interpreter,
+                value
+            );
+
+            assert_eq!(3, result.unwrap());
+        }
+
+        #[test]
+        fn returns_invalid_argument_when_not_a_string_value_were_passed() {
+            let mut interpreter = Interpreter::new();
+
+            let not_string_values = vec!(
+                Value::Float(1.1),
+                Value::Boolean(true),
+                Value::Boolean(false),
+                interpreter.make_string_value(String::from("test")),
+                interpreter.intern_symbol_value("test"),
+                interpreter.make_keyword_value(String::from("test")),
+                interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
+                interpreter.make_object_value(),
+                interpreter.execute("#(+ %1 %2)").unwrap()
+            );
+
+            for not_string_value in not_string_values {
+                let result = read_as_int(
+                    &mut interpreter,
+                    not_string_value
+                );
+                assertion::assert_invalid_argument_error(&result);
             }
         }
     }
@@ -503,6 +667,108 @@ mod tests {
 
             for not_string_value in not_string_values {
                 let result = read_as_string(
+                    &mut interpreter,
+                    not_string_value
+                );
+                assertion::assert_invalid_argument_error(&result);
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod read_as_cons {
+        use super::*;
+        use crate::interpreter::lib::assertion;
+
+        #[test]
+        fn returns_correct_cons_cell() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec!(
+                (Value::Cons(ConsId::new(1)), ConsId::new(1)),
+                (Value::Cons(ConsId::new(2)), ConsId::new(2)),
+                (Value::Cons(ConsId::new(3)), ConsId::new(3)),
+            );
+
+            for (value, expected) in pairs {
+                let result = read_as_cons(
+                    &mut interpreter,
+                    value
+                ).unwrap();
+
+                assert_eq!(expected, result);
+            }
+        }
+
+        #[test]
+        fn returns_invalid_argument_when_not_a_cons_value_were_passed() {
+            let mut interpreter = Interpreter::new();
+
+            let not_string_values = vec!(
+                Value::Integer(1),
+                Value::Float(1.1),
+                Value::Boolean(true),
+                Value::Boolean(false),
+                interpreter.make_string_value(String::from("test")),
+                interpreter.intern_symbol_value("test"),
+                interpreter.make_keyword_value(String::from("test")),
+                interpreter.make_object_value(),
+                interpreter.execute("#(+ %1 %2)").unwrap()
+            );
+
+            for not_string_value in not_string_values {
+                let result = read_as_cons(
+                    &mut interpreter,
+                    not_string_value
+                );
+                assertion::assert_invalid_argument_error(&result);
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod read_as_function {
+        use super::*;
+        use crate::interpreter::lib::assertion;
+
+        #[test]
+        fn returns_correct_function() {
+            let mut interpreter = Interpreter::new();
+
+            let code_vector = vec!(
+                "(function (lambda () 3))",
+                "(flookup 'flookup)",
+                "(function (macro () 2))",
+                "(flookup 'cond)",
+            );
+
+            for code in code_vector {
+                let result = interpreter.execute(code).unwrap();
+                let function = read_as_function(
+                    &mut interpreter,
+                    result
+                ).unwrap();
+            }
+        }
+
+        #[test]
+        fn returns_invalid_argument_when_not_a_function_value_were_passed() {
+            let mut interpreter = Interpreter::new();
+
+            let not_string_values = vec!(
+                Value::Integer(1),
+                Value::Float(1.1),
+                Value::Boolean(true),
+                Value::Boolean(false),
+                interpreter.make_string_value(String::from("test")),
+                interpreter.intern_symbol_value("test"),
+                interpreter.make_keyword_value(String::from("test")),
+                interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
+                interpreter.make_object_value(),
+            );
+
+            for not_string_value in not_string_values {
+                let result = read_as_function(
                     &mut interpreter,
                     not_string_value
                 );

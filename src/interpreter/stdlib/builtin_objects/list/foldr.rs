@@ -3,9 +3,9 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-pub fn all_question(
+pub fn stub(
     interpreter: &mut Interpreter,
-    environment_id: EnvironmentId,
+    _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     Ok(Value::Boolean(false))
