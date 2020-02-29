@@ -200,7 +200,7 @@ impl Interpreter {
     pub fn print_value(&mut self, value: Value) {
         match _lib::value_to_string(self, value) {
             Ok(string) => print!("{}", string),
-            Err(e) => {
+            Err(_) => {
                 print!("Cannot print value")
             }
         }

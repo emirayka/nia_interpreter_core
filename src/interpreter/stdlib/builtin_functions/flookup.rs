@@ -18,8 +18,6 @@ pub fn flookup(
 
     match values.remove(0) {
         Value::Symbol(symbol_id) => {
-            let nil = interpreter.intern_nil_symbol_value();
-
             match interpreter.lookup_function(
                 _environment,
                 symbol_id
@@ -39,7 +37,6 @@ pub fn flookup(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::assertion::assert_vectors_deep_equal;
 
     #[test]
     fn returns_associated_value() {

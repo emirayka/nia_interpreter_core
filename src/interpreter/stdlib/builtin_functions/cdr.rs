@@ -34,9 +34,6 @@ pub fn cdr(
 mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
-        for_value_pairs_evaluated_ifbsyko
-    };
 
     #[test]
     fn returns_cdr_of_cons() {

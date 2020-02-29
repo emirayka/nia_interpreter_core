@@ -18,8 +18,6 @@ pub fn lookup(
 
     match values.remove(0) {
         Value::Symbol(symbol_id) => {
-            let nil = interpreter.intern_nil_symbol_value();
-
             match interpreter.lookup_variable(
                 _environment,
                 symbol_id

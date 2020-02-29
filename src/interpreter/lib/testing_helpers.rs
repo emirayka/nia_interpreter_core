@@ -1,8 +1,5 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::function::interpreted_function::InterpretedFunction;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::arguments::Arguments;
 
 // i -> Integer
 // f -> Float
@@ -32,92 +29,6 @@ pub fn make_value_pairs_evaluated_ifbsyko(interpreter: & mut Interpreter) -> Vec
     )
 }
 
-pub fn make_value_pairs_evaluated_ifbsykcou(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
-    let string_value = interpreter.intern_string_value(String::from("string"));
-    let symbol_value = interpreter.intern_symbol_value("symbol");
-    let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
-    let cons_value = interpreter.make_cons_value(Value::Integer(1), Value::Integer(2));
-    let object_value = interpreter.make_object_value();
-    let arguments = Arguments::new();
-    let function_value = Value::Function(interpreter.register_function(Function::Interpreted(InterpretedFunction::new(
-        interpreter.get_root_environment(),
-        arguments,
-        vec!(
-            Value::Integer(1)
-        )
-    ))));
-
-    vec!(
-        (String::from("1"), Value::Integer(1)),
-        (String::from("1.1"), Value::Float(1.1)),
-        (String::from("#t"), Value::Boolean(true)),
-        (String::from("#f"), Value::Boolean(false)),
-        (String::from("\"string\""), string_value),
-        (String::from("'symbol"), symbol_value),
-        (String::from(":keyword"), keyword_value),
-        (String::from("(cons 1 2)"), cons_value),
-        (String::from("{}"), object_value),
-        (String::from("(function (lambda () 1))"), function_value),
-    )
-}
-
-pub fn make_value_pairs_ifbsyko(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
-    let string_value = interpreter.intern_string_value(String::from("string"));
-    let symbol_value = interpreter.intern_symbol_value("symbol");
-    let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
-    let object_value = interpreter.make_object_value();
-
-    vec!(
-        (String::from("1"), Value::Integer(1)),
-        (String::from("1.1"), Value::Float(1.1)),
-        (String::from("#t"), Value::Boolean(true)),
-        (String::from("#f"), Value::Boolean(false)),
-        (String::from("\"string\""), string_value),
-        (String::from("symbol"), symbol_value),
-        (String::from(":keyword"), keyword_value),
-        (String::from("{}"), object_value),
-    )
-}
-
-pub fn make_value_pairs_ifbsykcou(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
-    let string_value = interpreter.intern_string_value(String::from("string"));
-    let symbol_value = interpreter.intern_symbol_value("symbol");
-    let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
-    let cons_value = interpreter.make_cons_value(Value::Integer(1), Value::Integer(2));
-    let object_value = interpreter.make_object_value();
-    let arguments = Arguments::new();
-    let function_value = Value::Function(interpreter.register_function(Function::Interpreted(InterpretedFunction::new(
-        interpreter.get_root_environment(),
-        arguments,
-        vec!(
-            Value::Integer(1)
-        )
-    ))));
-
-    vec!(
-        (String::from("1"), Value::Integer(1)),
-        (String::from("1.1"), Value::Float(1.1)),
-        (String::from("#t"), Value::Boolean(true)),
-        (String::from("#f"), Value::Boolean(false)),
-        (String::from("\"string\""), string_value),
-        (String::from("symbol"), symbol_value),
-        (String::from(":keyword"), keyword_value),
-        (String::from("(cons 1 2)"), cons_value),
-        (String::from("{}"), object_value),
-        (String::from("(function (lambda () 1))"), function_value),
-    )
-}
-
-pub fn for_value_pairs<F: Fn(&mut Interpreter, String, Value) -> ()>(
-    func: F,
-    interpreter: &mut Interpreter,
-    pairs: Vec<(String, Value)>
-) {
-    for pair in pairs {
-        func(interpreter, pair.0.clone(), pair.1);
-    }
-}
-
 pub fn for_special_symbols<F: Fn(&mut Interpreter, String) -> ()>(
     func: F
 ) {
@@ -144,59 +55,6 @@ pub fn for_constants<F: Fn(&mut Interpreter, String) -> ()>(
     for constant in constants {
         func(&mut interpreter, String::from(constant));
     }
-}
-
-pub fn for_value_pairs_evaluated_ifbsyko<F: Fn(&mut Interpreter, String, Value) -> ()>(
-    func: F
-) {
-    let mut interpreter = Interpreter::new();
-    let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
-
-    for_value_pairs(
-        func,
-        &mut interpreter,
-        pairs
-    )
-}
-
-
-pub fn for_value_pairs_evaluated_ifbsykcou<F: Fn(&mut Interpreter, String, Value) -> ()>(
-    func: F
-) {
-    let mut interpreter = Interpreter::new();
-    let pairs = make_value_pairs_evaluated_ifbsykcou(&mut interpreter);
-
-    for_value_pairs(
-        func,
-        &mut interpreter,
-        pairs
-    )
-}
-
-pub fn for_value_pairs_ifbsyko<F: Fn(&mut Interpreter, String, Value) -> ()>(
-    func: F
-) {
-    let mut interpreter = Interpreter::new();
-    let pairs = make_value_pairs_ifbsyko(&mut interpreter);
-
-    for_value_pairs(
-        func,
-        &mut interpreter,
-        pairs
-    )
-}
-
-pub fn for_value_pairs_ifbsykcou<F: Fn(&mut Interpreter, String, Value) -> ()>(
-    func: F
-) {
-    let mut interpreter = Interpreter::new();
-    let pairs = make_value_pairs_ifbsykcou(&mut interpreter);
-
-    for_value_pairs(
-        func,
-        &mut interpreter,
-        pairs
-    )
 }
 
 pub fn for_meta_value_pairs_evaluated_ifbsyko<F: Fn(&mut Interpreter, String, Value, String, Value) -> ()>(

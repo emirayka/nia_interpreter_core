@@ -4,7 +4,6 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::string::string_arena::StringId;
 
 use crate::interpreter::stdlib::_lib;
 

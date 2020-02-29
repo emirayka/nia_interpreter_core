@@ -59,7 +59,7 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
 }
 
 fn count_short_lambda_argument_count(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     short_lambda_element: &ShortLambdaElement
 ) -> u8 {
     let mut candidates = Vec::new();

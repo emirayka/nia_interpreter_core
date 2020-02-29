@@ -23,7 +23,7 @@ pub fn left(
         values.remove(0)
     )?;
 
-    let mut string = _lib::read_as_string(
+    let string = _lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -38,7 +38,7 @@ pub fn left(
 
     let mut chars = string.chars();
 
-    for i in 0..left_index {
+    for _ in 0..left_index {
         chars.next();
     }
 
@@ -56,7 +56,7 @@ mod tests {
     fn returns_left_symbols() {
         let mut interpreter = Interpreter::new();
 
-        let mut pairs = vec!(
+        let pairs = vec!(
             (r#"(string:left -5 "abcd")"#, r#""abcd""#),
             (r#"(string:left -4 "abcd")"#, r#""abcd""#),
             (r#"(string:left -3 "abcd")"#, r#""bcd""#),
@@ -82,7 +82,7 @@ mod tests {
     fn handles_unicode() {
         let mut interpreter = Interpreter::new();
 
-        let mut pairs = vec!(
+        let pairs = vec!(
             (r#"(string:left -5 "猫a钥b匙c月")"#, r#""钥b匙c月""#),
             (r#"(string:left -4 "猫a钥b匙c月")"#, r#""b匙c月""#),
             (r#"(string:left -3 "猫a钥b匙c月")"#, r#""匙c月""#),

@@ -3,7 +3,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::stdlib::_lib;
-use crate::interpreter::function::Function;
 
 pub fn format(
     interpreter: &mut Interpreter,
@@ -23,7 +22,7 @@ pub fn format(
         values.remove(0)
     )?;
 
-    let mut strings: Vec<&str> = string.split("{}").collect();
+    let strings: Vec<&str> = string.split("{}").collect();
 
     if strings.len() - 1 != values.len() {
         return interpreter.make_invalid_argument_count_error(

@@ -56,11 +56,11 @@ pub fn substr(
 
     let mut chars = string.chars();
 
-    for i in 0..first {
+    for _ in 0..first {
         chars.next();
     }
 
-    let mut result = chars.take((second - first) as usize)
+    let result = chars.take((second - first) as usize)
         .collect::<String>();
 
     Ok(interpreter.intern_string_value(result))

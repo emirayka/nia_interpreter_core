@@ -6,7 +6,7 @@ use nom::{
     sequence::preceded
 };
 
-use crate::parser::{Element};
+use crate::parser::Element;
 use crate::parser::s_expression_element::{SExpressionElement, parse_s_expression_element};
 
 #[derive(Debug)]

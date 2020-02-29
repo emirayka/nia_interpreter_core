@@ -28,7 +28,7 @@ pub fn repeat(
         ).into_result();
     }
 
-    let mut string = _lib::read_as_string(
+    let string = _lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -55,7 +55,7 @@ mod tests {
     fn returns_repeated_string() {
         let mut interpreter = Interpreter::new();
 
-        let mut pairs = vec!(
+        let pairs = vec!(
             (r#"(string:repeat 0 "")"#, r#""""#),
             (r#"(string:repeat 1 "")"#, r#""""#),
             (r#"(string:repeat 2 "")"#, r#""""#),

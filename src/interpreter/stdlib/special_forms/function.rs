@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let arguments = Arguments::new();
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
@@ -210,7 +210,7 @@ mod tests {
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let arguments = Arguments::new();
 
         let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),

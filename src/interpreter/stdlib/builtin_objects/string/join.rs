@@ -58,10 +58,7 @@ pub fn join(
     let mut result = String::new();
 
     for value in values {
-        let string = _lib::read_as_string(interpreter, value)
-            .map_err(|err| interpreter.make_invalid_argument_error(
-                "Built-in function `string:join' joins only strings."
-            ))?;
+        let string = _lib::read_as_string(interpreter, value)?;
 
         result.push_str(string);
         result.push_str(joiner);
