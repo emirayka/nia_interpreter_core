@@ -14,6 +14,7 @@ pub mod cons_question;
 pub mod object_question;
 pub mod function_question;
 
+pub mod nil_question;
 pub mod number_question;
 pub mod list_question;
 pub mod atom_question;
@@ -36,6 +37,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("object?", object_question::object_question),
         ("function?", function_question::function_question),
 
+        ("nil?", nil_question::nil_question),
         ("number?", number_question::number_question),
         ("list?", list_question::list_question),
         ("atom?", atom_question::atom_question),
