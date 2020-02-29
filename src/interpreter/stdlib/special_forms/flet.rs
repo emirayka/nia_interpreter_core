@@ -53,7 +53,7 @@ fn set_function_via_cons(
         ))?;
 
     let code = match cddr {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
+        Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
         Value::Symbol(symbol_id) => {
             let symbol = interpreter.get_symbol(symbol_id)?;
 

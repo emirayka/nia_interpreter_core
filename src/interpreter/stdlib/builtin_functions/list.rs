@@ -8,7 +8,7 @@ pub fn list(
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    Ok(interpreter.cons_from_vec(values))
+    Ok(interpreter.vec_to_list(values))
 }
 
 #[cfg(test)]

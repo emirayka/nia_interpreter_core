@@ -137,7 +137,7 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn cons_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, ()> {
+    pub fn list_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, ()> {
         let mut results = Vec::new();
         let mut current_cdr = cons_id;
 
@@ -166,7 +166,7 @@ impl ConsArena {
         Ok(results)
     }
 
-    pub fn cons_from_vec(&mut self, nil: Value, vector: Vec<Value>) -> Value {
+    pub fn vec_to_list(&mut self, nil: Value, vector: Vec<Value>) -> Value {
         let mut last_cons = nil;
 
         for value in vector.into_iter().rev() {
@@ -197,7 +197,7 @@ mod tests {
     }
 
     #[cfg(test)]
-    mod cons_to_vec {
+    mod list_to_vec {
         use super::*;
         use crate::interpreter::string::string_arena::StringId;
         use crate::interpreter::keyword::keyword_arena::KeywordId;
@@ -222,7 +222,7 @@ mod tests {
                 cdr
             );
 
-            let result_vector = cons_arena.cons_to_vec(cons).unwrap();
+            let result_vector = cons_arena.list_to_vec(cons).unwrap();
 
             assert_eq!(
                 vec!(
@@ -266,7 +266,7 @@ mod tests {
                     cdr
                 );
 
-                let result = cons_arena.cons_to_vec(incorrect_cons).unwrap();
+                let result = cons_arena.list_to_vec(incorrect_cons).unwrap();
 
                 assert_eq!(&incorrect_cdr, result.last().unwrap());
             }
@@ -274,14 +274,14 @@ mod tests {
     }
 
     #[cfg(test)]
-    mod cons_from_vec {
+    mod vec_to_list {
         use super::*;
 
         macro_rules! assert_result_eq {
             ($expected:expr, $vector:expr) => {
                 let mut cons_arena = ConsArena::new();
 
-                assert_eq!($expected, cons_arena.cons_from_vec(nil(), $vector));
+                assert_eq!($expected, cons_arena.vec_to_list(nil(), $vector));
             }
         }
 

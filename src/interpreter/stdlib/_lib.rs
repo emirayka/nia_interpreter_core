@@ -42,7 +42,7 @@ pub fn value_to_string(interpreter: &Interpreter, value: Value) -> Result<String
             Ok(string)
         },
         Value::Cons(cons_id) => {
-            let values = interpreter.cons_to_vec(cons_id)?;
+            let values = interpreter.list_to_vec(cons_id)?;
 
             let mut result = String::new();
             result.push_str("(");
@@ -326,7 +326,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
 
 pub fn parse_arguments_from_value(interpreter: &mut Interpreter, value: Value) -> Result<Arguments, Error> {
     let arguments = match value {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id)
+        Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)
             .map_err(|_| interpreter.make_generic_execution_error(""))?,
         Value::Symbol(symbol_id) => {
             let symbol = interpreter.get_symbol(symbol_id)?;
@@ -381,7 +381,7 @@ pub fn execute_forms(
 pub fn read_let_definitions(interpreter: &mut Interpreter, value: Value) -> Result<Vec<Value>, Error> {
     let definitions = match value {
         Value::Cons(cons_id) => {
-            interpreter.cons_to_vec(cons_id)
+            interpreter.list_to_vec(cons_id)
                 .map_err(|err| interpreter.make_generic_execution_error_caused(
                     "",
                     err

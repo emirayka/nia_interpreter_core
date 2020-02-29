@@ -61,7 +61,7 @@ pub fn function(
     }
 
     let mut values = match values.remove(0) {
-        Value::Cons(cons_id) => interpreter.cons_to_vec(cons_id),
+        Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
         _ => return interpreter.make_invalid_argument_error(
             ERROR_MESSAGE_INCORRECT_ARGUMENT
         ).into_result()

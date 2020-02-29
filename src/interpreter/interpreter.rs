@@ -396,15 +396,15 @@ impl Interpreter {
             .map_err(|_| self.make_empty_error())
     }
 
-    pub fn cons_from_vec(&mut self, vector: Vec<Value>) -> Value {
+    pub fn vec_to_list(&mut self, vector: Vec<Value>) -> Value {
         let nil = self.intern_nil_symbol_value();
 
-        self.cons_arena.cons_from_vec(nil, vector)
+        self.cons_arena.vec_to_list(nil, vector)
     }
 
-    pub fn cons_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
+    pub fn list_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
         let mut vector = self.cons_arena
-            .cons_to_vec(cons_id)
+            .list_to_vec(cons_id)
             .map_err(|_| self.make_empty_error())?;
 
         // Remove last item of the vector if it's nil. It's necessary, because ConsArena can't say
@@ -666,7 +666,7 @@ impl Interpreter {
             .map_err(|_| self.make_empty_error())?;
 
         match cons {
-            Value::Cons(cons) => self.cons_to_vec(cons),
+            Value::Cons(cons) => self.list_to_vec(cons),
             Value::Symbol(symbol_id) => {
                 let symbol = self.get_symbol(symbol_id)?;
 
@@ -764,7 +764,7 @@ impl Interpreter {
 
             let rest_values_slice = &values[current_argument..];
             let rest_values = Vec::from(rest_values_slice);
-            let rest_values_cons = self.cons_from_vec(rest_values);
+            let rest_values_cons = self.vec_to_list(rest_values);
 
             self.define_variable(execution_environment_id, variable_symbol_id, rest_values_cons)
                 .map_err(|err| self.make_generic_execution_error_caused("", err))?;

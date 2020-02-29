@@ -39,7 +39,7 @@ pub fn split(
         values.push(interpreter.intern_string_value(string));
     }
 
-    let cons = interpreter.cons_from_vec(values);
+    let cons = interpreter.vec_to_list(values);
 
     Ok(cons)
 }

@@ -17,7 +17,7 @@ pub fn block(
         results.push(result);
     }
 
-    Ok(interpreter.cons_from_vec(results))
+    Ok(interpreter.vec_to_list(results))
 }
 
 #[cfg(test)]

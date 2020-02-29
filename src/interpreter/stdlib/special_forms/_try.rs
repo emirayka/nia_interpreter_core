@@ -115,7 +115,7 @@ pub fn _try(
                             }
                         },
                         Value::Cons(cons_id) => {
-                            let values = interpreter.cons_to_vec(cons_id)
+                            let values = interpreter.list_to_vec(cons_id)
                                 .map_err(|err| interpreter.make_generic_execution_error_caused(
                                     "",
                                     err

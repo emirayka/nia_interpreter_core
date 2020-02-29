@@ -46,7 +46,7 @@ fn set_macro_via_cons(
     let arguments = _lib::parse_arguments_from_value(interpreter, cadr)?;
 
     let code = match interpreter.get_cddr(cons_id) {
-        Ok(Value::Cons(cons_id)) => interpreter.cons_to_vec(cons_id),
+        Ok(Value::Cons(cons_id)) => interpreter.list_to_vec(cons_id),
         Ok(Value::Symbol(symbol_id)) => {
             let symbol = interpreter.get_symbol(symbol_id)?;
 

@@ -25,7 +25,7 @@ pub fn join(
     let values = if values.len() == 1 {
         match values.remove(0) {
             Value::Cons(cons_id) => {
-                interpreter.cons_to_vec(cons_id)
+                interpreter.list_to_vec(cons_id)
                     .map_err(|err| interpreter.make_generic_execution_error_caused(
                         "",
                         err
