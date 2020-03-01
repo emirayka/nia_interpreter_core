@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn define_variable(
     interpreter: &mut Interpreter,
@@ -31,7 +31,7 @@ pub fn define_variable(
         ).into_result()
     };
 
-    _lib::check_if_symbol_assignable(interpreter, variable_symbol_id)?;
+    lib::check_if_symbol_assignable(interpreter, variable_symbol_id)?;
 
     let evaluated_value = match second_argument {
         Some(value) => {

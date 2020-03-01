@@ -4,7 +4,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn less_question(
     interpreter: &mut Interpreter,
@@ -19,11 +19,11 @@ pub fn less_question(
 
     let mut values = values;
 
-    let string1 = _lib::read_as_string(
+    let string1 = lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;
-    let string2 = _lib::read_as_string(interpreter, values.remove(0))?;
+    let string2 = lib::read_as_string(interpreter, values.remove(0))?;
 
     let result = match string1.cmp(string2) {
         Ordering::Less => Value::Boolean(true),

@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use std::cmp;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn left(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn left(
 
     let mut values = values;
 
-    let count = _lib::read_as_int(
+    let count = lib::read_as_int(
         interpreter,
         values.remove(0)
     )?;
 
-    let string = _lib::read_as_string(
+    let string = lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;

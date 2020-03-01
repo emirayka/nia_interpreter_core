@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn object_get(
     interpreter: &mut Interpreter,
@@ -30,7 +30,7 @@ pub fn object_get(
         ).into_result()
     };
 
-    _lib::check_if_symbol_assignable(interpreter, symbol_id)?;
+    lib::check_if_symbol_assignable(interpreter, symbol_id)?;
 
     let value = interpreter.get_object_item(object_id, symbol_id)
         .map_err(|err| interpreter.make_generic_execution_error_caused(

@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use std::cmp;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 // todo: maybe change function spec
 pub fn substr(
@@ -19,12 +19,12 @@ pub fn substr(
 
     let mut values = values;
 
-    let index = _lib::read_as_int(
+    let index = lib::read_as_int(
         interpreter,
         values.remove(0)
     )?;
 
-    let diff = _lib::read_as_int(
+    let diff = lib::read_as_int(
         interpreter,
         values.remove(0)
     )?;
@@ -41,7 +41,7 @@ pub fn substr(
         ).into_result();
     }
 
-    let string = _lib::read_as_string(
+    let string = lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;

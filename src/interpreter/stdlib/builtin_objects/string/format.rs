@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn format(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn format(
 
     let mut values = values;
 
-    let string = _lib::read_as_string(
+    let string = lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -37,7 +37,7 @@ pub fn format(
 
     while let Some(value) = iter_values.next() {
         let s1 = iter_strings.next().unwrap();
-        let s2 = _lib::value_to_string(interpreter, *value)?;
+        let s2 = lib::value_to_string(interpreter, *value)?;
 
         result.push_str(s1);
         result.push_str(&s2);

@@ -1,5 +1,8 @@
-use crate::interpreter::value::Value;
+use std::collections::HashMap;
+
 use crate::parser::parse_code;
+
+use crate::interpreter::value::Value;
 use crate::interpreter::reader::read_elements;
 use crate::interpreter::function::{Function};
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
@@ -8,7 +11,6 @@ use crate::interpreter::function::special_form_function::SpecialFormFunction;
 use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::error::Error;
-
 use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
 use crate::interpreter::object::object_arena::ObjectArena;
@@ -19,9 +21,8 @@ use crate::interpreter::string::string_arena::{StringArena, StringId};
 use crate::interpreter::string::string::VString;
 use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
-use std::collections::HashMap;
 use crate::interpreter::function::arguments::Arguments;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -199,7 +200,7 @@ impl Interpreter {
     }
 
     pub fn print_value(&mut self, value: Value) {
-        match _lib::value_to_string(self, value) {
+        match lib::value_to_string(self, value) {
             Ok(string) => print!("{}", string),
             Err(_) => {
                 print!("Cannot print value")

@@ -5,7 +5,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 fn set_macro_via_cons(
     interpreter: &mut Interpreter,
@@ -36,14 +36,14 @@ fn set_macro_via_cons(
         ).into_result()
     };
 
-    _lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
+    lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let cadr = interpreter.get_cadr(cons_id)
         .map_err(|_| interpreter.make_invalid_argument_error(
             "The macro definitions of the special form `mlet' must have at least two items."
         ))?;
 
-    let arguments = _lib::parse_arguments_from_value(interpreter, cadr)?;
+    let arguments = lib::parse_arguments_from_value(interpreter, cadr)?;
 
     let code = match interpreter.get_cddr(cons_id) {
         Ok(Value::Cons(cons_id)) => interpreter.list_to_vec(cons_id),
@@ -134,7 +134,7 @@ pub fn mlet(
 
     let mut values = values;
 
-    let definitions = _lib::read_let_definitions(
+    let definitions = lib::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -156,7 +156,7 @@ pub fn mlet(
         definitions
     )?;
 
-    _lib::execute_forms(
+    lib::execute_forms(
         interpreter,
         macro_definition_environment,
         forms

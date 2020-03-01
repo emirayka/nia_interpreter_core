@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib::_lib;
+use crate::interpreter::lib;
 
 pub fn repeat(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn repeat(
 
     let mut values = values;
 
-    let count = _lib::read_as_int(
+    let count = lib::read_as_int(
         interpreter,
         values.remove(0)
     )?;
@@ -28,7 +28,7 @@ pub fn repeat(
         ).into_result();
     }
 
-    let string = _lib::read_as_string(
+    let string = lib::read_as_string(
         interpreter,
         values.remove(0)
     )?;
