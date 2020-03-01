@@ -999,7 +999,7 @@ impl Interpreter {
         func: &MacroFunction,
         arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        if func.get_arguments().required_len() != arguments.len() {
+        if func.get_arguments().required_len() > arguments.len() {
             return self.make_empty_error().into_result();
         }
 
@@ -1075,8 +1075,6 @@ impl Interpreter {
             Function::Macro(macro_function) => {
                 let arguments = self.extract_arguments(cons_id)?;
                 let evaluation_result = self.evaluate_macro_invocation(&macro_function, arguments)?;
-
-                self.print_value(evaluation_result);
 
                 self.evaluate_value(environment_id, evaluation_result)
             }
