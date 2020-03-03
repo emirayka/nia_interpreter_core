@@ -3,7 +3,7 @@ use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::error::Error;
 
 pub fn check_if_symbol_assignable(
-    interpreter: &mut Interpreter,
+    interpreter: &Interpreter,
     symbol_id: SymbolId
 ) -> Result<(), Error> {
     match interpreter.check_if_symbol_assignable(symbol_id) {

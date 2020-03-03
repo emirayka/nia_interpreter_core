@@ -8,6 +8,7 @@ pub mod string_element;
 pub mod boolean_element;
 pub mod s_expression_element;
 pub mod object_element;
+pub mod object_pattern_element;
 pub mod prefix_element;
 pub mod delimited_symbols_element;
 pub mod short_lambda_element;
@@ -42,6 +43,7 @@ pub enum Element {
     SExpression(s_expression_element::SExpressionElement),
     ShortLambda(short_lambda_element::ShortLambdaElement),
     Object(object_element::ObjectElement),
+    ObjectPattern(object_pattern_element::ObjectPatternElement),
     DelimitedSymbols(delimited_symbols_element::DelimitedSymbolsElement),
     Prefix(prefix_element::PrefixElement),
 }
@@ -59,6 +61,7 @@ impl PartialEq for Element {
             (Boolean(val1), Boolean(val2)) => val1 == val2,
             (SExpression(val1), SExpression(val2)) => val1 == val2,
             (Object(val1), Object(val2)) => val1 == val2,
+            (ObjectPattern(val1), ObjectPattern(val2)) => val1 == val2,
             (DelimitedSymbols(val1), DelimitedSymbols(val2)) => val1 == val2,
             (Prefix(val1), Prefix(val2)) => val1 == val2,
             _ => false
@@ -193,6 +196,18 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         |el| Ok(Element::Object(el))
     );
 
+    let object_pattern_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
+        terminated(
+            object_pattern_element::parse_object_pattern_element,
+            alt((
+                peek(space1),
+                peek(tag(")")),
+                peek(tag("}")),
+                all_consuming(tag(""))
+            ))),
+        |el| Ok(Element::ObjectPattern(el))
+    );
+
     let delimited_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
         terminated(
             delimited_symbols_element::parse_delimited_symbols_element,
@@ -213,6 +228,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
     let parser = alt((
         boolean_parser,
         short_lambda_parser,
+        object_pattern_parser,
         float_parser,
         int_parser,
         string_parser,
@@ -308,6 +324,9 @@ mod tests {
         assert_is_ok!(parse_code("`imaquotedsymboltoo"));
         assert_is_ok!(parse_code(",imanexecutedsymbol"));
         assert_is_ok!(parse_code(",@imanexecutedsymbolthatexpandstolist"));
+        assert_is_ok!(parse_code("{}"));
+        assert_is_ok!(parse_code("#{}"));
+        assert_is_ok!(parse_code("#()"));
     }
 
     #[test]
@@ -345,10 +364,11 @@ mod tests {
                         (keyword_element::KeywordElement::new(String::from("e")), Element::Keyword(keyword_element::KeywordElement::new(String::from("object-keyword")))),
                         (keyword_element::KeywordElement::new(String::from("f")), Element::String(string_element::StringElement::new(String::from("object-string")))),
                         (keyword_element::KeywordElement::new(String::from("g")), Element::Symbol(symbol_element::SymbolElement::new(String::from("object-symbol")))),
-                    )))
+                    ))),
+                    Element::ObjectPattern(object_pattern_element::ObjectPatternElement::new(vec!()))
                 )))
             ),
-            "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol) {:a 1 :b 1.1 :c #t :d #f :e :object-keyword :f \"object-string\" :g object-symbol})"
+            "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol) {:a 1 :b 1.1 :c #t :d #f :e :object-keyword :f \"object-string\" :g object-symbol} #{})"
         );
     }
 
@@ -393,6 +413,9 @@ mod tests {
         assert_is_ok!(parse_code("1 {}"));
         assert_is_err!(parse_code("1{}"));
 
+        assert_is_ok!(parse_code("1 #{}"));
+        assert_is_err!(parse_code("1#{}"));
+
         assert_is_ok!(parse_code("1 #()"));
         assert_is_err!(parse_code("1#()"));
     }
@@ -429,6 +452,9 @@ mod tests {
         assert_is_ok!(parse_code("1.1 {}"));
         assert_is_err!(parse_code("1.1{}"));
 
+        assert_is_ok!(parse_code("1.1 #{}"));
+        assert_is_err!(parse_code("1.1#{}"));
+
         assert_is_ok!(parse_code("1.1 #()"));
         assert_is_err!(parse_code("1.1#()"));
     }
@@ -463,6 +489,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#t {}"));
         assert_is_err!(parse_code("#t{}"));
+
+        assert_is_ok!(parse_code("#t #{}"));
+        assert_is_err!(parse_code("#t#{}"));
 
         assert_is_ok!(parse_code("#t #()"));
         assert_is_err!(parse_code("#t#()"));
@@ -499,6 +528,9 @@ mod tests {
         assert_is_ok!(parse_code("#f {}"));
         assert_is_err!(parse_code("#f{}"));
 
+        assert_is_ok!(parse_code("#f #{}"));
+        assert_is_err!(parse_code("#f#{}"));
+
         assert_is_ok!(parse_code("#f #()"));
         assert_is_err!(parse_code("#f#()"));
     }
@@ -533,6 +565,9 @@ mod tests {
 
         assert_is_ok!(parse_code(":key {}"));
         assert_is_err!(parse_code(":key{}"));
+
+        assert_is_ok!(parse_code(":key #{}"));
+        assert_is_err!(parse_code(":key#{}"));
 
         assert_is_ok!(parse_code(":key #()"));
         assert_is_err!(parse_code(":key#()"));
@@ -569,6 +604,9 @@ mod tests {
         assert_is_ok!(parse_code("\"str\" {}"));
         assert_is_err!(parse_code("\"str\"{}"));
 
+        assert_is_ok!(parse_code("\"str\" #{}"));
+        assert_is_err!(parse_code("\"str\"#{}"));
+
         assert_is_ok!(parse_code("\"str\" #()"));
         assert_is_err!(parse_code("\"str\"#()"));
     }
@@ -603,6 +641,9 @@ mod tests {
 
         assert_is_ok!(parse_code("sym {}"));
         assert_is_err!(parse_code("sym{}"));
+
+        assert_is_ok!(parse_code("sym #{}"));
+        assert_is_err!(parse_code("sym#{}"));
 
         assert_is_ok!(parse_code("sym #()"));
         assert_is_err!(parse_code("sym#()"));
@@ -639,6 +680,9 @@ mod tests {
         assert_is_ok!(parse_code("() {}"));
         assert_is_err!(parse_code("(){}"));
 
+        assert_is_ok!(parse_code("() #{}"));
+        assert_is_err!(parse_code("()#{}"));
+
         assert_is_ok!(parse_code("() #()"));
         assert_is_err!(parse_code("()#()"));
     }
@@ -674,8 +718,49 @@ mod tests {
         assert_is_ok!(parse_code("{} {}"));
         assert_is_err!(parse_code("{}{}"));
 
+        assert_is_ok!(parse_code("{} #{}"));
+        assert_is_err!(parse_code("{}#{}"));
+
         assert_is_ok!(parse_code("{} #()"));
         assert_is_err!(parse_code("{}#()"));
+    }
+
+    #[test]
+    fn test_respects_spaces_between_forms_after_object_pattern_literal() {
+        assert_is_ok!(parse_code("#{} 1"));
+        assert_is_err!(parse_code("#{}1"));
+
+        assert_is_ok!(parse_code("#{} 1.1"));
+        assert_is_err!(parse_code("#{}1.1"));
+
+        assert_is_ok!(parse_code("#{} #t"));
+        assert_is_err!(parse_code("#{}#t"));
+        assert_is_ok!(parse_code("#{} #f"));
+        assert_is_err!(parse_code("#{}#f"));
+
+        assert_is_ok!(parse_code("#{} :t"));
+        assert_is_err!(parse_code("#{}:t"));
+
+        assert_is_ok!(parse_code("#{} t"));
+        assert_is_err!(parse_code("#{}t"));
+
+        assert_is_ok!(parse_code("#{} a:b"));
+        assert_is_err!(parse_code("#{}a:b"));
+
+        assert_is_ok!(parse_code("#{} \"\""));
+        assert_is_err!(parse_code("#{}\"\""));
+
+        assert_is_ok!(parse_code("#{} ()"));
+        assert_is_err!(parse_code("#{}()"));
+
+        assert_is_ok!(parse_code("#{} {}"));
+        assert_is_err!(parse_code("#{}{}"));
+
+        assert_is_ok!(parse_code("#{} #{}"));
+        assert_is_err!(parse_code("#{}#{}"));
+
+        assert_is_ok!(parse_code("#{} #()"));
+        assert_is_err!(parse_code("#{}#()"));
     }
 
     #[test]
@@ -708,6 +793,9 @@ mod tests {
 
         assert_is_ok!(parse_code("#() {}"));
         assert_is_err!(parse_code("#(){}"));
+
+        assert_is_ok!(parse_code("#() #{}"));
+        assert_is_err!(parse_code("#()#{}"));
 
         assert_is_ok!(parse_code("#() #()"));
         assert_is_err!(parse_code("#()#()"));

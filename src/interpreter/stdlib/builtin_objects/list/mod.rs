@@ -67,7 +67,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
             list_object_id,
             name,
             func
-        );
+        )?;
     }
 
     interpreter.define_variable(

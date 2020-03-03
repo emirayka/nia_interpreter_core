@@ -34,10 +34,11 @@ impl StringArena {
     }
 
     pub fn make_string(&mut self, string: String) -> StringId {
-        let string = VString::new(string);
+        let vstring = VString::new(string.clone());
         let string_id = StringId::new(self.next_id);
 
-        self.arena.insert(string_id, string);
+        self.arena.insert(string_id, vstring);
+        self.mapping.insert(string, string_id);
         self.next_id += 1;
 
         string_id

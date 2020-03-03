@@ -138,7 +138,7 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn deep_equal(&mut self, value1: Value, value2: Value) -> Result<bool, Error> {
+    pub fn deep_equal(&self, value1: Value, value2: Value) -> Result<bool, Error> {
         use crate::interpreter::value::Value::*;
 
         match (value1, value2) {
@@ -309,7 +309,7 @@ impl Interpreter {
         Value::Symbol(symbol_id)
     }
 
-    pub fn check_if_symbol_special(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_special(&self, symbol_id: SymbolId) -> Result<bool, Error> {
         let symbol_name = match self.get_symbol_name(symbol_id) {
             Ok(name) => name,
             Err(error) => return self.make_generic_execution_error_caused(
@@ -325,7 +325,7 @@ impl Interpreter {
         Ok(result)
     }
 
-    pub fn check_if_symbol_constant(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_constant(&self, symbol_id: SymbolId) -> Result<bool, Error> {
         let symbol_name = match self.get_symbol_name(symbol_id) {
             Ok(name) => name,
             Err(error) => return self.make_generic_execution_error_caused(
@@ -339,7 +339,7 @@ impl Interpreter {
         Ok(result)
     }
 
-    pub fn check_if_symbol_assignable(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_assignable(&self, symbol_id: SymbolId) -> Result<bool, Error> {
         let is_not_constant = !self.check_if_symbol_constant(symbol_id)?;
         let is_not_special = !self.check_if_symbol_special(symbol_id)?;
 
@@ -637,6 +637,12 @@ impl Interpreter {
     pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> Result<EnvironmentId, Error> {
         self.environment_arena
             .alloc_child(parent_environment)
+            .map_err(|_| self.make_empty_error())
+    }
+
+    pub fn remove_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
+        self.environment_arena
+            .remove(environment_id)
             .map_err(|_| self.make_empty_error())
     }
 }

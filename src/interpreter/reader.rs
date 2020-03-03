@@ -8,6 +8,7 @@ use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
 use std::cmp::max;
 use crate::parser::short_lambda_element::ShortLambdaElement;
 use crate::interpreter::error::Error;
+use crate::parser::object_pattern_element::ObjectPatternElement;
 
 fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
     let values = sexp_element.get_values();
@@ -153,14 +154,78 @@ fn read_short_lambda(
 fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Result<Value, Error> {
     let values = object_element.get_values();
 
-    let mut last_cons = interpreter.intern_nil_symbol_value();
+    let nil = interpreter.intern_nil_symbol_value();
+    let mut last_cons = nil;
+    let quote = interpreter.intern_symbol_value("quote");
 
     for (keyword_element, element) in values.into_iter().rev() {
-        let keyword = interpreter.intern_keyword_value(keyword_element.get_value());
-        let value = read_element(interpreter, element)?;
+        let name = keyword_element.get_value();
+
+        let value = read_element(
+            interpreter,
+            element
+        )?;
+        let keyword = interpreter.intern_keyword_value(name);
 
         last_cons = Value::Cons(interpreter.make_cons(
             value,
+            last_cons
+        ));
+
+        last_cons = Value::Cons(interpreter.make_cons(
+            keyword,
+            last_cons
+        ));
+    }
+
+    let sym1 = interpreter.intern_symbol_value("object");
+    let nil = interpreter.intern_nil_symbol_value();
+    let car = Value::Cons(interpreter.make_cons(
+        sym1,
+        nil
+    ));
+
+    let keyword = interpreter.intern_keyword_value(String::from("make"));
+
+    let car = Value::Cons(interpreter.make_cons(
+        keyword,
+        car
+    ));
+
+    let cons_id = interpreter.make_cons(
+        car,
+        last_cons
+    );
+
+    Ok(Value::Cons(cons_id))
+}
+
+fn read_object_pattern(
+    interpreter: &mut Interpreter,
+    object_pattern_element: ObjectPatternElement
+) -> Result<Value, Error> {
+    let values = object_pattern_element.get_values();
+
+    let nil = interpreter.intern_nil_symbol_value();
+    let mut last_cons = nil;
+    let quote = interpreter.intern_symbol_value("quote");
+
+    for keyword_element in values.into_iter().rev() {
+        let name = keyword_element.get_value();
+
+        let value = interpreter.intern_symbol_value(&name);
+        let value_cell = interpreter.make_cons_value(
+            value,
+            nil
+        );
+        let quoted_value = interpreter.make_cons_value(
+            quote,
+            value_cell
+        );
+        let keyword = interpreter.intern_keyword_value(name);
+
+        last_cons = Value::Cons(interpreter.make_cons(
+            quoted_value,
             last_cons
         ));
 
@@ -331,6 +396,8 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
             read_s_expression(interpreter, sexp_element)?,
         Element::Object(object_element) =>
             read_object(interpreter, object_element)?,
+        Element::ObjectPattern(object_pattern_element) =>
+            read_object_pattern(interpreter, object_pattern_element)?,
         Element::DelimitedSymbols(delimited_symbols_element) =>
             read_delimited_symbols_element(interpreter, delimited_symbols_element),
         Element::Prefix(prefix_element) =>
@@ -642,67 +709,73 @@ mod tests {
         }
     }
 
+    fn assert_object_has_items(
+        interpreter: &mut Interpreter,
+        code: &str,
+        expected: Vec<(&str, Value)>
+    ) {
+        if let Ok((_, code)) = parse_code(code) {
+            let result = read_elements(interpreter, code.get_elements())
+                .unwrap()
+                .remove(0);
+
+            let result = interpreter.evaluate_value(
+                interpreter.get_root_environment(),
+                result
+            ).unwrap();
+
+            match result {
+                Value::Object(object_id) => {
+                    for (name, value) in expected {
+                        let symbol = interpreter.intern(name);
+
+                        let expected = value;
+                        let result = interpreter.get_object_item(
+                            object_id,
+                            symbol
+                        ).unwrap().unwrap();
+
+                        assertion::assert_deep_equal(
+                            interpreter,
+                            expected,
+                            result
+                        );
+                    }
+                },
+                _ => unreachable!()
+            }
+        } else {
+            panic!();
+        }
+    }
+
     #[cfg(test)]
     mod object {
         use super::*;
 
-        macro_rules! assert_object_has_items {
-            ($expected:expr, $code:expr) => {
-                let mut interpreter = Interpreter::new();
-
-                if let Ok((_, code)) = parse_code($code) {
-                    let result = read_elements(&mut interpreter, code.get_elements())
-                        .unwrap()
-                        .remove(0);
-
-                    let result = interpreter.evaluate_value(
-                        interpreter.get_root_environment(),
-                        result
-                    ).unwrap();
-                    let expected: Vec<(&str, Value)> = $expected;
-
-                    match result {
-                        Value::Object(object_id) => {
-                            for (name, value) in expected {
-                                let symbol = interpreter.intern(name);
-
-                                let expected = value;
-                                let result = interpreter.get_object_item(
-                                    object_id,
-                                    symbol
-                                ).unwrap().unwrap();
-                                println!("{:?} {:?}", expected, result);
-
-                                assertion::assert_deep_equal(
-                                    &mut interpreter,
-                                    expected,
-                                    result
-                                );
-                            }
-                        },
-                        _ => unreachable!()
-                    }
-
-                }
-
-            }
-        }
-
         #[test]
         fn reads_elements_correctly() {
-            assert_object_has_items!(vec!(), "{}");
-            assert_object_has_items!(
+            let mut interpreter = Interpreter::new();
+
+            assert_object_has_items(
+                &mut interpreter,
+                "{}",
+                vec!()
+            );
+            assert_object_has_items(
+                &mut interpreter,
+                "{:a 1}",
                 vec!(
                     ("a", Value::Integer(1)),
-                ),
-                "{:a 1}"
+                )
             );
-            assert_object_has_items!(
+            assert_object_has_items(
+                &mut interpreter,
+                "{:a 1 :b 2}",
                 vec!(
                     ("a", Value::Integer(1)),
                     ("b", Value::Integer(2))
-                ),
-                "{:a 1 :b 2}"
+                )
             );
         }
 
@@ -710,11 +783,14 @@ mod tests {
         fn evaluates_items_correctly() {
             let mut interpreter = Interpreter::new();
 
+            // todo: uncomment two lines below, and find out why it doesn't work
 //            let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
             let symbol_value = interpreter.intern_symbol_value("symbol");
             let string_value = interpreter.intern_string_value(String::from("string"));
 
-            assert_object_has_items!(
+            assert_object_has_items(
+                &mut interpreter,
+                "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}",
                 vec!(
                     ("a", Value::Integer(1)),
                     ("b", Value::Float(1.1)),
@@ -723,8 +799,45 @@ mod tests {
 //                    ("e", keyword_value),
                     ("f", symbol_value),
                     ("g", string_value),
+                )
+            );
+        }
+    }
+
+    #[cfg(test)]
+    mod object_pattern {
+        use super::*;
+
+        #[test]
+        fn reads_elements_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let nil = interpreter.intern_nil_symbol_value();
+            let quote = interpreter.intern_symbol_value("quote");
+            let a = interpreter.intern_symbol_value("a");
+            let b = interpreter.intern_symbol_value("b");
+
+            assert_object_has_items(
+                &mut interpreter,
+                "#{}",
+            vec!()
+            );
+
+            assert_object_has_items(
+                &mut interpreter,
+                "#{:a}",
+                vec!(
+                    ("a", a)
+                )
+            );
+
+            assert_object_has_items(
+                &mut interpreter,
+                "#{:a :b}",
+                vec!(
+                    ("a", a),
+                    ("b", b)
                 ),
-                "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}"
             );
         }
     }

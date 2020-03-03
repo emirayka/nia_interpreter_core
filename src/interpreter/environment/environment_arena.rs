@@ -73,6 +73,13 @@ impl EnvironmentArena {
         Ok(child_id)
     }
 
+    pub fn remove(&mut self, environment_id: EnvironmentId) -> Result<(), ()> {
+        match self.arena.remove(&environment_id) {
+            Some(env) => Ok(()),
+            _ => Err(())
+        }
+    }
+
     pub fn has_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, ()> {
         let env = self.get(id)?;
 
@@ -236,134 +243,164 @@ impl EnvironmentArena {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_define_works_correctly_for_a_single_environment() {
-        let mut arena = EnvironmentArena::new();
-        let key = SymbolId::new(0);
+    #[cfg(test)]
+    mod remove {
+        use super::*;
 
-        let parent_id = arena.alloc();
+        #[test]
+        fn removes_correctly() {
+            let mut arena = EnvironmentArena::new();
+            let env_id = arena.alloc();
 
-        assert!(!arena.has_variable(parent_id, key).unwrap());
-        arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
-        assert!(arena.has_variable(parent_id, key).unwrap());
-        assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
-
-        assert!(!arena.has_function(parent_id, key).unwrap());
-        arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
-        assert!(arena.has_function(parent_id, key).unwrap());
-        assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
+            arena.get(env_id).unwrap();
+            arena.remove(env_id).unwrap();
+            arena.get(env_id).err().unwrap();
+        }
     }
 
-    #[test]
-    fn test_set_works_correctly_for_a_single_environment() {
-        let mut arena = EnvironmentArena::new();
-        let key = SymbolId::new(0);
+    #[cfg(test)]
+    mod define_variable__define_function {
+        use super::*;
 
-        let parent_id = arena.alloc();
+        #[test]
+        fn define_works_correctly_for_a_single_environment() {
+            let mut arena = EnvironmentArena::new();
+            let key = SymbolId::new(0);
 
-        arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
-        assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
-        arena.set_variable(parent_id, key, Value::Integer(2)).unwrap();
-        assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_variable(parent_id, key));
+            let parent_id = arena.alloc();
 
-        arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
-        assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
-        arena.set_function(parent_id, key, Value::Integer(2)).unwrap();
-        assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_function(parent_id, key));
+            assert!(!arena.has_variable(parent_id, key).unwrap());
+            arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
+            assert!(arena.has_variable(parent_id, key).unwrap());
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
+
+            assert!(!arena.has_function(parent_id, key).unwrap());
+            arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
+            assert!(arena.has_function(parent_id, key).unwrap());
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
+        }
+
+        #[test]
+        fn cannot_define_variable_twice() {
+            let mut arena = EnvironmentArena::new();
+
+            let env_id = arena.alloc();
+            let key = SymbolId::new(0);
+
+            arena.define_variable(env_id, key, Value::Integer(1)).unwrap();
+            assert!(arena.define_variable(env_id, key, Value::Integer(1)).is_err());
+        }
+
+        #[test]
+        fn cannot_define_function_twice() {
+            let mut arena = EnvironmentArena::new();
+
+            let env_id = arena.alloc();
+            let key = SymbolId::new(0);
+
+            arena.define_function(env_id, key, Value::Integer(1)).unwrap();
+            assert!(arena.define_function(env_id, key, Value::Integer(1)).is_err());
+        }
     }
 
-    #[test]
-    fn test_cannot_set_to_not_defined_variable() {
-        let mut arena = EnvironmentArena::new();
+    #[cfg(test)]
+    mod set_variable__set_function {
+        use super::*;
 
-        let env_id = arena.alloc();
-        let key = SymbolId::new(0);
+        #[test]
+        fn set_works_correctly_for_a_single_environment() {
+            let mut arena = EnvironmentArena::new();
+            let key = SymbolId::new(0);
 
-        assert!(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
+            let parent_id = arena.alloc();
+
+            arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
+            arena.set_variable(parent_id, key, Value::Integer(2)).unwrap();
+            assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_variable(parent_id, key));
+
+            arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
+            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
+            arena.set_function(parent_id, key, Value::Integer(2)).unwrap();
+            assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_function(parent_id, key));
+        }
+
+        #[test]
+        fn when_defined_only_in_parent_set_only_in_parent() {
+            let mut arena = EnvironmentArena::new();
+            let key = SymbolId::new(0);
+
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id).unwrap();
+
+            let parent_value = Value::Integer(1);
+            let child_value = Value::Integer(2);
+
+            arena.define_variable(parent_id, key, parent_value).unwrap();
+            arena.set_variable(child_id, key, child_value).unwrap();
+            assert_eq!(Ok(Some(child_value)), arena.lookup_variable(parent_id, key));
+
+            arena.define_function(parent_id, key, parent_value).unwrap();
+            arena.set_function(child_id, key, child_value).unwrap();
+            assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id,key));
+        }
+
+        #[test]
+        fn cannot_set_to_not_defined_variable() {
+            let mut arena = EnvironmentArena::new();
+
+            let env_id = arena.alloc();
+            let key = SymbolId::new(0);
+
+            assert!(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
+        }
+
+        #[test]
+        fn cannot_set_to_not_defined_function() {
+            let mut arena = EnvironmentArena::new();
+
+            let env_id = arena.alloc();
+            let key = SymbolId::new(0);
+
+            assert!(arena.set_function(env_id, key, Value::Integer(2)).is_err());
+        }
     }
 
-    #[test]
-    fn test_cannot_set_to_not_defined_function() {
-        let mut arena = EnvironmentArena::new();
+    #[cfg(test)]
+    mod lookup_variable__lookup_function {
+        use super::*;
 
-        let env_id = arena.alloc();
-        let key = SymbolId::new(0);
+        #[test]
+        fn lookups_from_parents_works_correctly() {
+            let mut arena = EnvironmentArena::new();
 
-        assert!(arena.set_function(env_id, key, Value::Integer(2)).is_err());
-    }
+            let parent_id = arena.alloc();
+            let child_id = arena.alloc_child(parent_id).unwrap();
 
-    #[test]
-    fn test_cannot_define_variable_twice() {
-        let mut arena = EnvironmentArena::new();
+            let parent_key = SymbolId::new(0);
+            let child_key = SymbolId::new(1);
 
-        let env_id = arena.alloc();
-        let key = SymbolId::new(0);
+            let parent_value = Value::Integer(1);
+            let child_value = Value::Integer(2);
 
-        arena.define_variable(env_id, key, Value::Integer(1)).unwrap();
-        assert!(arena.define_variable(env_id, key, Value::Integer(1)).is_err());
-    }
+            // variable
+            arena.define_variable(parent_id, parent_key, parent_value).unwrap();
+            arena.define_variable(child_id, child_key, child_value).unwrap();
 
-    #[test]
-    fn test_cannot_define_function_twice() {
-        let mut arena = EnvironmentArena::new();
+            assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(parent_id, parent_key));
+            assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(child_id, parent_key));
+            assert_eq!(Ok(None), arena.lookup_variable(parent_id, child_key));
+            assert_eq!(Ok(Some(child_value)), arena.lookup_variable(child_id, child_key));
 
-        let env_id = arena.alloc();
-        let key = SymbolId::new(0);
+            // function
+            arena.define_function(parent_id, parent_key, parent_value).unwrap();
+            arena.define_function(child_id, child_key, child_value).unwrap();
 
-        arena.define_function(env_id, key, Value::Integer(1)).unwrap();
-        assert!(arena.define_function(env_id, key, Value::Integer(1)).is_err());
-    }
-
-    #[test]
-    fn test_lookups_from_parents_works_correctly() {
-        let mut arena = EnvironmentArena::new();
-
-        let parent_id = arena.alloc();
-        let child_id = arena.alloc_child(parent_id).unwrap();
-
-        let parent_key = SymbolId::new(0);
-        let child_key = SymbolId::new(1);
-
-        let parent_value = Value::Integer(1);
-        let child_value = Value::Integer(2);
-
-        // variable
-        arena.define_variable(parent_id, parent_key, parent_value).unwrap();
-        arena.define_variable(child_id, child_key, child_value).unwrap();
-
-        assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(parent_id, parent_key));
-        assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(child_id, parent_key));
-        assert_eq!(Ok(None), arena.lookup_variable(parent_id, child_key));
-        assert_eq!(Ok(Some(child_value)), arena.lookup_variable(child_id, child_key));
-
-        // function
-        arena.define_function(parent_id, parent_key, parent_value).unwrap();
-        arena.define_function(child_id, child_key, child_value).unwrap();
-
-        assert_eq!(Ok(Some(parent_value)), arena.lookup_function(parent_id, parent_key));
-        assert_eq!(Ok(Some(parent_value)), arena.lookup_function(child_id, parent_key));
-        assert_eq!(Ok(None), arena.lookup_function(parent_id, child_key));
-        assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id, child_key));
-    }
-
-    #[test]
-    fn test_when_defined_only_in_parent_set_only_in_parent() {
-        let mut arena = EnvironmentArena::new();
-        let key = SymbolId::new(0);
-
-        let parent_id = arena.alloc();
-        let child_id = arena.alloc_child(parent_id).unwrap();
-
-        let parent_value = Value::Integer(1);
-        let child_value = Value::Integer(2);
-
-        arena.define_variable(parent_id, key, parent_value).unwrap();
-        arena.set_variable(child_id, key, child_value).unwrap();
-        assert_eq!(Ok(Some(child_value)), arena.lookup_variable(parent_id, key));
-
-        arena.define_function(parent_id, key, parent_value).unwrap();
-        arena.set_function(child_id, key, child_value).unwrap();
-        assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id,key));
+            assert_eq!(Ok(Some(parent_value)), arena.lookup_function(parent_id, parent_key));
+            assert_eq!(Ok(Some(parent_value)), arena.lookup_function(child_id, parent_key));
+            assert_eq!(Ok(None), arena.lookup_function(parent_id, child_key));
+            assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id, child_key));
+        }
     }
 
     #[cfg(test)]
@@ -371,7 +408,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn test_returns_current_environment_when_variable_is_defined_here() {
+        fn returns_current_environment_when_variable_is_defined_here() {
             let mut arena = EnvironmentArena::new();
 
             let parent_id = arena.alloc();
@@ -391,7 +428,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_parent_environment_when_variable_is_defined_here() {
+        fn returns_parent_environment_when_variable_is_defined_here() {
             let mut arena = EnvironmentArena::new();
 
             let parent_id = arena.alloc();
@@ -411,7 +448,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_parent_environment_when_variable_is_defined_2() {
+        fn returns_parent_environment_when_variable_is_defined_2() {
             let mut arena = EnvironmentArena::new();
 
             let parent_id = arena.alloc();
@@ -432,7 +469,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_none_when_variable_is_defined_nowhere() {
+        fn returns_none_when_variable_is_defined_nowhere() {
             let mut arena = EnvironmentArena::new();
 
             let parent_id = arena.alloc();

@@ -1,6 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::lib::infect::infect_special_form;
+use crate::interpreter::function::special_form_function::SpecialFormFunctionType;
 
 mod cond;
 mod quote;
@@ -13,6 +14,7 @@ mod _let;
 mod let_star;
 mod flet;
 mod flet_star;
+mod _match;
 mod mlet;
 mod mlet_star;
 mod progn;
@@ -21,23 +23,34 @@ mod throw;
 mod _try;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    infect_special_form(interpreter, "cond", cond::cond)?;
-    infect_special_form(interpreter, "quote", quote::quote)?;
-    infect_special_form(interpreter, "define-variable", define_variable::define_variable)?;
-    infect_special_form(interpreter, "define-function", define_function::define_function)?;
-    infect_special_form(interpreter, "function", function::function)?;
-    infect_special_form(interpreter, "set!", set::set)?;
-    infect_special_form(interpreter, "fset!", fset:: fset)?;
-    infect_special_form(interpreter, "let", _let::_let)?;
-    infect_special_form(interpreter, "let*", let_star::let_star)?;
-    infect_special_form(interpreter, "flet", flet::flet)?;
-    infect_special_form(interpreter, "flet*", flet_star::flet_star)?;
-    infect_special_form(interpreter, "mlet", mlet::mlet)?;
-    infect_special_form(interpreter, "mlet*", mlet_star::mlet_star)?;
-    infect_special_form(interpreter, "progn", progn::progn)?;
-    infect_special_form(interpreter, "block", block::block)?;
-    infect_special_form(interpreter, "throw", throw::throw)?;
-    infect_special_form(interpreter, "try", _try::_try)?;
+    let pairs: Vec<(&str, SpecialFormFunctionType)> = vec!(
+        ("cond", cond::cond),
+        ("quote", quote::quote),
+        ("define-variable", define_variable::define_variable),
+        ("define-function", define_function::define_function),
+        ("function", function::function),
+        ("set!", set::set),
+        ("fset!", fset:: fset),
+        ("let", _let::_let),
+        ("let*", let_star::let_star),
+        ("flet", flet::flet),
+        ("flet*", flet_star::flet_star),
+        ("match", _match::_match),
+        ("mlet", mlet::mlet),
+        ("mlet*", mlet_star::mlet_star),
+        ("progn", progn::progn),
+        ("block", block::block),
+        ("throw", throw::throw),
+        ("try", _try::_try),
+    );
+
+    for (name, func) in pairs {
+        infect_special_form(
+            interpreter,
+            name,
+            func
+        )?;
+    }
 
     Ok(())
 }
