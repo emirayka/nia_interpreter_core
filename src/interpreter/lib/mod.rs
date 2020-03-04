@@ -8,9 +8,12 @@ mod iterate_through_list;
 mod match_value;
 mod parse_arguments;
 mod read_as_cons;
+mod read_as_function;
 mod read_as_function_id;
 mod read_as_int;
+mod read_as_object_id;
 mod read_as_string;
+mod read_as_symbol_id;
 mod read_let_definitions;
 mod value_to_string;
 
@@ -20,9 +23,11 @@ pub use iterate_through_list::iterate_through_list;
 pub use match_value::match_value;
 pub use parse_arguments::parse_arguments_from_value;
 pub use read_as_cons::read_as_cons;
+pub use read_as_function::read_as_function;
 pub use read_as_function_id::read_as_function_id;
 pub use read_as_int::read_as_int;
+pub use read_as_object_id::read_as_object_id;
 pub use read_as_string::read_as_string;
+pub use read_as_symbol_id::read_as_symbol_id;
 pub use read_let_definitions::read_let_definitions;
 pub use value_to_string::value_to_string;
-

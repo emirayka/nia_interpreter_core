@@ -3,6 +3,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
+use crate::interpreter::lib;
+
 pub fn intern(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -16,20 +18,10 @@ pub fn intern(
 
     let mut values = values;
 
-    let string_id = match values.remove(0) {
-        Value::String(string_id) => string_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `intern' must take exactly one string argument."
-        ).into_result()
-    };
-
-    let symbol_name = match interpreter.get_string(string_id) {
-        Ok(string) => String::from(string.get_string()), // todo: fix, looks shitty
-        Err(error) => return interpreter.make_generic_execution_error_caused(
-            "",
-            error
-        ).into_result()
-    };
+    let symbol_name = lib::read_as_string(
+        interpreter,
+        values.remove(0)
+    )?.clone();
 
     Ok(interpreter.intern_symbol_value(&symbol_name))
 }

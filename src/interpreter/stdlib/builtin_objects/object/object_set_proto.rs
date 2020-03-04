@@ -3,6 +3,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
+use crate::interpreter::lib;
+
 pub fn object_set_proto(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -15,12 +17,10 @@ pub fn object_set_proto(
     }
 
     let mut values = values;
-    let object_id = match values.remove(0) {
-        Value::Object(object_id) => object_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "The first argument of built-in function `object:set-proto!' must be an object."
-        ).into_result()
-    };
+    let object_id = lib::read_as_object_id(
+        interpreter,
+        values.remove(0)
+    )?;
 
     let proto_id = match values.remove(0) {
         Value::Object(object_id) => object_id,

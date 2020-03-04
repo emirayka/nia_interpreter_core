@@ -3,6 +3,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
+use crate::interpreter::lib;
+
 pub fn lookup(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -16,20 +18,18 @@ pub fn lookup(
 
     let mut values = values;
 
-    match values.remove(0) {
-        Value::Symbol(symbol_id) => {
-            match interpreter.lookup_variable(
-                _environment,
-                symbol_id
-            ) {
-                Ok(value) => Ok(value),
-                _ => interpreter.make_generic_execution_error("")
-                    .into_result()
-            }
-        }
-        _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `lookup' must take exactly one string argument."
-        ).into_result()
+    let symbol_id = lib::read_as_symbol_id(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    match interpreter.lookup_variable(
+        _environment,
+        symbol_id
+    ) {
+        Ok(value) => Ok(value),
+        _ => interpreter.make_generic_execution_error("")
+            .into_result()
     }
 }
 

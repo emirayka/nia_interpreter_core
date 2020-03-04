@@ -4,6 +4,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
+use crate::interpreter::lib;
+
 pub fn macro_question(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -17,21 +19,16 @@ pub fn macro_question(
 
     let mut values = values;
 
-    let result = match values.remove(0) {
-        Value::Function(function_id) => {
-            let function = match interpreter.get_function(function_id) {
-                Ok(function) => function,
-                Err(error) => return interpreter.make_generic_execution_error_caused(
-                    "",
-                    error
-                ).into_result()
-            };
+    let function = match lib::read_as_function(
+        interpreter,
+        values.remove(0)
+    ) {
+        Ok(function) => function,
+       _ => return Ok(Value::Boolean(false))
+    };
 
-            match function {
-                Function::Macro(_) => true,
-                _ => false
-            }
-        },
+    let result = match function {
+        Function::Macro(_) => true,
         _ => false
     };
 

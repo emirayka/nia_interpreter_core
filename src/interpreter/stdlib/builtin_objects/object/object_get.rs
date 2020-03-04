@@ -2,6 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
+
 use crate::interpreter::lib;
 
 pub fn object_get(
@@ -16,19 +17,15 @@ pub fn object_get(
     }
 
     let mut values = values;
-    let object_id = match values.remove(0) {
-        Value::Object(object_id) => object_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "The first argument of built-in function `object:get' must be an object."
-        ).into_result()
-    };
+    let object_id = lib::read_as_object_id(
+        interpreter,
+        values.remove(0)
+    )?;
 
-    let symbol_id = match values.remove(0) {
-        Value::Symbol(symbol_id) => symbol_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "The second argument of built-in function `object:get' must be a symbol."
-        ).into_result()
-    };
+    let symbol_id = lib::read_as_symbol_id(
+        interpreter,
+        values.remove(0)
+    )?;
 
     lib::check_if_symbol_assignable(interpreter, symbol_id)?;
 

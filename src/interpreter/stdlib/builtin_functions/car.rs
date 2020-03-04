@@ -3,6 +3,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
+use crate::interpreter::lib;
+
 pub fn car(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -16,16 +18,16 @@ pub fn car(
 
     let mut values = values;
 
-    let car = match values.remove(0) {
-        Value::Cons(cons_id) => interpreter.get_car(cons_id)
-            .map_err(|err| interpreter.make_generic_execution_error_caused(
-                "",
-                err
-            ))?,
-        _ => return interpreter.make_invalid_argument_error(
-            ""
-        ).into_result()
-    };
+    let cons_id = lib::read_as_cons(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let car = interpreter.get_car(cons_id)
+        .map_err(|err| interpreter.make_generic_execution_error_caused(
+            "",
+            err
+        ))?;
 
     Ok(car)
 }

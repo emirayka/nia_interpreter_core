@@ -3,6 +3,8 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
+use crate::interpreter::lib;
+
 pub fn gensym(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -19,22 +21,12 @@ pub fn gensym(
     let name = if values.len() == 0 {
         String::from("G")
     } else {
-        let string_id = match values.remove(0) {
-            Value::String(string_id) => string_id,
-            _ => return interpreter.make_invalid_argument_error(
-                "Built-in function `gensym' must take exactly one string argument."
-            ).into_result()
-        };
+        let string = lib::read_as_string(
+            interpreter,
+            values.remove(0)
+        )?;
 
-        let string = match interpreter.get_string(string_id) {
-            Ok(string) => String::from(string.get_string()),
-            Err(error) => return interpreter.make_generic_execution_error_caused(
-                "",
-                error
-            ).into_result()
-        };
-
-        string
+        string.clone()
     };
 
     Ok(Value::Symbol(interpreter.gensym(&name)))

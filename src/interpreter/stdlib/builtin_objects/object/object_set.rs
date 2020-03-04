@@ -16,19 +16,15 @@ pub fn object_set(
     }
 
     let mut values = values;
-    let object_id = match values.remove(0) {
-        Value::Object(object_id) => object_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "The first argument of built-in function `object:set!' must be an object."
-        ).into_result()
-    };
+    let object_id = lib::read_as_object_id(
+        interpreter,
+        values.remove(0)
+    )?;
 
-    let symbol_id = match values.remove(0) {
-        Value::Symbol(symbol) => symbol,
-        _ => return interpreter.make_invalid_argument_error(
-            "The second argument of built-in function `object:set!' must be a symbol."
-        ).into_result()
-    };
+    let symbol_id = lib::read_as_symbol_id(
+        interpreter,
+        values.remove(0)
+    )?;
 
     lib::check_if_symbol_assignable(interpreter, symbol_id)?;
 
