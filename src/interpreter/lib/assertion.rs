@@ -2,9 +2,15 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::*;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn assert_deep_equal(interpreter: &mut Interpreter, value1: Value, value2: Value) {
+use crate::interpreter::lib;
+
+pub fn assert_deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) {
     assert!(
-        interpreter.deep_equal(value1, value2).unwrap()
+        lib::deep_equal(
+            interpreter,
+            value1,
+            value2
+        ).unwrap()
     );
 }
 
@@ -100,11 +106,11 @@ pub fn assert_results_are_equal(interpreter: &mut Interpreter, pairs: Vec<(&str,
         let expected = interpreter.execute(code_expected).unwrap();
         let result = interpreter.execute(code).unwrap();
 
-        println!("{}", code_expected);
-        interpreter.print_value(expected);
-        println!();
-        interpreter.print_value(result);
-        println!();
+        // println!("{}", code_expected);
+        // interpreter.print_value(expected);
+        // println!();
+        // interpreter.print_value(result);
+        // println!();
 
         assert_deep_equal(
             interpreter,

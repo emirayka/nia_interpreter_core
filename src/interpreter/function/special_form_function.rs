@@ -24,7 +24,7 @@ impl fmt::Debug for SpecialFormFunction {
 
 impl PartialEq for SpecialFormFunction {
     fn eq(&self, other: &Self) -> bool {
-        self as *const _ == other as *const _ // todo: maybe this is incorrect
+        self as *const _ == other as *const _
     }
 }
 

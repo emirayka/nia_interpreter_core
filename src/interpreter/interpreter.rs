@@ -138,67 +138,6 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn deep_equal(&self, value1: Value, value2: Value) -> Result<bool, Error> {
-        use crate::interpreter::value::Value::*;
-
-        match (value1, value2) {
-            (Integer(val1), Integer(val2)) => Ok(val1 == val2),
-            (Float(val1), Float(val2)) => Ok(val1 == val2),
-            (Boolean(val1), Boolean(val2)) => Ok(val1 == val2),
-            (Keyword(val1), Keyword(val2)) => Ok(val1 == val2),
-            (Symbol(val1), Symbol(val2)) => Ok(val1 == val2),
-            (String(val1), String(val2)) => {
-                let string1 = self.get_string(val1)?.clone();
-                let string2 = self.get_string(val2)?.clone();
-
-                Ok(string1 == string2)
-            },
-            (Cons(val1), Cons(val2)) => {
-                let car1 = self.get_car(val1)?;
-                let car2 = self.get_car(val2)?;
-
-                let cdr1 = self.get_cdr(val1)?;
-                let cdr2 = self.get_cdr(val2)?;
-
-                let car_equals = self.deep_equal(car1, car2)?;
-                let cdr_equals = self.deep_equal(cdr1, cdr2)?;
-
-                Ok(car_equals && cdr_equals)
-            },
-            (Object(object1_id), Object(object2_id)) => {
-                let object1_items = self.get_items(object1_id)?.clone();
-                let object2_items = self.get_items(object2_id)?.clone();
-
-                if object1_items.len() != object2_items.len() {
-                    return Ok(false)
-                }
-
-                for (item_symbol, value1) in object1_items.iter() {
-                    let result = match object2_items.get(item_symbol) {
-                        Some(value2) => self.deep_equal(*value1, *value2),
-                        None => return Ok(false)
-                    };
-
-                    match result {
-                        Ok(false) => return Ok(false),
-                        Err(error) => return Err(error),
-                        _ => {}
-                    }
-                }
-
-                Ok(true)
-            }
-            (Function(val1), Function(val2)) => {
-                let function_1 = self.get_function(val1)?.clone();
-                let function_2 = self.get_function(val2)?.clone();
-
-                // todo: doesn't work correctly because it's not deep equal
-                Ok(function_1 == function_2)
-            },
-            _ => Ok(false)
-        }
-    }
-
     pub fn print_value(&mut self, value: Value) {
         match lib::value_to_string(self, value) {
             Ok(string) => print!("{}", string),

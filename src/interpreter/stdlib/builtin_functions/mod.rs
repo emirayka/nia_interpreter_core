@@ -7,6 +7,8 @@ mod car;
 mod cdr;
 mod cons;
 mod div;
+mod eq_question;
+mod equal_question;
 mod flookup;
 mod gensym;
 mod intern;
@@ -34,6 +36,9 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("%", rem::rem),
         ("-", sub::sub),
         ("+", sum::sum),
+
+        ("eq?", eq_question::eq_question),
+        ("equal?", equal_question::equal_question)
     );
 
     for (name, func) in pairs {

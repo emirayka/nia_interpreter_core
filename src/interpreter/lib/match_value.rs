@@ -17,7 +17,7 @@ pub fn match_value_recursive(
             match lib::check_if_symbol_assignable(interpreter, symbol_id) {
                 Ok(_) => {},
                 Err(err) => {
-                    if interpreter.deep_equal(binding, value)? {
+                    if lib::deep_equal(interpreter, binding, value)? {
                         return Ok(())
                     } else {
                         return Err(err);
