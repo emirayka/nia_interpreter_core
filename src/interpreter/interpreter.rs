@@ -135,6 +135,10 @@ impl Interpreter {
     pub fn make_invalid_argument_count_error_caused(&self, message: &str, cause: Error) -> Error {
         Error::invalid_argument_count_error_caused(message, cause)
     }
+
+    pub fn make_assertion_error(&self, message: &str) -> Error {
+        Error::assertion_error(message)
+    }
 }
 
 impl Interpreter {

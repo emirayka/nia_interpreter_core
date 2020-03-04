@@ -6,6 +6,8 @@ pub const SYMBOL_NAME_INVALID_CONS_ERROR: &'static str = "invalid-cons-error";
 pub const SYMBOL_NAME_INVALID_ARGUMENT_ERROR: &'static str = "invalid-argument-error";
 pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR: &'static str = "invalid-argument-count-error";
 
+pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion";
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ErrorKind {
     Empty,
@@ -19,6 +21,7 @@ pub enum ErrorKind {
 
     InvalidArgument,
     InvalidArgumentCount,
+    Assertion,
 }
 
 #[derive(Clone, Debug)]
@@ -181,6 +184,7 @@ impl Error {
         String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
         )
     }
+
     pub fn invalid_argument_count_error_caused(message: &str, cause: Error) -> Error {
         Error::from(
             Some(cause),
@@ -189,26 +193,41 @@ impl Error {
             String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
         )
     }
+
+    pub fn assertion_error(message: &str) -> Error {
+        Error::from(
+            None,
+            ErrorKind::Assertion,
+            message,
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
+        )
+    }
 }
 
 #[cfg(test)]
 mod tests {
-//    use super::*;
+    use super::*;
+    use crate::interpreter::interpreter::Interpreter;
 
-    // todo: fix
-//    #[test]
-//    fn test_final_cause_works() {
-//        let mut interpreter = Interpreter::new();
-//
-//        let cause_cause_error = Error::invalid_argument_count(interpreter, "r");
-//        let cause_error = Error::invalid_argument_caused(interpreter, "r", cause_cause_error);
-//        let error = Error::generic_execution_error_caused(interpreter, "r", cause_error);
-//
-//        assert!(
-//            match error.get_total_cause().get_error_kind() {
-//                ErrorKind::InvalidArgumentCount => true,
-//                _ => false
-//            }
-//        );
-//    }
+    #[test]
+    fn test_final_cause_works() {
+        let mut interpreter = Interpreter::new();
+
+        let cause_cause_error = interpreter.make_invalid_argument_count_error("r");
+        let cause_error = interpreter.make_invalid_argument_count_error_caused(
+            "r",
+            cause_cause_error
+        );
+        let error = interpreter.make_generic_execution_error_caused(
+            "r",
+            cause_error
+        );
+
+        assert!(
+            match error.get_total_cause().get_error_kind() {
+                ErrorKind::InvalidArgumentCount => true,
+                _ => false
+            }
+        );
+    }
 }

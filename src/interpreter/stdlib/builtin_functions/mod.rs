@@ -3,6 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 use crate::interpreter::lib::infect::infect_builtin_function;
 
+mod assert;
 mod car;
 mod cdr;
 mod cons;
@@ -21,6 +22,7 @@ mod sum;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
+        ("assert", assert::assert),
         ("car", car::car),
         ("cdr", cdr::cdr),
         ("cons", cons::cons),

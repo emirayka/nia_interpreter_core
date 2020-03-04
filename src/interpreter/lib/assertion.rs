@@ -69,6 +69,11 @@ make_assertion_function!(
     ErrorKind::ZeroDivision
 );
 
+make_assertion_function!(
+    assert_assertion_error,
+    ErrorKind::Assertion
+);
+
 pub fn assert_is_function(param: Value) {
     assert!(
         match param {
