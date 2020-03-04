@@ -199,7 +199,7 @@ impl Error {
             None,
             ErrorKind::Assertion,
             message,
-            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
+            String::from(SYMBOL_NAME_ASSERTION_ERROR)
         )
     }
 }

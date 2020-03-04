@@ -67,13 +67,11 @@ mod tests {
     use super::*;
     use crate::interpreter::lib::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_generic_error_when_no_symbol_was_provided() {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw)");
-
         assertion::assert_error(&result);
 
         let error = result.err().unwrap();
@@ -84,13 +82,11 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_with_correct_symbol_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol)");
-
         assertion::assert_error(&result);
 
         let error = result.err().unwrap();
@@ -101,13 +97,11 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_with_correct_message_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol \"Cute error message\")");
-
         assertion::assert_error(&result);
 
         let error = result.err().unwrap();
