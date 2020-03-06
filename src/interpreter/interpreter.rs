@@ -887,7 +887,7 @@ impl Interpreter {
         Ok(last_result)
     }
 
-    fn evaluate_interpreted_function_invocation(
+    pub fn evaluate_interpreted_function_invocation(
         &mut self,
         func: &InterpretedFunction,
         evaluated_arguments: Vec<Value>
@@ -925,16 +925,16 @@ impl Interpreter {
             .ok_or_else(|| self.make_empty_error())
     }
 
-    fn evaluate_builtin_function_invocation(
+    pub fn evaluate_builtin_function_invocation(
         &mut self,
         builtin_function: &BuiltinFunction,
-        environment_id: EnvironmentId,
+        execution_environment: EnvironmentId,
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
-        (builtin_function.get_func())(self, environment_id, evaluated_arguments)
+        (builtin_function.get_func())(self, execution_environment, evaluated_arguments)
     }
 
-    fn evaluate_special_form_invocation(
+    pub fn evaluate_special_form_invocation(
         &mut self,
         execution_environment: EnvironmentId,
         special_form: &SpecialFormFunction,
@@ -943,7 +943,7 @@ impl Interpreter {
         (special_form.get_func())(self, execution_environment, arguments)
     }
 
-    fn evaluate_macro_invocation(
+    pub fn evaluate_macro_invocation(
         &mut self,
         func: &MacroFunction,
         arguments: Vec<Value>

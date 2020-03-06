@@ -1,12 +1,9 @@
 use crate::parser::keyword_element::{KeywordElement, parse_keyword_element};
-use crate::parser::{Element, parse_element};
-use nom::sequence::{terminated, preceded, pair};
+use nom::sequence::{terminated, preceded};
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
 use nom::multi::many0;
-use nom::combinator::{map_res, opt};
-use crate::parser::Element::Object;
-use crate::parser::symbol_element::SymbolElement;
+use nom::combinator::{map_res};
 
 #[derive(Debug)]
 pub struct ObjectPatternElement {

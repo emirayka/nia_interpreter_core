@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::error::Error;
 
-pub fn read_as_cons(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {
+pub fn read_as_cons_id(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {
     let cons_id = match value {
         Value::Cons(cons_id) => cons_id,
         _ => return interpreter.make_invalid_argument_error(
@@ -30,7 +30,7 @@ mod tests {
         );
 
         for (value, expected) in pairs {
-            let result = read_as_cons(
+            let result = read_as_cons_id(
                 &mut interpreter,
                 value
             ).unwrap();
@@ -56,7 +56,7 @@ mod tests {
         );
 
         for not_string_value in not_string_values {
-            let result = read_as_cons(
+            let result = read_as_cons_id(
                 &mut interpreter,
                 not_string_value
             );

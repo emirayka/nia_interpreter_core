@@ -38,3 +38,19 @@ impl PartialEq for Value {
 }
 
 impl Eq for Value {}
+
+impl Value {
+    pub fn as_cons(&self) -> ConsId {
+        match self {
+            Value::Cons(cons_id) => *cons_id,
+            _ => panic!()
+        }
+    }
+
+    pub fn as_function(&self) -> FunctionId {
+        match self {
+            Value::Function(function_id) => *function_id,
+            _ => panic!()
+        }
+    }
+}

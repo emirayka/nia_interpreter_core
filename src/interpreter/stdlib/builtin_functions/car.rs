@@ -18,7 +18,7 @@ pub fn car(
 
     let mut values = values;
 
-    let cons_id = lib::read_as_cons(
+    let cons_id = lib::read_as_cons_id(
         interpreter,
         values.remove(0)
     )?;

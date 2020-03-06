@@ -6,7 +6,6 @@ use nom::{
     sequence::preceded
 };
 
-use crate::parser::Element;
 use crate::parser::s_expression_element::{SExpressionElement, parse_s_expression_element};
 
 #[derive(Debug)]
@@ -57,6 +56,7 @@ pub fn parse_short_lambda_element(
 mod tests {
     use super::*;
     use crate::parser::integer_element::IntegerElement;
+    use crate::parser::Element;
 
     fn assert_short_lambda_element_parsed_correctly(expected: ShortLambdaElement, code: &str) {
         assert_eq!(Ok(("", expected)), parse_short_lambda_element(code))

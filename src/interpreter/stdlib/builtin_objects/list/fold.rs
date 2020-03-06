@@ -5,14 +5,14 @@ use crate::interpreter::error::Error;
 use crate::interpreter::lib;
 use crate::interpreter::function::function_arena::FunctionId;
 
-pub fn foldl(
+pub fn fold(
     interpreter: &mut Interpreter,
     environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 3 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `list:foldl' takes three arguments exactly."
+            "Built-in function `list:fold' takes three arguments exactly."
         ).into_result()
     }
 
@@ -31,7 +31,7 @@ pub fn foldl(
     let initial_value = values.remove(0);
     let mut acc = initial_value;
 
-    for (index, value) in argument_values.iter().rev().enumerate() {
+    for (index, value) in argument_values.iter().enumerate() {
         let index = Value::Integer(index as i64);
         let arguments = vec!(acc, *value, index);
 
@@ -56,11 +56,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '() 0)", "0"),
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '(1 2 3 4) 0)", "10"),
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
-            ("(list:foldl (function (lambda (acc value _) (cons value acc))) '(1 2 3 4 5) nil)", "(list 1 2 3 4 5)"),
-            ("(list:foldl (function (lambda (acc _2 index) (cons index acc))) '(1 2 3 4 5) nil)", "(list 4 3 2 1 0)"),
+            ("(list:fold (function (lambda (acc value _) (+ acc value))) '() 0)", "0"),
+            ("(list:fold (function (lambda (acc value _) (+ acc value))) '(1 2 3 4) 0)", "10"),
+            ("(list:fold (function (lambda (acc value _) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
+            ("(list:fold (function (lambda (acc value _) (cons value acc))) '(1 2 3 4 5) nil)", "(list 5 4 3 2 1)"),
+            ("(list:fold (function (lambda (acc _2 index) (cons index acc))) '(1 2 3 4 5) nil)", "(list 4 3 2 1 0)"),
         );
 
         assertion::assert_results_are_equal(
@@ -74,24 +74,24 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(list:foldl 1 '() nil)",
-            "(list:foldl 1.1 '() nil)",
-            "(list:foldl #t '() nil)",
-            "(list:foldl #f '() nil)",
-            "(list:foldl \"string\" '() nil)",
-            "(list:foldl 'symbol '() nil)",
-            "(list:foldl :keyword '() nil)",
-            "(list:foldl {} '() nil)",
+            "(list:fold 1 '() nil)",
+            "(list:fold 1.1 '() nil)",
+            "(list:fold #t '() nil)",
+            "(list:fold #f '() nil)",
+            "(list:fold \"string\" '() nil)",
+            "(list:fold 'symbol '() nil)",
+            "(list:fold :keyword '() nil)",
+            "(list:fold {} '() nil)",
 
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) 1 nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) 1.1 nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) #t nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) #f nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) \"string\" nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) 'symbol nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) :keyword nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) {} nil)",
-            "(list:foldl (function (lambda (_1 _2 _3) nil)) #() nil)"
+            "(list:fold (function (lambda (_1 _2 _3) nil)) 1 nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) 1.1 nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) #t nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) #f nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) \"string\" nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) 'symbol nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) :keyword nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) {} nil)",
+            "(list:fold (function (lambda (_1 _2 _3) nil)) #() nil)"
         );
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -105,10 +105,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(list:foldl)",
-            "(list:foldl 1)",
-            "(list:foldl 1 2)",
-            "(list:foldl 1 2 3 4)"
+            "(list:fold)",
+            "(list:fold 1)",
+            "(list:fold 1 2)",
+            "(list:fold 1 2 3 4)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

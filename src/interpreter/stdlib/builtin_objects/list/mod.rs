@@ -13,7 +13,7 @@ mod contains_question;
 mod filter;
 mod first;
 mod foldl;
-mod foldr;
+mod fold;
 mod head;
 mod head_while;
 mod join;
@@ -42,8 +42,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("contains?", contains_question::stub),
         ("filter", filter::stub),
         ("first", first::stub),
-        ("foldl", foldl::stub),
-        ("foldr", foldr::stub),
+        ("fold", fold::fold),
+        ("foldl", foldl::foldl),
         ("head", head::stub),
         ("head-while", head_while::stub),
         ("join", join::stub),

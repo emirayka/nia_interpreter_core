@@ -64,7 +64,7 @@ mod tests {
 
         let mut interpreter = Interpreter::new();
         let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = lib::read_as_cons(
+        let list = lib::read_as_cons_id(
             &interpreter,
             value
         ).unwrap();
@@ -90,7 +90,7 @@ mod tests {
 
         let mut interpreter = Interpreter::new();
         let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = lib::read_as_cons(
+        let list = lib::read_as_cons_id(
             &interpreter,
             value
         ).unwrap();

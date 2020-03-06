@@ -33,7 +33,7 @@ pub fn _match(
     let mut code_to_execute = None;
 
     for clause in clauses {
-        let cons_id = lib::read_as_cons(
+        let cons_id = lib::read_as_cons_id(
             interpreter,
             clause
         )?;

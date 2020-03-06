@@ -3,6 +3,9 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
+use crate::interpreter::lib;
+use crate::interpreter::function::function_arena::FunctionId;
+
 pub fn all_question(
     interpreter: &mut Interpreter,
     environment_id: EnvironmentId,
