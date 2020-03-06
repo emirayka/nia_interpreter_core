@@ -5,7 +5,7 @@ use crate::interpreter::error::Error;
 
 use crate::interpreter::lib;
 
-pub fn stub(
+pub fn replace(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
