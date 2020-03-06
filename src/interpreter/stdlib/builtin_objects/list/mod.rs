@@ -47,7 +47,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("foldl", foldl::foldl),
         ("head", head::head),
         ("join", join::join),
-        ("last", last::stub),
+        ("last", last::last),
         ("length", length::length),
         ("map", map::stub),
         ("none?", none_question::stub),
