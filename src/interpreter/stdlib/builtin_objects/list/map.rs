@@ -3,15 +3,114 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
+use crate::interpreter::lib;
+
 pub fn stub(
     interpreter: &mut Interpreter,
-    _environment: EnvironmentId,
+    environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    Ok(Value::Boolean(false))
+    if values.len() != 2 {
+        return interpreter.make_invalid_argument_count_error(
+            "Built-in function `map' takes two arguments exactly."
+        ).into_result()
+    }
+
+    let mut values = values;
+
+    let function_id = lib::read_as_function_id(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let values = lib::read_as_vector(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let mut results = Vec::new();
+
+    for (index, value) in values.iter().enumerate() {
+        let index = Value::Integer(index as i64);
+
+        let result = lib::execute_function(
+            interpreter,
+            environment_id,
+            function_id,
+            vec!(*value, index)
+        )?;
+
+        results.push(result);
+    }
+
+    Ok(interpreter.vec_to_list(results))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::assertion;
+
+    #[test]
+    fn returns_mapped_list() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(list:map (function (lambda (value _) (* 2 value))) '(1 2 3 4 5))", "'(2 4 6 8 10)"),
+            ("(list:map (function (lambda (value index) (* value index))) '(1 2 3 4 5))", "'(0 2 6 12 20)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_invalid_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:map 1 '())",
+            "(list:map 1.1 '())",
+            "(list:map #t '())",
+            "(list:map #f '())",
+            "(list:map \"string\" '())",
+            "(list:map 'symbol '())",
+            "(list:map :keyword '())",
+            "(list:map '(1 2 3) '())",
+            "(list:map {} '())",
+
+            "(list:map (function (lambda (_1 _2) nil)) 1)",
+            "(list:map (function (lambda (_1 _2) nil)) 1.1)",
+            "(list:map (function (lambda (_1 _2) nil)) #t)",
+            "(list:map (function (lambda (_1 _2) nil)) #f)",
+            "(list:map (function (lambda (_1 _2) nil)) \"string\")",
+            "(list:map (function (lambda (_1 _2) nil)) 'symbol)",
+            "(list:map (function (lambda (_1 _2) nil)) :keyword)",
+            "(list:map (function (lambda (_1 _2) nil)) {})",
+            "(list:map (function (lambda (_1 _2) nil)) #())"
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:map)",
+            "(list:map 1)",
+            "(list:map 1 2 3)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
 }
