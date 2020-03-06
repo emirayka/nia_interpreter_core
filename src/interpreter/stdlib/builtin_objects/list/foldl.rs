@@ -81,6 +81,7 @@ mod tests {
             "(list:foldl \"string\" '() nil)",
             "(list:foldl 'symbol '() nil)",
             "(list:foldl :keyword '() nil)",
+            "(list:foldl '(1 2 3) '() nil)",
             "(list:foldl {} '() nil)",
 
             "(list:foldl (function (lambda (_1 _2 _3) nil)) 1 nil)",

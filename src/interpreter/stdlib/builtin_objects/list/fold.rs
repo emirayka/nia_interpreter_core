@@ -81,6 +81,7 @@ mod tests {
             "(list:fold \"string\" '() nil)",
             "(list:fold 'symbol '() nil)",
             "(list:fold :keyword '() nil)",
+            "(list:fold '(1 2 3) '() nil)",
             "(list:fold {} '() nil)",
 
             "(list:fold (function (lambda (_1 _2 _3) nil)) 1 nil)",

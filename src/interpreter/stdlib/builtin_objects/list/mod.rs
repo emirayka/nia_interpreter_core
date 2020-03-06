@@ -15,7 +15,7 @@ mod first;
 mod foldl;
 mod fold;
 mod head;
-mod head_while;
+mod take_while;
 mod join;
 mod last;
 mod length;
@@ -26,7 +26,6 @@ mod remove;
 mod repeat;
 mod replace;
 mod tail;
-mod tail_while;
 mod unzip;
 mod zip;
 
@@ -44,8 +43,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("first", first::stub),
         ("fold", fold::fold),
         ("foldl", foldl::foldl),
-        ("head", head::stub),
-        ("head-while", head_while::stub),
+        ("head", head::head),
         ("join", join::stub),
         ("last", last::stub),
         ("length", length::stub),
@@ -56,7 +54,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("repeat", repeat::stub),
         ("replace", replace::stub),
         ("tail", tail::stub),
-        ("tail-while", tail_while::stub),
+        ("take-while", take_while::take_while),
         ("unzip", unzip::stub),
         ("zip", zip::stub)
     );
