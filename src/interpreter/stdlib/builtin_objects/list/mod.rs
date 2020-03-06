@@ -54,7 +54,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("remove", remove::stub),
         ("repeat", repeat::stub),
         ("replace", replace::stub),
-        ("tail", tail::stub),
+        ("tail", tail::tail),
         ("take", take::take),
         ("take-while", take_while::take_while),
         ("unzip", unzip::stub),
