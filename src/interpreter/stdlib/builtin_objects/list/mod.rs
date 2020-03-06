@@ -53,7 +53,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("none?", none_question::stub),
         ("nth", nth::stub),
         ("remove", remove::stub),
-        ("repeat", repeat::stub),
+        ("repeat", repeat::repeat),
         ("replace", replace::stub),
         ("reverse", reverse::reverse),
         ("tail", tail::tail),
