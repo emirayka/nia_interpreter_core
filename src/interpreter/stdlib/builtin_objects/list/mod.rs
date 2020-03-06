@@ -15,7 +15,6 @@ mod first;
 mod foldl;
 mod fold;
 mod head;
-mod take_while;
 mod join;
 mod last;
 mod length;
@@ -26,6 +25,8 @@ mod remove;
 mod repeat;
 mod replace;
 mod tail;
+mod take;
+mod take_while;
 mod unzip;
 mod zip;
 
@@ -54,6 +55,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("repeat", repeat::stub),
         ("replace", replace::stub),
         ("tail", tail::stub),
+        ("take", take::take),
         ("take-while", take_while::take_while),
         ("unzip", unzip::stub),
         ("zip", zip::stub)

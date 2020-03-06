@@ -30,7 +30,7 @@ pub use parse_arguments::parse_arguments_from_value;
 pub use read_as_cons::read_as_cons_id;
 pub use read_as_function::read_as_function;
 pub use read_as_function_id::read_as_function_id;
-pub use read_as_int::read_as_int;
+pub use read_as_int::read_as_i64;
 pub use read_as_object_id::read_as_object_id;
 pub use read_as_string::read_as_string;
 pub use read_as_symbol_id::read_as_symbol_id;

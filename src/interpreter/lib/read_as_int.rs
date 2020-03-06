@@ -2,7 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn read_as_int(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
+pub fn read_as_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
     match value {
         Value::Integer(int) => Ok(int),
         _ => interpreter.make_invalid_argument_error(
@@ -21,7 +21,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let value = Value::Integer(3);
-        let result = read_as_int(
+        let result = read_as_i64(
             &mut interpreter,
             value
         );
@@ -46,7 +46,7 @@ mod tests {
         );
 
         for not_string_value in not_string_values {
-            let result = read_as_int(
+            let result = read_as_i64(
                 &mut interpreter,
                 not_string_value
             );

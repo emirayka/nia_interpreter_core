@@ -19,12 +19,12 @@ pub fn substr(
 
     let mut values = values;
 
-    let index = lib::read_as_int(
+    let index = lib::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
 
-    let diff = lib::read_as_int(
+    let diff = lib::read_as_i64(
         interpreter,
         values.remove(0)
     )?;

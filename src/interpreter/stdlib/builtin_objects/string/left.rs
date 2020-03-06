@@ -18,7 +18,7 @@ pub fn left(
 
     let mut values = values;
 
-    let count = lib::read_as_int(
+    let count = lib::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
