@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-pub fn stub(
+pub fn join(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

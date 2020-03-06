@@ -3,15 +3,88 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-pub fn stub(
+use crate::interpreter::lib;
+
+pub fn length(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    Ok(Value::Boolean(false))
+    if values.len() != 1 {
+        return interpreter.make_invalid_argument_count_error(
+            "Built-in function `list:length' takes one argument exactly"
+        ).into_result();
+    }
+
+    let mut values = values;
+
+    let vector = lib::read_as_vector(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let length = vector.len() as i64;
+
+    Ok(Value::Integer(length))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::assertion;
+
+    #[test]
+    fn return_the_length_of_the_list() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("(list:length '())", "0"),
+            ("(list:length '(1))", "1"),
+            ("(list:length '(1 2))", "2"),
+            ("(list:length '(1 2 3))", "3"),
+            ("(list:length '(1 2 3 4))", "4"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_invalid_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:length 1)",
+            "(list:length 1.1)",
+            "(list:length #t)",
+            "(list:length #f)",
+            "(list:length \"string\")",
+            "(list:length 'symbol)",
+            "(list:length :keyword)",
+            "(list:length {})",
+            "(list:length #())",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:length)",
+            "(list:length 1 2)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
 }
