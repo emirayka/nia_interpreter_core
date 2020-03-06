@@ -55,6 +55,20 @@ mod tests {
     }
 
     #[test]
+    fn returns_invalid_argument_error_when_list_has_zero_length() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:head '())",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
     fn returns_invalid_argument_error_when_invalid_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 

@@ -24,6 +24,7 @@ mod nth;
 mod remove;
 mod repeat;
 mod replace;
+mod reverse;
 mod tail;
 mod take;
 mod take_while;
@@ -54,6 +55,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("remove", remove::stub),
         ("repeat", repeat::stub),
         ("replace", replace::stub),
+        ("reverse", reverse::reverse),
         ("tail", tail::tail),
         ("take", take::take),
         ("take-while", take_while::take_while),
