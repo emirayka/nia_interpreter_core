@@ -127,7 +127,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_makes_new_bindings() {
+    fn makes_new_bindings() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -143,7 +143,7 @@ mod tests {
     }
 
     #[test]
-    fn test_makes_updates_bindings() {
+    fn makes_updates_bindings() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -158,7 +158,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cannot_set_to_not_defined_variable() {
+    fn cannot_set_to_not_defined_variable() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -166,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cannot_set_to_not_defined_function() {
+    fn cannot_set_to_not_defined_function() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -174,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cannot_define_variable_twice() {
+    fn cannot_define_variable_twice() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -183,7 +183,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cannot_define_function_twice() {
+    fn cannot_define_function_twice() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -192,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn test_able_to_make_child_parent_relationship() {
+    fn able_to_make_child_parent_relationship() {
         let mut env1 = LexicalEnvironment::new();
         let mut env2 = LexicalEnvironment::new();
 

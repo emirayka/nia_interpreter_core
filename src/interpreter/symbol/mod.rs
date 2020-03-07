@@ -143,7 +143,7 @@ mod tests {
     use super::*;
 
     #[test]
-    pub fn test_interns_correctly() {
+    pub fn interns_correctly() {
         let mut arena = SymbolArena::new();
 
         let sym1 = arena.intern("test");
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_gensyms_correctly() {
+    pub fn gensyms_correctly() {
         let mut arena = SymbolArena::new();
 
         let sym = arena.intern("test");

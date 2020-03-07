@@ -82,7 +82,7 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_values() {
+    fn simple_values() {
         make_float_assertion!("77.77");
         make_float_assertion!("-77.77");
         make_float_assertion!("+77.77");
@@ -92,10 +92,10 @@ mod tests {
         make_float_assertion!("+77.77E+77");
     }
 
-    make_failed_float_test!(test_int_is_not_float_1, "77");
-    make_failed_float_test!(test_int_is_not_float_2, "+77");
-    make_failed_float_test!(test_int_is_not_float_3, "-77");
-    make_failed_float_test!(test_int_is_not_float_even_with_exponent_1, "77e77");
-    make_failed_float_test!(test_int_is_not_float_even_with_exponent_2, "-77e-77");
-    make_failed_float_test!(test_int_is_not_float_even_with_exponent_3, "+77e+77");
+    make_failed_float_test!(int_is_not_float_1, "77");
+    make_failed_float_test!(int_is_not_float_2, "+77");
+    make_failed_float_test!(int_is_not_float_3, "-77");
+    make_failed_float_test!(int_is_not_float_even_with_exponent_1, "77e77");
+    make_failed_float_test!(int_is_not_float_even_with_exponent_2, "-77e-77");
+    make_failed_float_test!(int_is_not_float_even_with_exponent_3, "+77e+77");
 }

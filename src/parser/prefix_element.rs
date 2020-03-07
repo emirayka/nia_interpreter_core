@@ -236,7 +236,7 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_prefixed_values() {
+    fn simple_prefixed_values() {
         assert_prefix_works(Prefix::Quote, "'");
         assert_prefix_works(Prefix::Comma, ",");
         assert_prefix_works(Prefix::CommaDog, ",@");
@@ -244,7 +244,7 @@ mod tests {
     }
 
     #[test]
-    fn test_already_prefixed_prefixed_values() {
+    fn already_prefixed_prefixed_values() {
         let prefixes = vec!(
             (Prefix::Quote, "'"),
             (Prefix::Comma, ","),

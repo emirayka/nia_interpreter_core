@@ -60,7 +60,7 @@ mod tests {
         use crate::interpreter::library::assertion;
 
         #[test]
-        fn test_works_correctly() {
+        fn works_correctly() {
             let mut interpreter = Interpreter::new();
 
             let string1 = interpreter.intern_string_value(String::from("car"));

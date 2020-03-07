@@ -71,25 +71,25 @@ mod tests {
     }
 
     #[test]
-    fn test_works_on_simple_value() {
+    fn works_on_simple_value() {
         assert_keyword_parsing_is_ok!(":test");
         assert_eq!(Err(nom::Err::Error(("test", ErrorKind::Tag))), parse_keyword_element("test"));
     }
 
     #[test]
-    fn test_allows_numbers() {
+    fn allows_numbers() {
         assert_keyword_parsing_is_ok!(":test1");
         assert_keyword_parsing_is_ok!(":1test");
     }
 
     #[test]
-    fn test_able_to_parse_all_fine_symbols() {
+    fn able_to_parse_all_fine_symbols() {
         let example= ":::test1-_^v=+?<>./&*%$@!~";
         assert_keyword_parsing_is_ok!(example);
     }
 
     #[test]
-    fn test_able_to_parse_all_fine_escaped_symbols() {
+    fn able_to_parse_all_fine_escaped_symbols() {
         let example = r##":::test1\"\,\`\ \(\)\\\{\}"##;
         let expected = r##"::test1",` ()\{}"##;
 

@@ -204,7 +204,7 @@ mod tests {
         use crate::interpreter::function::function_arena::FunctionId;
 
         #[test]
-        fn test_returns_correct_vector_that_represents_values_in_cons_cells() {
+        fn returns_correct_vector_that_represents_values_in_cons_cells() {
             let mut cons_arena = ConsArena::new();
 
             let cdr = Value::Cons(cons_arena.make_cons(
@@ -236,7 +236,7 @@ mod tests {
         }
 
         #[test]
-        fn test_returns_vector_when_cdr_is_not_nil_nor_cons_cell() {
+        fn returns_vector_when_cdr_is_not_nil_nor_cons_cell() {
             let mut cons_arena = ConsArena::new();
 
             let incorrect_cudders = vec!(

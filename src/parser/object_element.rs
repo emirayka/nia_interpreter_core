@@ -99,17 +99,17 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_object_1() {
+    fn simple_object_1() {
         assert_parsed_correctly!(r#"{:f :keyword}"#);
     }
 
     #[test]
-    fn test_simple_object_2() {
+    fn simple_object_2() {
         assert_parsed_correctly!(r#"{:oi test :a 1 :b 1.0 :c "test" :d #t :e #f :f :keyword}"#);
     }
 
     #[test]
-    fn test_spaces_are_processed_correctly() {
+    fn spaces_are_processed_correctly() {
         assert_parsed_correctly!(r#"{:a test}"#);
         assert_parsed_correctly!(r#"{ :a test}"#);
         assert_parsed_correctly!(r#"{:a test }"#);
@@ -117,7 +117,7 @@ mod tests {
     }
 
     #[test]
-    fn test_nested_objects_are_processed() {
+    fn nested_objects_are_processed() {
         assert_parsed_correctly!(r#"{:a test :b :list :c {:a b :b 1 :c 2}}"#);
         assert_parsed_correctly!(r#"{:a test :b {:a test :b {:a b :b 1 :c 2}}}"#);
     }

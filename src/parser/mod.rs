@@ -312,7 +312,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parses_atoms_correctly() {
+    fn parses_atoms_correctly() {
         assert_is_ok!(parse_code("20"));
         assert_is_ok!(parse_code("20.0"));
         assert_is_ok!(parse_code("#t"));
@@ -330,13 +330,13 @@ mod tests {
     }
 
     #[test]
-    fn test_parses_simple_s_expression_correctly() {
+    fn parses_simple_s_expression_correctly() {
         assert_is_ok!(parse_code("(+ 1 2)"));
         assert_is_ok!(parse_code("(1+ 1)"));
     }
 
     #[test]
-    fn test_parses_complex_s_expression_correctly() {
+    fn parses_complex_s_expression_correctly() {
         assert_code_eq!(
             vec!(
                 Element::SExpression(s_expression_element::SExpressionElement::new(vec!(
@@ -373,7 +373,7 @@ mod tests {
     }
 
     #[test]
-    fn test_distinguishes_between_symbols_and_numbers() {
+    fn distinguishes_between_symbols_and_numbers() {
         assert_code_eq!(vec!(Element::Float(float_element::FloatElement::new(1.1))), "1.1");
         assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1.1t".to_string()))), "1.1t");
 
@@ -382,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_integer() {
+    fn respects_spaces_between_forms_after_integer() {
         assert_is_ok!(parse_code("1 1"));
         assert_is_ok!(parse_code("11"));
 
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_float() {
+    fn respects_spaces_between_forms_after_float() {
         assert_is_ok!(parse_code("1.1 1"));
         assert_is_ok!(parse_code("1.11"));
 
@@ -460,7 +460,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_boolean_true() {
+    fn respects_spaces_between_forms_after_boolean_true() {
         assert_is_ok!(parse_code("#t 1"));
         assert_is_err!(parse_code("#t1"));
 
@@ -498,7 +498,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_boolean_false() {
+    fn respects_spaces_between_forms_after_boolean_false() {
         assert_is_ok!(parse_code("#f 1"));
         assert_is_err!(parse_code("#f1"));
 
@@ -536,7 +536,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_keyword() {
+    fn respects_spaces_between_forms_after_keyword() {
         assert_is_ok!(parse_code(":key 1"));
         assert_is_ok!(parse_code(":key1"));
 
@@ -574,7 +574,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_string() {
+    fn respects_spaces_between_forms_after_string() {
         assert_is_ok!(parse_code("\"str\" 1"));
         assert_is_err!(parse_code("\"str\"1"));
 
@@ -612,7 +612,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_symbol() {
+    fn respects_spaces_between_forms_after_symbol() {
         assert_is_ok!(parse_code("sym 1"));
         assert_is_ok!(parse_code("sym1"));
 
@@ -650,7 +650,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_s_expresion() {
+    fn respects_spaces_between_forms_after_s_expresion() {
         assert_is_ok!(parse_code("() 1"));
         assert_is_err!(parse_code("()1"));
 
@@ -688,7 +688,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_object_literal() {
+    fn respects_spaces_between_forms_after_object_literal() {
         assert_is_ok!(parse_code("{} 1"));
         assert_is_err!(parse_code("{}1"));
 
@@ -726,7 +726,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_object_pattern_literal() {
+    fn respects_spaces_between_forms_after_object_pattern_literal() {
         assert_is_ok!(parse_code("#{} 1"));
         assert_is_err!(parse_code("#{}1"));
 
@@ -764,7 +764,7 @@ mod tests {
     }
 
     #[test]
-    fn test_respects_spaces_between_forms_after_short_lambda_literal() {
+    fn respects_spaces_between_forms_after_short_lambda_literal() {
         assert_is_ok!(parse_code("#() 1"));
         assert_is_err!(parse_code("#()1"));
 
@@ -802,7 +802,7 @@ mod tests {
     }
 
     #[test]
-    fn test_does_not_allow_unfinished_s_expressions() {
+    fn does_not_allow_unfinished_s_expressions() {
         assert_is_err!(parse_code("("));
         assert_is_err!(parse_code("()("));
         assert_is_err!(parse_code("(()"));
@@ -811,7 +811,7 @@ mod tests {
     }
 
     #[test]
-    fn test_does_not_allow_unfinished_object_literals() {
+    fn does_not_allow_unfinished_object_literals() {
         assert_is_err!(parse_code("{"));
         assert_is_err!(parse_code("{}{"));
         assert_is_err!(parse_code("{{}"));

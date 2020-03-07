@@ -45,7 +45,7 @@ mod tests {
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn test_returns_correct_heads() {
+    fn returns_correct_heads() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(

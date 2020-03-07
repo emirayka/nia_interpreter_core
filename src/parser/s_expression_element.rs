@@ -91,7 +91,7 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_s_expression() {
+    fn simple_s_expression() {
         assert_s_expression_parsed_correctly(
             vec!(
                 Element::Symbol(SymbolElement::new(String::from("test"))),
@@ -107,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn test_spaces_are_processed_correctly() {
+    fn spaces_are_processed_correctly() {
         assert_s_expression_parsed_correctly(
             vec!(
                 Element::Symbol(SymbolElement::new(String::from("test"))),
@@ -135,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn test_nested_s_expressions_are_processed() {
+    fn nested_s_expressions_are_processed() {
         assert_s_expression_parsed_correctly(
             vec!(
                 Element::Symbol(SymbolElement::new(String::from("test"))),

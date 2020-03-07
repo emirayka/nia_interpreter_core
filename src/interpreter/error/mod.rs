@@ -210,7 +210,7 @@ mod tests {
     use crate::interpreter::interpreter::Interpreter;
 
     #[test]
-    fn test_final_cause_works() {
+    fn final_cause_works() {
         let interpreter = Interpreter::new();
 
         let cause_cause_error = interpreter.make_invalid_argument_count_error("r");

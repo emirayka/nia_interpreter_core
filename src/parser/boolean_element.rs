@@ -52,12 +52,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parses_true_correctly() {
+    fn parses_true_correctly() {
         assert_eq!(Ok(("", BooleanElement{ value: true})), parse_boolean_element("#t"))
     }
 
     #[test]
-    fn test_parses_false_correctly() {
+    fn parses_false_correctly() {
         assert_eq!(Ok(("", BooleanElement{ value: false})), parse_boolean_element("#f"))
     }
 }

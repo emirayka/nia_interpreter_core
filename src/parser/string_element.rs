@@ -78,12 +78,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_works_on_simple_values() {
+    fn works_on_simple_values() {
         assert_eq!(Ok(("", StringElement{value: r"test".to_string()})), parse_string_element(r#""test""#));
     }
 
     #[test]
-    fn test_escape_behaves_correctly() {
+    fn escape_behaves_correctly() {
         assert_eq!(Ok(("", StringElement{value: "\\".to_string()})), parse_string_element(r#""\\""#));
         assert_eq!(Ok(("", StringElement{value: "\"".to_string()})), parse_string_element(r#""\"""#));
         assert_eq!(Ok(("", StringElement{value: "\n".to_string()})), parse_string_element(r#""\n""#));
@@ -92,7 +92,7 @@ mod tests {
     }
 
 //    #[test]
-//    fn test_makes_terminated_trash_symbols_incorrect() {
+//    fn makes_terminated_trash_symbols_incorrect() {
 //        assert!(parse_string_element(r#""a"1"#).is_err());
 //        assert!(parse_string_element(r#""a"1.0"#).is_err());
 //        assert!(parse_string_element(r##""a"#t"##).is_err());

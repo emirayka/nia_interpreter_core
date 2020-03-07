@@ -64,17 +64,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_simple_value() {
+    fn simple_value() {
         assert_eq!(Ok(("", IntegerElement{value: 20})), parse_integer_element("20"));
     }
 
     #[test]
-    fn test_signed_positive_value() {
+    fn signed_positive_value() {
         assert_eq!(Ok(("", IntegerElement{value: 20})), parse_integer_element("+20"));
     }
 
     #[test]
-    fn test_signed_negative_value() {
+    fn signed_negative_value() {
         assert_eq!(Ok(("", IntegerElement{value: -20})), parse_integer_element("-20"));
     }
 }
