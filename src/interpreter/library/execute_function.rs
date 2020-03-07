@@ -37,8 +37,7 @@ pub fn execute_function(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::assertion::assert_deep_equal;
+    use crate::interpreter::library::assertion;
 
     fn execute_forms(interpreter: &mut Interpreter, values: Vec<&str>) -> Vec<Value> {
         let mut results = Vec::new();
@@ -77,7 +76,7 @@ mod tests {
                 arguments
             ).unwrap();
 
-            assert_deep_equal(
+            assertion::assert_deep_equal(
                 &mut interpreter,
                 expected,
                 result

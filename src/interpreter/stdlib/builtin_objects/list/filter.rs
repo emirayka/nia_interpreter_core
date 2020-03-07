@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn filter(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn filter(
 
     let mut values = values;
 
-    let function_id = lib::read_as_function_id(
+    let function_id = library::read_as_function_id(
         interpreter,
         values.remove(0)
     )?;
 
-    let values = lib::read_as_vector(
+    let values = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -31,7 +31,7 @@ pub fn filter(
     let mut results = Vec::new();
 
     for value in values {
-        let result = lib::execute_function(
+        let result = library::execute_function(
             interpreter,
             environment_id,
             function_id,
@@ -55,7 +55,7 @@ pub fn filter(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_mapped_list() {

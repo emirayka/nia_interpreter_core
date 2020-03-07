@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn nth(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn nth(
 
     let mut values = values;
 
-    let index = lib::read_as_i64(
+    let index = library::read_as_i64(
         interpreter,
         values.remove(0)
     )? as usize;
 
-    let vector = lib::read_as_vector(
+    let vector = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -40,7 +40,7 @@ pub fn nth(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
     
     #[test]
     fn returns_element_with_the_index() {

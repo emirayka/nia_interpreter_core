@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use std::cmp;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 // todo: maybe change function spec
 pub fn substr(
@@ -19,12 +19,12 @@ pub fn substr(
 
     let mut values = values;
 
-    let index = lib::read_as_i64(
+    let index = library::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
 
-    let diff = lib::read_as_i64(
+    let diff = library::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
@@ -41,7 +41,7 @@ pub fn substr(
         ).into_result();
     }
 
-    let string = lib::read_as_string(
+    let string = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -69,7 +69,7 @@ pub fn substr(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_substring() {

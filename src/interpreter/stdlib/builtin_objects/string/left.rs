@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use std::cmp;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn left(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn left(
 
     let mut values = values;
 
-    let count = lib::read_as_i64(
+    let count = library::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
 
-    let string = lib::read_as_string(
+    let string = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -50,7 +50,7 @@ pub fn left(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_left_symbols() {

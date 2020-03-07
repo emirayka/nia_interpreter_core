@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn object_get_proto(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn object_get_proto(
     }
 
     let mut values = values;
-    let object_id = lib::read_as_object_id(
+    let object_id = library::read_as_object_id(
         interpreter,
         values.remove(0)
     )?;
@@ -37,7 +37,7 @@ pub fn object_get_proto(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_nil_when_no_proto_exists() {

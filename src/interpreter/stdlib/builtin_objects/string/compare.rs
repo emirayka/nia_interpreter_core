@@ -4,7 +4,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 
 pub fn compare(
@@ -20,8 +20,8 @@ pub fn compare(
 
     let mut values = values;
 
-    let string1 = lib::read_as_string(interpreter, values.remove(0))?;
-    let string2 = lib::read_as_string(interpreter, values.remove(0))?;
+    let string1 = library::read_as_string(interpreter, values.remove(0))?;
+    let string2 = library::read_as_string(interpreter, values.remove(0))?;
 
     let result = match string1.cmp(string2) {
         Ordering::Less => Value::Integer(-1),
@@ -35,7 +35,7 @@ pub fn compare(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_comparison_result() {

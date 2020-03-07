@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
-use crate::interpreter::lib::infect::infect_builtin_function;
+use crate::interpreter::library::infect::infect_builtin_function;
 
 mod assert;
 mod car;
@@ -40,6 +40,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("+", sum::sum),
 
         ("eq?", eq_question::eq_question),
+        ("=", eq_question::eq_question),
         ("equal?", equal_question::equal_question)
     );
 

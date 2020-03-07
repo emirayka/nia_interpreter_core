@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn define_function(
     interpreter: &mut Interpreter,
@@ -31,7 +31,7 @@ pub fn define_function(
         ).into_result()
     };
 
-    lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
+    library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let evaluated_value = match second_argument {
         Some(value) => interpreter.evaluate_value(environment, value),
@@ -67,8 +67,8 @@ pub fn define_function(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
     // todo: ensure this test is fine
     #[test]

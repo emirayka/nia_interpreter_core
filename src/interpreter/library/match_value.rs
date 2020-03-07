@@ -1,10 +1,9 @@
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn match_value_recursive(
     interpreter: &mut Interpreter,
@@ -14,10 +13,10 @@ pub fn match_value_recursive(
 ) -> Result<(), Error> {
     match binding {
         Value::Symbol(symbol_id) => {
-            match lib::check_if_symbol_assignable(interpreter, symbol_id) {
+            match library::check_if_symbol_assignable(interpreter, symbol_id) {
                 Ok(_) => {},
                 Err(err) => {
-                    if lib::deep_equal(interpreter, binding, value)? {
+                    if library::deep_equal(interpreter, binding, value)? {
                         return Ok(())
                     } else {
                         return Err(err);
@@ -142,7 +141,7 @@ pub fn match_value(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion::assert_deep_equal;
+    use crate::interpreter::library::assertion::assert_deep_equal;
 
     fn assert_matches_correctly(interpreter: &mut Interpreter, specs: Vec<(&str, &str, &str, &str)>) {
         for spec in specs {

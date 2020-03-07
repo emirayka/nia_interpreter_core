@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn tail(
     interpreter: &mut Interpreter,
@@ -18,7 +18,7 @@ pub fn tail(
 
     let mut values = values;
 
-    let mut values = lib::read_as_vector(
+    let mut values = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -37,7 +37,7 @@ pub fn tail(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_first_element_in_lists() {

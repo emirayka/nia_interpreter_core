@@ -43,7 +43,7 @@ pub fn object_new(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn makes_new_object() {

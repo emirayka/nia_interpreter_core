@@ -20,7 +20,7 @@ pub fn read_as_symbol_id(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_symbol_id() {

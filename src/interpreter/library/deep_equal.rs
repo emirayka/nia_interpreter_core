@@ -455,6 +455,7 @@ mod tests {
         )
     }
 
+    #[test]
     fn returns_false_when_function_code_are_not_equal() {
         let mut interpreter = Interpreter::new();
 

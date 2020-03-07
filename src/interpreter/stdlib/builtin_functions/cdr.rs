@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn cdr(
     interpreter: &mut Interpreter,
@@ -18,7 +18,7 @@ pub fn cdr(
 
     let mut values = values;
 
-    let cons_id = lib::read_as_cons_id(
+    let cons_id = library::read_as_cons_id(
         interpreter,
         values.remove(0)
     )?;
@@ -35,7 +35,7 @@ pub fn cdr(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_cdr_of_cons() {

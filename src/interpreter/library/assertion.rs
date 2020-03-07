@@ -2,11 +2,11 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::*;
 use crate::interpreter::interpreter::Interpreter;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn assert_deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) {
     assert!(
-        lib::deep_equal(
+        library::deep_equal(
             interpreter,
             value1,
             value2

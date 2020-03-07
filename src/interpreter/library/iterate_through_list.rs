@@ -3,8 +3,6 @@ use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
-
 pub fn iterate_through_list(
     interpreter: &mut Interpreter,
     cons_id: ConsId,
@@ -47,12 +45,13 @@ pub fn iterate_through_list(
 
 mod tests {
     use super::*;
+    use crate::interpreter::library;
 
     #[test]
     fn executes_once_for_each_item_in_list() {
         let mut result = 0;
 
-        let closure = |interpreter: &mut Interpreter, value: Value| {
+        let closure = |_interpreter: &mut Interpreter, value: Value| {
             if let Value::Integer(int) = value {
                 result += int;
 
@@ -64,7 +63,7 @@ mod tests {
 
         let mut interpreter = Interpreter::new();
         let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = lib::read_as_cons_id(
+        let list = library::read_as_cons_id(
             &interpreter,
             value
         ).unwrap();
@@ -78,7 +77,7 @@ mod tests {
     fn able_to_determine_if_need_to_continue() {
         let mut result = 0;
 
-        let closure = |interpreter: &mut Interpreter, value: Value| {
+        let closure = |_interpreter: &mut Interpreter, value: Value| {
             if let Value::Integer(int) = value {
                 result += int;
 
@@ -90,7 +89,7 @@ mod tests {
 
         let mut interpreter = Interpreter::new();
         let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = lib::read_as_cons_id(
+        let list = library::read_as_cons_id(
             &interpreter,
             value
         ).unwrap();

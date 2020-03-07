@@ -27,7 +27,7 @@ pub fn symbol_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_true_when_an_symbol_was_passed() {

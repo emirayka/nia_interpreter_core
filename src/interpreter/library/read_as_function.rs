@@ -1,28 +1,34 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::function::function_arena::FunctionId;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
+use crate::interpreter::function::Function;
 
-pub fn read_as_function_id(
+pub fn read_as_function(
     interpreter: &Interpreter,
     value: Value
-) -> Result<FunctionId, Error> {
-    let function_id = match value {
-        Value::Function(function_id) => function_id,
-        _ => return interpreter.make_invalid_argument_error(
-            "Expected a function."
+) -> Result<&Function, Error> {
+    let function_id = library::read_as_function_id(
+        interpreter,
+        value
+    )?;
+
+    let function = match interpreter.get_function(function_id) {
+        Ok(function) => function,
+        Err(error) => return interpreter.make_generic_execution_error_caused(
+            "",
+            error
         ).into_result()
     };
 
-    Ok(function_id)
+    Ok(function)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_function() {
@@ -37,7 +43,7 @@ mod tests {
 
         for code in code_vector {
             let result = interpreter.execute(code).unwrap();
-            let function = lib::read_as_function_id(
+            library::read_as_function(
                 &mut interpreter,
                 result
             ).unwrap();
@@ -61,7 +67,7 @@ mod tests {
         );
 
         for not_string_value in not_string_values {
-            let result = lib::read_as_function_id(
+            let result = library::read_as_function(
                 &mut interpreter,
                 not_string_value
             );

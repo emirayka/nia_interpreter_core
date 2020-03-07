@@ -24,7 +24,7 @@ pub fn execute_forms(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     // todo: ensure this test is fine
     #[test]

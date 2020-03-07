@@ -27,7 +27,7 @@ pub fn cons_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_true_when_an_cons_was_passed() {

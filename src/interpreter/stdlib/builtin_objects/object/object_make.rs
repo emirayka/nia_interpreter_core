@@ -53,7 +53,7 @@ pub fn object_make(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
     use crate::interpreter::string::string_arena::StringId;
 
     macro_rules! assert_object_has_values {

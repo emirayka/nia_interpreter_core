@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn intern(
     interpreter: &mut Interpreter,
@@ -18,7 +18,7 @@ pub fn intern(
 
     let mut values = values;
 
-    let symbol_name = lib::read_as_string(
+    let symbol_name = library::read_as_string(
         interpreter,
         values.remove(0)
     )?.clone();
@@ -29,7 +29,7 @@ pub fn intern(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_interned_symbol() {

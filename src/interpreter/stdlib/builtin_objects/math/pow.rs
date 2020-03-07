@@ -71,7 +71,7 @@ pub fn pow(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_power_of_two_integers() {

@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn join(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn join(
 
     let mut values = values;
 
-    let joiner = lib::read_as_string(
+    let joiner = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -58,7 +58,7 @@ pub fn join(
     let mut result = String::new();
 
     for value in values {
-        let string = lib::read_as_string(interpreter, value)?;
+        let string = library::read_as_string(interpreter, value)?;
 
         result.push_str(string);
         result.push_str(joiner);
@@ -74,7 +74,7 @@ pub fn join(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_join_result() {

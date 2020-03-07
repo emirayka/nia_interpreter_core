@@ -1,6 +1,5 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::cons::cons_arena::ConsId;
 use crate::interpreter::error::Error;
 
 pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Value>, Error> {
@@ -28,7 +27,7 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_vector_representation() {

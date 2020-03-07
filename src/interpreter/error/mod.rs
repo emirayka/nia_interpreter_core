@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn test_final_cause_works() {
-        let mut interpreter = Interpreter::new();
+        let interpreter = Interpreter::new();
 
         let cause_cause_error = interpreter.make_invalid_argument_count_error("r");
         let cause_error = interpreter.make_invalid_argument_count_error_caused(

@@ -5,7 +5,7 @@ use crate::interpreter::function::Function;
 use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 fn set_function_via_cons(
     interpreter: &mut Interpreter,
@@ -36,14 +36,14 @@ fn set_function_via_cons(
         ).into_result()
     };
 
-    lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
+    library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let cadr = interpreter.get_cadr(cons_id)
         .map_err(|_| interpreter.make_invalid_argument_error(
             "The function definitions of the special form `flet' must have at least two items."
         ))?;
 
-    let arguments = lib::parse_arguments_from_value(interpreter, cadr)?;
+    let arguments = library::parse_arguments_from_value(interpreter, cadr)?;
 
     let cddr = interpreter.get_cddr(cons_id)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
@@ -140,7 +140,7 @@ pub fn flet(
 
     let mut values = values;
 
-    let definitions = lib::read_let_definitions(
+    let definitions = library::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -162,7 +162,7 @@ pub fn flet(
         definitions
     )?;
 
-    lib::execute_forms(
+    library::execute_forms(
         interpreter,
         function_definition_environment,
         forms
@@ -172,8 +172,8 @@ pub fn flet(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::testing_helpers::{
         for_constants,
         for_special_symbols
     };

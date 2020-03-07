@@ -156,7 +156,6 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
 
     let nil = interpreter.intern_nil_symbol_value();
     let mut last_cons = nil;
-    let quote = interpreter.intern_symbol_value("quote");
 
     for (keyword_element, element) in values.into_iter().rev() {
         let name = keyword_element.get_value();
@@ -427,7 +426,7 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
 mod tests {
     use super::*;
     use crate::parser::parse_code;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     macro_rules! assert_reading_result_equal {
         ($expected:expr, $code:expr) => {
@@ -813,7 +812,6 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             let nil = interpreter.intern_nil_symbol_value();
-            let quote = interpreter.intern_symbol_value("quote");
             let a = interpreter.intern_symbol_value("a");
             let b = interpreter.intern_symbol_value("b");
 

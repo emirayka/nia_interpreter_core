@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn zip(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn zip(
 
     let mut values = values;
 
-    let vector1 = lib::read_as_vector(
+    let vector1 = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
 
-    let vector2 = lib::read_as_vector(
+    let vector2 = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -51,7 +51,7 @@ pub fn zip(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_concatenated_lists() {

@@ -3,8 +3,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
-
 pub fn eq_question(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -29,7 +27,7 @@ pub fn eq_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_comparison_results_for_equal_values() {

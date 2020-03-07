@@ -75,7 +75,7 @@ impl EnvironmentArena {
 
     pub fn remove(&mut self, environment_id: EnvironmentId) -> Result<(), ()> {
         match self.arena.remove(&environment_id) {
-            Some(env) => Ok(()),
+            Some(_) => Ok(()),
             _ => Err(())
         }
     }
@@ -258,6 +258,7 @@ mod tests {
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod define_variable__define_function {
         use super::*;
@@ -303,6 +304,7 @@ mod tests {
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_variable__set_function {
         use super::*;
@@ -366,6 +368,7 @@ mod tests {
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod lookup_variable__lookup_function {
         use super::*;

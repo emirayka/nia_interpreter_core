@@ -1,6 +1,6 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib::infect::{infect_object_builtin_function};
+use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 

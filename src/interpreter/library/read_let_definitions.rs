@@ -59,7 +59,7 @@ pub fn read_let_definitions(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     // todo: ensure this test is fine
     #[test]

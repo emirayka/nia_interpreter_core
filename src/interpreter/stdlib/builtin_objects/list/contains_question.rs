@@ -3,11 +3,11 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn contains(
     interpreter: &mut Interpreter,
-    environment_id: EnvironmentId,
+    _environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
@@ -20,13 +20,13 @@ pub fn contains(
 
     let value_to_find = values.remove(0);
 
-    let vector = lib::read_as_vector(
+    let vector = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
 
     for value in vector {
-        if lib::deep_equal(
+        if library::deep_equal(
             interpreter,
             value_to_find,
             value
@@ -41,7 +41,7 @@ pub fn contains(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn executes_function() {

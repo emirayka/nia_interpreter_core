@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn flookup(
     interpreter: &mut Interpreter,
@@ -18,7 +18,7 @@ pub fn flookup(
 
     let mut values = values;
 
-    let symbol_id = lib::read_as_symbol_id(
+    let symbol_id = library::read_as_symbol_id(
         interpreter,
         values.remove(0)
     )?;
@@ -36,7 +36,7 @@ pub fn flookup(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_associated_value() {

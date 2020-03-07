@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn join(
     interpreter: &mut Interpreter,
@@ -19,7 +19,7 @@ pub fn join(
     let mut result = Vec::new();
 
     for value in values {
-        let vector = lib::read_as_vector(
+        let vector = library::read_as_vector(
             interpreter,
             value
         )?;
@@ -33,7 +33,7 @@ pub fn join(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_concatenated_lists() {

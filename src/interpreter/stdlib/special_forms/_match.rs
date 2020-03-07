@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn _match(
     interpreter: &mut Interpreter,
@@ -33,7 +33,7 @@ pub fn _match(
     let mut code_to_execute = None;
 
     for clause in clauses {
-        let cons_id = lib::read_as_cons_id(
+        let cons_id = library::read_as_cons_id(
             interpreter,
             clause
         )?;
@@ -45,7 +45,7 @@ pub fn _match(
             pattern
         )?;
 
-        match lib::match_value(
+        match library::match_value(
             interpreter,
             environment_id,
             evaluated_pattern,
@@ -54,7 +54,7 @@ pub fn _match(
             Ok(environment_id) => {
                 child_environment_id = Some(environment_id);
 
-                let mut forms = clause;
+                let forms = clause;
 
                 code_to_execute = Some(forms);
                 break;
@@ -65,7 +65,7 @@ pub fn _match(
 
     match child_environment_id {
         Some(environment_id) => {
-            lib::execute_forms(
+            library::execute_forms(
                 interpreter,
                 environment_id,
                 code_to_execute.unwrap()
@@ -80,7 +80,7 @@ pub fn _match(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn executes_forms() {

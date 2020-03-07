@@ -65,7 +65,7 @@ pub fn throw(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_generic_error_when_no_symbol_was_provided() {

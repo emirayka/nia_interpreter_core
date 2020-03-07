@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn equal_question(
     interpreter: &mut Interpreter,
@@ -21,7 +21,7 @@ pub fn equal_question(
     let value1 = values.remove(0);
     let value2 = values.remove(0);
 
-    let result = lib::deep_equal(
+    let result = library::deep_equal(
         interpreter,
         value1,
         value2
@@ -33,7 +33,7 @@ pub fn equal_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_comparison_results_for_equal_values() {

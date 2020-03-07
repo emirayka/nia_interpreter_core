@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn find(
     interpreter: &mut Interpreter,
@@ -17,12 +17,12 @@ pub fn find(
 
     let mut values = values;
 
-    let string1 = lib::read_as_string(
+    let string1 = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
 
-    let string2 = lib::read_as_string(
+    let string2 = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -41,7 +41,7 @@ pub fn find(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_character_index() {

@@ -21,8 +21,8 @@ pub fn check_if_symbol_assignable(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
+    use crate::interpreter::library::assertion;
 
     // todo: ensure this test is fine
     #[test]

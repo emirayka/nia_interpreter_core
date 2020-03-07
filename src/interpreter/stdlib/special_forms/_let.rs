@@ -4,7 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::cons::cons_arena::ConsId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 fn set_variable_via_cons(
     interpreter: &mut Interpreter,
@@ -20,7 +20,7 @@ fn set_variable_via_cons(
 
     let variable_symbol_id = match car {
         Value::Symbol(symbol_id) => {
-            lib::check_if_symbol_assignable(interpreter, symbol_id)?;
+            library::check_if_symbol_assignable(interpreter, symbol_id)?;
 
             symbol_id
         }
@@ -67,7 +67,7 @@ fn set_variable_to_nil(
     definition_setting_environment: EnvironmentId,
     symbol_id: SymbolId
 ) -> Result<(), Error> {
-    lib::check_if_symbol_assignable(interpreter, symbol_id)?;
+    library::check_if_symbol_assignable(interpreter, symbol_id)?;
 
     let nil = interpreter.intern_nil_symbol_value();
 
@@ -139,7 +139,7 @@ pub fn _let(
 
     let mut values = values;
 
-    let definitions = lib::read_let_definitions(
+    let definitions = library::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -160,7 +160,7 @@ pub fn _let(
         definitions
     )?;
 
-    lib::execute_forms(
+    library::execute_forms(
         interpreter,
         execution_environment,
         forms
@@ -170,8 +170,8 @@ pub fn _let(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{for_constants, for_special_symbols};
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
     // todo: ensure this test is fine
     #[test]

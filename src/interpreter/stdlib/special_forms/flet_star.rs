@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn flet_star(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn flet_star(
 
     let mut values = values;
 
-    let definitions = lib::read_let_definitions(
+    let definitions = library::read_let_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
@@ -39,7 +39,7 @@ pub fn flet_star(
         definitions
     )?;
 
-    lib::execute_forms(
+    library::execute_forms(
         interpreter,
         function_definition_environment,
         forms
@@ -49,8 +49,8 @@ pub fn flet_star(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::testing_helpers::{
         for_constants,
         for_special_symbols
     };

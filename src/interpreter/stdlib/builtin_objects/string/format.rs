@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn format(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn format(
 
     let mut values = values;
 
-    let string = lib::read_as_string(
+    let string = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -37,7 +37,7 @@ pub fn format(
 
     while let Some(value) = iter_values.next() {
         let s1 = iter_strings.next().unwrap();
-        let s2 = lib::value_to_string(interpreter, *value)?;
+        let s2 = library::value_to_string(interpreter, *value)?;
 
         result.push_str(s1);
         result.push_str(&s2);
@@ -52,7 +52,7 @@ pub fn format(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_format_result() {

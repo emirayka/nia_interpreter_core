@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn take_while(
     interpreter: &mut Interpreter,
@@ -18,12 +18,12 @@ pub fn take_while(
 
     let mut values = values;
 
-    let function_id = lib::read_as_function_id(
+    let function_id = library::read_as_function_id(
         interpreter,
         values.remove(0)
     )?;
 
-    let mut values = lib::read_as_vector(
+    let values = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -31,7 +31,7 @@ pub fn take_while(
     let mut result = vec!();
 
     for value in values {
-        let need_add = lib::execute_function(
+        let need_add = library::execute_function(
             interpreter,
             _environment,
             function_id,
@@ -57,7 +57,7 @@ pub fn take_while(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn test_returns_correct_heads() {

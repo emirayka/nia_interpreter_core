@@ -2,7 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::lib::infect::infect_object_builtin_function;
+use crate::interpreter::library::infect::infect_object_builtin_function;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 
 mod compare;
@@ -17,9 +17,6 @@ mod left;
 mod length;
 mod less_question;
 mod lower;
-mod pad;
-mod pad_left;
-mod pad_right;
 mod repeat;
 mod right;
 mod split;
@@ -46,9 +43,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("length", length::length),
         ("less?", less_question::less_question),
         ("lower", lower::lower),
-        ("pad", pad::pad),
-        ("pad-left", pad_left::pad_left),
-        ("pad-right", pad_right::pad_right),
         ("repeat", repeat::repeat),
         ("right", right::right),
         ("split", split::split),

@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn trim(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn trim(
 
     let mut values = values;
 
-    let string = lib::read_as_string(interpreter, values.remove(0))?;
+    let string = library::read_as_string(interpreter, values.remove(0))?;
 
     let trimmed_string = String::from(string.trim());
 
@@ -27,7 +27,7 @@ pub fn trim(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_trimmed_string() {

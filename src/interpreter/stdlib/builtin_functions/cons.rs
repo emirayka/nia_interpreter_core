@@ -25,8 +25,8 @@ pub fn cons(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::testing_helpers::{
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::testing_helpers::{
         for_meta_value_pairs_evaluated_ifbsyko
     };
 

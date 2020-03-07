@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn any_question(
     interpreter: &mut Interpreter,
@@ -18,18 +18,18 @@ pub fn any_question(
 
     let mut values = values;
 
-    let function_id = lib::read_as_function_id(
+    let function_id = library::read_as_function_id(
         interpreter,
         values.remove(0)
     )?;
 
-    let vector = lib::read_as_vector(
+    let vector = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
 
     for value in vector {
-        let current_result = lib::execute_function(
+        let current_result = library::execute_function(
             interpreter,
             environment_id,
             function_id,
@@ -53,7 +53,7 @@ pub fn any_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn executes_function() {

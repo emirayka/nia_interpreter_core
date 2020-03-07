@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn gensym(
     interpreter: &mut Interpreter,
@@ -21,7 +21,7 @@ pub fn gensym(
     let name = if values.len() == 0 {
         String::from("G")
     } else {
-        let string = lib::read_as_string(
+        let string = library::read_as_string(
             interpreter,
             values.remove(0)
         )?;
@@ -35,7 +35,7 @@ pub fn gensym(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_gensym_without_provided_name() {

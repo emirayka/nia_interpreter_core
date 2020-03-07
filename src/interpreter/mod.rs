@@ -1,4 +1,4 @@
-mod lib;
+mod library;
 mod keyword;
 mod string;
 mod symbol;

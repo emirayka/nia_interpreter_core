@@ -22,7 +22,7 @@ use crate::interpreter::string::string::VString;
 use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
 use crate::interpreter::function::arguments::Arguments;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -143,7 +143,7 @@ impl Interpreter {
 
 impl Interpreter {
     pub fn print_value(&mut self, value: Value) {
-        match lib::value_to_string(self, value) {
+        match library::value_to_string(self, value) {
             Ok(string) => print!("{}", string),
             Err(_) => {
                 print!("Cannot print value")
@@ -1166,9 +1166,9 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::testing_helpers::make_value_pairs_evaluated_ifbsyko;
-    use crate::interpreter::lib::assertion;
-    use crate::interpreter::lib::assertion::assert_deep_equal;
+    use crate::interpreter::library::testing_helpers::make_value_pairs_evaluated_ifbsyko;
+    use crate::interpreter::library::assertion;
+    use crate::interpreter::library::assertion::assert_deep_equal;
 
     macro_rules! assert_execution_result_eq {
         ($expected:expr, $code:expr) => {

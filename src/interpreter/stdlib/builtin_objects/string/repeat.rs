@@ -2,7 +2,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn repeat(
     interpreter: &mut Interpreter,
@@ -17,7 +17,7 @@ pub fn repeat(
 
     let mut values = values;
 
-    let count = lib::read_as_i64(
+    let count = library::read_as_i64(
         interpreter,
         values.remove(0)
     )?;
@@ -28,7 +28,7 @@ pub fn repeat(
         ).into_result();
     }
 
-    let string = lib::read_as_string(
+    let string = library::read_as_string(
         interpreter,
         values.remove(0)
     )?;
@@ -49,7 +49,7 @@ pub fn repeat(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_repeated_string() {

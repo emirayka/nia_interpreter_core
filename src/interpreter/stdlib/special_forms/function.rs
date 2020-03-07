@@ -6,7 +6,7 @@ use crate::interpreter::function::interpreted_function::InterpretedFunction;
 use crate::interpreter::function::macro_function::MacroFunction;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::function::arguments::Arguments;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
     "The first argument of special form `function', must be a list of signature \
@@ -78,7 +78,7 @@ pub fn function(
 
     let lambda_or_macro_symbol = values.remove(0);
 
-    let arguments = lib::parse_arguments_from_value(
+    let arguments = library::parse_arguments_from_value(
         interpreter,
         values.remove(0)
     )?;
@@ -118,7 +118,7 @@ pub fn function(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     // todo: ensure this test is fine
     #[test]

@@ -28,7 +28,7 @@ pub fn round(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_the_integer_itself_if_it_was_passed() {

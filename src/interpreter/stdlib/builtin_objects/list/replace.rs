@@ -3,7 +3,7 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn replace(
     interpreter: &mut Interpreter,
@@ -18,14 +18,14 @@ pub fn replace(
 
     let mut values = values;
 
-    let index = lib::read_as_i64(
+    let index = library::read_as_i64(
         interpreter,
         values.remove(0)
     )? as usize;
 
     let value = values.remove(0);
 
-    let mut values = lib::read_as_vector(
+    let mut values = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;
@@ -45,7 +45,7 @@ pub fn replace(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn replaces_element_in_list() {

@@ -3,8 +3,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 
-use crate::interpreter::lib;
-
 pub fn assert(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -38,7 +36,7 @@ pub fn assert(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_true_when_assertion_was_passed() {

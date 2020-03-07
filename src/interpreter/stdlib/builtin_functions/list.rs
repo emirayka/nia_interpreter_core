@@ -14,7 +14,7 @@ pub fn list(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {

@@ -1,46 +1,51 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::function::function_arena::FunctionId;
 use crate::interpreter::error::Error;
 
-pub fn read_as_cons_id(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {
-    let cons_id = match value {
-        Value::Cons(cons_id) => cons_id,
+pub fn read_as_function_id(
+    interpreter: &Interpreter,
+    value: Value
+) -> Result<FunctionId, Error> {
+    let function_id = match value {
+        Value::Function(function_id) => function_id,
         _ => return interpreter.make_invalid_argument_error(
-            "Expected cons cell."
+            "Expected a function."
         ).into_result()
     };
 
-    Ok(cons_id)
+    Ok(function_id)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+
+    use crate::interpreter::library;
+    use crate::interpreter::library::assertion;
 
     #[test]
-    fn returns_correct_cons_cell() {
+    fn returns_correct_function() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            (Value::Cons(ConsId::new(1)), ConsId::new(1)),
-            (Value::Cons(ConsId::new(2)), ConsId::new(2)),
-            (Value::Cons(ConsId::new(3)), ConsId::new(3)),
+        let code_vector = vec!(
+            "(function (lambda () 3))",
+            "(flookup 'flookup)",
+            "(function (macro () 2))",
+            "(flookup 'cond)",
         );
 
-        for (value, expected) in pairs {
-            let result = read_as_cons_id(
+        for code in code_vector {
+            let result = interpreter.execute(code).unwrap();
+            library::read_as_function_id(
                 &mut interpreter,
-                value
+                result
             ).unwrap();
-
-            assert_eq!(expected, result);
         }
     }
 
     #[test]
-    fn returns_invalid_argument_when_not_a_cons_value_were_passed() {
+    fn returns_invalid_argument_when_not_a_function_value_were_passed() {
         let mut interpreter = Interpreter::new();
 
         let not_string_values = vec!(
@@ -51,12 +56,12 @@ mod tests {
             interpreter.make_string_value(String::from("test")),
             interpreter.intern_symbol_value("test"),
             interpreter.make_keyword_value(String::from("test")),
+            interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
-            interpreter.execute("#(+ %1 %2)").unwrap()
         );
 
         for not_string_value in not_string_values {
-            let result = read_as_cons_id(
+            let result = library::read_as_function_id(
                 &mut interpreter,
                 not_string_value
             );

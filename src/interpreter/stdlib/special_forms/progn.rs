@@ -2,14 +2,14 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn progn(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    lib::execute_forms(
+    library::execute_forms(
         interpreter,
         environment,
         values

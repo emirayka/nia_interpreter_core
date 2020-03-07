@@ -54,7 +54,7 @@ impl PartialEq for ObjectPatternElement {
 }
 
 fn make_object_pattern_element(values: Vec<KeywordElement>) -> Result<ObjectPatternElement, String> {
-    let mut object_element = ObjectPatternElement::new(values);
+    let object_element = ObjectPatternElement::new(values);
 
     Ok(object_element)
 }

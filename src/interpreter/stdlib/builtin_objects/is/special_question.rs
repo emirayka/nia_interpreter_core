@@ -4,7 +4,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn special_question(
     interpreter: &mut Interpreter,
@@ -19,7 +19,7 @@ pub fn special_question(
 
     let mut values = values;
 
-    let function = match lib::read_as_function(
+    let function = match library::read_as_function(
         interpreter,
         values.remove(0)
     ) {
@@ -38,7 +38,7 @@ pub fn special_question(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_true_when_an_special_function_was_passed() {

@@ -14,7 +14,7 @@ pub fn read_as_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_int() {

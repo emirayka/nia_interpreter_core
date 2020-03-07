@@ -57,7 +57,7 @@ mod tests {
     mod set_car__set_cdr {
         use super::*;
         use crate::interpreter::interpreter::Interpreter;
-        use crate::interpreter::lib::assertion;
+        use crate::interpreter::library::assertion;
 
         #[test]
         fn test_works_correctly() {

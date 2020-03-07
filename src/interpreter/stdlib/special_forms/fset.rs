@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::lib;
+use crate::interpreter::library;
 
 pub fn fset(
     interpreter: &mut Interpreter,
@@ -24,7 +24,7 @@ pub fn fset(
         ).into_result()
     };
 
-    lib::check_if_symbol_assignable(interpreter, function_symbol_id)?;
+    library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
 
     let value = values.remove(0);
 
@@ -76,10 +76,10 @@ pub fn fset(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::lib::assertion;
+    use crate::interpreter::library::assertion;
     use crate::interpreter::function::Function;
     use crate::interpreter::function::interpreted_function::InterpretedFunction;
-    use crate::interpreter::lib::testing_helpers::{for_special_symbols, for_constants};
+    use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
     use crate::interpreter::function::arguments::Arguments;
 
     // todo: ensure this test is fine
