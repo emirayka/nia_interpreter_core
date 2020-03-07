@@ -5,14 +5,20 @@ use crate::interpreter::value::Value;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 
 mod always;
+mod combine;
 mod curry;
+mod f;
+mod t;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let func_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("always", always::always),
+        ("combine", combine::combine),
         ("curry", curry::curry),
+        ("f", f::f),
+        ("t", t::t),
     );
 
     for (name, func) in bindings {
