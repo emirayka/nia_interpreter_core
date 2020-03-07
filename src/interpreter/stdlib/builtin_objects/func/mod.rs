@@ -4,11 +4,15 @@ use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
 use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 
+mod always;
+mod curry;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let func_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
+        ("always", always::always),
+        ("curry", curry::curry),
     );
 
     for (name, func) in bindings {
