@@ -10,6 +10,12 @@ pub fn join(
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
+    if values.len() != 2 {
+        return interpreter.make_invalid_argument_count_error(
+            "Built-in function `list:join' takes two arguments exactly."
+        ).into_result();
+    }
+
     let mut result = Vec::new();
 
     for value in values {
@@ -34,10 +40,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            ("(list:join)", "'()"),
-            ("(list:join '(1 2))", "'(1 2)"),
+            ("(list:join '() '(1 2 3 4))", "'(1 2 3 4)"),
+            ("(list:join '(1) '(2 3 4))", "'(1 2 3 4)"),
             ("(list:join '(1 2) '(3 4))", "'(1 2 3 4)"),
-            ("(list:join '(1 2) '(3 4) '(5 6))", "'(1 2 3 4 5 6)"),
+            ("(list:join '(1 2 3) '(4))", "'(1 2 3 4)"),
+            ("(list:join '(1 2 3 4) '())", "'(1 2 3 4)"),
         );
 
         assertion::assert_results_are_equal(
@@ -51,15 +58,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(list:join 1)",
-            "(list:join 1.1)",
-            "(list:join #t)",
-            "(list:join #f)",
-            "(list:join \"string\")",
-            "(list:join 'symbol)",
-            "(list:join :keyword)",
-            "(list:join {})",
-            "(list:join #())",
+            "(list:join 1 '())",
+            "(list:join 1.1 '())",
+            "(list:join #t '())",
+            "(list:join #f '())",
+            "(list:join \"string\" '())",
+            "(list:join 'symbol '())",
+            "(list:join :keyword '())",
+            "(list:join {} '())",
+            "(list:join #() '())",
 
             "(list:join '() 1)",
             "(list:join '() 1.1)",
@@ -70,19 +77,25 @@ mod tests {
             "(list:join '() :keyword)",
             "(list:join '() {})",
             "(list:join '() #())",
-
-            "(list:join '() '() 1)",
-            "(list:join '() '() 1.1)",
-            "(list:join '() '() #t)",
-            "(list:join '() '() #f)",
-            "(list:join '() '() \"string\")",
-            "(list:join '() '() 'symbol)",
-            "(list:join '() '() :keyword)",
-            "(list:join '() '() {})",
-            "(list:join '() '() #())",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:join)",
+            "(list:join 1)",
+            "(list:join 1 2 3)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector
         );

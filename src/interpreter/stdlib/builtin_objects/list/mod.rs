@@ -55,8 +55,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("tail", tail::tail),
         ("take", take::take),
         ("take-while", take_while::take_while),
-        ("unzip", unzip::stub),
-        ("zip", zip::stub)
+        ("unzip", unzip::unzip),
+        ("zip", zip::zip)
     );
 
     for (name, func) in pairs {

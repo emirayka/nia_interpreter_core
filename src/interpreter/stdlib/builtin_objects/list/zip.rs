@@ -3,15 +3,118 @@ use crate::interpreter::environment::environment_arena::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
-pub fn stub(
+use crate::interpreter::lib;
+
+pub fn zip(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    Ok(Value::Boolean(false))
+    if values.len() != 2 {
+        return interpreter.make_invalid_argument_count_error(
+            "Built-in function `list:zip' takes two arguments exactly."
+        ).into_result();
+    }
+
+    let mut values = values;
+
+    let vector1 = lib::read_as_vector(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    let vector2 = lib::read_as_vector(
+        interpreter,
+        values.remove(0)
+    )?;
+
+    if vector1.len() != vector2.len() {
+        return interpreter.make_invalid_argument_error(
+            "Built-in function `list:zip' takes two lists of equal length."
+        ).into_result();
+    }
+
+    let mut result = Vec::new();
+    let nil = interpreter.intern_nil_symbol_value();
+    let iterator = vector1.iter().zip(vector2.iter());
+
+    for (v1, v2) in iterator {
+        let cons = interpreter.make_cons_value(*v2, nil);
+        let cons = interpreter.make_cons_value(*v1, cons);
+
+        result.push(cons);
+    }
+
+    Ok(interpreter.vec_to_list(result))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interpreter::lib::assertion;
+
+    #[test]
+    fn returns_concatenated_lists() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            ("(list:zip '(1) '(a))", "'((1 a))"),
+            ("(list:zip '(1 2) '(a b))", "'((1 a) (2 b))"),
+            ("(list:zip '(1 2 3) '(a b c))", "'((1 a) (2 b) (3 c))"),
+            ("(list:zip '(1 2 3 4) '(a b c d))", "'((1 a) (2 b) (3 c) (4 d))"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_invalid_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:zip 1 '())",
+            "(list:zip 1.1 '())",
+            "(list:zip #t '())",
+            "(list:zip #f '())",
+            "(list:zip \"string\" '())",
+            "(list:zip 'symbol '())",
+            "(list:zip :keyword '())",
+            "(list:zip {} '())",
+            "(list:zip #() '())",
+
+            "(list:zip '() 1)",
+            "(list:zip '() 1.1)",
+            "(list:zip '() #t)",
+            "(list:zip '() #f)",
+            "(list:zip '() \"string\")",
+            "(list:zip '() 'symbol)",
+            "(list:zip '() :keyword)",
+            "(list:zip '() {})",
+            "(list:zip '() #())",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:zip)",
+            "(list:zip 1)",
+            "(list:zip 1 2 3)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
 }
