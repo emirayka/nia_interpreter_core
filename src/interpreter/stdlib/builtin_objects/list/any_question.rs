@@ -80,6 +80,20 @@ mod tests {
     }
 
     #[test]
+    fn returns_invalid_argument_error_when_predicate_returns_not_a_boolean() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(list:any? (function (lambda (value) 1)) '(1 2 3 4 5))",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
     fn returns_invalid_argument_error_when_invalid_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
