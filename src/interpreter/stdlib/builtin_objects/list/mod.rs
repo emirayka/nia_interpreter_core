@@ -7,14 +7,12 @@ use crate::interpreter::function::builtin_function::BuiltinFunctionType;
 
 mod all_question;
 mod any_question;
-mod butfirst;
-mod butlast;
 mod contains_question;
 mod filter;
-mod first;
 mod foldl;
 mod fold;
 mod head;
+mod init;
 mod join;
 mod last;
 mod length;
@@ -37,20 +35,18 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("all?", all_question::all_question),
-        ("any?", any_question::stub),
-        ("butfirst", butfirst::stub),
-        ("butlast", butlast::stub),
+        ("any?", any_question::any_question),
         ("contains?", contains_question::stub),
         ("filter", filter::stub),
-        ("first", first::stub),
         ("fold", fold::fold),
         ("foldl", foldl::foldl),
         ("head", head::head),
+        ("init", init::init),
         ("join", join::join),
         ("last", last::last),
         ("length", length::length),
         ("map", map::stub),
-        ("none?", none_question::stub),
+        ("none?", none_question::none_question),
         ("nth", nth::nth),
         ("remove", remove::remove),
         ("repeat", repeat::repeat),

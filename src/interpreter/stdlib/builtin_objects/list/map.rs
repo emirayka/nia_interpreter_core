@@ -30,14 +30,12 @@ pub fn stub(
 
     let mut results = Vec::new();
 
-    for (index, value) in values.iter().enumerate() {
-        let index = Value::Integer(index as i64);
-
+    for value in values {
         let result = lib::execute_function(
             interpreter,
             environment_id,
             function_id,
-            vec!(*value, index)
+            vec!(value)
         )?;
 
         results.push(result);
@@ -56,8 +54,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:map (function (lambda (value _) (* 2 value))) '(1 2 3 4 5))", "'(2 4 6 8 10)"),
-            ("(list:map (function (lambda (value index) (* value index))) '(1 2 3 4 5))", "'(0 2 6 12 20)"),
+            ("(list:map (function (lambda (value) (* 2 value))) '(1 2 3 4 5))", "'(2 4 6 8 10)"),
+            ("(list:map (function (lambda (value) (* value value))) '(1 2 3 4 5))", "'(1 4 9 16 25)"),
         );
 
         assertion::assert_results_are_equal(
@@ -81,15 +79,15 @@ mod tests {
             "(list:map '(1 2 3) '())",
             "(list:map {} '())",
 
-            "(list:map (function (lambda (_1 _2) nil)) 1)",
-            "(list:map (function (lambda (_1 _2) nil)) 1.1)",
-            "(list:map (function (lambda (_1 _2) nil)) #t)",
-            "(list:map (function (lambda (_1 _2) nil)) #f)",
-            "(list:map (function (lambda (_1 _2) nil)) \"string\")",
-            "(list:map (function (lambda (_1 _2) nil)) 'symbol)",
-            "(list:map (function (lambda (_1 _2) nil)) :keyword)",
-            "(list:map (function (lambda (_1 _2) nil)) {})",
-            "(list:map (function (lambda (_1 _2) nil)) #())"
+            "(list:map (function (lambda (_1) nil)) 1)",
+            "(list:map (function (lambda (_1) nil)) 1.1)",
+            "(list:map (function (lambda (_1) nil)) #t)",
+            "(list:map (function (lambda (_1) nil)) #f)",
+            "(list:map (function (lambda (_1) nil)) \"string\")",
+            "(list:map (function (lambda (_1) nil)) 'symbol)",
+            "(list:map (function (lambda (_1) nil)) :keyword)",
+            "(list:map (function (lambda (_1) nil)) {})",
+            "(list:map (function (lambda (_1) nil)) #())"
         );
 
         assertion::assert_results_are_invalid_argument_errors(

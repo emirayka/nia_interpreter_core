@@ -30,9 +30,8 @@ pub fn foldl(
     let initial_value = values.remove(0);
     let mut acc = initial_value;
 
-    for (index, value) in argument_values.iter().rev().enumerate() {
-        let index = Value::Integer(index as i64);
-        let arguments = vec!(acc, *value, index);
+    for value in argument_values.iter().rev() {
+        let arguments = vec!(acc, *value);
 
         acc = lib::execute_function(
             interpreter,
@@ -55,11 +54,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '() 0)", "0"),
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '(1 2 3 4) 0)", "10"),
-            ("(list:foldl (function (lambda (acc value _) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
-            ("(list:foldl (function (lambda (acc value _) (cons value acc))) '(1 2 3 4 5) nil)", "(list 1 2 3 4 5)"),
-            ("(list:foldl (function (lambda (acc _2 index) (cons index acc))) '(1 2 3 4 5) nil)", "(list 4 3 2 1 0)"),
+            ("(list:foldl (function (lambda (acc value) (+ acc value))) '() 0)", "0"),
+            ("(list:foldl (function (lambda (acc value) (+ acc value))) '(1 2 3 4) 0)", "10"),
+            ("(list:foldl (function (lambda (acc value) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
+            ("(list:foldl (function (lambda (acc value) (cons value acc))) '(1 2 3 4 5) nil)", "(list 1 2 3 4 5)"),
         );
 
         assertion::assert_results_are_equal(

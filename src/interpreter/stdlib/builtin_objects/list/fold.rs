@@ -30,9 +30,8 @@ pub fn fold(
     let initial_value = values.remove(0);
     let mut acc = initial_value;
 
-    for (index, value) in argument_values.iter().enumerate() {
-        let index = Value::Integer(index as i64);
-        let arguments = vec!(acc, *value, index);
+    for value in argument_values {
+        let arguments = vec!(acc, value);
 
         acc = lib::execute_function(
             interpreter,
@@ -55,11 +54,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:fold (function (lambda (acc value _) (+ acc value))) '() 0)", "0"),
-            ("(list:fold (function (lambda (acc value _) (+ acc value))) '(1 2 3 4) 0)", "10"),
-            ("(list:fold (function (lambda (acc value _) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
-            ("(list:fold (function (lambda (acc value _) (cons value acc))) '(1 2 3 4 5) nil)", "(list 5 4 3 2 1)"),
-            ("(list:fold (function (lambda (acc _2 index) (cons index acc))) '(1 2 3 4 5) nil)", "(list 4 3 2 1 0)"),
+            ("(list:fold (function (lambda (acc value) (+ acc value))) '() 0)", "0"),
+            ("(list:fold (function (lambda (acc value) (+ acc value))) '(1 2 3 4) 0)", "10"),
+            ("(list:fold (function (lambda (acc value) (+ acc value))) '(1 2 3 4 5) 0)", "15"),
+            ("(list:fold (function (lambda (acc value) (cons value acc))) '(1 2 3 4 5) nil)", "(list 5 4 3 2 1)"),
         );
 
         assertion::assert_results_are_equal(
@@ -83,15 +81,15 @@ mod tests {
             "(list:fold '(1 2 3) '() nil)",
             "(list:fold {} '() nil)",
 
-            "(list:fold (function (lambda (_1 _2 _3) nil)) 1 nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) 1.1 nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) #t nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) #f nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) \"string\" nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) 'symbol nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) :keyword nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) {} nil)",
-            "(list:fold (function (lambda (_1 _2 _3) nil)) #() nil)"
+            "(list:fold (function (lambda (_1 _2) nil)) 1 nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) 1.1 nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) #t nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) #f nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) \"string\" nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) 'symbol nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) :keyword nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) {} nil)",
+            "(list:fold (function (lambda (_1 _2) nil)) #() nil)"
         );
 
         assertion::assert_results_are_invalid_argument_errors(
