@@ -262,8 +262,8 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
             Ok(car_equals && cdr_equals)
         },
         (Object(object1_id), Object(object2_id)) => {
-            let object1_items = interpreter.get_items(object1_id)?.clone();
-            let object2_items = interpreter.get_items(object2_id)?.clone();
+            let object1_items = interpreter.get_items(object1_id)?;
+            let object2_items = interpreter.get_items(object2_id)?;
 
             if object1_items.len() != object2_items.len() {
                 return Ok(false)
