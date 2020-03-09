@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::interpreter::keyword::keyword::Keyword;
+use crate::interpreter::keyword::Keyword;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KeywordId {

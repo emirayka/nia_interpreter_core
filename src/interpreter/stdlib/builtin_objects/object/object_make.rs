@@ -1,6 +1,6 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
 pub fn object_make(
@@ -54,7 +54,7 @@ pub fn object_make(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::string::string_arena::StringId;
+    use crate::interpreter::string::StringId;
 
     macro_rules! assert_object_has_values {
         ($expected:expr, $code:expr) => {

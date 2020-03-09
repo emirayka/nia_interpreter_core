@@ -199,9 +199,9 @@ mod tests {
     #[cfg(test)]
     mod list_to_vec {
         use super::*;
-        use crate::interpreter::string::string_arena::StringId;
-        use crate::interpreter::keyword::keyword_arena::KeywordId;
-        use crate::interpreter::function::function_arena::FunctionId;
+        use crate::interpreter::string::StringId;
+        use crate::interpreter::keyword::KeywordId;
+        use crate::interpreter::function::FunctionId;
 
         #[test]
         fn returns_correct_vector_that_represents_values_in_cons_cells() {

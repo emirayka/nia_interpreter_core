@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::interpreter::string::string::VString;
+use crate::interpreter::string::VString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct StringId {

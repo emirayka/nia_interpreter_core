@@ -86,7 +86,7 @@ mod tests {
     #[cfg(test)]
     mod infect_special_form {
         use super::*;
-        use crate::interpreter::environment::environment_arena::EnvironmentId;
+        use crate::interpreter::environment::EnvironmentId;
 
         fn test(interpreter: &mut Interpreter, _environment: EnvironmentId, _values: Vec<Value>) -> Result<Value, Error>{
             Ok(interpreter.intern_nil_symbol_value())

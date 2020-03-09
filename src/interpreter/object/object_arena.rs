@@ -1,6 +1,6 @@
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
-use crate::interpreter::object::object::{Object, ObjectId};
+use crate::interpreter::object::{Object, ObjectId};
 use nom::lib::std::collections::HashMap;
 
 pub struct ObjectArena {

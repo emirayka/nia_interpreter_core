@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::environment::EnvironmentId;
 
 pub struct LexicalEnvironment {
     variables: HashMap<SymbolId, Value>,

@@ -5,23 +5,23 @@ use crate::parser::parse_code;
 use crate::interpreter::value::Value;
 use crate::interpreter::reader::read_elements;
 use crate::interpreter::function::{Function};
-use crate::interpreter::function::interpreted_function::InterpretedFunction;
-use crate::interpreter::function::builtin_function::BuiltinFunction;
-use crate::interpreter::function::special_form_function::SpecialFormFunction;
+use crate::interpreter::function::InterpretedFunction;
+use crate::interpreter::function::BuiltinFunction;
+use crate::interpreter::function::SpecialFormFunction;
 use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
-use crate::interpreter::function::macro_function::MacroFunction;
+use crate::interpreter::function::MacroFunction;
 use crate::interpreter::error::Error;
 use crate::interpreter::stdlib::infect_stdlib;
-use crate::interpreter::environment::environment_arena::{EnvironmentArena, EnvironmentId};
-use crate::interpreter::object::object_arena::ObjectArena;
-use crate::interpreter::object::object::ObjectId;
-use crate::interpreter::cons::cons_arena::{ConsArena, ConsId};
-use crate::interpreter::function::function_arena::{FunctionArena, FunctionId};
-use crate::interpreter::string::string_arena::{StringArena, StringId};
-use crate::interpreter::string::string::VString;
-use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
-use crate::interpreter::keyword::keyword::Keyword;
-use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::environment::{EnvironmentArena, EnvironmentId};
+use crate::interpreter::object::ObjectArena;
+use crate::interpreter::object::ObjectId;
+use crate::interpreter::cons::{ConsArena, ConsId};
+use crate::interpreter::function::{FunctionArena, FunctionId};
+use crate::interpreter::string::{StringArena, StringId};
+use crate::interpreter::string::VString;
+use crate::interpreter::keyword::{KeywordArena, KeywordId};
+use crate::interpreter::keyword::Keyword;
+use crate::interpreter::function::Arguments;
 use crate::interpreter::context::Context;
 use crate::interpreter::library;
 
@@ -604,7 +604,7 @@ impl Interpreter {
     }
 
     pub fn set_context_value(&mut self, symbol_id: Symbol, value: Value) -> Result<(), Error> {
-
+        unimplemented!()
     }
 }
 

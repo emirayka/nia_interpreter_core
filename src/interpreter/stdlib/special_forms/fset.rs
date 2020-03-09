@@ -78,9 +78,9 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
     use crate::interpreter::function::Function;
-    use crate::interpreter::function::interpreted_function::InterpretedFunction;
+    use crate::interpreter::function::InterpretedFunction;
     use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
-    use crate::interpreter::function::arguments::Arguments;
+    use crate::interpreter::function::Arguments;
 
     // todo: ensure this test is fine
     #[test]
