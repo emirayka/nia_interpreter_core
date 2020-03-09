@@ -1,2 +1,5 @@
-pub mod keyword;
-pub mod keyword_arena;
+mod keyword;
+mod keyword_arena;
+
+pub use keyword::*;
+pub use keyword_arena::*;

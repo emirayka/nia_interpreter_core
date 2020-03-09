@@ -1,6 +1,6 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::cons::ConsId;
 use crate::interpreter::error::Error;
 
 pub fn read_as_cons_id(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {

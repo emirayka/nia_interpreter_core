@@ -1,12 +1,11 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::function::Function;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-use crate::interpreter::{library, InterpretedFunction};
-use crate::interpreter::function::function_arena::FunctionId;
-use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::function::FunctionId;
+use crate::interpreter::function::Arguments;
 
 pub fn f(
     interpreter: &mut Interpreter,

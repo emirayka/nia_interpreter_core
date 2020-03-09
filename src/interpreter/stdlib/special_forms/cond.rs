@@ -1,8 +1,8 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
-use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::cons::ConsId;
 
 fn execute_part(
     interpreter: &mut Interpreter,

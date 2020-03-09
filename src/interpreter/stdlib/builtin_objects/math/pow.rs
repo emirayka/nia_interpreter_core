@@ -1,7 +1,7 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::environment::EnvironmentId;
 
 fn positive_int_pow(a: i64, b: i64) -> Option<i64> {
     if b == 0 {

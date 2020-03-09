@@ -1,6 +1,6 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::function::builtin_function::BuiltinFunctionType;
+use crate::interpreter::function::BuiltinFunctionType;
 use crate::interpreter::library::infect::infect_builtin_function;
 
 mod assert;

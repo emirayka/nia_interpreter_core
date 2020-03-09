@@ -22,6 +22,7 @@ use crate::interpreter::string::string::VString;
 use crate::interpreter::keyword::keyword_arena::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::keyword::Keyword;
 use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::context::Context;
 use crate::interpreter::library;
 
 pub struct Interpreter {
@@ -34,6 +35,7 @@ pub struct Interpreter {
     object_arena: ObjectArena,
     function_arena: FunctionArena,
 
+    context: Context,
     exclusive_nil: SymbolId,
     exclusive_nil_value: Value,
     root_environment: EnvironmentId,
@@ -51,6 +53,7 @@ impl Interpreter {
         let object_arena = ObjectArena::new();
         let function_arena = FunctionArena::new();
 
+        let context = Context::new();
         let exclusive_nil = symbol_arena.gensym("saika");
         let exclusive_nil_value = Value::Symbol(exclusive_nil);
 
@@ -63,6 +66,7 @@ impl Interpreter {
             object_arena,
             function_arena,
 
+            context,
             exclusive_nil,
             exclusive_nil_value,
             root_environment,
@@ -587,6 +591,20 @@ impl Interpreter {
         self.environment_arena
             .remove(environment_id)
             .map_err(|_| self.make_empty_error())
+    }
+}
+
+impl Interpreter {
+    pub fn get_context(&self) -> &Context {
+        &self.context
+    }
+
+    pub fn get_context_mut(&mut self) -> &mut Context {
+        &mut self.context
+    }
+
+    pub fn set_context_value(&mut self, symbol_id: Symbol, value: Value) -> Result<(), Error> {
+
     }
 }
 

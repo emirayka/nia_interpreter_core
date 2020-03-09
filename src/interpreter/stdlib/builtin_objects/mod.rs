@@ -3,6 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 
 mod func;
 mod is;
+mod keyboard;
 mod list;
 mod logic;
 mod math;
@@ -12,6 +13,7 @@ mod string;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     func::infect(interpreter)?;
     is::infect(interpreter)?;
+    keyboard::infect(interpreter)?;
     list::infect(interpreter)?;
     logic::infect(interpreter)?;
     math::infect(interpreter)?;

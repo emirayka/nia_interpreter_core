@@ -4,38 +4,30 @@ use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
 use crate::interpreter::function::BuiltinFunctionType;
 
-mod and;
-mod nand;
-mod nor;
-mod or;
-mod xor;
+mod start_listening;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let logic_object_id = interpreter.make_object();
+    let keyboard_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
-        ("and", and::and),
-        ("nand", nand::nand),
-        ("nor", nor::nor),
-        ("or", or::or),
-        ("xor", xor::xor),
+        ("start-listening", start_listening::start_listening)
     );
 
     for (name, func) in bindings {
         infect_object_builtin_function(
             interpreter,
-            logic_object_id,
+            keyboard_object_id,
             name,
             func
         )?;
     }
 
-    let logic_symbol_id = interpreter.intern("logic");
+    let keyboard_symbol_id = interpreter.intern("keyboard");
 
     interpreter.define_variable(
         interpreter.get_root_environment(),
-        logic_symbol_id,
-        Value::Object(logic_object_id)
+        keyboard_symbol_id,
+        Value::Object(keyboard_object_id)
     )?;
 
     Ok(())

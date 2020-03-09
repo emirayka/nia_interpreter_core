@@ -5,48 +5,11 @@ use crate::interpreter::error::Error;
 
 use crate::interpreter::library;
 
-pub fn all_question(
+pub fn start_listening(
     interpreter: &mut Interpreter,
     environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
-            "Built-in function `list:all?' takes two arguments exactly."
-        ).into_result()
-    }
-
-    let mut values = values;
-
-    let function_id = library::read_as_function_id(
-        interpreter,
-        values.remove(0)
-    )?;
-
-    let vector = library::read_as_vector(
-        interpreter,
-        values.remove(0)
-    )?;
-
-    for value in vector {
-        let current_result = library::execute_function(
-            interpreter,
-            environment_id,
-            function_id,
-            vec!(value)
-        )?;
-
-        match current_result {
-            Value::Boolean(true) => {},
-            Value::Boolean(false) => {
-                return Ok(Value::Boolean(false))
-            },
-            _ => return interpreter.make_invalid_argument_error(
-                "Built-in function `list:all?' takes a function that returns boolean value."
-            ).into_result()
-        }
-    }
-    
     Ok(Value::Boolean(true))
 }
 

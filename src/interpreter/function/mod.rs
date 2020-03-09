@@ -1,15 +1,16 @@
-pub mod arguments;
-pub mod builtin_function;
-pub mod interpreted_function;
-pub mod macro_function;
-pub mod special_form_function;
+mod arguments;
+mod builtin_function;
+mod interpreted_function;
+mod macro_function;
+mod special_form_function;
 
-pub mod function_arena;
+mod function;
+mod function_arena;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Function {
-    Builtin(builtin_function::BuiltinFunction),
-    Interpreted(interpreted_function::InterpretedFunction),
-    Macro(macro_function::MacroFunction),
-    SpecialForm(special_form_function::SpecialFormFunction),
-}
+pub use arguments::*;
+pub use builtin_function::*;
+pub use interpreted_function::*;
+pub use macro_function::*;
+pub use special_form_function::*;
+pub use function::*;
+pub use function_arena::*;

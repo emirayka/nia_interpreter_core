@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library::infect::infect_special_form;
-use crate::interpreter::function::special_form_function::SpecialFormFunctionType;
+use crate::interpreter::function::SpecialFormFunctionType;
 
 mod cond;
 mod quote;

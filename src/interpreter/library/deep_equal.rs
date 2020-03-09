@@ -1,5 +1,9 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::function::arguments::{Arguments, KeyArgument, OptionalArgument};
+use crate::interpreter::function::{
+    Arguments,
+    KeyArgument,
+    OptionalArgument
+};
 use crate::interpreter::error::Error;
 use crate::interpreter::function::Function;
 use crate::interpreter::value::Value;

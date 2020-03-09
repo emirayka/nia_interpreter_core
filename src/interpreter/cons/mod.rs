@@ -1,2 +1,5 @@
-pub mod cons;
-pub mod cons_arena;
+mod cons;
+mod cons_arena;
+
+pub use cons_arena::*;
+pub use cons::*;

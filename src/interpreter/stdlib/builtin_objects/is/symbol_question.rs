@@ -1,6 +1,6 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
-use crate::interpreter::environment::environment_arena::EnvironmentId;
+use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
 pub fn symbol_question(

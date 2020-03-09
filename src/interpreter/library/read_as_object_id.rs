@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::object::object::ObjectId;
+use crate::interpreter::object::ObjectId;
 
 pub fn read_as_object_id(
     interpreter: &Interpreter,

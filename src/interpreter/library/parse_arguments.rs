@@ -1,8 +1,8 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::cons::cons_arena::ConsId;
+use crate::interpreter::cons::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::function::Arguments;
 
 enum ArgumentParsingMode {
     Ordinary,

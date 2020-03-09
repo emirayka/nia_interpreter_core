@@ -1,6 +1,6 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::function::function_arena::FunctionId;
+use crate::interpreter::function::FunctionId;
 use crate::interpreter::error::Error;
 
 pub fn read_as_function_id(
