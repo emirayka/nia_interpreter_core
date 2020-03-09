@@ -1,4 +1,3 @@
-mod library;
 mod keyword;
 mod string;
 mod symbol;
@@ -11,6 +10,7 @@ mod environment;
 mod context;
 mod stdlib;
 mod reader;
+pub mod library;
 pub mod interpreter;
 
 // pub use string::{

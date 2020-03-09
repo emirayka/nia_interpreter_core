@@ -72,7 +72,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw)");
-        assertion::assert_error(&result);
+        assertion::assert_is_error(&result);
 
         let error = result.err().unwrap();
 
@@ -87,7 +87,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol)");
-        assertion::assert_error(&result);
+        assertion::assert_is_error(&result);
 
         let error = result.err().unwrap();
 
@@ -102,7 +102,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw cute-error-symbol \"Cute error message\")");
-        assertion::assert_error(&result);
+        assertion::assert_is_error(&result);
 
         let error = result.err().unwrap();
 

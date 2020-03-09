@@ -16,6 +16,7 @@ mod intern;
 mod list;
 mod lookup;
 mod mul;
+mod not;
 mod rem;
 mod sub;
 mod sum;
@@ -39,6 +40,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("-", sub::sub),
         ("+", sum::sum),
 
+        ("not", not::not),
         ("eq?", eq_question::eq_question),
         ("=", eq_question::eq_question),
         ("equal?", equal_question::equal_question)

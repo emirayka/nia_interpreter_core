@@ -3,6 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library::infect::infect_special_form;
 use crate::interpreter::function::SpecialFormFunctionType;
 
+mod and;
 mod cond;
 mod quote;
 mod define_variable;
@@ -17,6 +18,7 @@ mod flet_star;
 mod _match;
 mod mlet;
 mod mlet_star;
+mod or;
 mod progn;
 mod block;
 mod throw;
@@ -24,6 +26,7 @@ mod _try;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, SpecialFormFunctionType)> = vec!(
+        ("and", and::and),
         ("cond", cond::cond),
         ("quote", quote::quote),
         ("define-variable", define_variable::define_variable),
@@ -38,6 +41,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("match", _match::_match),
         ("mlet", mlet::mlet),
         ("mlet*", mlet_star::mlet_star),
+        ("or", or::or),
         ("progn", progn::progn),
         ("block", block::block),
         ("throw", throw::throw),

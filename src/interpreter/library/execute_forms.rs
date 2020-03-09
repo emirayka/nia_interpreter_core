@@ -72,6 +72,6 @@ mod tests {
             forms
         );
 
-        assertion::assert_error(&result);
+        assertion::assert_is_error(&result);
     }
 }

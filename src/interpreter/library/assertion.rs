@@ -28,7 +28,7 @@ pub fn assert_vectors_deep_equal(interpreter: &mut Interpreter, values1: Vec<Val
     }
 }
 
-pub fn assert_error<V, E>(error: &Result<V, E>) {
+pub fn assert_is_error<V, E>(error: &Result<V, E>) {
     assert!(error.is_err());
 }
 
@@ -172,7 +172,7 @@ pub fn assert_results_are_just_errors(
     for code in code_vector {
         let result = interpreter.execute(code);
 
-        assert_error(&result);
+        assert_is_error(&result);
     }
 }
 

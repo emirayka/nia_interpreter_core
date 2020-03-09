@@ -603,8 +603,16 @@ impl Interpreter {
         &mut self.context
     }
 
-    pub fn set_context_value(&mut self, symbol_id: Symbol, value: Value) -> Result<(), Error> {
-        unimplemented!()
+    pub fn get_context_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
+        self.context
+            .get_value(symbol_id)
+            .map_err(|_| self.make_generic_execution_error(""))
+    }
+
+    pub fn set_context_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+        self.context
+            .set_value(symbol_id, value)
+            .map_err(|_| self.make_generic_execution_error(""))
     }
 }
 
@@ -1188,385 +1196,390 @@ mod tests {
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::assertion::assert_deep_equal;
 
-    macro_rules! assert_execution_result_eq {
-        ($expected:expr, $code:expr) => {
-            let mut interpreter = Interpreter::new();
-            let result = interpreter.execute($code);
+    #[cfg(test)]
+    mod evaluation {
+        use super::*;
 
-            assert_eq!($expected, result.unwrap())
+        macro_rules! assert_execution_result_eq {
+            ($expected:expr, $code:expr) => {
+                let mut interpreter = Interpreter::new();
+                let result = interpreter.execute($code);
+
+                assert_eq!($expected, result.unwrap())
+            }
         }
-    }
 
-    #[test]
-    pub fn executes_integer_correctly() {
-        assert_execution_result_eq!(Value::Integer(1), "1");
-    }
+        #[test]
+        pub fn executes_integer_correctly() {
+            assert_execution_result_eq!(Value::Integer(1), "1");
+        }
 
-    #[test]
-    pub fn executes_float_correctly() {
-        assert_execution_result_eq!(Value::Float(1.2), "1.2");
-    }
+        #[test]
+        pub fn executes_float_correctly() {
+            assert_execution_result_eq!(Value::Float(1.2), "1.2");
+        }
 
-    #[test]
-    pub fn executes_boolean_correctly() {
-        assert_execution_result_eq!(Value::Boolean(true), "#t");
-        assert_execution_result_eq!(Value::Boolean(false), "#f");
-    }
+        #[test]
+        pub fn executes_boolean_correctly() {
+            assert_execution_result_eq!(Value::Boolean(true), "#t");
+            assert_execution_result_eq!(Value::Boolean(false), "#f");
+        }
 
-    #[test]
-    pub fn executes_string_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let expected = interpreter.intern_string_value(String::from("tas"));
-        let result = interpreter.execute(r#""tas""#).unwrap();
-
-        assertion::assert_deep_equal(
-            &mut interpreter,
-            expected,
-            result
-        );
-    }
-
-    #[test]
-    pub fn executes_symbol_correctly() {
-        let mut interpreter = Interpreter::new();
-        let name = interpreter.intern("test");
-
-        interpreter.environment_arena.define_variable(
-            interpreter.root_environment,
-            name,
-            Value::Integer(1)
-        ).unwrap();
-
-        let result = interpreter.execute("test");
-
-        assert_eq!(Value::Integer(1), result.unwrap());
-    }
-
-    #[test]
-    pub fn returns_error_during_execution_of_special_symbols() {
-        let special_symbol_names = vec!(
-            "#opt",
-            "#rest",
-            "#keys",
-        );
-        for special_symbol_name in special_symbol_names {
+        #[test]
+        pub fn executes_string_correctly() {
             let mut interpreter = Interpreter::new();
-            let symbol_id = interpreter.intern(special_symbol_name);
+
+            let expected = interpreter.intern_string_value(String::from("tas"));
+            let result = interpreter.execute(r#""tas""#).unwrap();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                expected,
+                result
+            );
+        }
+
+        #[test]
+        pub fn executes_symbol_correctly() {
+            let mut interpreter = Interpreter::new();
+            let name = interpreter.intern("test");
 
             interpreter.environment_arena.define_variable(
                 interpreter.root_environment,
-                symbol_id,
+                name,
                 Value::Integer(1)
             ).unwrap();
 
-            let result = interpreter.execute(special_symbol_name);
-            assertion::assert_error(&result);
+            let result = interpreter.execute("test");
+
+            assert_eq!(Value::Integer(1), result.unwrap());
         }
-    }
-
-    #[test]
-    pub fn executes_keyword_correctly() {
-        assert_execution_result_eq!(Value::Keyword(KeywordId::new(0)), r#":tas"#);
-    }
-
-    #[test]
-    pub fn executes_keyword_s_expression_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let result = interpreter.execute("(:a {:a 1})");
-
-        assert_eq!(Value::Integer(1), result.unwrap());
-    }
-
-    #[test]
-    fn executes_object_expression_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
-
-        let key = interpreter.intern("value");
-
-        for pair in pairs {
-            let code = String::from("{:value ") + &pair.0 + "}";
-            let result = interpreter.execute(&code);
-
-            let object_id = match result {
-                Ok(Value::Object(object_id)) => {
-                    object_id
-                }
-                _ => panic!()
-            };
-
-            let expected = pair.1;
-            let result = interpreter.get_object_item(object_id, key).unwrap().unwrap();
-
-            assertion::assert_deep_equal(
-                &mut interpreter,
-                expected,
-                result
-            );
-        }
-    }
-
-    #[test]
-    fn executes_delimited_symbols_expression_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
-
-        for pair in pairs {
-            let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
-            let expected = pair.1;
-            let result = interpreter.execute(&code).unwrap();
-
-            assertion::assert_deep_equal(
-                &mut interpreter,
-                expected,
-                result
-            );
-        }
-    }
-
-    #[cfg(test)]
-    mod short_lambda {
-        use super::*;
 
         #[test]
-        fn executes_short_lambda_expressions_correctly() {
+        pub fn returns_error_during_execution_of_special_symbols() {
+            let special_symbol_names = vec!(
+                "#opt",
+                "#rest",
+                "#keys",
+            );
+            for special_symbol_name in special_symbol_names {
+                let mut interpreter = Interpreter::new();
+                let symbol_id = interpreter.intern(special_symbol_name);
+
+                interpreter.environment_arena.define_variable(
+                    interpreter.root_environment,
+                    symbol_id,
+                    Value::Integer(1)
+                ).unwrap();
+
+                let result = interpreter.execute(special_symbol_name);
+                assertion::assert_is_error(&result);
+            }
+        }
+
+        #[test]
+        pub fn executes_keyword_correctly() {
+            assert_execution_result_eq!(Value::Keyword(KeywordId::new(0)), r#":tas"#);
+        }
+
+        #[test]
+        pub fn executes_keyword_s_expression_correctly() {
             let mut interpreter = Interpreter::new();
+
+            let result = interpreter.execute("(:a {:a 1})");
+
+            assert_eq!(Value::Integer(1), result.unwrap());
+        }
+
+        #[test]
+        fn executes_object_expression_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
+
+            let key = interpreter.intern("value");
+
+            for pair in pairs {
+                let code = String::from("{:value ") + &pair.0 + "}";
+                let result = interpreter.execute(&code);
+
+                let object_id = match result {
+                    Ok(Value::Object(object_id)) => {
+                        object_id
+                    }
+                    _ => panic!()
+                };
+
+                let expected = pair.1;
+                let result = interpreter.get_object_item(object_id, key).unwrap().unwrap();
+
+                assertion::assert_deep_equal(
+                    &mut interpreter,
+                    expected,
+                    result
+                );
+            }
+        }
+
+        #[test]
+        fn executes_delimited_symbols_expression_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = make_value_pairs_evaluated_ifbsyko(&mut interpreter);
+
+            for pair in pairs {
+                let code = String::from("(let ((obj {:value ") + &pair.0 + "})) obj:value)";
+                let expected = pair.1;
+                let result = interpreter.execute(&code).unwrap();
+
+                assertion::assert_deep_equal(
+                    &mut interpreter,
+                    expected,
+                    result
+                );
+            }
+        }
+
+        #[cfg(test)]
+        mod short_lambda {
+            use super::*;
+
+            #[test]
+            fn executes_short_lambda_expressions_correctly() {
+                let mut interpreter = Interpreter::new();
+                let nil = interpreter.intern_nil_symbol_value();
+
+                let result = interpreter.execute("(#())").unwrap();
+                assert_deep_equal(&mut interpreter, nil, result);
+
+                let result = interpreter.execute("(#(+ 3 2))").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+                let result = interpreter.execute("(#(+ %1 2) 1)").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(3), result);
+
+                let result = interpreter.execute("(#(+ %1 %2) 1 3)").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(4), result);
+
+                let result = interpreter.execute("(#(+ 0 %5) 1 2 3 4 5)").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+            }
+
+            #[test]
+            fn able_to_use_short_lambda_in_flet() {
+                let mut interpreter = Interpreter::new();
+
+                let result = interpreter.execute("(flet ((test () #((lookup '%1)))) ((test) #(+ 3 2)))").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+                let result = interpreter.execute("(flet ((test () #((flookup '%1)))) ((test) #(+ 3 2)))").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+
+                let result = interpreter.execute("(flet ((test () #(%1))) ((test) #(+ 3 2)))").unwrap();
+                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+            }
+        }
+
+        #[test]
+        pub fn builtin_function_works_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let result = interpreter.execute("(+ 1 2)");
+            assert_eq!(Value::Integer(3), result.unwrap());
+
+            let result = interpreter.execute("(+ 1 2.2)");
+            assert_eq!(Value::Float(3.2), result.unwrap());
+
+            let result = interpreter.execute("(+ 1.1 2.4)");
+            assert_eq!(Value::Float(3.5), result.unwrap());
+
+            let result = interpreter.execute("(+ (+ (+ 1 2) 3) 4)");
+            assert_eq!(Value::Integer(10), result.unwrap());
+        }
+
+        #[test]
+        pub fn interpreted_function_works_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let a = interpreter.intern_symbol_value("a");
+            let b = interpreter.intern_symbol_value("b");
+            let plus = interpreter.intern_symbol_value("+");
             let nil = interpreter.intern_nil_symbol_value();
 
-            let result = interpreter.execute("(#())").unwrap();
-            assert_deep_equal(&mut interpreter, nil, result);
+            let value = Value::Cons(interpreter.make_cons(
+                b,
+                nil
+            ));
 
-            let result = interpreter.execute("(#(+ 3 2))").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+            let value = Value::Cons(interpreter.make_cons(
+                a,
+                value
+            ));
 
-            let result = interpreter.execute("(#(+ %1 2) 1)").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(3), result);
+            let value = Value::Cons(interpreter.make_cons(
+                plus,
+                value
+            ));
 
-            let result = interpreter.execute("(#(+ %1 %2) 1 3)").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(4), result);
+            let code = vec!(
+                value
+            );
 
-            let result = interpreter.execute("(#(+ 0 %5) 1 2 3 4 5)").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+            let name = interpreter.intern("test");
+            let mut arguments = Arguments::new();
+
+            arguments.add_ordinary_argument(String::from("a")).unwrap();
+            arguments.add_ordinary_argument(String::from("b")).unwrap();
+
+            let function = Function::Interpreted(InterpretedFunction::new(
+                interpreter.root_environment,
+                arguments,
+                code
+            ));
+
+            let function_id = interpreter.register_function(function);
+
+            interpreter.environment_arena.define_function(
+                interpreter.root_environment,
+                name,
+                Value::Function(function_id)
+            ).unwrap();
+
+            let result = interpreter.execute("(test 3 2)");
+            assert_eq!(Value::Integer(5), result.unwrap());
         }
 
         #[test]
-        fn able_to_use_short_lambda_in_flet() {
+        fn executes_functions_with_optional_arguments() {
             let mut interpreter = Interpreter::new();
 
-            let result = interpreter.execute("(flet ((test () #((lookup '%1)))) ((test) #(+ 3 2)))").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+            let pairs = vec!(
+                ("((function (lambda (#opt a b c) (list a b c))))", "(list nil nil nil)"),
+                ("((function (lambda (#opt a b c) (list a b c))) 1)", "(list 1 nil nil)"),
+                ("((function (lambda (#opt a b c) (list a b c))) 1 2)", "(list 1 2 nil)"),
+                ("((function (lambda (#opt a b c) (list a b c))) 1 2 3)", "(list 1 2 3)"),
 
-            let result = interpreter.execute("(flet ((test () #((flookup '%1)))) ((test) #(+ 3 2)))").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))))", "(list 4 5 6)"),
+                ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1)", "(list 1 5 6)"),
+                ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2)", "(list 1 2 6)"),
+                ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2 3)", "(list 1 2 3)"),
 
-            let result = interpreter.execute("(flet ((test () #(%1))) ((test) #(+ 3 2)))").unwrap();
-            assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
+                ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1)", "(list 1 #t 4 #f)"),
+                ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1 2)", "(list 1 #t 2 #t)"),
+            );
+
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
         }
-    }
 
-    #[test]
-    pub fn builtin_function_works_correctly() {
-        let mut interpreter = Interpreter::new();
+        #[test]
+        fn executes_functions_with_rest_arguments() {
+            let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(+ 1 2)");
-        assert_eq!(Value::Integer(3), result.unwrap());
+            let pairs = vec!(
+                ("((function (lambda (#rest a) a)))", "nil"),
+                ("((function (lambda (#rest a) a)) 1)", "(list 1)"),
+                ("((function (lambda (#rest a) a)) 1 2)", "(list 1 2)"),
+                ("((function (lambda (#rest a) a)) 1 2 3)", "(list 1 2 3)"),
+            );
 
-        let result = interpreter.execute("(+ 1 2.2)");
-        assert_eq!(Value::Float(3.2), result.unwrap());
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
 
-        let result = interpreter.execute("(+ 1.1 2.4)");
-        assert_eq!(Value::Float(3.5), result.unwrap());
+        #[test]
+        fn executes_functions_with_key_arguments() {
+            let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(+ (+ (+ 1 2) 3) 4)");
-        assert_eq!(Value::Integer(10), result.unwrap());
-    }
+            let pairs = vec!(
+                ("((function (lambda (#keys a b) (list a b))))", "(list nil nil)"),
+                ("((function (lambda (#keys a b) (list a b))) :a 1)", "(list 1 nil)"),
+                ("((function (lambda (#keys a b) (list a b))) :b 2)", "(list nil 2)"),
+                ("((function (lambda (#keys a b) (list a b))) :a 1 :b 2)", "(list 1 2)"),
+                ("((function (lambda (#keys a b) (list a b))) :b 2 :a 1)", "(list 1 2)"),
 
-    #[test]
-    pub fn interpreted_function_works_correctly() {
-        let mut interpreter = Interpreter::new();
+                ("((function (lambda (#keys (a 3) (b 4)) (list a b))))", "(list 3 4)"),
+                ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1)", "(list 1 4)"),
+                ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2)", "(list 3 2)"),
+                ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1 :b 2)", "(list 1 2)"),
+                ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2 :a 1)", "(list 1 2)"),
 
-        let a = interpreter.intern_symbol_value("a");
-        let b = interpreter.intern_symbol_value("b");
-        let plus = interpreter.intern_symbol_value("+");
-        let nil = interpreter.intern_nil_symbol_value();
+                ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
+                ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1)", "(list 1 #t 4 #f)"),
+                ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2)", "(list 3 #f 2 #t)"),
+                ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1 :b 2)", "(list 1 #t 2 #t)"),
+                ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2 :a 1)", "(list 1 #t 2 #t)"),
+            );
 
-        let value = Value::Cons(interpreter.make_cons(
-            b,
-            nil
-        ));
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
 
-        let value = Value::Cons(interpreter.make_cons(
-            a,
-            value
-        ));
+        #[test]
+        pub fn special_form_invocation_evaluates_correctly() {
+            let mut interpreter = Interpreter::new();
 
-        let value = Value::Cons(interpreter.make_cons(
-            plus,
-            value
-        ));
+            let name = interpreter.intern("testif");
+            let function = Function::SpecialForm(SpecialFormFunction::new(
+                |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
+                    let mut values = values;
 
-        let code = vec!(
-            value
-        );
+                    let condition = values.remove(0);
+                    let then_clause = values.remove(0);
+                    let else_clause = values.remove(0);
 
-        let name = interpreter.intern("test");
-        let mut arguments = Arguments::new();
+                    let evaluated_condition = interpreter.evaluate_value(environment, condition);
 
-        arguments.add_ordinary_argument(String::from("a")).unwrap();
-        arguments.add_ordinary_argument(String::from("b")).unwrap();
-
-        let function = Function::Interpreted(InterpretedFunction::new(
-            interpreter.root_environment,
-            arguments,
-            code
-        ));
-
-        let function_id = interpreter.register_function(function);
-
-        interpreter.environment_arena.define_function(
-            interpreter.root_environment,
-            name,
-            Value::Function(function_id)
-        ).unwrap();
-
-        let result = interpreter.execute("(test 3 2)");
-        assert_eq!(Value::Integer(5), result.unwrap());
-    }
-
-    #[test]
-    fn executes_functions_with_optional_arguments() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
-            ("((function (lambda (#opt a b c) (list a b c))))", "(list nil nil nil)"),
-            ("((function (lambda (#opt a b c) (list a b c))) 1)", "(list 1 nil nil)"),
-            ("((function (lambda (#opt a b c) (list a b c))) 1 2)", "(list 1 2 nil)"),
-            ("((function (lambda (#opt a b c) (list a b c))) 1 2 3)", "(list 1 2 3)"),
-
-            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))))", "(list 4 5 6)"),
-            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1)", "(list 1 5 6)"),
-            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2)", "(list 1 2 6)"),
-            ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2 3)", "(list 1 2 3)"),
-
-            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
-            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1)", "(list 1 #t 4 #f)"),
-            ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1 2)", "(list 1 #t 2 #t)"),
-        );
-
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    fn executes_functions_with_rest_arguments() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
-            ("((function (lambda (#rest a) a)))", "nil"),
-            ("((function (lambda (#rest a) a)) 1)", "(list 1)"),
-            ("((function (lambda (#rest a) a)) 1 2)", "(list 1 2)"),
-            ("((function (lambda (#rest a) a)) 1 2 3)", "(list 1 2 3)"),
-        );
-
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    fn executes_functions_with_key_arguments() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
-            ("((function (lambda (#keys a b) (list a b))))", "(list nil nil)"),
-            ("((function (lambda (#keys a b) (list a b))) :a 1)", "(list 1 nil)"),
-            ("((function (lambda (#keys a b) (list a b))) :b 2)", "(list nil 2)"),
-            ("((function (lambda (#keys a b) (list a b))) :a 1 :b 2)", "(list 1 2)"),
-            ("((function (lambda (#keys a b) (list a b))) :b 2 :a 1)", "(list 1 2)"),
-
-            ("((function (lambda (#keys (a 3) (b 4)) (list a b))))", "(list 3 4)"),
-            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1)", "(list 1 4)"),
-            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2)", "(list 3 2)"),
-            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1 :b 2)", "(list 1 2)"),
-            ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2 :a 1)", "(list 1 2)"),
-
-            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
-            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1)", "(list 1 #t 4 #f)"),
-            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2)", "(list 3 #f 2 #t)"),
-            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1 :b 2)", "(list 1 #t 2 #t)"),
-            ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2 :a 1)", "(list 1 #t 2 #t)"),
-        );
-
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    pub fn special_form_invocation_evaluates_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let name = interpreter.intern("testif");
-        let function = Function::SpecialForm(SpecialFormFunction::new(
-            |interpreter: &mut Interpreter, environment: EnvironmentId, values: Vec<Value>| -> Result<Value, Error> {
-                let mut values = values;
-
-                let condition = values.remove(0);
-                let then_clause = values.remove(0);
-                let else_clause = values.remove(0);
-
-                let evaluated_condition = interpreter.evaluate_value(environment, condition);
-
-                match evaluated_condition {
-                    Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
-                    Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                    _ => interpreter.make_empty_error().into_result()
+                    match evaluated_condition {
+                        Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
+                        Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
+                        _ => interpreter.make_empty_error().into_result()
+                    }
                 }
+            ));
+
+            let function_id = interpreter.register_function(function);
+            let function_value = Value::Function(function_id);
+
+            interpreter.environment_arena.define_function(
+                interpreter.root_environment,
+                name,
+                function_value
+            ).unwrap();
+
+            let pairs = vec!(
+                ("(testif #t 1 2)", Value::Integer(1)),
+                ("(testif #f 1 2)", Value::Integer(2)),
+                ("(testif (testif #t #t #f) 1 2)", Value::Integer(1)),
+                ("(testif (testif #f #t #f) 1 2)", Value::Integer(2)),
+            );
+
+            for (code, expected) in pairs {
+                let result = interpreter.execute(code).unwrap();
+
+                assertion::assert_deep_equal(&mut interpreter, expected, result);
             }
-        ));
-
-        let function_id = interpreter.register_function(function);
-        let function_value = Value::Function(function_id);
-
-        interpreter.environment_arena.define_function(
-            interpreter.root_environment,
-            name,
-            function_value
-        ).unwrap();
-
-        let pairs = vec!(
-            ("(testif #t 1 2)", Value::Integer(1)),
-            ("(testif #f 1 2)", Value::Integer(2)),
-            ("(testif (testif #t #t #f) 1 2)", Value::Integer(1)),
-            ("(testif (testif #f #t #f) 1 2)", Value::Integer(2)),
-        );
-
-        for (code, expected) in pairs {
-            let result = interpreter.execute(code).unwrap();
-
-            assertion::assert_deep_equal(&mut interpreter, expected, result);
         }
-    }
 
-    #[test]
-    pub fn macro_invocation_evaluates_correctly() {
-        let mut interpreter = Interpreter::new();
+        #[test]
+        pub fn macro_invocation_evaluates_correctly() {
+            let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            ("((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)", "(list 'aa 'bb 'cc)")
-        );
+            let pairs = vec!(
+                ("((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)", "(list 'aa 'bb 'cc)")
+            );
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
     }
 }
