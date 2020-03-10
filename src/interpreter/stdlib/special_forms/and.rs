@@ -11,7 +11,7 @@ pub fn and(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     let values = values;
-    let last_value = Value::Boolean(true);
+    let mut last_value = Value::Boolean(true);
 
     for value in values {
         let result = interpreter.execute_value(environment, value)?;
@@ -19,6 +19,8 @@ pub fn and(
         if library::is_falsy(interpreter, result)? {
             return Ok(result)
         }
+
+        last_value = result;
     }
 
     Ok(last_value)
@@ -68,6 +70,11 @@ mod tests {
             ("(and #f '(1 2))", "#f"),
             ("(and #f {})", "#f"),
             ("(and #f #())", "#f"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
         );
     }
 }

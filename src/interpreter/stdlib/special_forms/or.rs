@@ -11,7 +11,7 @@ pub fn or(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     let values = values;
-    let last_value = Value::Boolean(true);
+    let mut last_value = Value::Boolean(false);
 
     for value in values {
         let result = interpreter.execute_value(environment, value)?;
@@ -19,6 +19,8 @@ pub fn or(
         if library::is_truthy(interpreter, result)? {
             return Ok(result)
         }
+
+        last_value = value;
     }
 
     Ok(last_value)
@@ -34,7 +36,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(or)", "#t"),
+            ("(or)", "#f"),
 
             ("(or 1)", "1"),
             ("(or 1.1)", "1.1"),
@@ -68,6 +70,11 @@ mod tests {
             ("(or #f '(1 2))", "'(1 2)"),
             ("(or #f {})", "{}"),
             ("(or #f #())", "#()"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
         );
     }
 }
