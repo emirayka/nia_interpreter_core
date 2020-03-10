@@ -12,7 +12,7 @@ pub fn not(
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `car' must take exactly one argument."
+            "Built-in function `not' takes exactly one argument."
         ).into_result();
     }
 
