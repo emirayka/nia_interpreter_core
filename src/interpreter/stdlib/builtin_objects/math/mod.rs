@@ -3,9 +3,13 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library::infect::infect_object_builtin_function;
+use crate::interpreter::function::BuiltinFunctionType;
 
+mod abs;
 mod ceil;
 mod floor;
+mod max;
+mod min;
 mod pow;
 mod round;
 
@@ -13,33 +17,24 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let math_symbol_id = interpreter.intern("math");
     let math_object_id = interpreter.make_object();
 
-    infect_object_builtin_function(
-        interpreter,
-        math_object_id,
-        "ceil",
-        ceil::ceil
-    )?;
+    let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
+        ("abs", abs::abs),
+        ("ceil", ceil::ceil),
+        ("floor", floor::floor),
+        ("max", max::max),
+        ("min", min::min),
+        ("pow", pow::pow),
+        ("round", round::round),
+    );
 
-    infect_object_builtin_function(
-        interpreter,
-        math_object_id,
-        "floor",
-        floor::floor
-    )?;
-
-    infect_object_builtin_function(
-        interpreter,
-        math_object_id,
-        "pow",
-        pow::pow
-    )?;
-
-    infect_object_builtin_function(
-        interpreter,
-        math_object_id,
-        "round",
-        round::round
-    )?;
+    for (name, func) in bindings {
+        infect_object_builtin_function(
+            interpreter,
+            math_object_id,
+            name,
+            func
+        )?;
+    }
 
     interpreter.define_variable(
         interpreter.get_root_environment(),

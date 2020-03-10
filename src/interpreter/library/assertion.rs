@@ -129,9 +129,11 @@ pub fn assert_results_are_correct(interpreter: &mut Interpreter, pairs: Vec<(&st
     for (code, expected) in pairs {
         let result = interpreter.execute(code).unwrap();
 
-//        println!("{}", code);
-//        println!("{:?}", expected);
-//        println!("{:?}", result);
+       println!("{}", code);
+       interpreter.print_value(expected);
+       println!();
+       interpreter.print_value(result);
+       println!();
 
         assert_deep_equal(
             interpreter,

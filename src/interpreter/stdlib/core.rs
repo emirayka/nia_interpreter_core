@@ -180,6 +180,20 @@ mod defm {
 mod empty {
     use super::*;
 
+    // I walk a million miles and get nowhere
+    // Against the cold rain
+    // Torn asunder
+    // Clutching at the withered strands of life
+    //
+    // Dreams splintered in two
+    // Replaced by the endless drone
+    // Of broken spirits and open wounds
+    // Emptiness deeply sown
+    //
+    // Distant voices echo in a sea of beings
+    // Within it's ebb. Half forgotten memories
+    // An Unbroken Moment
+
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         Ok(())
     }
