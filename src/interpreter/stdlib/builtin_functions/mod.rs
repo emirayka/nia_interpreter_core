@@ -10,6 +10,7 @@ mod cons;
 mod div;
 mod eq_question;
 mod equal_question;
+mod eval;
 mod flookup;
 mod gensym;
 mod intern;
@@ -43,7 +44,9 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("not", not::not),
         ("eq?", eq_question::eq_question),
         ("=", eq_question::eq_question),
-        ("equal?", equal_question::equal_question)
+        ("equal?", equal_question::equal_question),
+
+        ("eval", eval::eval)
     );
 
     for (name, func) in pairs {
