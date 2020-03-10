@@ -14,10 +14,14 @@ mod equal_question;
 mod eval;
 mod inc;
 mod flookup;
+mod ge;
 mod gensym;
+mod gt;
 mod intern;
+mod le;
 mod list;
 mod lookup;
+mod lt;
 mod mul;
 mod neq_question;
 mod nequal_question;
@@ -54,6 +58,10 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("==", equal_question::equal_question),
         ("!=", neq_question::neq_question),
         ("!==", nequal_question::nequal_question),
+        ("<", lt::lt),
+        ("<=", le::le),
+        (">", gt::gt),
+        (">=", ge::ge),
 
         ("dec", dec::dec),
         ("inc", inc::inc),
