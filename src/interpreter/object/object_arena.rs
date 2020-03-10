@@ -2,6 +2,7 @@ use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::object::{Object, ObjectId};
 use nom::lib::std::collections::HashMap;
+use crate::interpreter::error::Error;
 
 pub struct ObjectArena {
     arena: HashMap<ObjectId, Object>,
@@ -38,15 +39,23 @@ impl ObjectArena {
         object_id
     }
 
-    pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, ()> {
-        self.arena.get(&object_id).ok_or(())
+    pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, Error> {
+        self.arena
+            .get(&object_id)
+            .ok_or(Error::failure(
+                format!("Cannot find an object with id: {}", object_id.get_id())
+            ))
     }
 
-    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, ()> {
-        self.arena.get_mut(&object_id).ok_or(())
+    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, Error> {
+        self.arena
+            .get_mut(&object_id)
+            .ok_or(Error::failure(
+                format!("Cannot find an object with id: {}", object_id.get_id())
+            ))
     }
 
-    pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, ()> {
+    pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, Error> {
         let object = self.get_object(object_id)?;
 
         match object.get_item(key) {
@@ -58,7 +67,7 @@ impl ObjectArena {
         }
     }
 
-    pub fn set_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn set_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) -> Result<(), Error> {
         let object = self.get_object_mut(object_id)?;
 
         object.set_item(key, value);

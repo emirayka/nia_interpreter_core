@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::interpreter::function::Function;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FunctionId {
@@ -11,6 +12,10 @@ impl FunctionId {
         FunctionId {
             id
         }
+    }
+
+    pub fn get_id(&self) -> usize {
+        self.id
     }
 }
 
@@ -36,7 +41,11 @@ impl FunctionArena {
         function_id
     }
 
-    pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, ()> {
-        self.arena.get(&function_id).ok_or(())
+    pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
+        self.arena
+            .get(&function_id)
+            .ok_or(Error::failure(
+                format!("Cannot get a function with id: {}", function_id.get_id())
+            ))
     }
 }

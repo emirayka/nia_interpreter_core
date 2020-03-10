@@ -1,5 +1,6 @@
 use std::hash::Hash;
 use std::collections::HashMap;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SymbolId {
@@ -102,8 +103,12 @@ impl SymbolArena {
         };
     }
 
-    pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, ()> {
-        self.symbols.get(&symbol_id).ok_or(())
+    pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
+        self.symbols
+            .get(&symbol_id)
+            .ok_or(Error::failure(
+                format!("Cannot find a symbol with id: {}", symbol_id.get_id())
+            ))
     }
 
     pub fn intern(&mut self, symbol_name: &str) -> SymbolId {

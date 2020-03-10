@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::interpreter::keyword::Keyword;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct KeywordId {
@@ -44,8 +45,12 @@ impl KeywordArena {
         keyword_id
     }
 
-    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, ()> {
-        self.arena.get(&keyword_id).ok_or(())
+    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
+        self.arena
+            .get(&keyword_id)
+            .ok_or(Error::failure(
+                format!("Cannot find a keyword with id: {}", keyword_id.get_id())
+            ))
     }
 
     pub fn intern_keyword(&mut self, keyword_name: String) -> KeywordId {

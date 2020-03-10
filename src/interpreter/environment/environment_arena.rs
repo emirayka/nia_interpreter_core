@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::interpreter::value::Value;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::environment::environment::LexicalEnvironment;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct EnvironmentId {
@@ -16,7 +17,7 @@ impl EnvironmentId {
         }
     }
 
-    pub fn get_index(&self) -> usize {
+    pub fn get_id(&self) -> usize {
         self.index
     }
 }
@@ -27,12 +28,20 @@ pub struct EnvironmentArena {
 }
 
 impl EnvironmentArena {
-    fn get(&self, id: EnvironmentId) -> Result<&LexicalEnvironment, ()> {
-        self.arena.get(&id).ok_or(())
+    fn get(&self, id: EnvironmentId) -> Result<&LexicalEnvironment, Error> {
+        self.arena
+            .get(&id)
+            .ok_or(Error::failure(
+                format!("Cannot find an environment with id: {}", id.get_id())
+            ))
     }
 
-    fn get_mut(&mut self, id: EnvironmentId) -> Result<&mut LexicalEnvironment, ()> {
-        self.arena.get_mut(&id).ok_or(())
+    fn get_mut(&mut self, id: EnvironmentId) -> Result<&mut LexicalEnvironment, Error> {
+        self.arena
+            .get_mut(&id)
+            .ok_or(Error::failure(
+                format!("Cannot find an environment with id: {}", id.get_id())
+            ))
     }
 }
 
@@ -55,44 +64,44 @@ impl EnvironmentArena {
         id
     }
 
-    pub fn alloc_child(&mut self, parent_id: EnvironmentId) -> Result<EnvironmentId, ()> {
+    pub fn alloc_child(&mut self, parent_id: EnvironmentId) -> Result<EnvironmentId, Error> {
         let child_id = self.alloc();
 
-        if let Ok(parent) = self.get_mut(parent_id) {
+        {
+            let parent = self.get_mut(parent_id)?;
             parent.add_child(child_id);
-        } else {
-            return Err(())
-        };
+        }
 
-        if let Ok(child) = self.get_mut(child_id) {
+        {
+            let child = self.get_mut(child_id)?;
             child.set_parent(parent_id);
-        } else {
-            return Err(())
         }
 
         Ok(child_id)
     }
 
-    pub fn remove(&mut self, environment_id: EnvironmentId) -> Result<(), ()> {
+    pub fn remove(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
         match self.arena.remove(&environment_id) {
             Some(_) => Ok(()),
-            _ => Err(())
+            _ => Error::failure(
+                format!("Cannot find an environment with id: {}", environment_id.get_id())
+            ).into_result()
         }
     }
 
-    pub fn has_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, ()> {
+    pub fn has_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, Error> {
         let env = self.get(id)?;
 
         Ok(env.has_variable(symbol_id))
     }
 
-    pub fn has_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, ()> {
+    pub fn has_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, Error> {
         let env = self.get(id)?;
 
         Ok(env.has_function(symbol_id))
     }
 
-    pub fn lookup_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, ()> {
+    pub fn lookup_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         let env = self.get(id)?;
 
         match env.lookup_variable(symbol_id) {
@@ -106,7 +115,7 @@ impl EnvironmentArena {
         }
     }
 
-    pub fn lookup_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, ()> {
+    pub fn lookup_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         let env = self.get(id)?;
 
         match env.lookup_function(symbol_id) {
@@ -125,7 +134,7 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
         env.define_variable(symbol_id, value)
@@ -136,7 +145,7 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
         env.define_function(symbol_id, value)
@@ -147,14 +156,10 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
-        if env.has_variable(symbol_id) {
-            env.set_variable(symbol_id, value)
-        } else {
-            Err(())
-        }
+        env.set_variable(symbol_id, value)
     }
 
     pub fn set_environment_function(
@@ -162,14 +167,10 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
-        if env.has_function(symbol_id) {
-            env.set_function(symbol_id, value)
-        } else {
-            Err(())
-        }
+        env.set_function(symbol_id, value)
     }
 
     pub fn set_variable(
@@ -177,7 +178,7 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
         if env.has_variable(symbol_id) {
@@ -185,7 +186,9 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_variable(parent_id, symbol_id, value)
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot find a variable to set."
+            ).into_result()
         }
     }
 
@@ -194,7 +197,7 @@ impl EnvironmentArena {
         id: EnvironmentId,
         symbol_id: SymbolId,
         value: Value
-    ) -> Result<(), ()> {
+    ) -> Result<(), Error> {
         let env = self.get_mut(id)?;
 
         if env.has_function(symbol_id) {
@@ -202,7 +205,9 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_function(parent_id, symbol_id, value)
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot find a function to set."
+            ).into_result()
         }
     }
 
@@ -210,12 +215,12 @@ impl EnvironmentArena {
         &self,
         environment_id: EnvironmentId,
         variable_symbol_id: SymbolId
-    ) -> Result<Option<EnvironmentId>, ()> {
+    ) -> Result<Option<EnvironmentId>, Error> {
         let env = self.get(environment_id)?;
 
         match env.has_variable(variable_symbol_id) {
             true => Ok(Some(environment_id)),
-            false => match self.get(environment_id)?.get_parent() {
+            false => match env.get_parent() {
                 Some(parent) => self.lookup_environment_by_variable(parent, variable_symbol_id),
                 None => Ok(None)
             }
@@ -226,7 +231,7 @@ impl EnvironmentArena {
         &self,
         environment_id: EnvironmentId,
         function_symbol_id: SymbolId
-    ) -> Result<Option<EnvironmentId>, ()> {
+    ) -> Result<Option<EnvironmentId>, Error> {
         let env = self.get(environment_id)?;
 
         match env.has_function(function_symbol_id) {

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::error::Error;
 
 pub struct LexicalEnvironment {
     variables: HashMap<SymbolId, Value>,
@@ -85,39 +86,47 @@ impl LexicalEnvironment {
         }
     }
 
-    pub fn define_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn define_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         if !self.has_variable(symbol_id) {
             set_value(&mut self.variables, symbol_id, value);
             Ok(())
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot define the same variable twice."
+            ).into_result()
         }
     }
 
-    pub fn define_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn define_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         if !self.has_function(symbol_id) {
             set_value(&mut self.functions, symbol_id, value);
             Ok(())
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot define the same function twice."
+            ).into_result()
         }
     }
 
-    pub fn set_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn set_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         if self.has_variable(symbol_id) {
             set_value(&mut self.variables, symbol_id, value);
             Ok(())
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot set value of not defined variable."
+            ).into_result()
         }
     }
 
-    pub fn set_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn set_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         if self.has_function(symbol_id) {
             set_value(&mut self.functions, symbol_id, value);
             Ok(())
         } else {
-            Err(())
+            Error::generic_execution_error(
+                "Cannot set value of not defined function."
+            ).into_result()
         }
     }
 }

@@ -84,8 +84,12 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn make_empty_error(&self) -> Error {
-        Error::generic_error(String::from(""), "")
+    pub fn make_failure(&self, message: String) -> Error {
+        Error::failure(message)
+    }
+
+    pub fn make_parse_error(&self, message: &str) -> Error {
+        Error::parse_error(message)
     }
 
     pub fn make_generic_error(&self, symbol_name: String, message: &str) -> Error {
@@ -168,7 +172,6 @@ impl Interpreter {
     pub fn get_string(&self, string_id: StringId) -> Result<&VString, Error> {
         self.string_arena
             .get_string(string_id)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn intern_string_value(&mut self, string: String) -> Value {
@@ -189,7 +192,6 @@ impl Interpreter {
         self.keyword_arena
             .get_keyword(keyword_id)
             .map(|keyword| keyword.clone())
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn intern_keyword_value(&mut self, keyword_name: String) -> Value {
@@ -199,13 +201,8 @@ impl Interpreter {
 
 impl Interpreter {
     pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
-        let error = self.make_generic_execution_error(
-            ""
-        ).into_result();
-
         self.symbol_arena
             .get_symbol(symbol_id)
-            .or(error)
     }
     
     pub fn get_symbol_name(&self, symbol_id: SymbolId) -> Result<&String, Error> {
@@ -257,13 +254,7 @@ impl Interpreter {
     }
 
     pub fn check_if_symbol_special(&self, symbol_id: SymbolId) -> Result<bool, Error> {
-        let symbol_name = match self.get_symbol_name(symbol_id) {
-            Ok(name) => name,
-            Err(error) => return self.make_generic_execution_error_caused(
-                "",
-                error
-            ).into_result()
-        };
+        let symbol_name = self.get_symbol_name(symbol_id)?;
 
         let result = symbol_name == "#opt" ||
             symbol_name == "#rest" ||
@@ -273,13 +264,7 @@ impl Interpreter {
     }
 
     pub fn check_if_symbol_constant(&self, symbol_id: SymbolId) -> Result<bool, Error> {
-        let symbol_name = match self.get_symbol_name(symbol_id) {
-            Ok(name) => name,
-            Err(error) => return self.make_generic_execution_error_caused(
-                "",
-                error
-            ).into_result()
-        };
+        let symbol_name = self.get_symbol_name(symbol_id)?;
 
         let result = symbol_name == "nil";
 
@@ -312,37 +297,47 @@ impl Interpreter {
     pub fn get_car(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_car(cons_id)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, Error> {
         self.cons_arena
             .get_cdr(cons_id)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, Error> {
-        self.cons_arena
-            .get_cadr(cons_id)
-            .map_err(|_| self.make_empty_error())
+        let cdr = self.get_cdr(cons_id)?;
+
+        match cdr {
+            Value::Cons(cdr_cons_id) => {
+                self.get_car(cdr_cons_id)
+            },
+            _ => return self.make_generic_execution_error(
+                "Cannot get car of not a cons value"
+            ).into_result()
+        }
     }
 
     pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, Error> {
-        self.cons_arena
-            .get_cddr(cons_id)
-            .map_err(|_| self.make_empty_error())
+        let cdr = self.get_cdr(cons_id)?;
+
+        match cdr {
+            Value::Cons(cdr_cons_id) => {
+                self.get_cdr(cdr_cons_id)
+            },
+            _ => return self.make_generic_execution_error(
+                "Cannot get cdr of not a cons value"
+            ).into_result()
+        }
     }
 
     pub fn set_car(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
         self.cons_arena
             .set_car(cons_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_cdr(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
         self.cons_arena
             .set_cdr(cons_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn vec_to_list(&mut self, vector: Vec<Value>) -> Value {
@@ -353,8 +348,7 @@ impl Interpreter {
 
     pub fn list_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
         let mut vector = self.cons_arena
-            .list_to_vec(cons_id)
-            .map_err(|_| self.make_empty_error())?;
+            .list_to_vec(cons_id)?;
 
         // Remove last item of the vector if it's nil. It's necessary, because ConsArena can't say
         // if a SymbolId is the one registered for nil, so it returns all items in the list,
@@ -392,40 +386,30 @@ impl Interpreter {
     pub fn get_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         self.object_arena
             .get_item(object_id, key_symbol_id)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         self.object_arena
             .set_item(object_id, key_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn get_object_proto(&mut self, object_id: ObjectId) -> Result<Option<ObjectId>, Error> {
-        let proto = match self.object_arena.get_object(object_id) {
-            Ok(proto) => proto,
-            Err(_) => return self.make_empty_error().into_result()
-        };
+        let object = self.object_arena.get_object(object_id)?;
 
-        Ok(proto.get_prototype())
+        Ok(object.get_prototype())
     }
 
     pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) -> Result<(), Error>{
-        match self.object_arena.get_object_mut(object_id) {
-            Ok(object) => object.set_prototype(proto_id),
-            Err(_) => return self.make_empty_error().into_result()
-        }
+        let object = self.object_arena.get_object_mut(object_id)?;
+        object.set_prototype(proto_id);
 
         Ok(())
     }
 
     pub fn get_items(&self, object_id: ObjectId) -> Result<&HashMap<SymbolId, Value>, Error> {
-        let error = self.make_empty_error().into_result();
+        let object = self.object_arena.get_object(object_id)?;
 
-        match self.object_arena.get_object(object_id) {
-            Ok(object) => Ok(object.get_items()),
-            Err(_) => error
-        }
+        Ok(object.get_items())
     }
 }
 
@@ -435,12 +419,8 @@ impl Interpreter {
     }
 
     pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
-        let error = self.make_empty_error()
-            .into_result();
-
         self.function_arena
             .get_function(function_id)
-            .or(error)
     }
 }
 
@@ -457,7 +437,7 @@ impl Interpreter {
         self.environment_arena.lookup_environment_by_variable(
             environment_id,
             variable_symbol_id
-        ).map_err(|_| self.make_empty_error())
+        )
     }
 
     pub fn lookup_environment_by_function(
@@ -468,7 +448,7 @@ impl Interpreter {
         self.environment_arena.lookup_environment_by_function(
             environment_id,
             function_symbol_id
-        ).map_err(|_| self.make_empty_error())
+        )
     }
 
     pub fn has_variable(
@@ -479,7 +459,7 @@ impl Interpreter {
         self.environment_arena.has_variable(
             environment_id,
             variable_symbol_id
-        ).map_err(|_| self.make_empty_error())
+        )
     }
 
     pub fn has_function(
@@ -490,7 +470,7 @@ impl Interpreter {
         self.environment_arena.has_function(
             environment_id,
             function_symbol_id
-        ).map_err(|_| self.make_empty_error())
+        )
     }
 
     pub fn define_variable(
@@ -501,7 +481,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .define_variable(environment_id, variable_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn define_function(
@@ -512,7 +491,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .define_function(environment_id, function_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_environment_variable(
@@ -523,7 +501,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .set_environment_variable(environment_id, variable_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_environment_function(
@@ -534,7 +511,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .set_environment_function(environment_id, function_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_variable(
@@ -545,7 +521,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .set_variable(environment_id, variable_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn set_function(
@@ -556,7 +531,6 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .set_function(environment_id, function_symbol_id, value)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn lookup_variable(
@@ -565,9 +539,10 @@ impl Interpreter {
         variable_symbol_id: SymbolId
     ) -> Result<Value, Error> {
         self.environment_arena
-            .lookup_variable(environment_id, variable_symbol_id)
-            .map_err(|_| self.make_empty_error())?
-            .ok_or_else(|| self.make_empty_error())
+            .lookup_variable(environment_id, variable_symbol_id)?
+            .ok_or_else(|| self.make_generic_execution_error(
+                "Cannot find variable."
+            ))
     }
 
     pub fn lookup_function(
@@ -576,21 +551,20 @@ impl Interpreter {
         function_symbol_id: SymbolId
     ) -> Result<Value, Error> {
         self.environment_arena
-            .lookup_function(environment_id, function_symbol_id)
-            .map_err(|_| self.make_empty_error())?
-            .ok_or_else(|| self.make_empty_error())
+            .lookup_function(environment_id, function_symbol_id)?
+            .ok_or_else(|| self.make_generic_execution_error(
+                "Cannot find function."
+            ))
     }
 
     pub fn make_environment(&mut self, parent_environment: EnvironmentId) -> Result<EnvironmentId, Error> {
         self.environment_arena
             .alloc_child(parent_environment)
-            .map_err(|_| self.make_empty_error())
     }
 
     pub fn remove_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
         self.environment_arena
             .remove(environment_id)
-            .map_err(|_| self.make_empty_error())
     }
 }
 
@@ -606,13 +580,11 @@ impl Interpreter {
     pub fn get_context_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
         self.context
             .get_value(symbol_id)
-            .map_err(|_| self.make_generic_execution_error(""))
     }
 
     pub fn set_context_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         self.context
             .set_value(symbol_id, value)
-            .map_err(|_| self.make_generic_execution_error(""))
     }
 }
 
@@ -622,27 +594,19 @@ impl Interpreter {
         environment_id: EnvironmentId,
         symbol_id: SymbolId
     ) -> Result<Value, Error> {
-        match self.check_if_symbol_special(symbol_id) {
-            Ok(false) => self.lookup_variable(environment_id, symbol_id)
-                .map_err(|err| self.make_generic_execution_error_caused(
-                    "",
-                    err
-                )),
-            Ok(true) => self.make_generic_execution_error("")
-                .into_result(),
-            Err(error) => self.make_generic_execution_error_caused(
-                "",
-                error
+        match self.check_if_symbol_special(symbol_id)? {
+            false => self.lookup_variable(environment_id, symbol_id),
+            true => self.make_generic_execution_error(
+                "Cannot evaluate special symbols."
             ).into_result(),
         }
     }
 
     fn extract_arguments(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
-        let cons = self.cons_arena
-            .get_cdr(cons_id)
-            .map_err(|_| self.make_empty_error())?;
+        let cdr = self.cons_arena
+            .get_cdr(cons_id)?;
 
-        match cons {
+        match cdr {
             Value::Cons(cons) => self.list_to_vec(cons),
             Value::Symbol(symbol_id) => {
                 let symbol = self.get_symbol(symbol_id)?;
@@ -650,12 +614,14 @@ impl Interpreter {
                 if symbol.is_nil() {
                     Ok(Vec::new())
                 } else {
-                    self.make_empty_error()
-                        .into_result()
+                    self.make_generic_execution_error(
+                        "Cannot extract arguments from not a list."
+                    ).into_result()
                 }
             }
-            _ => self.make_empty_error()
-                .into_result()
+            _ => self.make_generic_execution_error(
+                "Cannot extract arguments from not a list."
+            ).into_result()
         }
     }
 
@@ -669,7 +635,12 @@ impl Interpreter {
         for argument in arguments {
             let evaluated_argument = self
                 .evaluate_value(environment_id, argument)
-                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                .map_err(|err|
+                    self.make_generic_execution_error_caused(
+                        "Cannot evaluate arguments.",
+                        err
+                    )
+                )?;
 
             evaluated_arguments.push(evaluated_argument)
         }
@@ -690,9 +661,7 @@ impl Interpreter {
             let variable_symbol_id = self.intern(variable_name);
             let value = values[current_argument];
 
-            self
-                .define_variable(execution_environment_id, variable_symbol_id, value)
-                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+            self.define_variable(execution_environment_id, variable_symbol_id, value)?;
 
             current_argument += 1;
         }
@@ -704,14 +673,16 @@ impl Interpreter {
             if current_argument < values.len() {
                 let value = values[current_argument];
 
-                self.define_variable(execution_environment_id, variable_symbol_id, value)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
                     let variable_symbol_id = self.intern(provided_name);
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, Value::Boolean(true))
-                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                    self.define_variable(
+                        execution_environment_id,
+                        variable_symbol_id,
+                        Value::Boolean(true)
+                    )?;
                 }
 
                 current_argument += 1;
@@ -723,14 +694,16 @@ impl Interpreter {
                     None => self.intern_nil_symbol_value()
                 };
 
-                self.define_variable(execution_environment_id, variable_symbol_id, value)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
                     let variable_symbol_id = self.intern(provided_name);
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, Value::Boolean(false))
-                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                    self.define_variable(
+                        execution_environment_id,
+                        variable_symbol_id,
+                        Value::Boolean(false)
+                    )?;
                 }
             }
         }
@@ -743,8 +716,11 @@ impl Interpreter {
             let rest_values = Vec::from(rest_values_slice);
             let rest_values_cons = self.vec_to_list(rest_values);
 
-            self.define_variable(execution_environment_id, variable_symbol_id, rest_values_cons)
-                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+            self.define_variable(
+                execution_environment_id,
+                variable_symbol_id,
+                rest_values_cons
+            )?;
 
             return Ok(());
         }
@@ -754,19 +730,16 @@ impl Interpreter {
         let mut current_argument = 0;
 
         if key_values.len() % 2 != 0 {
-            return self.make_generic_execution_error("")
-                .into_result()
+            return self.make_generic_execution_error(
+                "Invalid usage of key arguments."
+            ).into_result()
         }
 
         for key_argument in arguments.get_key_arguments() {
             let variable_symbol_id = self.intern(key_argument.get_name());
             let value = self.exclusive_nil_value;
 
-            self.define_variable(execution_environment_id, variable_symbol_id, value)
-                .map_err(|err| self.make_generic_execution_error_caused(
-                    "",
-                    err
-                ))?;
+            self.define_variable(execution_environment_id, variable_symbol_id, value)?;
         }
 
         loop {
@@ -787,11 +760,7 @@ impl Interpreter {
 
             let value = key_values[current_argument + 1];
 
-            self.set_environment_variable(execution_environment_id, variable_symbol_id, value)
-                .map_err(|err| self.make_generic_execution_error_caused(
-                    "",
-                    err
-                ))?;
+            self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
 
             current_argument += 2;
         }
@@ -807,32 +776,20 @@ impl Interpreter {
                     self.intern_nil_symbol_value()
                 };
 
-                self.set_environment_variable(execution_environment_id, variable_symbol_id, value)
-                    .map_err(|err| self.make_generic_execution_error_caused(
-                        "",
-                        err
-                    ))?;
+                self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
 
                 if let Some(provided_name) = key_argument.get_provided() {
                     let variable_symbol_id = self.intern(provided_name);
                     let value = Value::Boolean(false);
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, value)
-                        .map_err(|err| self.make_generic_execution_error_caused(
-                            "",
-                            err
-                        ))?;
+                    self.define_variable(execution_environment_id, variable_symbol_id, value)?;
                 }
             } else {
                 if let Some(provided_name) = key_argument.get_provided() {
                     let variable_symbol_id = self.intern(provided_name);
                     let value = Value::Boolean(true);
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, value)
-                        .map_err(|err| self.make_generic_execution_error_caused(
-                            "",
-                            err
-                        ))?;
+                    self.define_variable(execution_environment_id, variable_symbol_id, value)?;
                 }
             }
         }
@@ -854,8 +811,7 @@ impl Interpreter {
             let value = values[current_argument];
 
             self
-                .define_function(execution_environment_id, function_symbol_id, value)
-                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                .define_function(execution_environment_id, function_symbol_id, value)?;
 
             current_argument += 1;
         }
@@ -867,14 +823,12 @@ impl Interpreter {
             if current_argument < values.len() {
                 let value = values[current_argument];
 
-                self.define_function(execution_environment_id, function_symbol_id, value)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                self.define_function(execution_environment_id, function_symbol_id, value)?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
                     let function_symbol_id = self.intern(provided_name);
 
-                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(true))
-                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(true))?;
                 }
 
                 current_argument += 1;
@@ -886,14 +840,12 @@ impl Interpreter {
                     None => self.intern_nil_symbol_value()
                 };
 
-                self.define_function(execution_environment_id, function_symbol_id, value)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                self.define_function(execution_environment_id, function_symbol_id, value)?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
                     let function_symbol_id = self.intern(provided_name);
 
-                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(false))
-                        .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                    self.define_function(execution_environment_id, function_symbol_id, Value::Boolean(false))?;
                 }
             }
         }
@@ -906,8 +858,7 @@ impl Interpreter {
 
         for value in code {
             last_result = self.evaluate_value(execution_environment, *value)
-                .map(|v| Some(v))
-                .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                .map(|v| Some(v))?;
         }
 
         Ok(last_result)
@@ -919,36 +870,39 @@ impl Interpreter {
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > evaluated_arguments.len() {
-            return self.make_empty_error()
-                .into_result();
+            return self.make_generic_execution_error(
+                "Not enough arguments to call a function."
+            ).into_result();
         }
 
         // 1) make new environment
-        let execution_environment_id = self.make_environment(func.get_environment())
-            .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        let execution_environment_id = self.make_environment(
+            func.get_environment()
+        )?;
 
         // 2) setup environment variables and functions
         self.define_environment_variables(
             execution_environment_id,
             func.get_arguments(),
             &evaluated_arguments
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         self.define_environment_functions(
             execution_environment_id,
             func.get_arguments(),
             &evaluated_arguments
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         // 3) execute code
         let execution_result = self.execute_code(
             execution_environment_id,
             func.get_code()
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         // 4) return result
-        execution_result.or_else(|| Some(self.intern_nil_symbol_value()))
-            .ok_or_else(|| self.make_empty_error())
+        let result = execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
+
+        Ok(result)
     }
 
     pub fn evaluate_builtin_function_invocation(
@@ -975,33 +929,39 @@ impl Interpreter {
         arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > arguments.len() {
-            return self.make_empty_error().into_result();
+            return self.make_generic_execution_error(
+                "Not enough arguments to call a macro."
+            ).into_result();
         }
 
         // 1) make new environment
-        let execution_environment_id = self.make_environment(func.get_environment())
-            .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        let execution_environment_id = self.make_environment(
+            func.get_environment()
+        )?;
 
         // 2) set arguments in that environment
         self.define_environment_variables(
             execution_environment_id,
             func.get_arguments(),
             &arguments
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         self.define_environment_functions(
             execution_environment_id,
             func.get_arguments(),
             &arguments
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         // 3) execute code
-        let execution_result = self.execute_code(execution_environment_id, func.get_code())
-            .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        let execution_result = self.execute_code(
+            execution_environment_id,
+            func.get_code()
+        )?;
 
         // 4) return result
-        execution_result.or_else(|| Some(self.intern_nil_symbol_value()))
-            .ok_or_else(|| self.make_empty_error())
+        let result = execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
+
+        Ok(result)
     }
 
     pub fn evaluate_s_expression_function_invocation(
@@ -1011,8 +971,7 @@ impl Interpreter {
         cons_id: ConsId
     ) -> Result<Value, Error> {
         let function = self.get_function(function)
-            .map(|function| function.clone())
-            .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+            .map(|function| function.clone())?;
 
         match function {
             Function::Builtin(builtin_function) => {
@@ -1063,16 +1022,16 @@ impl Interpreter {
         cons_id: ConsId
     ) -> Result<Value, Error> {
         let keyword_name = self.get_keyword(keyword_id)
-            .map(|keyword| keyword.get_name().clone())
-            .map_err(|err| self.make_generic_execution_error_caused("", err ))?;
+            .map(|keyword| keyword.get_name().clone())?;
 
         let symbol_id = self.intern(&keyword_name);
 
-        let mut arguments = self.extract_arguments(cons_id)
-            .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        let mut arguments = self.extract_arguments(cons_id)?;
 
         if arguments.len() != 1 {
-            return self.make_empty_error().into_result();
+            return self.make_generic_execution_error(
+                "Invalid argument count in keyword s-expression."
+            ).into_result();
         }
 
         let argument = arguments.remove(0);
@@ -1080,15 +1039,18 @@ impl Interpreter {
         let evaluated_argument = self.evaluate_value(
             environment_id,
             argument
-        ).map_err(|err| self.make_generic_execution_error_caused("", err))?;
+        )?;
 
         match evaluated_argument {
             Value::Object(object_id) => {
-                self.object_arena.get_item(object_id, symbol_id)
-                    .map_err(|_| self.make_empty_error())?
-                    .ok_or_else(|| self.make_empty_error())
+                self.object_arena.get_item(object_id, symbol_id)?
+                    .ok_or_else(|| self.make_generic_execution_error(
+                        "Object have not an item to yield."
+                    ))
             },
-            _ => return self.make_empty_error().into_result()
+            _ => return self.make_generic_execution_error(
+                "Cannot get an item of not an object."
+            ).into_result()
         }
     }
 
@@ -1099,17 +1061,20 @@ impl Interpreter {
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
         let car = self.cons_arena
-            .get_car(s_expression)
-            .map_err(|_| self.make_empty_error())?;
+            .get_car(s_expression)?;
 
         match car {
             Value::Symbol(func_name) => {
-                let function_value = self.lookup_function(environment_id, func_name)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                let function_value = self.lookup_function(
+                    environment_id,
+                    func_name
+                )?;
 
                 let function_id = match function_value {
                     Value::Function(function_id) => function_id,
-                    _ => return self.make_empty_error().into_result(),
+                    _ => return self.make_generic_execution_error(
+                        "The result of evaluation of first item of an s-expression must be a function or keyword."
+                    ).into_result(),
                 };
 
                 self.evaluate_s_expression_function_invocation(
@@ -1124,12 +1089,16 @@ impl Interpreter {
                 s_expression
             ),
             Value::Cons(cons_id) => {
-                let function_value = self.evaluate_s_expression(environment_id, cons_id)
-                    .map_err(|err| self.make_generic_execution_error_caused("", err))?;
+                let evaluation_result = self.evaluate_s_expression(
+                    environment_id,
+                    cons_id
+                )?;
 
-                let function_id = match function_value {
+                let function_id = match evaluation_result {
                     Value::Function(function_id) => function_id,
-                    _ => return self.make_empty_error().into_result(),
+                    _ => return self.make_generic_execution_error(
+                        "."
+                    ).into_result(),
                 };
 
                 self.evaluate_s_expression_function_invocation(
@@ -1143,7 +1112,9 @@ impl Interpreter {
                 keyword_id,
                 s_expression
             ),
-            _ => self.make_empty_error().into_result()
+            _ => return self.make_generic_execution_error(
+                "The result of evaluation of first item of an s-expression must be a function or keyword."
+            ).into_result(),
         }
     }
 
@@ -1165,7 +1136,7 @@ impl Interpreter {
         // first step: parse code
         let code = parse_code(code)
             .map(|result| result.1)
-            .map_err(|_| self.make_empty_error())?;
+            .map_err(|_| self.make_parse_error("Error while parsing code."))?;
 
         // second step: read forms
         let values = read_elements(self, code.get_elements())?;
@@ -1540,7 +1511,7 @@ mod tests {
                     match evaluated_condition {
                         Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
                         Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => interpreter.make_empty_error().into_result()
+                        _ => interpreter.make_generic_execution_error("").into_result()
                     }
                 }
             ));

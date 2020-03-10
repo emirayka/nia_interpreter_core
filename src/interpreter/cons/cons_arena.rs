@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::interpreter::value::Value;
 use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ConsId {
@@ -49,117 +50,135 @@ impl ConsArena {
 }
 
 impl ConsArena {
-    pub fn get_cons(&self, cons_id: ConsId) -> Result<&Cons, ()> {
+    pub fn get_cons(&self, cons_id: ConsId) -> Result<&Cons, Error> {
         match self.arena.get(&cons_id) {
             Some(value) => Ok(value),
-            None => Err(())
+            None => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Result<&mut Cons, ()> {
+    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Result<&mut Cons, Error> {
         match self.arena.get_mut(&cons_id) {
             Some(value) => Ok(value),
-            None => Err(())
+            None => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn get_car(&self, cons_id: ConsId) -> Result<Value, ()> {
+    pub fn get_car(&self, cons_id: ConsId) -> Result<Value, Error> {
         match self.get_cons(cons_id) {
             Ok(cons) => Ok(cons.get_car()),
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, ()> {
+    pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, Error> {
         match self.get_cons(cons_id) {
             Ok(cons) => Ok(cons.get_cdr()),
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn get_car_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
+    pub fn get_car_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => Ok(cons.get_car_mut()),
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn get_cdr_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, ()> {
+    pub fn get_cdr_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => Ok(cons.get_cdr_mut()),
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn set_car(&mut self, cons_id: ConsId, new_car: Value) -> Result<(), ()> {
+    pub fn set_car(&mut self, cons_id: ConsId, new_car: Value) -> Result<(), Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => {
                 cons.set_car(new_car);
 
                 Ok(())
             },
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 
-    pub fn set_cdr(&mut self, cons_id: ConsId, new_cdr: Value) -> Result<(), ()> {
+    pub fn set_cdr(&mut self, cons_id: ConsId, new_cdr: Value) -> Result<(), Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => {
                 cons.set_cdr(new_cdr);
 
                 Ok(())
             },
-            _ => Err(())
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            )).into_result()
         }
     }
 }
 
 impl ConsArena {
-    pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, ()> {
-        match self.get_cdr(cons_id) {
-            Ok(Value::Cons(cons_id)) => match self.get_car(cons_id) {
-                Ok(value) => Ok(value),
-                _ => Err(())
-            },
-            _ => Err(())
+    pub fn get_cadr(&self, cons_id: ConsId) -> Result<Value, Error> {
+        let cdr = self.get_cdr(cons_id)?;
+
+        match cdr {
+            Value::Cons(cons_id) => self.get_car(cons_id),
+            _ => Error::generic_execution_error(
+                "Cannot get car of not a cons cell."
+            ).into_result()
         }
     }
 
-    pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, ()> {
-        match self.get_cdr(cons_id) {
-            Ok(Value::Cons(cons_id)) => match self.get_cdr(cons_id) {
-                Ok(value) => Ok(value),
-                _ => Err(())
-            },
-            _ => Err(())
+    pub fn get_cddr(&self, cons_id: ConsId) -> Result<Value, Error> {
+        let cdr = self.get_cdr(cons_id)?;
+
+        match cdr {
+            Value::Cons(cons_id) => self.get_cdr(cons_id),
+            _ => Error::generic_execution_error(
+                "Cannot get cdr of not a cons cell."
+            ).into_result()
         }
     }
 }
 
 impl ConsArena {
-    pub fn list_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, ()> {
+    pub fn list_to_vec(&self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
         let mut results = Vec::new();
         let mut current_cdr = cons_id;
 
         loop {
-            match self.get_car(current_cdr) {
-                Ok(value) => results.push(value),
-                _ => return Err(())
-            }
+            let value = self.get_car(current_cdr)?;
+            results.push(value);
 
-            current_cdr = match self.get_cdr(current_cdr) {
-                Ok(Value::Cons(cons_id)) => cons_id,
-                Ok(symbol_value @ Value::Symbol(_)) => {
-                    results.push(symbol_value);
-
-                    break;
-                }
-                Ok(value) => {
+            current_cdr = match self.get_cdr(current_cdr)? {
+                Value::Cons(cons_id) => cons_id,
+                value => {
                     results.push(value);
 
                     break;
                 },
-                _ => return Err(())
             };
         }
 

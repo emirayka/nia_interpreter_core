@@ -1,3 +1,6 @@
+pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
+
+pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse";
 pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
 pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
 pub const SYMBOL_NAME_ZERO_DIVISION_ERROR: &'static str = "zero-division-error";
@@ -10,7 +13,9 @@ pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ErrorKind {
-    Empty,
+    Failure,
+
+    ParseError,
 
     GenericError,
 
@@ -24,7 +29,7 @@ pub enum ErrorKind {
     Assertion,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Error {
     error_kind: ErrorKind,
     message: String,
@@ -55,6 +60,20 @@ impl Error {
     pub fn into_result<T>(self) -> Result<T, Error> {
         Err(self)
     }
+
+    pub fn describe(&self) {
+        print!("({} \"{}\")", self.symbol_name, self.message);
+
+        if let Some(cause) = &self.caused_by {
+            let cause_error = cause.as_ref();
+
+            print!(" caused by:");
+            println!();
+            cause_error.describe();
+        } else {
+            println!();
+        }
+    }
 }
 
 impl Error {
@@ -70,13 +89,22 @@ impl Error {
         }
     }
 
-    pub fn empty(symbol_name: String) -> Error {
+    pub fn failure(message: String) -> Error {
         Error {
-            error_kind: ErrorKind::Empty,
-            message: String::from(""),
+            error_kind: ErrorKind::Failure,
+            message,
             caused_by: None,
-            symbol_name
+            symbol_name: String::from("failure"),
         }
+    }
+
+    pub fn parse_error(message: &str) -> Error {
+        Error::from(
+            None,
+            ErrorKind::ParseError,
+            message,
+            String::from(SYMBOL_NAME_PARSE_ERROR)
+        )
     }
 
     pub fn generic_error(symbol_name: String, message: &str) -> Error {

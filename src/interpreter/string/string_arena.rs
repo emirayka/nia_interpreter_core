@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::interpreter::string::VString;
+use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct StringId {
@@ -44,8 +45,12 @@ impl StringArena {
         string_id
     }
 
-    pub fn get_string(&self, string_id: StringId) -> Result<&VString, ()> {
-        self.arena.get(&string_id).ok_or(())
+    pub fn get_string(&self, string_id: StringId) -> Result<&VString, Error> {
+        self.arena
+            .get(&string_id)
+            .ok_or(Error::failure(
+                format!("Cannot find a string with id: {}", string_id.get_id())
+            ))
     }
 
 

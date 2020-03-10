@@ -5,18 +5,18 @@ use crate::interpreter::value::Value;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ObjectId {
-    index: usize
+    id: usize
 }
 
 impl ObjectId {
     pub fn new(index: usize) -> ObjectId {
         ObjectId {
-            index
+            id: index
         }
     }
 
-    pub fn get_index(&self) -> usize {
-        self.index
+    pub fn get_id(&self) -> usize {
+        self.id
     }
 }
 

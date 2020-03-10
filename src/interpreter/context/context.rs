@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
+use crate::interpreter::error::Error;
 
 pub struct Context {
     values: HashMap<SymbolId, Value>,
@@ -13,14 +14,16 @@ impl Context {
         }
     }
 
-    pub fn get_value(&self, symbol_id: SymbolId) -> Result<Value, ()> {
+    pub fn get_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
         match self.values.get(&symbol_id) {
             Some(value) => Ok(*value),
-            _ => Err(())
+            _ => Error::failure(
+                format!("Cannot find context value with id: {}", symbol_id.get_id())
+            ).into_result()
         }
     }
 
-    pub fn set_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), ()> {
+    pub fn set_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         match self.values.get_mut(&symbol_id) {
             Some(mut_value_ref) => {
                 *mut_value_ref = value;

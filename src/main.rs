@@ -37,15 +37,18 @@ fn main() {
 
         let result = match interpreter.execute(&string) {
             Ok(value) => value,
-            _ => {
-                println!("Error while executing code");
-                break;
+            Err(error) => {
+                println!("Error occured:");
+                error.describe();
+
+                print!(">> ");
+                io::stdout().flush();
+                continue;
             }
         };
 
         interpreter.print_value(result);
         println!();
-
         print!(">> ");
         io::stdout().flush();
     }
