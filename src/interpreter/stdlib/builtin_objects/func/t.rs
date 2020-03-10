@@ -27,7 +27,7 @@ mod tests {
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn returns_true_when_an_atom_was_passed() {
+    fn returns_true() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(

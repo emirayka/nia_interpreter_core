@@ -7,18 +7,20 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::function::FunctionId;
 use crate::interpreter::function::Arguments;
 
-pub fn f(
+pub fn id(
     interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() != 0 {
+    if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `func:t' takes no arguments."
+            "Built-in function `func:id' takes one argument."
         ).into_result();
     }
 
-    Ok(Value::Boolean(false))
+    let mut values = values;
+
+    Ok(values.remove(0))
 }
 
 #[cfg(test)]
@@ -27,11 +29,20 @@ mod tests {
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn returns_false() {
+    fn returns_the_same_value() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(func:f)", "#f"),
+            ("(func:id 1)", "1"),
+            ("(func:id 1.1)", "1.1"),
+            ("(func:id #t)", "#t"),
+            ("(func:id #f)", "#f"),
+            ("(func:id \"string\")", "\"string\""),
+            ("(func:id 'symbol)", "'symbol"),
+            ("(func:id :keyword)", ":keyword"),
+            ("(func:id '(1 2))", "'(1 2)"),
+            ("(func:id {})", "{}"),
+            ("(func:id #())", "#()"),
         );
 
         assertion::assert_results_are_equal(
@@ -45,8 +56,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(func:f 1)",
-            "(func:f 1 2)",
+            "(func:id)",
+            "(func:id 1 2)",
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

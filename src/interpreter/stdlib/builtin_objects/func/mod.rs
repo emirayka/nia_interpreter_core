@@ -7,6 +7,7 @@ use crate::interpreter::function::BuiltinFunctionType;
 mod always;
 mod combine;
 mod curry;
+mod id;
 mod f;
 mod t;
 
@@ -17,6 +18,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("always", always::always),
         ("combine", combine::combine),
         ("curry", curry::curry),
+        ("id", id::id),
         ("f", f::f),
         ("t", t::t),
     );
