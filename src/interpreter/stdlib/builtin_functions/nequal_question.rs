@@ -5,14 +5,14 @@ use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
-pub fn equal_question(
+pub fn nequal_question(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `equal?' must take exactly one argument."
+            "Built-in function `nequal?' must take exactly one argument."
         ).into_result();
     }
 
@@ -27,7 +27,7 @@ pub fn equal_question(
         value2
     )?;
 
-    Ok(Value::Boolean(result))
+    Ok(Value::Boolean(!result))
 }
 
 #[cfg(test)]
@@ -40,17 +40,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(equal? 1 1)", "#t"),
-            ("(equal? 1.1 1.1)", "#t"),
-            ("(equal? #t #t)", "#t"),
-            ("(equal? #f #f)", "#t"),
-            ("(equal? \"string\" \"string\")", "#t"),
-            ("(equal? 'symbol 'symbol)", "#t"),
-            ("(equal? :keyword :keyword)", "#t"),
+            ("(nequal? 1 1)", "#f"),
+            ("(nequal? 1.1 1.1)", "#f"),
+            ("(nequal? #t #t)", "#f"),
+            ("(nequal? #f #f)", "#f"),
+            ("(nequal? \"string\" \"string\")", "#f"),
+            ("(nequal? 'symbol 'symbol)", "#f"),
+            ("(nequal? :keyword :keyword)", "#f"),
 
-            ("(equal? {:a 1} {:a 1})", "#t"),
-            ("(equal? '(1 2) '(1 2))", "#t"),
-            ("(equal? #(+ %1 %2) #(+ %1 %2))", "#t")
+            ("(nequal? {:a 1} {:a 1})", "#f"),
+            ("(nequal? '(1 2) '(1 2))", "#f"),
+            ("(nequal? #(+ %1 %2) #(+ %1 %2))", "#f")
         );
 
         assertion::assert_results_are_equal(
@@ -64,17 +64,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(equal? 1 2)", "#f"),
-            ("(equal? 1.1 1.2)", "#f"),
-            ("(equal? #t #f)", "#f"),
-            ("(equal? #f #t)", "#f"),
-            ("(equal? \"string-1\" \"string-2\")", "#f"),
-            ("(equal? 'symbol-1 'symbol-2)", "#f"),
-            ("(equal? :keyword-1 :keyword-2)", "#f"),
+            ("(nequal? 1 2)", "#t"),
+            ("(nequal? 1.1 1.2)", "#t"),
+            ("(nequal? #t #f)", "#t"),
+            ("(nequal? #f #t)", "#t"),
+            ("(nequal? \"string-1\" \"string-2\")", "#t"),
+            ("(nequal? 'symbol-1 'symbol-2)", "#t"),
+            ("(nequal? :keyword-1 :keyword-2)", "#t"),
 
-            ("(equal? {:a 1} {:a 2})", "#f"),
-            ("(equal? '(1 2) '(1 3))", "#f"),
-            ("(equal? #(+ %1 %2) #(+ %1 %3))", "#f")
+            ("(nequal? {:a 1} {:a 2})", "#t"),
+            ("(nequal? '(1 2) '(1 3))", "#t"),
+            ("(nequal? #(+ %1 %2) #(+ %1 %3))", "#t")
         );
 
         assertion::assert_results_are_equal(
@@ -88,17 +88,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(equal? 1 2.2)", "#f"),
-            ("(equal? 1.1 1)", "#f"),
-            ("(equal? #t \"string\")", "#f"),
-            ("(equal? #f 'symbol)", "#f"),
-            ("(equal? \"string-1\" :keyword)", "#f"),
-            ("(equal? 'symbol-1 2)", "#f"),
-            ("(equal? :keyword-1 1)", "#f"),
+            ("(nequal? 1 2.2)", "#t"),
+            ("(nequal? 1.1 1)", "#t"),
+            ("(nequal? #t \"string\")", "#t"),
+            ("(nequal? #f 'symbol)", "#t"),
+            ("(nequal? \"string-1\" :keyword)", "#t"),
+            ("(nequal? 'symbol-1 2)", "#t"),
+            ("(nequal? :keyword-1 1)", "#t"),
 
-            ("(equal? {:a 1} 4)", "#f"),
-            ("(equal? '(1 2) 5)", "#f"),
-            ("(equal? #(+ %1 %2) 5)", "#f")
+            ("(nequal? {:a 1} 4)", "#t"),
+            ("(nequal? '(1 2) 5)", "#t"),
+            ("(nequal? #(+ %1 %2) 5)", "#t")
         );
 
         assertion::assert_results_are_equal(
@@ -112,9 +112,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(equal?)",
-            "(equal? 1)",
-            "(equal? 1 2 3)"
+            "(nequal?)",
+            "(nequal? 1)",
+            "(nequal? 1 2 3)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

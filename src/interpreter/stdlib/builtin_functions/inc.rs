@@ -10,7 +10,7 @@ pub fn inc(
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `dec' takes one argument exactly."
+            "Built-in function `inc' takes one argument exactly."
         ).into_result();
     }
 
@@ -21,12 +21,12 @@ pub fn inc(
             match int.checked_add(1) {
                 Some(value) => Ok(Value::Integer(value)),
                 _ => interpreter.make_overflow_error(
-                    "Cannot decrement minimal value."
+                    "Cannot increment maximal value."
                 ).into_result()
             }
         },
         _ => return interpreter.make_invalid_argument_error(
-            "Built-in function `dec' takes one integer value."
+            "Built-in function `inc' takes one integer value."
         ).into_result()
     }
 }

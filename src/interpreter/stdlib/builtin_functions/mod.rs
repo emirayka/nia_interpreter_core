@@ -19,6 +19,8 @@ mod intern;
 mod list;
 mod lookup;
 mod mul;
+mod neq_question;
+mod nequal_question;
 mod not;
 mod rem;
 mod sub;
@@ -46,8 +48,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("not", not::not),
         ("eq?", eq_question::eq_question),
         ("equal?", equal_question::equal_question),
+        ("neq?", neq_question::neq_question),
+        ("nequal?", nequal_question::nequal_question),
         ("=", eq_question::eq_question),
         ("==", equal_question::equal_question),
+        ("!=", neq_question::neq_question),
+        ("!==", nequal_question::nequal_question),
 
         ("dec", dec::dec),
         ("inc", inc::inc),
