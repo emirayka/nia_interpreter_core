@@ -149,6 +149,8 @@ pub fn assert_results_are_errors(
     error_kind: ErrorKind
 ) {
     for code in code_vector {
+        println!("{}", code);
+
         let error = interpreter.execute(code).err().unwrap();
         let total_cause = error.get_total_cause();
 
@@ -177,6 +179,14 @@ pub fn assert_results_are_just_errors(
         assert_is_error(&result);
     }
 }
+
+pub fn assert_results_are_generic_execution_errors(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>
+) {
+    assert_results_are_errors(interpreter, code_vector, ErrorKind::GenericExecution)
+}
+
 
 pub fn assert_results_are_invalid_argument_errors(
     interpreter: &mut Interpreter,

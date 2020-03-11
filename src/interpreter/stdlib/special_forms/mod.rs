@@ -9,6 +9,7 @@ mod quote;
 mod define_variable;
 mod define_function;
 mod dolist;
+mod dotimes;
 mod function;
 mod set;
 mod fset;
@@ -34,6 +35,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("define-variable", define_variable::define_variable),
         ("define-function", define_function::define_function),
         ("dolist", dolist::dolist),
+        ("dotimes", dotimes::dotimes),
         ("function", function::function),
         ("fset!", fset:: fset),
         ("let", _let::_let),

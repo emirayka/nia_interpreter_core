@@ -6,12 +6,12 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::library;
 use crate::interpreter::symbol::SymbolId;
 
-fn make_dolist_environment(
+fn make_dotimes_environment(
     interpreter: &mut Interpreter,
     environment_id: EnvironmentId,
     symbol_id: SymbolId
 ) -> Result<EnvironmentId, Error> {
-    let dolist_environment_id = interpreter.make_environment(
+    let dotimes_environment_id = interpreter.make_environment(
         environment_id
     )?;
 
@@ -22,35 +22,35 @@ fn make_dolist_environment(
     let continue_function_id = interpreter.get_internal_function("continue")?;
 
     interpreter.define_function(
-        dolist_environment_id,
+        dotimes_environment_id,
         break_symbol_id,
         Value::Function(break_function_id)
     )?;
 
     interpreter.define_function(
-        dolist_environment_id,
+        dotimes_environment_id,
         continue_symbol_id,
         Value::Function(continue_function_id)
     )?;
 
     let nil = interpreter.intern_nil_symbol_value();
     interpreter.define_variable(
-        dolist_environment_id,
+        dotimes_environment_id,
         symbol_id,
         nil
     )?;
 
-    Ok(dolist_environment_id)
+    Ok(dotimes_environment_id)
 }
 
-pub fn dolist(
+pub fn dotimes(
     interpreter: &mut Interpreter,
     environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Special form `dolist' takes one argument at least."
+            "Special form dotimes`' takes one argument at least."
         ).into_result();
     }
 
@@ -62,7 +62,7 @@ pub fn dolist(
 
     if binding.len() != 2 {
         return interpreter.make_invalid_argument_error(
-            "Special form `dolist' takes 2 item list as its first argument."
+            "Special form `dotimes' takes 2 item list as its first argument."
         ).into_result()
     }
 
@@ -71,17 +71,23 @@ pub fn dolist(
         binding.remove(0)
     )?;
 
-    let evaluated_list = interpreter.evaluate_value(
+    let evaluated_count = interpreter.evaluate_value(
         environment_id,
         binding.remove(0)
     )?;
 
-    let vector = library::read_as_vector(
+    let count = library::read_as_i64(
         interpreter,
-        evaluated_list
+        evaluated_count
     )?;
 
-    let dolist_environment_id = make_dolist_environment(
+    if count < 0 {
+        return interpreter.make_invalid_argument_error(
+            "Special form `dotimes' takes positive count."
+        ).into_result()
+    }
+
+    let dotimes_environment_id = make_dotimes_environment(
         interpreter,
         environment_id,
         binding_symbol_id
@@ -89,16 +95,16 @@ pub fn dolist(
 
     let code = values;
 
-    for value in vector {
+    for index in 0..count {
         interpreter.set_environment_variable(
-            dolist_environment_id,
+            dotimes_environment_id,
             binding_symbol_id,
-            value
+            Value::Integer(index)
         )?;
 
         match library::execute_forms(
             interpreter,
-            dolist_environment_id,
+            dotimes_environment_id,
             &code
         ) {
             Ok(_) => {},
@@ -127,13 +133,12 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(dolist (i '(1 2)))", "nil"),
-            ("(dolist (i '(1 2 3)))", "nil"),
-            ("(defv lst (list 1 2 3)) (dolist (i lst))", "nil"),
-            ("(defv a (list)) (dolist (i '(1 2 3)) (set! a (cons i a))) a", "'(3 2 1)"),
-            ("(defv b (list)) (dolist (i '(1 2 3)) (break) (set! b (cons i b))) b", "'()"),
-            ("(defv c (list)) (dolist (i '(1 2 3)) (set! c (cons i c)) (set! c (cons i c))) c", "'(3 3 2 2 1 1)"),
-            ("(defv d (list)) (dolist (i '(1 2 3)) (set! d (cons i d)) (continue) (set! d (cons i d))) d", "'(3 2 1)"),
+            ("(dotimes (i 1))", "nil"),
+            ("(defv n 1) (dotimes (i n))", "nil"),
+            ("(defv a (list)) (dotimes (i 3) (set! a (cons i a))) a", "'(2 1 0)"),
+            ("(defv b (list)) (dotimes (i 3) (break) (set! b (cons i b))) b", "'()"),
+            ("(defv c (list)) (dotimes (i 3) (set! c (cons i c)) (set! c (cons i c))) c", "'(2 2 1 1 0 0)"),
+            ("(defv d (list)) (dotimes (i 3) (set! d (cons i d)) (continue) (set! d (cons i d))) d", "'(2 1 0)"),
         );
 
         assertion::assert_results_are_equal(
@@ -147,16 +152,16 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(dolist 1)",
-            "(dolist 1.1)",
-            "(dolist #t)",
-            "(dolist #f)",
-            "(dolist \"string\")",
-            "(dolist symbol)",
-            "(dolist :keyword)",
-            "(dolist ())",
-            "(dolist (1))",
-            "(dolist (1 2 3))",
+            "(dotimes 1)",
+            "(dotimes 1.1)",
+            "(dotimes #t)",
+            "(dotimes #f)",
+            "(dotimes \"string\")",
+            "(dotimes symbol)",
+            "(dotimes :keyword)",
+            "(dotimes ())",
+            "(dotimes (1))",
+            "(dotimes (1 2 3))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -166,19 +171,19 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_errors_when_binding_is_not_a_symbol() {
+    fn returns_invalid_argument_error_when_binding_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(dolist (1 '(1 2)))",
-            "(dolist (1.1 '(1 2)))",
-            "(dolist (#t '(1 2)))",
-            "(dolist (#f '(1 2)))",
-            "(dolist (\"string\" '(1 2)))",
-            "(dolist ('(1 2) '(1 2)))",
-            "(dolist (:keyword) '(1 2))",
-            "(dolist ({} '(1 2)))",
-            "(dolist (#() '(1 2)))",
+            "(dotimes (1 5))",
+            "(dotimes (1.1 5))",
+            "(dotimes (#t 5))",
+            "(dotimes (#f 5))",
+            "(dotimes (:keyword 5))",
+            "(dotimes (\"string\" 5))",
+            "(dotimes ('(1 2) 5))",
+            "(dotimes ({} 5))",
+            "(dotimes (#() 5))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -188,20 +193,20 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_errors_when_list_is_not_a_list() {
+    fn returns_invalid_argument_error_when_count_did_not_evaluate_to_integer() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(dolist (i 1))",
-            "(dolist (i 1.1))",
-            "(dolist (i #t))",
-            "(dolist (i #f))",
-            "(dolist (i \"string\"))",
-            "(dolist (i 'symbol))",
-            "(defv a 1) (dolist (i a))",
-            "(dolist (i :keyword))",
-            "(dolist (i {}))",
-            "(dolist (i #()))",
+            "(dotimes (n 1.1))",
+            "(dotimes (n #t))",
+            "(dotimes (n #f))",
+            "(dotimes (n \"string\"))",
+            "(dotimes (n 'symbol))",
+            "(defv not-int 'sym) (dotimes (n not-int))",
+            "(dotimes (n :keyword))",
+            "(dotimes (n '(1 2)))",
+            "(dotimes (n {}))",
+            "(dotimes (n #()))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -215,7 +220,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(dolist)",
+            "(dotimes)",
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

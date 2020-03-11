@@ -120,6 +120,20 @@ mod tests {
     }
 
     #[test]
+    fn returns_generic_execution_error_when_condition_evaluated_to_not_a_boolean() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(while 1 1)",
+        );
+
+        assertion::assert_results_are_generic_execution_errors(
+            &mut interpreter,
+            code_vector
+        )
+    }
+
+    #[test]
     fn returns_invalid_argument_count_when_was_called_with_invalid_argument_count() {
         let mut interpreter = Interpreter::new();
 
