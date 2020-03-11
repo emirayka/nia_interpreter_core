@@ -29,6 +29,7 @@ mod not;
 mod rem;
 mod sub;
 mod sum;
+mod _type;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
@@ -66,6 +67,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("dec", dec::dec),
         ("inc", inc::inc),
         ("eval", eval::eval),
+        ("type", _type::_type),
     );
 
     for (name, func) in pairs {
