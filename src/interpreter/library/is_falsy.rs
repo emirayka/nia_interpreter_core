@@ -9,6 +9,13 @@ pub fn is_falsy(
 ) -> Result<bool, Error> {
     match value {
         Value::Boolean(false) => Ok(true),
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(
+                symbol_id
+            )?;
+
+            Ok(symbol.is_nil())
+        },
         _ => Ok(false)
     }
 }
@@ -22,18 +29,18 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
+            ("0", false),
             ("1", false),
             ("1.1", false),
             ("#t", false),
+            ("\"\"", false),
             ("\"string\"", false),
             ("'symbol", false),
             (":keyword", false),
             ("'(1 2)", false),
             ("{}", false),
+            ("{:a 1}", false),
             ("#()", false),
-            ("0", false),
-            ("'()", false),
-            ("nil", false),
         );
 
         for (code, expected) in pairs {
@@ -50,6 +57,8 @@ mod tests {
 
         let pairs = vec!(
             ("#f", true),
+            ("'()", true),
+            ("nil", true),
         );
 
         for (code, expected) in pairs {

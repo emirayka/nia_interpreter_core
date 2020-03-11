@@ -66,7 +66,9 @@ pub fn value_to_string(
                 result.push_str(" ");
             }
 
-            result.remove(result.len() - 1);
+            if result.len() > 1 {
+                result.remove(result.len() - 1);
+            }
             result.push_str("}");
 
             Ok(result)
@@ -103,6 +105,7 @@ mod tests {
             ("'symbol",                 "symbol"),
             (":keyword",                ":keyword"),
             ("'(a b c)",                "(a b c)"),
+            ("{}",                      "{}"),
             ("{:key 'value}",           "{:key value}"),
             ("#(+ %1 %2)",              "<function>"),
             ("(flookup 'flookup)",      "<builtin-function>"),

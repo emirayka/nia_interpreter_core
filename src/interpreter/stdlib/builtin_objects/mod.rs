@@ -9,6 +9,7 @@ mod logic;
 mod math;
 mod object;
 mod string;
+mod to;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     func::infect(interpreter)?;
@@ -19,6 +20,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     math::infect(interpreter)?;
     object::infect(interpreter)?;
     string::infect(interpreter)?;
+    to::infect(interpreter)?;
 
     Ok(())
 }

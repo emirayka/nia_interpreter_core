@@ -9,6 +9,13 @@ pub fn is_truthy(
 ) -> Result<bool, Error> {
     match value {
         Value::Boolean(false) => Ok(false),
+        Value::Symbol(symbol_id) => {
+            let symbol = interpreter.get_symbol(
+                symbol_id
+            )?;
+
+            Ok(!symbol.is_nil())
+        },
         _ => Ok(true)
     }
 }
@@ -22,18 +29,18 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
+            ("0", true),
             ("1", true),
             ("1.1", true),
             ("#t", true),
+            ("\"\"", true),
             ("\"string\"", true),
             ("'symbol", true),
             (":keyword", true),
             ("'(1 2)", true),
             ("{}", true),
+            ("{:a 1}", true),
             ("#()", true),
-            ("0", true),
-            ("'()", true),
-            ("nil", true),
         );
 
         for (code, expected) in pairs {
@@ -50,6 +57,8 @@ mod tests {
 
         let pairs = vec!(
             ("#f", false),
+            ("'()", false),
+            ("nil", false),
         );
 
         for (code, expected) in pairs {
