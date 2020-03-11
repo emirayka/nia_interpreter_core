@@ -38,6 +38,7 @@ pub struct Interpreter {
     context: Context,
     exclusive_nil: SymbolId,
     exclusive_nil_value: Value,
+    internal_functions: HashMap<String, FunctionId>,
     root_environment: EnvironmentId,
 }
 
@@ -56,8 +57,9 @@ impl Interpreter {
         let context = Context::new();
         let exclusive_nil = symbol_arena.gensym("saika");
         let exclusive_nil_value = Value::Symbol(exclusive_nil);
+        let internal_functions = HashMap::new();
 
-        Interpreter {
+        let mut interpreter = Interpreter {
             environment_arena,
             string_arena,
             keyword_arena,
@@ -69,8 +71,45 @@ impl Interpreter {
             context,
             exclusive_nil,
             exclusive_nil_value,
+            internal_functions,
             root_environment,
-        }
+        };
+
+        // nil
+        let nil_value = interpreter.intern_nil_symbol_value();
+        let nil_symbol_id = nil_value.as_symbol();
+
+        interpreter.define_variable(
+            root_environment,
+            nil_symbol_id,
+            nil_value
+        ).expect("Cannot define `nil' symbol");
+
+        // break
+        let break_function = Function::Builtin(BuiltinFunction::new(
+            library::_break
+        ));
+        let break_function_id = interpreter.register_function(
+            break_function
+        );
+        interpreter.internal_functions.insert(
+            String::from("break"),
+            break_function_id
+        );
+
+        // continue
+        let continue_function = Function::Builtin(BuiltinFunction::new(
+            library::_continue
+        ));
+        let continue_function_id = interpreter.register_function(
+            continue_function
+        );
+        interpreter.internal_functions.insert(
+            String::from("continue"),
+            continue_function_id
+        );
+
+        interpreter
     }
 
     pub fn new() -> Interpreter {
@@ -421,6 +460,15 @@ impl Interpreter {
     pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
         self.function_arena
             .get_function(function_id)
+    }
+
+    pub fn get_internal_function(&self, name: &str) -> Result<FunctionId, Error> {
+        match self.internal_functions.get(name) {
+            Some(function_id) => Ok(*function_id),
+            _ => self.make_failure(
+                format!("Cannot find internal function: {}", name)
+            ).into_result()
+        }
     }
 }
 

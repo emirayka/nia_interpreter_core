@@ -12,7 +12,7 @@ pub fn progn(
     library::execute_forms(
         interpreter,
         environment,
-        values
+        &values
     )
 }
 

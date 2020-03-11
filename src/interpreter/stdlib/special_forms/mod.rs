@@ -8,6 +8,7 @@ mod cond;
 mod quote;
 mod define_variable;
 mod define_function;
+mod dolist;
 mod function;
 mod set;
 mod fset;
@@ -23,6 +24,7 @@ mod progn;
 mod block;
 mod throw;
 mod _try;
+mod _while;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, SpecialFormFunctionType)> = vec!(
@@ -31,8 +33,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("quote", quote::quote),
         ("define-variable", define_variable::define_variable),
         ("define-function", define_function::define_function),
+        ("dolist", dolist::dolist),
         ("function", function::function),
-        ("set!", set::set),
         ("fset!", fset:: fset),
         ("let", _let::_let),
         ("let*", let_star::let_star),
@@ -43,9 +45,11 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("mlet*", mlet_star::mlet_star),
         ("or", or::or),
         ("progn", progn::progn),
+        ("set!", set::set),
         ("block", block::block),
         ("throw", throw::throw),
         ("try", _try::_try),
+        ("while", _while::_while),
     );
 
     for (name, func) in pairs {

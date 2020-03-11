@@ -14,7 +14,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     infect!(
         interpreter,
 
-        nil,
         defv,
         defn,
         defm,
@@ -29,36 +28,8 @@ mod nil {
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-        let root = interpreter.get_root_environment();
-        let nil_value = interpreter.intern_nil_symbol_value();
-
-        if let Value::Symbol(symbol_id) = nil_value {
-            interpreter.define_variable(root, symbol_id, nil_value)?;
-        } else {
-            panic!()
-        }
 
         Ok(())
-    }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use crate::interpreter::library::assertion;
-
-        #[test]
-        fn defined_to_nil() {
-            let mut interpreter = Interpreter::new();
-
-            let pairs = vec!(
-                ("nil", "'()")
-            );
-
-            assertion::assert_results_are_equal(
-                &mut interpreter,
-                pairs
-            );
-        }
     }
 }
 

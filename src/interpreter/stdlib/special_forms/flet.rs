@@ -165,7 +165,7 @@ pub fn flet(
     library::execute_forms(
         interpreter,
         function_definition_environment,
-        forms
+        &forms
     )
 }
 

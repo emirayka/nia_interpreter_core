@@ -6,12 +6,12 @@ use crate::interpreter::error::Error;
 pub fn execute_forms(
     interpreter: &mut Interpreter,
     execution_environment: EnvironmentId,
-    forms: Vec<Value>
+    forms: &Vec<Value>
 ) -> Result<Value, Error> {
     let mut last_result = None;
 
     for form in forms {
-        let result = interpreter.execute_value(execution_environment, form)?;
+        let result = interpreter.execute_value(execution_environment, *form)?;
         last_result = Some(result);
     }
 
@@ -48,7 +48,7 @@ mod tests {
         let result = execute_forms(
             &mut interpreter,
             root_env,
-            forms
+            &forms
         );
 
         assert_eq!(Value::Integer(10), result.unwrap());
@@ -69,7 +69,7 @@ mod tests {
         let result = execute_forms(
             &mut interpreter,
             root_env,
-            forms
+            &forms
         );
 
         assertion::assert_is_error(&result);

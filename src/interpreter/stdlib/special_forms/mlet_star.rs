@@ -42,7 +42,7 @@ pub fn mlet_star(
     library::execute_forms(
         interpreter,
         macro_definition_environment,
-        forms
+        &forms
     )
 }
 

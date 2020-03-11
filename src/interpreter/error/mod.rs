@@ -1,6 +1,6 @@
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
-pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse";
+pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse-error";
 pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
 pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
 pub const SYMBOL_NAME_ZERO_DIVISION_ERROR: &'static str = "zero-division-error";
@@ -9,7 +9,9 @@ pub const SYMBOL_NAME_INVALID_CONS_ERROR: &'static str = "invalid-cons-error";
 pub const SYMBOL_NAME_INVALID_ARGUMENT_ERROR: &'static str = "invalid-argument-error";
 pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR: &'static str = "invalid-argument-count-error";
 
-pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion";
+pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion-error";
+pub const SYMBOL_NAME_BREAK_ERROR: &'static str = "break-error";
+pub const SYMBOL_NAME_CONTINUE_ERROR: &'static str = "continue-error";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ErrorKind {
@@ -26,7 +28,10 @@ pub enum ErrorKind {
 
     InvalidArgument,
     InvalidArgumentCount,
+
     Assertion,
+    Break,
+    Continue,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -228,6 +233,24 @@ impl Error {
             ErrorKind::Assertion,
             message,
             String::from(SYMBOL_NAME_ASSERTION_ERROR)
+        )
+    }
+
+    pub fn break_error() -> Error {
+        Error::from(
+            None,
+            ErrorKind::Break,
+            "",
+            String::from(SYMBOL_NAME_BREAK_ERROR)
+        )
+    }
+
+    pub fn continue_error() -> Error {
+        Error::from(
+            None,
+            ErrorKind::Continue,
+            "",
+            String::from(SYMBOL_NAME_CONTINUE_ERROR)
         )
     }
 }

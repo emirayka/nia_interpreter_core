@@ -68,7 +68,7 @@ pub fn _match(
             library::execute_forms(
                 interpreter,
                 environment_id,
-                code_to_execute.unwrap()
+                &code_to_execute.unwrap()
             )
         },
         _ => interpreter.make_generic_execution_error(

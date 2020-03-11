@@ -163,7 +163,7 @@ pub fn _let(
     library::execute_forms(
         interpreter,
         execution_environment,
-        forms
+        &forms
     )
 }
 

@@ -124,7 +124,7 @@ pub fn _try(
                             library::execute_forms(
                                 interpreter,
                                 environment_id,
-                                values
+                                &values
                             )
                         },
                         _ => unreachable!()

@@ -12,7 +12,6 @@ use crate::interpreter::interpreter::Interpreter;
 // todo: Add better error handling
 // todo: Write stdlib
 // todo: Implement keyboard listening
-// todo: check tests on arithmetic operations
 // todo: binary plugins
 // todo: ordinary plugins
 // todo: file system

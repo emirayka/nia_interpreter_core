@@ -53,4 +53,11 @@ impl Value {
             _ => panic!()
         }
     }
+
+    pub fn as_symbol(&self) -> SymbolId {
+        match self {
+            Value::Symbol(symbol_id) => *symbol_id,
+            _ => panic!()
+        }
+    }
 }

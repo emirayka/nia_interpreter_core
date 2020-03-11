@@ -42,7 +42,7 @@ pub fn let_star(
     library::execute_forms(
         interpreter,
         execution_environment,
-        forms
+        &forms
     )
 }
 

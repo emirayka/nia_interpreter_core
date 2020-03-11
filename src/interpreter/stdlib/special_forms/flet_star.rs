@@ -42,7 +42,7 @@ pub fn flet_star(
     library::execute_forms(
         interpreter,
         function_definition_environment,
-        forms
+        &forms
     )
 }
 
