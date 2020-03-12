@@ -11,7 +11,7 @@ pub fn concat(
 ) -> Result<Value, Error> {
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `string:concat' takes two arguments exactly."
+            "Built-in function `string:concat' one argument at least."
         ).into_result();
     }
 
