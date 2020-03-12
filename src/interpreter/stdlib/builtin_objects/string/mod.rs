@@ -8,7 +8,6 @@ use crate::interpreter::function::BuiltinFunctionType;
 mod compare;
 mod concat;
 mod contains;
-mod construct;
 mod equal_question;
 mod find;
 mod format;
@@ -34,7 +33,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("compare", compare::compare),
         ("concat", concat::concat),
-        ("construct", construct::construct),
         ("contains?", contains::contains),
         ("equal?", equal_question::equal_question),
         ("find", find::find),

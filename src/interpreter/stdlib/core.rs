@@ -18,6 +18,10 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         defn,
         defm,
 
+        _if,
+        when,
+        unless,
+
         empty
     );
 
@@ -138,6 +142,103 @@ mod defm {
                 ("(defm g (#keys b) b) (g :b 1)", "1"),
 
                 ("(defm h (a b) (list 'cons a b)) (h 'a 'b)", "(cons 'a 'b)")
+            );
+
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
+    }
+}
+
+mod _if {
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute(
+            "(define-function if (function (macro (condition then-clause else-clause) (list 'cond (list condition then-clause) (list #t else-clause)))))"
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::interpreter::library::assertion;
+
+        #[test]
+        fn works_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec!(
+                ("(defv a 1) (defv b 2) (list (if #t a b) (if #f a b))", "'(1 2)"),
+                ("(defv c 0) (defv d 0) (list (if #t (set! c (inc c)) (set! d (inc d))) (if #f (set! c (inc c)) (set! d (inc d)))) (list c d)", "'(1 1)"),
+            );
+
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
+    }
+}
+
+mod when {
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute(
+            "(define-function when (function (macro (condition then-clause) (list 'cond (list condition then-clause)))))"
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::interpreter::library::assertion;
+
+        #[test]
+        fn works_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec!(
+                ("(defv a 0) (defv b 0) (list (when #t (set! a (inc a))) (when #f (set! b (inc b)))) (list a b)", "'(1 0)"),
+            );
+
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
+    }
+}
+
+mod unless {
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute(
+            "(define-function unless (function (macro (condition else-clause) (list 'cond (list (list 'not condition) else-clause)))))"
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::interpreter::library::assertion;
+
+        #[test]
+        fn works_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec!(
+                ("(defv a 0) (defv b 0) (list (unless #t (set! a (inc a))) (unless #f (set! b (inc b)))) (list a b)", "'(0 1)"),
             );
 
             assertion::assert_results_are_equal(

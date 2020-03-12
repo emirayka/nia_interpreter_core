@@ -27,6 +27,7 @@ mod neq_question;
 mod nequal_question;
 mod not;
 mod rem;
+mod string;
 mod sub;
 mod sum;
 mod _type;
@@ -38,6 +39,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("cdr", cdr::cdr),
         ("cons", cons::cons),
         ("list", list::list),
+        ("string", string::string),
 
         ("flookup", flookup::flookup),
         ("gensym", gensym::gensym),
