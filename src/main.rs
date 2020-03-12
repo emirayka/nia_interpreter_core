@@ -1,8 +1,8 @@
+extern crate rand;
+extern crate nom;
+
 pub mod parser;
 pub mod interpreter;
-
-//#[macro_use]
-extern crate nom;
 
 use std::io::{self, BufRead, Write};
 

@@ -9,6 +9,7 @@ mod list;
 mod logic;
 mod math;
 mod object;
+mod rand;
 mod string;
 mod to;
 
@@ -21,6 +22,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     logic::infect(interpreter)?;
     math::infect(interpreter)?;
     object::infect(interpreter)?;
+    rand::infect(interpreter)?;
     string::infect(interpreter)?;
     to::infect(interpreter)?;
 
