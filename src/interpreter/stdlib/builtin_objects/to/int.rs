@@ -3,14 +3,14 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn integer(
+pub fn int(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `to:integer' takes one argument exactly."
+            "Built-in function `to:int' takes one argument exactly."
         ).into_result();
     }
 
@@ -39,11 +39,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(to:integer 1)", Value::Integer(1)),
-            ("(to:integer 1.1)", Value::Integer(1)),
-            ("(to:integer 1.9)", Value::Integer(1)),
-            ("(to:integer #t)", Value::Integer(1)),
-            ("(to:integer #f)", Value::Integer(0)),
+            ("(to:int 1)", Value::Integer(1)),
+            ("(to:int 1.1)", Value::Integer(1)),
+            ("(to:int 1.9)", Value::Integer(1)),
+            ("(to:int #t)", Value::Integer(1)),
+            ("(to:int #f)", Value::Integer(0)),
         );
 
         assertion::assert_results_are_correct(
@@ -57,12 +57,12 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            "(to:integer \"string\")",
-            "(to:integer 'symbol)",
-            "(to:integer :keyword)",
-            "(to:integer '(1 2 3))",
-            "(to:integer {})",
-            "(to:integer #())",
+            "(to:int \"string\")",
+            "(to:int 'symbol)",
+            "(to:int :keyword)",
+            "(to:int '(1 2 3))",
+            "(to:int {})",
+            "(to:int #())",
         );
 
         assertion::assert_results_are_generic_execution_errors(
@@ -76,8 +76,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(to:integer)",
-            "(to:integer 1 2)"
+            "(to:int)",
+            "(to:int 1 2)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

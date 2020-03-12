@@ -5,7 +5,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::library::infect::infect_object_builtin_function;
 use crate::interpreter::function::BuiltinFunctionType;
 
-mod integer;
+mod int;
 mod float;
 mod boolean;
 mod string;
@@ -19,7 +19,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("boolean", boolean::boolean),
         ("float", float::float),
-        ("integer", integer::integer),
+        ("int", int::int),
         ("keyword", keyword::keyword),
         ("string", string::string),
         ("symbol", symbol::symbol),
