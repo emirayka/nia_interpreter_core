@@ -1,6 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
+mod bit;
 mod func;
 mod is;
 mod keyboard;
@@ -12,6 +13,7 @@ mod string;
 mod to;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+    bit::infect(interpreter)?;
     func::infect(interpreter)?;
     is::infect(interpreter)?;
     keyboard::infect(interpreter)?;
