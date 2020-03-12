@@ -1,4 +1,3 @@
-use crate::interpreter::cons::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
@@ -22,7 +21,6 @@ pub fn is_falsy(
 
 mod tests {
     use super::*;
-    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_false_when_value_is_truthy() {

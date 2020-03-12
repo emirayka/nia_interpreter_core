@@ -1,6 +1,5 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
-use crate::interpreter::value::Value;
 
 mod special_forms;
 mod builtin_functions;

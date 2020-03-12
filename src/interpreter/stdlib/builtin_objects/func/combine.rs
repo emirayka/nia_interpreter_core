@@ -6,7 +6,6 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::function::{
     Arguments,
-    FunctionId,
 };
 
 use crate::interpreter::library;

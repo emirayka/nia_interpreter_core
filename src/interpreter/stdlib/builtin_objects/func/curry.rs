@@ -1,13 +1,10 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::function::{
-    Function,
     FunctionId,
 };
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
-
-use crate::interpreter::library;
 
 fn curry_interpreted_function(
     interpreter: &mut Interpreter,

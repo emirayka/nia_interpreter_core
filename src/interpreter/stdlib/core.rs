@@ -1,4 +1,3 @@
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
@@ -26,15 +25,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     );
 
     Ok(())
-}
-
-mod nil {
-    use super::*;
-
-    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-
-        Ok(())
-    }
 }
 
 mod defv {

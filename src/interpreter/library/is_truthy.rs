@@ -1,5 +1,4 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::cons::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
@@ -22,7 +21,6 @@ pub fn is_truthy(
 
 mod tests {
     use super::*;
-    use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_true_when_value_is_truthy() {

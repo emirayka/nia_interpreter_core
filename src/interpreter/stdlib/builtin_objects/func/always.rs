@@ -5,12 +5,9 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::function::{
     Arguments,
-    FunctionId,
     Function,
     InterpretedFunction,
 };
-
-use crate::interpreter::library;
 
 pub fn always(
     interpreter: &mut Interpreter,

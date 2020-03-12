@@ -3,8 +3,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-use crate::interpreter::library;
-
 pub fn keyword(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,

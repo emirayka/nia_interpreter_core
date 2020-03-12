@@ -1,4 +1,3 @@
-use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;

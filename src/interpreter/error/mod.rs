@@ -99,7 +99,7 @@ impl Error {
             error_kind: ErrorKind::Failure,
             message,
             caused_by: None,
-            symbol_name: String::from("failure"),
+            symbol_name: String::from(SYMBOL_NAME_FAILURE),
         }
     }
 

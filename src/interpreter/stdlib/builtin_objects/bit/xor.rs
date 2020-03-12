@@ -7,7 +7,7 @@ use crate::interpreter::library;
 
 pub fn xor(
     interpreter: &mut Interpreter,
-    environment_id: EnvironmentId,
+    _environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
