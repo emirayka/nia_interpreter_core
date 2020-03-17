@@ -2,11 +2,11 @@ use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn read_as_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
+pub fn read_as_positive_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
     match value {
-        Value::Integer(int) => Ok(int),
+        Value::Integer(int) if int > 0 => Ok(int),
         _ => interpreter.make_invalid_argument_error(
-            "Expected int."
+            "Expected positive int."
         ).into_result()
     }
 }
@@ -21,18 +21,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!(
-            (Value::Integer(-3), -3),
-            (Value::Integer(-2), -2),
-            (Value::Integer(-1), -1),
-            (Value::Integer(0), 0),
             (Value::Integer(1), 1),
             (Value::Integer(2), 2),
             (Value::Integer(3), 3),
+            (Value::Integer(4), 4),
         );
 
         for spec in specs {
             let expected = spec.1;
-            let result = read_as_i64(
+            let result = read_as_positive_i64(
                 &mut interpreter,
                 spec.0
             ).unwrap();
@@ -42,10 +39,12 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_when_not_a_string_value_were_passed() {
+    fn returns_invalid_argument_when_not_a_positive_int_value_was_passed() {
         let mut interpreter = Interpreter::new();
 
         let not_string_values = vec!(
+            Value::Integer(-1),
+            Value::Integer(0),
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
@@ -58,7 +57,7 @@ mod tests {
         );
 
         for not_string_value in not_string_values {
-            let result = read_as_i64(
+            let result = read_as_positive_i64(
                 &mut interpreter,
                 not_string_value
             );

@@ -8,6 +8,7 @@ use crate::interpreter::function::BuiltinFunctionType;
 mod all_question;
 mod any_question;
 mod append;
+mod aperture;
 mod contains_question;
 mod filter;
 mod foldl;
@@ -38,6 +39,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("all?", all_question::all_question),
         ("any?", any_question::any_question),
         ("append", append::append),
+        ("aperture", aperture::aperture),
         ("contains?", contains_question::contains),
         ("filter", filter::filter),
         ("fold", fold::fold),
