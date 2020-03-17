@@ -150,6 +150,8 @@ pub fn assert_results_are_errors(
     symbol_name: &str
 ) {
     for code in code_vector {
+        println!("{}", code);
+
         let error = interpreter.execute(code).err().unwrap();
         let total_cause = error.get_total_cause();
 

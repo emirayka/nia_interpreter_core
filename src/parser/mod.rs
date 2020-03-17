@@ -240,6 +240,11 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         delimited_parser,
     ));
 
+    let parser = terminated(
+        parser,
+        multispace0
+    );
+
     parser(s)
 }
 
@@ -832,6 +837,36 @@ mod tests {
 
         assert_is_ok!(parse_code("#() #()"));
         assert_is_err!(parse_code("#()#()"));
+    }
+
+    #[test]
+    fn respects_spaces_at_the_beginning_of_the_input() {
+        assert_is_ok!(parse_code(" \t\r\n1"));
+        assert_is_ok!(parse_code(" \t\r\n1.1"));
+        assert_is_ok!(parse_code(" \t\r\n#t"));
+        assert_is_ok!(parse_code(" \t\r\n#f"));
+        assert_is_ok!(parse_code(" \t\r\n\"string\""));
+        assert_is_ok!(parse_code(" \t\r\n:keyword"));
+        assert_is_ok!(parse_code(" \t\r\nsymbol"));
+        assert_is_ok!(parse_code(" \t\r\n'(1 2 3)"));
+        assert_is_ok!(parse_code(" \t\r\n{}"));
+        assert_is_ok!(parse_code(" \t\r\n#{}"));
+        assert_is_ok!(parse_code(" \t\r\n#()"));
+    }
+
+    #[test]
+    fn respects_spaces_at_the_end_of_the_input() {
+        assert_is_ok!(parse_code("1 \t\r\n"));
+        assert_is_ok!(parse_code("1.1 \t\r\n"));
+        assert_is_ok!(parse_code("#t \t\r\n"));
+        assert_is_ok!(parse_code("#f \t\r\n"));
+        assert_is_ok!(parse_code("\"string\" \t\r\n"));
+        assert_is_ok!(parse_code(":keyword \t\r\n"));
+        assert_is_ok!(parse_code("symbol \t\r\n"));
+        assert_is_ok!(parse_code("'(1 2 3) \t\r\n"));
+        assert_is_ok!(parse_code("{} \t\r\n"));
+        assert_is_ok!(parse_code("#{} \t\r\n"));
+        assert_is_ok!(parse_code("#() \t\r\n"));
     }
 
     #[test]

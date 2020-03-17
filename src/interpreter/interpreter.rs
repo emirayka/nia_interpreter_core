@@ -117,7 +117,7 @@ impl Interpreter {
 
         match infect_stdlib(&mut interpreter) {
             Ok(()) => interpreter,
-            Err(_error) => panic!("Cannot construct interpreter")
+            Err(error) => panic!("Cannot construct interpreter: {:?}", error)
         }
     }
 }
@@ -1196,7 +1196,10 @@ impl Interpreter {
         // first step: parse code
         let code = parse_code(code)
             .map(|result| result.1)
-            .map_err(|_| self.make_parse_error("Error while parsing code."))?;
+            .map_err(|err| self.make_parse_error(
+                format!("Error while parsing code: {:?}", err)
+                    .as_str()
+            ))?;
 
         // second step: read forms
         let values = read_elements(self, code.get_elements())?;

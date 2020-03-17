@@ -18,6 +18,7 @@ use nom::{
     },
     error::ErrorKind
 };
+use nom::sequence::delimited;
 
 #[derive(Debug)]
 pub struct StringElement {
@@ -60,12 +61,10 @@ pub fn parse_string_element(s: &str) -> Result<(&str, StringElement), nom::Err<(
         |chars: Vec<char>| Ok(chars.iter().cloned().collect::<String>())
     );
 
-    let parse_string = preceded(
+    let parse_string = delimited(
         tag("\""),
-        terminated(
-            parse_inner_characters,
-            tag("\"")
-        )
+        parse_inner_characters,
+        tag("\"")
     );
 
     let parse_string_element = map_res(parse_string, make_string_element);
@@ -90,15 +89,4 @@ mod tests {
         assert_eq!(Ok(("", StringElement{value: "\r".to_string()})), parse_string_element(r#""\r""#));
         assert_eq!(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse_string_element(r#""knock\"knockknock""#));
     }
-
-//    #[test]
-//    fn makes_terminated_trash_symbols_incorrect() {
-//        assert!(parse_string_element(r#""a"1"#).is_err());
-//        assert!(parse_string_element(r#""a"1.0"#).is_err());
-//        assert!(parse_string_element(r##""a"#t"##).is_err());
-//        assert!(parse_string_element(r##""a"#f"##).is_err());
-//        assert!(parse_string_element(r#""a"cutesym"#).is_err());
-//        assert!(parse_string_element(r#""a":cutekey"#).is_err());
-//        assert!(parse_string_element(r#""a""b""#).is_err());
-//    }
 }
