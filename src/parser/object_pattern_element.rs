@@ -1,7 +1,7 @@
 use crate::parser::keyword_element::{KeywordElement, parse_keyword_element};
 use nom::sequence::{terminated, preceded};
 use nom::bytes::complete::tag;
-use nom::character::complete::space0;
+use nom::character::complete::multispace0;
 use nom::multi::many0;
 use nom::combinator::{map_res};
 
@@ -61,11 +61,11 @@ fn make_object_pattern_element(values: Vec<KeywordElement>) -> Result<ObjectPatt
 
 pub fn parse_object_pattern_element(s: &str) -> Result<(&str, ObjectPatternElement), nom::Err<(&str, nom::error::ErrorKind)>> {
     let parse_pairs = many0(
-        preceded(space0, parse_keyword_element)
+        preceded(multispace0, parse_keyword_element)
     );
 
-    let opening_brace = terminated(tag("#{"), space0);
-    let closing_brace = preceded(space0, tag("}"));
+    let opening_brace = terminated(tag("#{"), multispace0);
+    let closing_brace = preceded(multispace0, tag("}"));
 
     let parse_object = preceded(
         opening_brace,
@@ -104,10 +104,36 @@ mod tests {
 
     #[test]
     fn parses_spaces_are_processed_correctly() {
-        assert_parsed_correctly(r#"#{:a :test}"#);
-        assert_parsed_correctly(r#"#{ :a :test}"#);
-        assert_parsed_correctly(r#"#{:a :test }"#);
-        assert_parsed_correctly(r#"#{ :a :test }"#);
+        let specs = vec!(
+            "#{:a :test}",
+            "#{ :a :test}",
+            "#{:a :test }",
+            "#{ :a :test }",
+
+            "#{:a\t:test}",
+            "#{\t:a :test}",
+            "#{:a\t:test\t}",
+            "#{\t:a :test\t}",
+
+            "#{:a\n:test}",
+            "#{\n:a\n:test}",
+            "#{:a\n:test\n}",
+            "#{\n:a\n:test\n}",
+
+            "#{:a\r:test}",
+            "#{\r:a\r:test}",
+            "#{:a\r:test\r}",
+            "#{\r:a\r:test\r}",
+
+            "#{:a\r\n:test}",
+            "#{\r\n:a\r\n:test}",
+            "#{:a\r\n:test\r\n}",
+            "#{\r\n:a\r\n:test\r\n}",
+        );
+
+        for spec in specs {
+            assert_parsed_correctly(spec);
+        }
     }
 
     #[test]

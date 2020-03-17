@@ -773,73 +773,85 @@ impl Interpreter {
             return Ok(());
         }
 
-        // key arguments
-        let key_values = &values[current_argument..];
+        let values = &values[current_argument..];
         let mut current_argument = 0;
+        // key arguments
+        if arguments.get_key_arguments().len() != 0 {
 
-        if key_values.len() % 2 != 0 {
-            return self.make_generic_execution_error(
-                "Invalid usage of key arguments."
-            ).into_result()
-        }
-
-        for key_argument in arguments.get_key_arguments() {
-            let variable_symbol_id = self.intern(key_argument.get_name());
-            let value = self.exclusive_nil_value;
-
-            self.define_variable(execution_environment_id, variable_symbol_id, value)?;
-        }
-
-        loop {
-            if current_argument >= key_values.len() {
-                break;
+            if values.len() % 2 != 0 {
+                return self.make_generic_execution_error(
+                    "Invalid usage of key arguments."
+                ).into_result()
             }
 
-            let keyword = key_values[current_argument];
+            for key_argument in arguments.get_key_arguments() {
+                let variable_symbol_id = self.intern(key_argument.get_name());
+                let value = self.exclusive_nil_value;
 
-            let variable_symbol_id = if let Value::Keyword(keyword_id) = keyword {
-                let keyword = self.get_keyword(keyword_id)?;
+                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+            }
 
-                self.intern(keyword.get_name())
-            } else {
-                return self.make_generic_execution_error("")
-                    .into_result()
-            };
+            loop {
+                if current_argument >= values.len() {
+                    break;
+                }
 
-            let value = key_values[current_argument + 1];
+                let keyword = values[current_argument];
 
-            self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
+                let variable_symbol_id = if let Value::Keyword(keyword_id) = keyword {
+                    let keyword = self.get_keyword(keyword_id)?;
 
-            current_argument += 2;
-        }
-
-        for key_argument in arguments.get_key_arguments() {
-            let variable_symbol_id = self.intern(key_argument.get_name());
-            let looked_up_variable = self.lookup_variable(execution_environment_id, variable_symbol_id)?;
-
-            if looked_up_variable == self.exclusive_nil_value {
-                let value = if let Some(default_value) = key_argument.get_default() {
-                    self.evaluate_value(execution_environment_id, default_value)?
+                    self.intern(keyword.get_name())
                 } else {
-                    self.intern_nil_symbol_value()
+                    return self.make_generic_execution_error("")
+                        .into_result()
                 };
+
+                let value = values[current_argument + 1];
 
                 self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
 
-                if let Some(provided_name) = key_argument.get_provided() {
-                    let variable_symbol_id = self.intern(provided_name);
-                    let value = Value::Boolean(false);
+                current_argument += 2;
+            }
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, value)?;
-                }
-            } else {
-                if let Some(provided_name) = key_argument.get_provided() {
-                    let variable_symbol_id = self.intern(provided_name);
-                    let value = Value::Boolean(true);
+            for key_argument in arguments.get_key_arguments() {
+                let variable_symbol_id = self.intern(key_argument.get_name());
+                let looked_up_variable = self.lookup_variable(execution_environment_id, variable_symbol_id)?;
 
-                    self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                if looked_up_variable == self.exclusive_nil_value {
+                    let value = if let Some(default_value) = key_argument.get_default() {
+                        self.evaluate_value(execution_environment_id, default_value)?
+                    } else {
+                        self.intern_nil_symbol_value()
+                    };
+
+                    self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
+
+                    if let Some(provided_name) = key_argument.get_provided() {
+                        let variable_symbol_id = self.intern(provided_name);
+                        let value = Value::Boolean(false);
+
+                        self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                    }
+                } else {
+                    if let Some(provided_name) = key_argument.get_provided() {
+                        let variable_symbol_id = self.intern(provided_name);
+                        let value = Value::Boolean(true);
+
+                        self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                    }
                 }
             }
+        }
+
+        if values.len() > current_argument {
+            return self.make_generic_execution_error(
+                "Function was called with too many arguments."
+            ).into_result();
+        } else if values.len() < current_argument {
+            return self.make_generic_execution_error(
+                "Function was called with too little arguments."
+            ).into_result();
         }
 
         Ok(())
@@ -1298,7 +1310,24 @@ mod tests {
 
         #[test]
         pub fn executes_keyword_correctly() {
-            assert_execution_result_eq!(Value::Keyword(KeywordId::new(0)), r#":tas"#);
+            let mut interpreter = Interpreter::new();
+
+            let specs = vec!(
+                ":a",
+                ":b",
+                ":c",
+            );
+
+            for spec in specs {
+                let result = interpreter.execute(spec).unwrap();
+                let keyword_id = result.as_keyword();
+                let keyword = interpreter.get_keyword(keyword_id).unwrap();
+
+                let keyword_name = keyword.get_name();
+                let expected = &spec[1..];
+
+                assert_eq!(expected, keyword_name);
+            }
         }
 
         #[test]

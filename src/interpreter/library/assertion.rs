@@ -146,15 +146,20 @@ pub fn assert_results_are_correct(interpreter: &mut Interpreter, pairs: Vec<(&st
 pub fn assert_results_are_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>,
-    error_kind: ErrorKind
+    error_kind: ErrorKind,
+    symbol_name: &str
 ) {
     for code in code_vector {
-        println!("{}", code);
-
         let error = interpreter.execute(code).err().unwrap();
         let total_cause = error.get_total_cause();
 
-        assert_eq!(error_kind, total_cause.get_error_kind());
+        if total_cause.get_error_kind() == error_kind {
+            assert_eq!(symbol_name, total_cause.get_symbol_name());
+        } else if total_cause.get_error_kind() == ErrorKind::GenericError {
+            assert_eq!(symbol_name, total_cause.get_symbol_name());
+        } else {
+            panic!();
+        }
     }
 }
 
@@ -184,34 +189,58 @@ pub fn assert_results_are_generic_execution_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
 ) {
-    assert_results_are_errors(interpreter, code_vector, ErrorKind::GenericExecution)
+    assert_results_are_errors(
+        interpreter,
+        code_vector,
+        ErrorKind::GenericExecution,
+        SYMBOL_NAME_GENERIC_EXECUTION_ERROR
+    )
 }
-
 
 pub fn assert_results_are_invalid_argument_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
 ) {
-    assert_results_are_errors(interpreter, code_vector, ErrorKind::InvalidArgument)
+    assert_results_are_errors(
+        interpreter,
+        code_vector,
+        ErrorKind::InvalidArgument,
+        SYMBOL_NAME_INVALID_ARGUMENT_ERROR
+    )
 }
 
 pub fn assert_results_are_invalid_argument_count_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
 ) {
-    assert_results_are_errors(interpreter, code_vector, ErrorKind::InvalidArgumentCount)
+    assert_results_are_errors(
+        interpreter,
+        code_vector,
+        ErrorKind::InvalidArgumentCount,
+        SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR
+    )
 }
 
 pub fn assert_results_are_zero_division_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
 ) {
-    assert_results_are_errors(interpreter, code_vector, ErrorKind::ZeroDivision)
+    assert_results_are_errors(
+        interpreter,
+        code_vector,
+        ErrorKind::ZeroDivision,
+        SYMBOL_NAME_ZERO_DIVISION_ERROR
+    )
 }
 
 pub fn assert_results_are_overflow_errors(
     interpreter: &mut Interpreter,
     code_vector: Vec<&str>
 ) {
-    assert_results_are_errors(interpreter, code_vector, ErrorKind::Overflow)
+    assert_results_are_errors(
+        interpreter,
+        code_vector,
+        ErrorKind::Overflow,
+        SYMBOL_NAME_OVERFLOW_ERROR
+    )
 }

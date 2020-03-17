@@ -11,7 +11,7 @@ pub fn or(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     let values = values;
-    let mut last_value = Value::Boolean(false);
+    let mut last_result = Value::Boolean(false);
 
     for value in values {
         let result = interpreter.execute_value(environment, value)?;
@@ -20,10 +20,10 @@ pub fn or(
             return Ok(result)
         }
 
-        last_value = value;
+        last_result = result;
     }
 
-    Ok(last_value)
+    Ok(last_result)
 }
 
 #[cfg(test)]
@@ -37,6 +37,8 @@ mod tests {
 
         let pairs = vec!(
             ("(or)", "#f"),
+
+            ("(or (logic:and #f #t) (logic:and #f #f))", "#f"),
 
             ("(or 1)", "1"),
             ("(or 1.1)", "1.1"),

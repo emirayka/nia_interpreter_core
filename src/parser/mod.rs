@@ -27,8 +27,8 @@ use nom::{
         preceded,
     },
     character::complete::{
-        space0,
-        space1,
+        multispace0,
+        multispace1,
     },
 };
 
@@ -91,7 +91,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             integer_element::parse_integer_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -103,7 +103,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             float_element::parse_float_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -115,7 +115,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             boolean_element::parse_boolean_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -127,7 +127,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             short_lambda_element::parse_short_lambda_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -139,7 +139,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             symbol_element::parse_symbol_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -151,7 +151,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             keyword_element::parse_keyword_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -163,7 +163,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             string_element::parse_string_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -175,7 +175,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             s_expression_element::parse_s_expression_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("(")),
                 peek(tag("}")),
@@ -188,7 +188,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             object_element::parse_object_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -200,7 +200,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             object_pattern_element::parse_object_pattern_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -212,7 +212,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         terminated(
             delimited_symbols_element::parse_delimited_symbols_element,
             alt((
-                peek(space1),
+                peek(multispace1),
                 peek(tag(")")),
                 peek(tag("}")),
                 all_consuming(tag(""))
@@ -248,7 +248,7 @@ fn make_program(elements: Vec<Element>) -> Result<Code, String> {
 }
 
 pub fn parse_code(s: &str) -> Result<(&str, Code), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse = many0(preceded(space0, parse_element));
+    let parse = many0(preceded(multispace0, parse_element));
 
     let parse = map_res(parse, make_program);
 
@@ -379,6 +379,39 @@ mod tests {
 
         assert_code_eq!(vec!(Element::Integer(integer_element::IntegerElement::new(1))), "1");
         assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1t".to_string()))), "1t");
+    }
+
+    #[test]
+    fn respects_spaces() {
+        assert_is_ok!(parse_code("1 1"));
+        assert_is_ok!(parse_code("1\t1"));
+        assert_is_ok!(parse_code("1\r1"));
+        assert_is_ok!(parse_code("1\n1"));
+        assert_is_ok!(parse_code("1\r\n1"));
+
+        assert_is_ok!(parse_code("(1 1)"));
+        assert_is_ok!(parse_code("(1\t1)"));
+        assert_is_ok!(parse_code("(1\r1)"));
+        assert_is_ok!(parse_code("(1\n1)"));
+        assert_is_ok!(parse_code("(1\r\n1)"));
+
+        assert_is_ok!(parse_code("{:a  1}"));
+        assert_is_ok!(parse_code("{:a \t1}"));
+        assert_is_ok!(parse_code("{:a \r1}"));
+        assert_is_ok!(parse_code("{:a \n1}"));
+        assert_is_ok!(parse_code("{:a \r\n1}"));
+
+        assert_is_ok!(parse_code("#{:a  :b}"));
+        assert_is_ok!(parse_code("#{:a \t:b}"));
+        assert_is_ok!(parse_code("#{:a \r:b}"));
+        assert_is_ok!(parse_code("#{:a \n:b}"));
+        assert_is_ok!(parse_code("#{:a \r\n:b}"));
+
+        assert_is_ok!(parse_code("#(+ %1 %2)"));
+        assert_is_ok!(parse_code("#(+\t%1 %2)"));
+        assert_is_ok!(parse_code("#(+\r%1 %2)"));
+        assert_is_ok!(parse_code("#(+\n%1 %2)"));
+        assert_is_ok!(parse_code("#(+\r\n%1 %2)"));
     }
 
     #[test]

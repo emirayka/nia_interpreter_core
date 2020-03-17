@@ -1,6 +1,6 @@
 use nom::{
     character::complete::{
-        space0
+        multispace0
     },
     bytes::complete::tag,
     combinator::{
@@ -58,10 +58,10 @@ fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement,
 }
 
 pub fn parse_s_expression_element(s: &str) -> Result<(&str, SExpressionElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_expressions = many0(preceded(space0, parse_element));
+    let parse_expressions = many0(preceded(multispace0, parse_element));
 
-    let opening_brace = terminated(tag("("), space0);
-    let closing_brace = preceded(space0, tag(")"));
+    let opening_brace = terminated(tag("("), multispace0);
+    let closing_brace = preceded(multispace0, tag(")"));
 
     let parse_s_expression = preceded(
         opening_brace,
@@ -108,30 +108,42 @@ mod tests {
 
     #[test]
     fn spaces_are_processed_correctly() {
-        assert_s_expression_parsed_correctly(
-            vec!(
-                Element::Symbol(SymbolElement::new(String::from("test"))),
-            ),
-            r#"(test)"#
+        let specs = vec!(
+            ("test", "test", "(test test)"),
+            ("test", "test", "( test test)"),
+            ("test", "test", "(test test )"),
+            ("test", "test", "( test test )"),
+
+            ("test", "test", "(test\ttest)"),
+            ("test", "test", "(\ttest\ttest)"),
+            ("test", "test", "(test\ttest\t)"),
+            ("test", "test", "(\ttest\ttest\t)"),
+
+            ("test", "test", "(test\rtest)"),
+            ("test", "test", "(\rtest\rtest)"),
+            ("test", "test", "(test\rtest\r)"),
+            ("test", "test", "(\rtest\rtest\r)"),
+
+            ("test", "test", "(test\ntest)"),
+            ("test", "test", "(\ntest\ntest)"),
+            ("test", "test", "(test\ntest\n)"),
+            ("test", "test", "(\ntest\ntest\n)"),
+
+            ("test", "test", "(test\r\ntest)"),
+            ("test", "test", "(\r\ntest\r\ntest)"),
+            ("test", "test", "(test\r\ntest\r\n)"),
+            ("test", "test", "(\r\ntest\r\ntest\r\n)"),
         );
-        assert_s_expression_parsed_correctly(
-            vec!(
-                Element::Symbol(SymbolElement::new(String::from("test"))),
-            ),
-            r#"( test)"#
-        );
-        assert_s_expression_parsed_correctly(
-            vec!(
-                Element::Symbol(SymbolElement::new(String::from("test"))),
-            ),
-            r#"(test )"#
-        );
-        assert_s_expression_parsed_correctly(
-            vec!(
-                Element::Symbol(SymbolElement::new(String::from("test"))),
-            ),
-            r#"( test )"#
-        );
+
+        for spec in specs {
+            assert_s_expression_parsed_correctly(
+                vec!(
+                    Element::Symbol(SymbolElement::new(String::from(spec.0))),
+                    Element::Symbol(SymbolElement::new(String::from(spec.1))),
+                ),
+                spec.2
+            );
+        }
     }
 
     #[test]

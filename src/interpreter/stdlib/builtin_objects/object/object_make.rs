@@ -92,9 +92,9 @@ mod tests {
         assert_object_has_values!(
             vec!(
                 ("a", Value::Integer(1)),
-                ("b", Value::String(StringId::new(0))),
+                ("b", Value::Float(2.2)),
             ),
-            "(object:make :a 1 :b \"string\")"
+            "(object:make :a 1 :b 2.2)"
          );
     }
 

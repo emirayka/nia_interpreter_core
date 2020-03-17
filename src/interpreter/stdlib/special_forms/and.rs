@@ -11,7 +11,7 @@ pub fn and(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     let values = values;
-    let mut last_value = Value::Boolean(true);
+    let mut last_result = Value::Boolean(true);
 
     for value in values {
         let result = interpreter.execute_value(environment, value)?;
@@ -20,10 +20,10 @@ pub fn and(
             return Ok(result)
         }
 
-        last_value = result;
+        last_result = result;
     }
 
-    Ok(last_value)
+    Ok(last_result)
 }
 
 #[cfg(test)]
@@ -37,6 +37,8 @@ mod tests {
 
         let pairs = vec!(
             ("(and)", "#t"),
+
+            ("(and (logic:and #t #t) (logic:and #t #t))", "#t"),
 
             ("(and 1)", "1"),
             ("(and 1.1)", "1.1"),

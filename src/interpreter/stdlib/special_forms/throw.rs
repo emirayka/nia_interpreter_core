@@ -83,6 +83,20 @@ mod tests {
     }
 
     #[test]
+    fn works_inside_other_forms() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(when #t (throw err) 2)",
+        );
+
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector
+        );
+    }
+
+    #[test]
     fn returns_error_with_correct_symbol_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 

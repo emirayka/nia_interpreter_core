@@ -60,4 +60,11 @@ impl Value {
             _ => panic!()
         }
     }
+
+    pub fn as_keyword(&self) -> KeywordId {
+        match self {
+            Value::Keyword(keyword_id) => *keyword_id,
+            _ => panic!()
+        }
+    }
 }

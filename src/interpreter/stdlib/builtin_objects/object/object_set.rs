@@ -73,7 +73,6 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn able_to_set_values_that_were_not_in_the_object_initially() {
         let mut interpreter = Interpreter::new();

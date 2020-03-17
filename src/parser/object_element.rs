@@ -2,7 +2,7 @@ use crate::parser::keyword_element::{KeywordElement, parse_keyword_element};
 use crate::parser::{Element, parse_element};
 use nom::sequence::{terminated, preceded, pair};
 use nom::bytes::complete::tag;
-use nom::character::complete::space0;
+use nom::character::complete::multispace0;
 use nom::multi::many0;
 use nom::combinator::map_res;
 
@@ -60,12 +60,12 @@ fn make_object_element(values: Vec<(KeywordElement, Element)>) -> Result<ObjectE
 
 pub fn parse_object_element(s: &str) -> Result<(&str, ObjectElement), nom::Err<(&str, nom::error::ErrorKind)>> {
     let parse_pairs = many0(pair(
-        preceded(space0, parse_keyword_element),
-        preceded(space0, parse_element)
+        preceded(multispace0, parse_keyword_element),
+        preceded(multispace0, parse_element)
     ));
 
-    let opening_brace = terminated(tag("{"), space0);
-    let closing_brace = preceded(space0, tag("}"));
+    let opening_brace = terminated(tag("{"), multispace0);
+    let closing_brace = preceded(multispace0, tag("}"));
 
     let parse_object = preceded(
         opening_brace,
@@ -84,46 +84,66 @@ pub fn parse_object_element(s: &str) -> Result<(&str, ObjectElement), nom::Err<(
 mod tests {
     use super::*;
 
-    macro_rules! assert_parsed_correctly {
-        ($what:expr) => {
-            //println!("{:?}", parse_object_element($what));
-            assert!(parse_object_element($what).is_ok());
-        }
+    fn assert_parsed_correctly(expr: &str) {
+        assert!(parse_object_element(expr).is_ok());
     }
 
-    macro_rules! assert_failed_correctly {
-        ($what:expr) => {
-            //println!("{:?}", parse_object_element($what));
-            assert!(parse_object_element($what).is_err());
-        }
+    fn assert_failed_correctly(expr: &str) {
+        assert!(parse_object_element(expr).is_err());
     }
 
     #[test]
     fn simple_object_1() {
-        assert_parsed_correctly!(r#"{:f :keyword}"#);
+        assert_parsed_correctly(r#"{:f :keyword}"#);
     }
 
     #[test]
     fn simple_object_2() {
-        assert_parsed_correctly!(r#"{:oi test :a 1 :b 1.0 :c "test" :d #t :e #f :f :keyword}"#);
+        assert_parsed_correctly(r#"{:oi test :a 1 :b 1.0 :c "test" :d #t :e #f :f :keyword}"#);
     }
 
     #[test]
     fn spaces_are_processed_correctly() {
-        assert_parsed_correctly!(r#"{:a test}"#);
-        assert_parsed_correctly!(r#"{ :a test}"#);
-        assert_parsed_correctly!(r#"{:a test }"#);
-        assert_parsed_correctly!(r#"{ :a test }"#);
+        let specs = vec!(
+            "{:a test}",
+            "{ :a test}",
+            "{:a test }",
+            "{ :a test }",
+
+            "{:a\ttest}",
+            "{\t:a\ttest}",
+            "{:a\ttest\t}",
+            "{\t:a\ttest\t}",
+
+            "{:a\rtest}",
+            "{\r:a\rtest}",
+            "{:a\rtest\r}",
+            "{\r:a\rtest\r}",
+
+            "{:a\ntest}",
+            "{\n:a\ntest}",
+            "{:a\ntest\n}",
+            "{\n:a\ntest\n}",
+
+            "{:a\r\ntest}",
+            "{\r\n:a\r\ntest}",
+            "{:a\r\ntest\r\n}",
+            "{\r\n:a\r\ntest\r\n}",
+        );
+
+        for spec in specs {
+            assert_parsed_correctly(spec);
+        }
     }
 
     #[test]
     fn nested_objects_are_processed() {
-        assert_parsed_correctly!(r#"{:a test :b :list :c {:a b :b 1 :c 2}}"#);
-        assert_parsed_correctly!(r#"{:a test :b {:a test :b {:a b :b 1 :c 2}}}"#);
+        assert_parsed_correctly(r#"{:a test :b :list :c {:a b :b 1 :c 2}}"#);
+        assert_parsed_correctly(r#"{:a test :b {:a test :b {:a b :b 1 :c 2}}}"#);
     }
 
     #[test]
     fn returns_err_when_pairs_are_incomplete() {
-        assert_failed_correctly!(r#"{:a test :b}"#);
+        assert_failed_correctly(r#"{:a test :b}"#);
     }
 }
