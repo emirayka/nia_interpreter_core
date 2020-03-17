@@ -60,17 +60,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '())", "#f"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1))", "#f"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1 2))", "#t"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1 2 3))", "#t"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1 2 3 4))", "#t"),
+            ("(list:any? #(eq? (% %1 2) 0) '())", "#f"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1))", "#f"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1 2))", "#t"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1 2 3))", "#t"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1 2 3 4))", "#t"),
 
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(2))", "#t"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(2 4))", "#t"),
+            ("(list:any? #(eq? (% %1 2) 0) '(2))", "#t"),
+            ("(list:any? #(eq? (% %1 2) 0) '(2 4))", "#t"),
 
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1))", "#f"),
-            ("(list:any? (function (lambda (value) (eq? (% value 2) 0))) '(1 3))", "#f"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1))", "#f"),
+            ("(list:any? #(eq? (% %1 2) 0) '(1 3))", "#f"),
         );
 
         assertion::assert_results_are_equal(
@@ -84,7 +84,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(list:any? (function (lambda (value) 1)) '(1 2 3 4 5))",
+            "(list:any? (fn (value) 1) '(1 2 3 4 5))",
         );
 
         assertion::assert_results_are_invalid_argument_errors(

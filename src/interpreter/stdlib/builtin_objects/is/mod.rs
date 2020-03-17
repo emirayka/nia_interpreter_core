@@ -18,6 +18,8 @@ pub mod false_question;
 pub mod true_question;
 pub mod nil_question;
 pub mod number_question;
+pub mod even_question;
+pub mod odd_question;
 pub mod negative_question;
 pub mod zero_question;
 pub mod positive_question;
@@ -46,6 +48,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("true?", true_question::true_question),
         ("nil?", nil_question::nil_question),
         ("number?", number_question::number_question),
+        ("even?", even_question::even_question),
+        ("odd?", odd_question::odd_question),
         ("negative?", negative_question::negative_question),
         ("zero?", zero_question::zero_question),
         ("positive?", positive_question::positive_question),

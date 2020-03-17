@@ -60,14 +60,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '())", "#t"),
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(1))", "#f"),
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(1 2))", "#f"),
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(1 2 3))", "#f"),
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(1 2 3 4))", "#f"),
+            ("(list:all? #(is:even? %1) '())", "#t"),
+            ("(list:all? #(is:even? %1) '(1))", "#f"),
+            ("(list:all? #(is:even? %1) '(1 2))", "#f"),
+            ("(list:all? #(is:even? %1) '(1 2 3))", "#f"),
+            ("(list:all? #(is:even? %1) '(1 2 3 4))", "#f"),
 
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(2))", "#t"),
-            ("(list:all? (function (lambda (value) (eq? (% value 2) 0))) '(2 4))", "#t"),
+            ("(list:all? #(is:even? %1) '(2))", "#t"),
+            ("(list:all? #(is:even? %1) '(2 4))", "#t"),
         );
 
         assertion::assert_results_are_equal(
@@ -105,15 +105,15 @@ mod tests {
             "(list:all? '(1 2 3) '())",
             "(list:all? {} '())",
 
-            "(list:all? (function (lambda (_1) nil)) 1)",
-            "(list:all? (function (lambda (_1) nil)) 1.1)",
-            "(list:all? (function (lambda (_1) nil)) #t)",
-            "(list:all? (function (lambda (_1) nil)) #f)",
-            "(list:all? (function (lambda (_1) nil)) \"string\")",
-            "(list:all? (function (lambda (_1) nil)) 'symbol)",
-            "(list:all? (function (lambda (_1) nil)) :keyword)",
-            "(list:all? (function (lambda (_1) nil)) {})",
-            "(list:all? (function (lambda (_1) nil)) #())"
+            "(list:all? (fn (_1) nil) 1)",
+            "(list:all? (fn (_1) nil) 1.1)",
+            "(list:all? (fn (_1) nil) #t)",
+            "(list:all? (fn (_1) nil) #f)",
+            "(list:all? (fn (_1) nil) \"string\")",
+            "(list:all? (fn (_1) nil) 'symbol)",
+            "(list:all? (fn (_1) nil) :keyword)",
+            "(list:all? (fn (_1) nil) {})",
+            "(list:all? (fn (_1) nil) #())"
         );
 
         assertion::assert_results_are_invalid_argument_errors(
