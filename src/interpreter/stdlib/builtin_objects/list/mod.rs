@@ -7,6 +7,7 @@ use crate::interpreter::function::BuiltinFunctionType;
 
 mod all_question;
 mod any_question;
+mod append;
 mod contains_question;
 mod filter;
 mod foldl;
@@ -36,6 +37,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
         ("all?", all_question::all_question),
         ("any?", any_question::any_question),
+        ("append", append::append),
         ("contains?", contains_question::contains),
         ("filter", filter::filter),
         ("fold", fold::fold),
