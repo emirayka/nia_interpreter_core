@@ -65,6 +65,10 @@ mod tests {
             ("(func:apply #(+ %1 2  3)  '(1))",     "6"),
             ("(func:apply #(+ %1 %2 3)  '(1 2))",   "6"),
             ("(func:apply #(+ %1 %2 %3) '(1 2 3))", "6"),
+
+            ("(func:apply (fn (#opt a b c) (list a b c)) '(1 2 3))", "'(1 2 3)"),
+            ("(func:apply (fn (#rest a) a) '(1 2 3))", "'(1 2 3)"),
+            ("(func:apply (fn (#keys a b c) (list a b c)) '(:b 2 :a 1 :c 3))", "'(1 2 3)"),
         );
 
         assertion::assert_results_are_equal(

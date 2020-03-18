@@ -54,6 +54,19 @@ mod func__bind {
                 ("((func:bind #(+ %1 %2 %3) 1) 2 3)", "6"),
                 ("((func:bind #(+ %1 %2 %3) 1 2) 3)", "6"),
                 ("((func:bind #(+ %1 %2 %3) 1 2 3))", "6"),
+
+                ("((func:bind (fn (#rest a) (func:apply #'+ a)) 1 2 3))", "6"),
+                ("((func:bind (fn (#rest a) (func:apply #'+ a)) 1 2 3) 4 5)", "15"),
+
+                ("((func:bind (fn (#opt (a 0) (b 0) (c 0)) (+ a b c))))", "0"),
+                ("((func:bind (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1))", "1"),
+                ("((func:bind (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1 2))", "3"),
+                ("((func:bind (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1 2 3))", "6"),
+
+                ("((func:bind (fn (#keys (a 0) (b 0) (c 0)) (+ a b c))))", "0"),
+                ("((func:bind (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) :a 1))", "1"),
+                ("((func:bind (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) :a 1 :b 2))", "3"),
+                ("((func:bind (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) :a 1 :b 2 :c 3))", "6"),
             );
 
             assertion::assert_results_are_equal(
@@ -141,6 +154,16 @@ mod func__curry {
                 ("(((func:curry #(+ %1 %2 %3) 3) 1) 2 3)", "6"),
                 ("((((func:curry #(+ %1 %2 %3) 3) 1) 2) 3)", "6"),
                 ("(((func:curry #(+ %1 %2 %3) 3) 1 2) 3)", "6"),
+
+                ("((func:curry (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 1) 1)", "6"),
+                ("((func:curry (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 2) 1 2)", "6"),
+                ("((func:curry (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 3) 1 2 3)", "6"),
+
+                ("((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)", "6"),
+
+                ("((func:curry (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 2) :a 1)", "6"),
+                ("((func:curry (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 4) :a 1 :b 2)", "6"),
+                ("((func:curry (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
             );
 
             assertion::assert_results_are_equal(
@@ -254,10 +277,31 @@ mod func__curry_star {
                 ("((((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2) 3)", "6"),
                 ("(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3)", "6"),
 
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 1) 1)", "6"),
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 2) 1 2)", "6"),
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 3) 1 2 3)", "6"),
+
+                ("((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)", "6"),
+
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 2) :a 1)", "6"),
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 4) :a 1 :b 2)", "6"),
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
+
+                // curry* specific
                 ("((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2 3 4)", "10"),
                 ("(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2 3 4)", "10"),
                 ("((((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2) 3 4)", "10"),
                 ("(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3 4)", "10"),
+
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 1) 1 2 3)", "6"),
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 2) 1 2 3)", "6"),
+                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 3) 1 2 3)", "6"),
+
+                ("((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)", "6"),
+
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 2) :a 1 :b 2 :c 3)", "6"),
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 4) :a 1 :b 2 :c 3)", "6"),
+                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
             );
 
             assertion::assert_results_are_equal(
