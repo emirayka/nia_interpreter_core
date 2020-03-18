@@ -16,7 +16,8 @@ pub enum Prefix {
     CommaDog,
     Comma,
     Quote,
-    GraveAccent
+    SharpQuote,
+    GraveAccent,
 }
 
 fn make_prefix(s: &str) -> Result<Prefix, String> {
@@ -26,6 +27,8 @@ fn make_prefix(s: &str) -> Result<Prefix, String> {
         Prefix::Comma
     } else if s == "'" {
         Prefix::Quote
+    } else if s == "#'" {
+        Prefix::SharpQuote
     } else if s == "`" {
         Prefix::GraveAccent
     } else {
@@ -77,7 +80,8 @@ pub fn parse_prefixed_element(s: &str) -> Result<(&str, PrefixElement), nom::Err
         (
             tag("`"),
             tag("'"),
-            recognize(pair(tag(","), opt(tag("@"))))
+            recognize(pair(tag(","), opt(tag("@")))),
+            tag("#'")
         )
     );
 
@@ -238,6 +242,7 @@ mod tests {
     #[test]
     fn simple_prefixed_values() {
         assert_prefix_works(Prefix::Quote, "'");
+        assert_prefix_works(Prefix::SharpQuote, "#'");
         assert_prefix_works(Prefix::Comma, ",");
         assert_prefix_works(Prefix::CommaDog, ",@");
         assert_prefix_works(Prefix::GraveAccent, "`");
@@ -247,6 +252,7 @@ mod tests {
     fn already_prefixed_prefixed_values() {
         let prefixes = vec!(
             (Prefix::Quote, "'"),
+            (Prefix::SharpQuote, "#'"),
             (Prefix::Comma, ","),
             (Prefix::CommaDog, ",@"),
             (Prefix::GraveAccent, "`"),
@@ -263,4 +269,3 @@ mod tests {
         }
     }
 }
-

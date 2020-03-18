@@ -291,19 +291,24 @@ fn read_delimited_symbols_element(
 fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
-    let nil = interpreter.intern_nil_symbol_value();
-    let cdr = Value::Cons(interpreter.make_cons(
-        value,
-        nil
-    ));
+    let quote = interpreter.intern_symbol_value("quote");
+    let flookup = interpreter.intern_symbol_value("flookup");
+
+    let quoted_value = interpreter.vec_to_list(vec!(quote, value));
+
+    Ok(quoted_value)
+}
+
+fn read_sharp_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+    let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
-    let cons_id = interpreter.make_cons(
-        quote,
-        cdr
-    );
+    let flookup = interpreter.intern_symbol_value("flookup");
 
-    Ok(Value::Cons(cons_id))
+    let quoted_value = interpreter.vec_to_list(vec!(quote, value));
+    let flooked_up_value = interpreter.vec_to_list(vec!(flookup, quoted_value));
+
+    Ok(flooked_up_value)
 }
 
 fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
@@ -366,6 +371,7 @@ fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element)
 fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElement) -> Result<Value, Error> {
     match prefix_element.get_prefix() {
         Prefix::Quote => read_quote_prefix_element(interpreter, prefix_element.get_value()),
+        Prefix::SharpQuote => read_sharp_quote_prefix_element(interpreter, prefix_element.get_value()),
         Prefix::GraveAccent => read_graveaccent_prefix_element(interpreter, prefix_element.get_value()),
         Prefix::Comma => read_comma_prefix_element(interpreter, prefix_element.get_value()),
         Prefix::CommaDog => read_commadog_prefix_element(interpreter, prefix_element.get_value()),
@@ -981,6 +987,31 @@ mod tests {
         assert_prefix_values_works!("`", "`");
         assert_prefix_values_works!(",", ",");
         assert_prefix_values_works!(",@", ",@");
+    }
+
+    #[test]
+    fn reads_sharp_quoted_values_correctly() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("'#'1", "'(flookup (quote 1))"),
+            ("'#'1.1", "'(flookup (quote 1.1))"),
+            ("'#'#t", "'(flookup (quote #t))"),
+            ("'#'#f", "'(flookup (quote #f))"),
+            ("'#'\"string\"", "'(flookup (quote \"string\"))"),
+            ("'#'symbol", "'(flookup (quote symbol))"),
+            ("'#':keyword", "'(flookup (quote :keyword))"),
+            ("'#''(list)", "'(flookup (quote '(list)))"),
+            ("'#'{}", "'(flookup (quote {}))"),
+            ("'#'#()", "'(flookup (quote #()))"),
+
+            ("#'flookup", "(flookup (quote flookup))")
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        )
     }
 
     #[test]
