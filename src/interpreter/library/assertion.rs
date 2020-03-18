@@ -4,6 +4,24 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
+pub fn assert_is_ok<V, E>(something: Result<V, E>) {
+    assert!(
+        match something {
+            Ok(_) => true,
+            Err(_) => false
+        }
+    );
+}
+
+pub fn assert_is_err<V, E>(something: Result<V, E>) {
+    assert!(
+        match something {
+            Ok(_) => false,
+            Err(_) => true
+        }
+    );
+}
+
 pub fn assert_deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) {
     assert!(
         library::deep_equal(

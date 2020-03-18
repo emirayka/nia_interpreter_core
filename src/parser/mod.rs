@@ -275,23 +275,10 @@ pub fn parse_code(s: &str) -> Result<(&str, Code), nom::Err<(&str, nom::error::E
 mod tests {
     use super::*;
 
-    macro_rules! assert_is_ok {
-        ($exp:expr) => {
-            assert!(match $exp {
-                Ok(_) => true,
-                _ => false
-            });
-        }
-    }
-
-    macro_rules! assert_is_err {
-        ($exp:expr) => {
-            assert!(match $exp {
-                Err(_) => true,
-                _ => false
-            });
-        }
-    }
+    use crate::interpreter::library::assertion::{
+        assert_is_ok,
+        assert_is_err,
+    };
 
     macro_rules! assert_code_eq {
         ($expected:expr, $code:expr) => {
@@ -318,27 +305,27 @@ mod tests {
 
     #[test]
     fn parses_atoms_correctly() {
-        assert_is_ok!(parse_code("20"));
-        assert_is_ok!(parse_code("20.0"));
-        assert_is_ok!(parse_code("#t"));
-        assert_is_ok!(parse_code("#f"));
-        assert_is_ok!(parse_code("imacutesymbol"));
-        assert_is_ok!(parse_code(":imacutekeyword"));
-        assert_is_ok!(parse_code(r#""imacutestring""#));
-        assert_is_ok!(parse_code("'imaquotedsymbol"));
-        assert_is_ok!(parse_code("`imaquotedsymboltoo"));
-        assert_is_ok!(parse_code(",imanexecutedsymbol"));
-        assert_is_ok!(parse_code(",@imanexecutedsymbolthatexpandstolist"));
-        assert_is_ok!(parse_code("#'imasharpquotedsymbol"));
-        assert_is_ok!(parse_code("{}"));
-        assert_is_ok!(parse_code("#{}"));
-        assert_is_ok!(parse_code("#()"));
+        assert_is_ok(parse_code("20"));
+        assert_is_ok(parse_code("20.0"));
+        assert_is_ok(parse_code("#t"));
+        assert_is_ok(parse_code("#f"));
+        assert_is_ok(parse_code("imacutesymbol"));
+        assert_is_ok(parse_code(":imacutekeyword"));
+        assert_is_ok(parse_code(r#""imacutestring""#));
+        assert_is_ok(parse_code("'imaquotedsymbol"));
+        assert_is_ok(parse_code("`imaquotedsymboltoo"));
+        assert_is_ok(parse_code(",imanexecutedsymbol"));
+        assert_is_ok(parse_code(",@imanexecutedsymbolthatexpandstolist"));
+        assert_is_ok(parse_code("#'imasharpquotedsymbol"));
+        assert_is_ok(parse_code("{}"));
+        assert_is_ok(parse_code("#{}"));
+        assert_is_ok(parse_code("#()"));
     }
 
     #[test]
     fn parses_simple_s_expression_correctly() {
-        assert_is_ok!(parse_code("(+ 1 2)"));
-        assert_is_ok!(parse_code("(1+ 1)"));
+        assert_is_ok(parse_code("(+ 1 2)"));
+        assert_is_ok(parse_code("(1+ 1)"));
     }
 
     #[test]
@@ -389,503 +376,503 @@ mod tests {
 
     #[test]
     fn respects_spaces() {
-        assert_is_ok!(parse_code("1 1"));
-        assert_is_ok!(parse_code("1\t1"));
-        assert_is_ok!(parse_code("1\r1"));
-        assert_is_ok!(parse_code("1\n1"));
-        assert_is_ok!(parse_code("1\r\n1"));
+        assert_is_ok(parse_code("1 1"));
+        assert_is_ok(parse_code("1\t1"));
+        assert_is_ok(parse_code("1\r1"));
+        assert_is_ok(parse_code("1\n1"));
+        assert_is_ok(parse_code("1\r\n1"));
 
-        assert_is_ok!(parse_code("(1 1)"));
-        assert_is_ok!(parse_code("(1\t1)"));
-        assert_is_ok!(parse_code("(1\r1)"));
-        assert_is_ok!(parse_code("(1\n1)"));
-        assert_is_ok!(parse_code("(1\r\n1)"));
+        assert_is_ok(parse_code("(1 1)"));
+        assert_is_ok(parse_code("(1\t1)"));
+        assert_is_ok(parse_code("(1\r1)"));
+        assert_is_ok(parse_code("(1\n1)"));
+        assert_is_ok(parse_code("(1\r\n1)"));
 
-        assert_is_ok!(parse_code("{:a  1}"));
-        assert_is_ok!(parse_code("{:a \t1}"));
-        assert_is_ok!(parse_code("{:a \r1}"));
-        assert_is_ok!(parse_code("{:a \n1}"));
-        assert_is_ok!(parse_code("{:a \r\n1}"));
+        assert_is_ok(parse_code("{:a  1}"));
+        assert_is_ok(parse_code("{:a \t1}"));
+        assert_is_ok(parse_code("{:a \r1}"));
+        assert_is_ok(parse_code("{:a \n1}"));
+        assert_is_ok(parse_code("{:a \r\n1}"));
 
-        assert_is_ok!(parse_code("#{:a  :b}"));
-        assert_is_ok!(parse_code("#{:a \t:b}"));
-        assert_is_ok!(parse_code("#{:a \r:b}"));
-        assert_is_ok!(parse_code("#{:a \n:b}"));
-        assert_is_ok!(parse_code("#{:a \r\n:b}"));
+        assert_is_ok(parse_code("#{:a  :b}"));
+        assert_is_ok(parse_code("#{:a \t:b}"));
+        assert_is_ok(parse_code("#{:a \r:b}"));
+        assert_is_ok(parse_code("#{:a \n:b}"));
+        assert_is_ok(parse_code("#{:a \r\n:b}"));
 
-        assert_is_ok!(parse_code("#(+ %1 %2)"));
-        assert_is_ok!(parse_code("#(+\t%1 %2)"));
-        assert_is_ok!(parse_code("#(+\r%1 %2)"));
-        assert_is_ok!(parse_code("#(+\n%1 %2)"));
-        assert_is_ok!(parse_code("#(+\r\n%1 %2)"));
+        assert_is_ok(parse_code("#(+ %1 %2)"));
+        assert_is_ok(parse_code("#(+\t%1 %2)"));
+        assert_is_ok(parse_code("#(+\r%1 %2)"));
+        assert_is_ok(parse_code("#(+\n%1 %2)"));
+        assert_is_ok(parse_code("#(+\r\n%1 %2)"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_integer() {
-        assert_is_ok!(parse_code("1 1"));
-        assert_is_ok!(parse_code("11"));
+        assert_is_ok(parse_code("1 1"));
+        assert_is_ok(parse_code("11"));
 
-        assert_is_ok!(parse_code("1 1.1"));
-        assert_is_ok!(parse_code("11.1"));
+        assert_is_ok(parse_code("1 1.1"));
+        assert_is_ok(parse_code("11.1"));
 
-        assert_is_ok!(parse_code("1 #t"));
-        assert_is_err!(parse_code("1#t"));
-        assert_is_ok!(parse_code("1 #f"));
-        assert_is_err!(parse_code("1#f"));
+        assert_is_ok(parse_code("1 #t"));
+        assert_is_err(parse_code("1#t"));
+        assert_is_ok(parse_code("1 #f"));
+        assert_is_err(parse_code("1#f"));
 
-        assert_is_ok!(parse_code("1 :t"));
-        assert_is_ok!(parse_code("1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
+        assert_is_ok(parse_code("1 :t"));
+        assert_is_ok(parse_code("1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
         // todo: likely it's need to change that
 
-        assert_is_ok!(parse_code("1 t"));
-        assert_is_ok!(parse_code("1t")); // because, "1t" is a valid symbol
+        assert_is_ok(parse_code("1 t"));
+        assert_is_ok(parse_code("1t")); // because, "1t" is a valid symbol
 
-        assert_is_ok!(parse_code("1 a:b"));
-        assert_is_ok!(parse_code("1a:b"));
+        assert_is_ok(parse_code("1 a:b"));
+        assert_is_ok(parse_code("1a:b"));
 
-        assert_is_ok!(parse_code("1 \"\""));
-        assert_is_err!(parse_code("1\"\""));
+        assert_is_ok(parse_code("1 \"\""));
+        assert_is_err(parse_code("1\"\""));
 
-        assert_is_ok!(parse_code("1 ()"));
-        assert_is_err!(parse_code("1()"));
+        assert_is_ok(parse_code("1 ()"));
+        assert_is_err(parse_code("1()"));
 
-        assert_is_ok!(parse_code("1 {}"));
-        assert_is_err!(parse_code("1{}"));
+        assert_is_ok(parse_code("1 {}"));
+        assert_is_err(parse_code("1{}"));
 
-        assert_is_ok!(parse_code("1 #{}"));
-        assert_is_err!(parse_code("1#{}"));
+        assert_is_ok(parse_code("1 #{}"));
+        assert_is_err(parse_code("1#{}"));
 
-        assert_is_ok!(parse_code("1 #()"));
-        assert_is_err!(parse_code("1#()"));
+        assert_is_ok(parse_code("1 #()"));
+        assert_is_err(parse_code("1#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_float() {
-        assert_is_ok!(parse_code("1.1 1"));
-        assert_is_ok!(parse_code("1.11"));
+        assert_is_ok(parse_code("1.1 1"));
+        assert_is_ok(parse_code("1.11"));
 
-        assert_is_ok!(parse_code("1.1 1.1"));
-        assert_is_ok!(parse_code("1.11.1"));
+        assert_is_ok(parse_code("1.1 1.1"));
+        assert_is_ok(parse_code("1.11.1"));
 
-        assert_is_ok!(parse_code("1.1 #t"));
-        assert_is_err!(parse_code("1.1#t"));
-        assert_is_ok!(parse_code("1.1 #f"));
-        assert_is_err!(parse_code("1.1#f"));
+        assert_is_ok(parse_code("1.1 #t"));
+        assert_is_err(parse_code("1.1#t"));
+        assert_is_ok(parse_code("1.1 #f"));
+        assert_is_err(parse_code("1.1#f"));
 
-        assert_is_ok!(parse_code("1.1 :t"));
-        assert_is_ok!(parse_code("1.1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
+        assert_is_ok(parse_code("1.1 :t"));
+        assert_is_ok(parse_code("1.1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
         // todo: maybe change that
 
-        assert_is_ok!(parse_code("1.1 t"));
-        assert_is_ok!(parse_code("1.1t")); // because, "1t" is a valid symbol
+        assert_is_ok(parse_code("1.1 t"));
+        assert_is_ok(parse_code("1.1t")); // because, "1t" is a valid symbol
 
-        assert_is_ok!(parse_code("1.1 a:b"));
-        assert_is_ok!(parse_code("1.1a:b"));
+        assert_is_ok(parse_code("1.1 a:b"));
+        assert_is_ok(parse_code("1.1a:b"));
 
-        assert_is_ok!(parse_code("1.1 \"\""));
-        assert_is_err!(parse_code("1.1\"\""));
+        assert_is_ok(parse_code("1.1 \"\""));
+        assert_is_err(parse_code("1.1\"\""));
 
-        assert_is_ok!(parse_code("1.1 ()"));
-        assert_is_err!(parse_code("1.1()"));
+        assert_is_ok(parse_code("1.1 ()"));
+        assert_is_err(parse_code("1.1()"));
 
-        assert_is_ok!(parse_code("1.1 {}"));
-        assert_is_err!(parse_code("1.1{}"));
+        assert_is_ok(parse_code("1.1 {}"));
+        assert_is_err(parse_code("1.1{}"));
 
-        assert_is_ok!(parse_code("1.1 #{}"));
-        assert_is_err!(parse_code("1.1#{}"));
+        assert_is_ok(parse_code("1.1 #{}"));
+        assert_is_err(parse_code("1.1#{}"));
 
-        assert_is_ok!(parse_code("1.1 #()"));
-        assert_is_err!(parse_code("1.1#()"));
+        assert_is_ok(parse_code("1.1 #()"));
+        assert_is_err(parse_code("1.1#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_boolean_true() {
-        assert_is_ok!(parse_code("#t 1"));
-        assert_is_err!(parse_code("#t1"));
+        assert_is_ok(parse_code("#t 1"));
+        assert_is_err(parse_code("#t1"));
 
-        assert_is_ok!(parse_code("#t 1.1"));
-        assert_is_err!(parse_code("#t1.1"));
+        assert_is_ok(parse_code("#t 1.1"));
+        assert_is_err(parse_code("#t1.1"));
 
-        assert_is_ok!(parse_code("#t #t"));
-        assert_is_err!(parse_code("#t#t"));
-        assert_is_ok!(parse_code("#t #f"));
-        assert_is_err!(parse_code("#t#f"));
+        assert_is_ok(parse_code("#t #t"));
+        assert_is_err(parse_code("#t#t"));
+        assert_is_ok(parse_code("#t #f"));
+        assert_is_err(parse_code("#t#f"));
 
-        assert_is_ok!(parse_code("#t :t"));
-        assert_is_err!(parse_code("#t:t"));
+        assert_is_ok(parse_code("#t :t"));
+        assert_is_err(parse_code("#t:t"));
 
-        assert_is_ok!(parse_code("#t t"));
-        assert_is_err!(parse_code("#tt"));
+        assert_is_ok(parse_code("#t t"));
+        assert_is_err(parse_code("#tt"));
 
-        assert_is_ok!(parse_code("#t a:b"));
-        assert_is_err!(parse_code("#ta:b"));
+        assert_is_ok(parse_code("#t a:b"));
+        assert_is_err(parse_code("#ta:b"));
 
-        assert_is_ok!(parse_code("#t \"\""));
-        assert_is_err!(parse_code("#t\"\""));
+        assert_is_ok(parse_code("#t \"\""));
+        assert_is_err(parse_code("#t\"\""));
 
-        assert_is_ok!(parse_code("#t ()"));
-        assert_is_err!(parse_code("#t()"));
+        assert_is_ok(parse_code("#t ()"));
+        assert_is_err(parse_code("#t()"));
 
-        assert_is_ok!(parse_code("#t {}"));
-        assert_is_err!(parse_code("#t{}"));
+        assert_is_ok(parse_code("#t {}"));
+        assert_is_err(parse_code("#t{}"));
 
-        assert_is_ok!(parse_code("#t #{}"));
-        assert_is_err!(parse_code("#t#{}"));
+        assert_is_ok(parse_code("#t #{}"));
+        assert_is_err(parse_code("#t#{}"));
 
-        assert_is_ok!(parse_code("#t #()"));
-        assert_is_err!(parse_code("#t#()"));
+        assert_is_ok(parse_code("#t #()"));
+        assert_is_err(parse_code("#t#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_boolean_false() {
-        assert_is_ok!(parse_code("#f 1"));
-        assert_is_err!(parse_code("#f1"));
+        assert_is_ok(parse_code("#f 1"));
+        assert_is_err(parse_code("#f1"));
 
-        assert_is_ok!(parse_code("#f 1.1"));
-        assert_is_err!(parse_code("#f1.1"));
+        assert_is_ok(parse_code("#f 1.1"));
+        assert_is_err(parse_code("#f1.1"));
 
-        assert_is_ok!(parse_code("#f #t"));
-        assert_is_err!(parse_code("#f#t"));
-        assert_is_ok!(parse_code("#f #f"));
-        assert_is_err!(parse_code("#f#f"));
+        assert_is_ok(parse_code("#f #t"));
+        assert_is_err(parse_code("#f#t"));
+        assert_is_ok(parse_code("#f #f"));
+        assert_is_err(parse_code("#f#f"));
 
-        assert_is_ok!(parse_code("#f :t"));
-        assert_is_err!(parse_code("#f:t"));
+        assert_is_ok(parse_code("#f :t"));
+        assert_is_err(parse_code("#f:t"));
 
-        assert_is_ok!(parse_code("#f t"));
-        assert_is_err!(parse_code("#ft"));
+        assert_is_ok(parse_code("#f t"));
+        assert_is_err(parse_code("#ft"));
 
-        assert_is_ok!(parse_code("#f a:b"));
-        assert_is_err!(parse_code("#fa:b"));
+        assert_is_ok(parse_code("#f a:b"));
+        assert_is_err(parse_code("#fa:b"));
 
-        assert_is_ok!(parse_code("#f \"\""));
-        assert_is_err!(parse_code("#f\"\""));
+        assert_is_ok(parse_code("#f \"\""));
+        assert_is_err(parse_code("#f\"\""));
 
-        assert_is_ok!(parse_code("#f ()"));
-        assert_is_err!(parse_code("#f()"));
+        assert_is_ok(parse_code("#f ()"));
+        assert_is_err(parse_code("#f()"));
 
-        assert_is_ok!(parse_code("#f {}"));
-        assert_is_err!(parse_code("#f{}"));
+        assert_is_ok(parse_code("#f {}"));
+        assert_is_err(parse_code("#f{}"));
 
-        assert_is_ok!(parse_code("#f #{}"));
-        assert_is_err!(parse_code("#f#{}"));
+        assert_is_ok(parse_code("#f #{}"));
+        assert_is_err(parse_code("#f#{}"));
 
-        assert_is_ok!(parse_code("#f #()"));
-        assert_is_err!(parse_code("#f#()"));
+        assert_is_ok(parse_code("#f #()"));
+        assert_is_err(parse_code("#f#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_keyword() {
-        assert_is_ok!(parse_code(":key 1"));
-        assert_is_ok!(parse_code(":key1"));
+        assert_is_ok(parse_code(":key 1"));
+        assert_is_ok(parse_code(":key1"));
 
-        assert_is_ok!(parse_code(":key 1.1"));
-        assert_is_ok!(parse_code(":key1.1"));
+        assert_is_ok(parse_code(":key 1.1"));
+        assert_is_ok(parse_code(":key1.1"));
 
-        assert_is_ok!(parse_code(":key #t"));
-        assert_is_err!(parse_code(":key#t"));
-        assert_is_ok!(parse_code(":key #f"));
-        assert_is_err!(parse_code(":key#f"));
+        assert_is_ok(parse_code(":key #t"));
+        assert_is_err(parse_code(":key#t"));
+        assert_is_ok(parse_code(":key #f"));
+        assert_is_err(parse_code(":key#f"));
 
-        assert_is_ok!(parse_code(":key :t"));
-        assert_is_ok!(parse_code(":key:t"));
+        assert_is_ok(parse_code(":key :t"));
+        assert_is_ok(parse_code(":key:t"));
 
-        assert_is_ok!(parse_code(":key t"));
-        assert_is_ok!(parse_code(":keyt"));
+        assert_is_ok(parse_code(":key t"));
+        assert_is_ok(parse_code(":keyt"));
 
-        assert_is_ok!(parse_code(":key a:b"));
-        assert_is_ok!(parse_code(":keya:b"));
+        assert_is_ok(parse_code(":key a:b"));
+        assert_is_ok(parse_code(":keya:b"));
 
-        assert_is_ok!(parse_code(":key \"\""));
-        assert_is_err!(parse_code(":key\"\""));
+        assert_is_ok(parse_code(":key \"\""));
+        assert_is_err(parse_code(":key\"\""));
 
-        assert_is_ok!(parse_code(":key ()"));
-        assert_is_err!(parse_code(":key()"));
+        assert_is_ok(parse_code(":key ()"));
+        assert_is_err(parse_code(":key()"));
 
-        assert_is_ok!(parse_code(":key {}"));
-        assert_is_err!(parse_code(":key{}"));
+        assert_is_ok(parse_code(":key {}"));
+        assert_is_err(parse_code(":key{}"));
 
-        assert_is_ok!(parse_code(":key #{}"));
-        assert_is_err!(parse_code(":key#{}"));
+        assert_is_ok(parse_code(":key #{}"));
+        assert_is_err(parse_code(":key#{}"));
 
-        assert_is_ok!(parse_code(":key #()"));
-        assert_is_err!(parse_code(":key#()"));
+        assert_is_ok(parse_code(":key #()"));
+        assert_is_err(parse_code(":key#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_string() {
-        assert_is_ok!(parse_code("\"str\" 1"));
-        assert_is_err!(parse_code("\"str\"1"));
+        assert_is_ok(parse_code("\"str\" 1"));
+        assert_is_err(parse_code("\"str\"1"));
 
-        assert_is_ok!(parse_code("\"str\" 1.1"));
-        assert_is_err!(parse_code("\"str\"1.1"));
+        assert_is_ok(parse_code("\"str\" 1.1"));
+        assert_is_err(parse_code("\"str\"1.1"));
 
-        assert_is_ok!(parse_code("\"str\" #t"));
-        assert_is_err!(parse_code("\"str\"#t"));
-        assert_is_ok!(parse_code("\"str\" #f"));
-        assert_is_err!(parse_code("\"str\"#f"));
+        assert_is_ok(parse_code("\"str\" #t"));
+        assert_is_err(parse_code("\"str\"#t"));
+        assert_is_ok(parse_code("\"str\" #f"));
+        assert_is_err(parse_code("\"str\"#f"));
 
-        assert_is_ok!(parse_code("\"str\" :t"));
-        assert_is_err!(parse_code("\"str\":t"));
+        assert_is_ok(parse_code("\"str\" :t"));
+        assert_is_err(parse_code("\"str\":t"));
 
-        assert_is_ok!(parse_code("\"str\" t"));
-        assert_is_err!(parse_code("\"str\"t"));
+        assert_is_ok(parse_code("\"str\" t"));
+        assert_is_err(parse_code("\"str\"t"));
 
-        assert_is_ok!(parse_code("\"str\" a:b"));
-        assert_is_err!(parse_code("\"str\"a:b"));
+        assert_is_ok(parse_code("\"str\" a:b"));
+        assert_is_err(parse_code("\"str\"a:b"));
 
-        assert_is_ok!(parse_code("\"str\" \"\""));
-        assert_is_err!(parse_code("\"str\"\"\""));
+        assert_is_ok(parse_code("\"str\" \"\""));
+        assert_is_err(parse_code("\"str\"\"\""));
 
-        assert_is_ok!(parse_code("\"str\" ()"));
-        assert_is_err!(parse_code("\"str\"()"));
+        assert_is_ok(parse_code("\"str\" ()"));
+        assert_is_err(parse_code("\"str\"()"));
 
-        assert_is_ok!(parse_code("\"str\" {}"));
-        assert_is_err!(parse_code("\"str\"{}"));
+        assert_is_ok(parse_code("\"str\" {}"));
+        assert_is_err(parse_code("\"str\"{}"));
 
-        assert_is_ok!(parse_code("\"str\" #{}"));
-        assert_is_err!(parse_code("\"str\"#{}"));
+        assert_is_ok(parse_code("\"str\" #{}"));
+        assert_is_err(parse_code("\"str\"#{}"));
 
-        assert_is_ok!(parse_code("\"str\" #()"));
-        assert_is_err!(parse_code("\"str\"#()"));
+        assert_is_ok(parse_code("\"str\" #()"));
+        assert_is_err(parse_code("\"str\"#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_symbol() {
-        assert_is_ok!(parse_code("sym 1"));
-        assert_is_ok!(parse_code("sym1"));
+        assert_is_ok(parse_code("sym 1"));
+        assert_is_ok(parse_code("sym1"));
 
-        assert_is_ok!(parse_code("sym 1.1"));
-        assert_is_ok!(parse_code("sym1.1"));
+        assert_is_ok(parse_code("sym 1.1"));
+        assert_is_ok(parse_code("sym1.1"));
 
-        assert_is_ok!(parse_code("sym #t"));
-        assert_is_err!(parse_code("sym#t"));
-        assert_is_ok!(parse_code("sym #f"));
-        assert_is_err!(parse_code("sym#f"));
+        assert_is_ok(parse_code("sym #t"));
+        assert_is_err(parse_code("sym#t"));
+        assert_is_ok(parse_code("sym #f"));
+        assert_is_err(parse_code("sym#f"));
 
-        assert_is_ok!(parse_code("sym :t"));
-        assert_is_ok!(parse_code("sym:t")); // it's a valid delimited symbol expression
+        assert_is_ok(parse_code("sym :t"));
+        assert_is_ok(parse_code("sym:t")); // it's a valid delimited symbol expression
 
-        assert_is_ok!(parse_code("sym t"));
-        assert_is_ok!(parse_code("symt"));
+        assert_is_ok(parse_code("sym t"));
+        assert_is_ok(parse_code("symt"));
 
-        assert_is_ok!(parse_code("sym a:b"));
-        assert_is_ok!(parse_code("syma:b"));
+        assert_is_ok(parse_code("sym a:b"));
+        assert_is_ok(parse_code("syma:b"));
 
-        assert_is_ok!(parse_code("sym \"\""));
-        assert_is_err!(parse_code("sym\"\""));
+        assert_is_ok(parse_code("sym \"\""));
+        assert_is_err(parse_code("sym\"\""));
 
-        assert_is_ok!(parse_code("sym ()"));
-        assert_is_err!(parse_code("sym()"));
+        assert_is_ok(parse_code("sym ()"));
+        assert_is_err(parse_code("sym()"));
 
-        assert_is_ok!(parse_code("sym {}"));
-        assert_is_err!(parse_code("sym{}"));
+        assert_is_ok(parse_code("sym {}"));
+        assert_is_err(parse_code("sym{}"));
 
-        assert_is_ok!(parse_code("sym #{}"));
-        assert_is_err!(parse_code("sym#{}"));
+        assert_is_ok(parse_code("sym #{}"));
+        assert_is_err(parse_code("sym#{}"));
 
-        assert_is_ok!(parse_code("sym #()"));
-        assert_is_err!(parse_code("sym#()"));
+        assert_is_ok(parse_code("sym #()"));
+        assert_is_err(parse_code("sym#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_s_expresion() {
-        assert_is_ok!(parse_code("() 1"));
-        assert_is_err!(parse_code("()1"));
+        assert_is_ok(parse_code("() 1"));
+        assert_is_err(parse_code("()1"));
 
-        assert_is_ok!(parse_code("() 1.1"));
-        assert_is_err!(parse_code("()1.1"));
+        assert_is_ok(parse_code("() 1.1"));
+        assert_is_err(parse_code("()1.1"));
 
-        assert_is_ok!(parse_code("() #t"));
-        assert_is_err!(parse_code("()#t"));
-        assert_is_ok!(parse_code("() #f"));
-        assert_is_err!(parse_code("()#f"));
+        assert_is_ok(parse_code("() #t"));
+        assert_is_err(parse_code("()#t"));
+        assert_is_ok(parse_code("() #f"));
+        assert_is_err(parse_code("()#f"));
 
-        assert_is_ok!(parse_code("() :t"));
-        assert_is_err!(parse_code("():t"));
+        assert_is_ok(parse_code("() :t"));
+        assert_is_err(parse_code("():t"));
 
-        assert_is_ok!(parse_code("() t"));
-        assert_is_err!(parse_code("()t"));
+        assert_is_ok(parse_code("() t"));
+        assert_is_err(parse_code("()t"));
 
-        assert_is_ok!(parse_code("() a:b"));
-        assert_is_err!(parse_code("()a:b"));
+        assert_is_ok(parse_code("() a:b"));
+        assert_is_err(parse_code("()a:b"));
 
-        assert_is_ok!(parse_code("() \"\""));
-        assert_is_err!(parse_code("()\"\""));
+        assert_is_ok(parse_code("() \"\""));
+        assert_is_err(parse_code("()\"\""));
 
-        assert_is_ok!(parse_code("() ()"));
-        assert_is_ok!(parse_code("()()"));
+        assert_is_ok(parse_code("() ()"));
+        assert_is_ok(parse_code("()()"));
 
-        assert_is_ok!(parse_code("() {}"));
-        assert_is_err!(parse_code("(){}"));
+        assert_is_ok(parse_code("() {}"));
+        assert_is_err(parse_code("(){}"));
 
-        assert_is_ok!(parse_code("() #{}"));
-        assert_is_err!(parse_code("()#{}"));
+        assert_is_ok(parse_code("() #{}"));
+        assert_is_err(parse_code("()#{}"));
 
-        assert_is_ok!(parse_code("() #()"));
-        assert_is_err!(parse_code("()#()"));
+        assert_is_ok(parse_code("() #()"));
+        assert_is_err(parse_code("()#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_object_literal() {
-        assert_is_ok!(parse_code("{} 1"));
-        assert_is_err!(parse_code("{}1"));
+        assert_is_ok(parse_code("{} 1"));
+        assert_is_err(parse_code("{}1"));
 
-        assert_is_ok!(parse_code("{} 1.1"));
-        assert_is_err!(parse_code("{}1.1"));
+        assert_is_ok(parse_code("{} 1.1"));
+        assert_is_err(parse_code("{}1.1"));
 
-        assert_is_ok!(parse_code("{} #t"));
-        assert_is_err!(parse_code("{}#t"));
-        assert_is_ok!(parse_code("{} #f"));
-        assert_is_err!(parse_code("{}#f"));
+        assert_is_ok(parse_code("{} #t"));
+        assert_is_err(parse_code("{}#t"));
+        assert_is_ok(parse_code("{} #f"));
+        assert_is_err(parse_code("{}#f"));
 
-        assert_is_ok!(parse_code("{} :t"));
-        assert_is_err!(parse_code("{}:t"));
+        assert_is_ok(parse_code("{} :t"));
+        assert_is_err(parse_code("{}:t"));
 
-        assert_is_ok!(parse_code("{} t"));
-        assert_is_err!(parse_code("{}t"));
+        assert_is_ok(parse_code("{} t"));
+        assert_is_err(parse_code("{}t"));
 
-        assert_is_ok!(parse_code("{} a:b"));
-        assert_is_err!(parse_code("{}a:b"));
+        assert_is_ok(parse_code("{} a:b"));
+        assert_is_err(parse_code("{}a:b"));
 
-        assert_is_ok!(parse_code("{} \"\""));
-        assert_is_err!(parse_code("{}\"\""));
+        assert_is_ok(parse_code("{} \"\""));
+        assert_is_err(parse_code("{}\"\""));
 
-        assert_is_ok!(parse_code("{} ()"));
-        assert_is_err!(parse_code("{}()"));
+        assert_is_ok(parse_code("{} ()"));
+        assert_is_err(parse_code("{}()"));
 
-        assert_is_ok!(parse_code("{} {}"));
-        assert_is_err!(parse_code("{}{}"));
+        assert_is_ok(parse_code("{} {}"));
+        assert_is_err(parse_code("{}{}"));
 
-        assert_is_ok!(parse_code("{} #{}"));
-        assert_is_err!(parse_code("{}#{}"));
+        assert_is_ok(parse_code("{} #{}"));
+        assert_is_err(parse_code("{}#{}"));
 
-        assert_is_ok!(parse_code("{} #()"));
-        assert_is_err!(parse_code("{}#()"));
+        assert_is_ok(parse_code("{} #()"));
+        assert_is_err(parse_code("{}#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_object_pattern_literal() {
-        assert_is_ok!(parse_code("#{} 1"));
-        assert_is_err!(parse_code("#{}1"));
+        assert_is_ok(parse_code("#{} 1"));
+        assert_is_err(parse_code("#{}1"));
 
-        assert_is_ok!(parse_code("#{} 1.1"));
-        assert_is_err!(parse_code("#{}1.1"));
+        assert_is_ok(parse_code("#{} 1.1"));
+        assert_is_err(parse_code("#{}1.1"));
 
-        assert_is_ok!(parse_code("#{} #t"));
-        assert_is_err!(parse_code("#{}#t"));
-        assert_is_ok!(parse_code("#{} #f"));
-        assert_is_err!(parse_code("#{}#f"));
+        assert_is_ok(parse_code("#{} #t"));
+        assert_is_err(parse_code("#{}#t"));
+        assert_is_ok(parse_code("#{} #f"));
+        assert_is_err(parse_code("#{}#f"));
 
-        assert_is_ok!(parse_code("#{} :t"));
-        assert_is_err!(parse_code("#{}:t"));
+        assert_is_ok(parse_code("#{} :t"));
+        assert_is_err(parse_code("#{}:t"));
 
-        assert_is_ok!(parse_code("#{} t"));
-        assert_is_err!(parse_code("#{}t"));
+        assert_is_ok(parse_code("#{} t"));
+        assert_is_err(parse_code("#{}t"));
 
-        assert_is_ok!(parse_code("#{} a:b"));
-        assert_is_err!(parse_code("#{}a:b"));
+        assert_is_ok(parse_code("#{} a:b"));
+        assert_is_err(parse_code("#{}a:b"));
 
-        assert_is_ok!(parse_code("#{} \"\""));
-        assert_is_err!(parse_code("#{}\"\""));
+        assert_is_ok(parse_code("#{} \"\""));
+        assert_is_err(parse_code("#{}\"\""));
 
-        assert_is_ok!(parse_code("#{} ()"));
-        assert_is_err!(parse_code("#{}()"));
+        assert_is_ok(parse_code("#{} ()"));
+        assert_is_err(parse_code("#{}()"));
 
-        assert_is_ok!(parse_code("#{} {}"));
-        assert_is_err!(parse_code("#{}{}"));
+        assert_is_ok(parse_code("#{} {}"));
+        assert_is_err(parse_code("#{}{}"));
 
-        assert_is_ok!(parse_code("#{} #{}"));
-        assert_is_err!(parse_code("#{}#{}"));
+        assert_is_ok(parse_code("#{} #{}"));
+        assert_is_err(parse_code("#{}#{}"));
 
-        assert_is_ok!(parse_code("#{} #()"));
-        assert_is_err!(parse_code("#{}#()"));
+        assert_is_ok(parse_code("#{} #()"));
+        assert_is_err(parse_code("#{}#()"));
     }
 
     #[test]
     fn respects_spaces_between_forms_after_short_lambda_literal() {
-        assert_is_ok!(parse_code("#() 1"));
-        assert_is_err!(parse_code("#()1"));
+        assert_is_ok(parse_code("#() 1"));
+        assert_is_err(parse_code("#()1"));
 
-        assert_is_ok!(parse_code("#() 1.1"));
-        assert_is_err!(parse_code("#()1.1"));
+        assert_is_ok(parse_code("#() 1.1"));
+        assert_is_err(parse_code("#()1.1"));
 
-        assert_is_ok!(parse_code("#() #t"));
-        assert_is_err!(parse_code("#()#t"));
-        assert_is_ok!(parse_code("#() #f"));
-        assert_is_err!(parse_code("#()#f"));
+        assert_is_ok(parse_code("#() #t"));
+        assert_is_err(parse_code("#()#t"));
+        assert_is_ok(parse_code("#() #f"));
+        assert_is_err(parse_code("#()#f"));
 
-        assert_is_ok!(parse_code("#() :t"));
-        assert_is_err!(parse_code("#():t"));
+        assert_is_ok(parse_code("#() :t"));
+        assert_is_err(parse_code("#():t"));
 
-        assert_is_ok!(parse_code("#() t"));
-        assert_is_err!(parse_code("#()t"));
+        assert_is_ok(parse_code("#() t"));
+        assert_is_err(parse_code("#()t"));
 
-        assert_is_ok!(parse_code("#() a:b"));
-        assert_is_err!(parse_code("#()a:b"));
+        assert_is_ok(parse_code("#() a:b"));
+        assert_is_err(parse_code("#()a:b"));
 
-        assert_is_ok!(parse_code("#() \"\""));
-        assert_is_err!(parse_code("#()\"\""));
+        assert_is_ok(parse_code("#() \"\""));
+        assert_is_err(parse_code("#()\"\""));
 
-        assert_is_ok!(parse_code("#() ()"));
-        assert_is_err!(parse_code("#()()"));
+        assert_is_ok(parse_code("#() ()"));
+        assert_is_err(parse_code("#()()"));
 
-        assert_is_ok!(parse_code("#() {}"));
-        assert_is_err!(parse_code("#(){}"));
+        assert_is_ok(parse_code("#() {}"));
+        assert_is_err(parse_code("#(){}"));
 
-        assert_is_ok!(parse_code("#() #{}"));
-        assert_is_err!(parse_code("#()#{}"));
+        assert_is_ok(parse_code("#() #{}"));
+        assert_is_err(parse_code("#()#{}"));
 
-        assert_is_ok!(parse_code("#() #()"));
-        assert_is_err!(parse_code("#()#()"));
+        assert_is_ok(parse_code("#() #()"));
+        assert_is_err(parse_code("#()#()"));
     }
 
     #[test]
     fn respects_spaces_at_the_beginning_of_the_input() {
-        assert_is_ok!(parse_code(" \t\r\n1"));
-        assert_is_ok!(parse_code(" \t\r\n1.1"));
-        assert_is_ok!(parse_code(" \t\r\n#t"));
-        assert_is_ok!(parse_code(" \t\r\n#f"));
-        assert_is_ok!(parse_code(" \t\r\n\"string\""));
-        assert_is_ok!(parse_code(" \t\r\n:keyword"));
-        assert_is_ok!(parse_code(" \t\r\nsymbol"));
-        assert_is_ok!(parse_code(" \t\r\n'(1 2 3)"));
-        assert_is_ok!(parse_code(" \t\r\n{}"));
-        assert_is_ok!(parse_code(" \t\r\n#{}"));
-        assert_is_ok!(parse_code(" \t\r\n#()"));
+        assert_is_ok(parse_code(" \t\r\n1"));
+        assert_is_ok(parse_code(" \t\r\n1.1"));
+        assert_is_ok(parse_code(" \t\r\n#t"));
+        assert_is_ok(parse_code(" \t\r\n#f"));
+        assert_is_ok(parse_code(" \t\r\n\"string\""));
+        assert_is_ok(parse_code(" \t\r\n:keyword"));
+        assert_is_ok(parse_code(" \t\r\nsymbol"));
+        assert_is_ok(parse_code(" \t\r\n'(1 2 3)"));
+        assert_is_ok(parse_code(" \t\r\n{}"));
+        assert_is_ok(parse_code(" \t\r\n#{}"));
+        assert_is_ok(parse_code(" \t\r\n#()"));
     }
 
     #[test]
     fn respects_spaces_at_the_end_of_the_input() {
-        assert_is_ok!(parse_code("1 \t\r\n"));
-        assert_is_ok!(parse_code("1.1 \t\r\n"));
-        assert_is_ok!(parse_code("#t \t\r\n"));
-        assert_is_ok!(parse_code("#f \t\r\n"));
-        assert_is_ok!(parse_code("\"string\" \t\r\n"));
-        assert_is_ok!(parse_code(":keyword \t\r\n"));
-        assert_is_ok!(parse_code("symbol \t\r\n"));
-        assert_is_ok!(parse_code("'(1 2 3) \t\r\n"));
-        assert_is_ok!(parse_code("{} \t\r\n"));
-        assert_is_ok!(parse_code("#{} \t\r\n"));
-        assert_is_ok!(parse_code("#() \t\r\n"));
+        assert_is_ok(parse_code("1 \t\r\n"));
+        assert_is_ok(parse_code("1.1 \t\r\n"));
+        assert_is_ok(parse_code("#t \t\r\n"));
+        assert_is_ok(parse_code("#f \t\r\n"));
+        assert_is_ok(parse_code("\"string\" \t\r\n"));
+        assert_is_ok(parse_code(":keyword \t\r\n"));
+        assert_is_ok(parse_code("symbol \t\r\n"));
+        assert_is_ok(parse_code("'(1 2 3) \t\r\n"));
+        assert_is_ok(parse_code("{} \t\r\n"));
+        assert_is_ok(parse_code("#{} \t\r\n"));
+        assert_is_ok(parse_code("#() \t\r\n"));
     }
 
     #[test]
     fn does_not_allow_unfinished_s_expressions() {
-        assert_is_err!(parse_code("("));
-        assert_is_err!(parse_code("()("));
-        assert_is_err!(parse_code("(()"));
-        assert_is_err!(parse_code("\"string")); // todo: move to another test
-        assert_is_err!(parse_code("((\"string))"));
+        assert_is_err(parse_code("("));
+        assert_is_err(parse_code("()("));
+        assert_is_err(parse_code("(()"));
+        assert_is_err(parse_code("\"string")); // todo: move to another test
+        assert_is_err(parse_code("((\"string))"));
     }
 
     #[test]
     fn does_not_allow_unfinished_object_literals() {
-        assert_is_err!(parse_code("{"));
-        assert_is_err!(parse_code("{}{"));
-        assert_is_err!(parse_code("{{}"));
-        assert_is_err!(parse_code("\"string"));
-        assert_is_err!(parse_code("{{\"string}}"));
+        assert_is_err(parse_code("{"));
+        assert_is_err(parse_code("{}{"));
+        assert_is_err(parse_code("{{}"));
+        assert_is_err(parse_code("\"string"));
+        assert_is_err(parse_code("{{\"string}}"));
     }
 
     // todo: add tests when input is not complete
