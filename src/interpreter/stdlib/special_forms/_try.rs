@@ -163,12 +163,12 @@ mod tests {
 
         assert_eq!(
             Value::Integer(1),
-            interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error 1))").unwrap()
+            interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error 1))").unwrap()
         );
 
         assert_eq!(
             Value::Integer(2),
-            interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error 1 2))").unwrap()
+            interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error 1 2))").unwrap()
         );
     }
 
@@ -177,7 +177,7 @@ mod tests {
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
 
-        let error = interpreter.execute("(try (progn 1 (throw not-a-cute-error)) (catch cute-error 1))")
+        let error = interpreter.execute("(try (progn 1 (throw 'not-a-cute-error)) (catch cute-error 1))")
             .err()
             .unwrap();
 
@@ -192,7 +192,7 @@ mod tests {
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
 
-        let error = interpreter.execute("(try (progn 1 (throw cute-error)) (catch cute-error (throw not-a-cute-error)))")
+        let error = interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error (throw 'not-a-cute-error)))")
             .err()
             .unwrap();
 

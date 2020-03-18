@@ -21,7 +21,7 @@ mod func__bind {
         interpreter.execute(r#"
 (object:set! func 'bind (fn (f #rest args)
   (unless (or (is:interpreted? f) (is:builtin? f))
-    (throw invalid-argument-error "Function `func:bind' binds only functions."))
+    (throw 'invalid-argument-error "Function `func:bind' binds only functions."))
 
   (fn (#rest other-args)
     (func:apply f (list:join args other-args)))))"#)?;
@@ -107,10 +107,10 @@ mod func__curry {
         interpreter.execute(r#"
 (object:set! func 'curry (fn (f n)
   (unless (or (is:interpreted? f) (is:builtin? f))
-    (throw invalid-argument-error "Function `func:curry' takes only functions as its first argument."))
+    (throw 'invalid-argument-error "Function `func:curry' takes only functions as its first argument."))
 
-  (unless (and (is:int? n) (>= n 0))
-    (throw invalid-argument-error "Function `func:curry' takes only integers as its second argument."))
+  (unless (and (is:int? n) (is:positive? n))
+    (throw 'invalid-argument-error "Function `func:curry' takes only positive integers as its second argument."))
 
   (fn (#rest args)
     (cond ((< (list:length args) n)
@@ -119,7 +119,7 @@ mod func__curry {
           ((= (list:length args) n)
            (func:apply f args))
           ((> (list:length args) n)
-           (throw invalid-argument-error))))))
+           (throw 'invalid-argument-error))))))
            "#)?;
         Ok(())
     }

@@ -3,9 +3,11 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 
+use crate::interpreter::library;
+
 pub fn throw(
     interpreter: &mut Interpreter,
-    _environment: EnvironmentId,
+    environment_id: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 2 {
@@ -16,18 +18,19 @@ pub fn throw(
 
     let mut values = values;
 
-    let symbol = if values.len() > 0 {
-        let value = values.remove(0);
-
-        match value {
-            Value::Symbol(symbol) => symbol,
-            _ => return interpreter.make_invalid_argument_error(
-                "The first argument of special form `throw' (if any) must be a symbol."
-            ).into_result()
-        }
+    let evaluated_first_argument = if values.len() > 0 {
+        interpreter.evaluate_value(
+            environment_id,
+            values.remove(0)
+        )?
     } else {
-        interpreter.intern("generic-error")
+        interpreter.intern_symbol_value("generic-error")
     };
+
+    let symbol = library::read_as_symbol_id(
+        interpreter,
+        evaluated_first_argument
+    )?;
 
     let message = if values.len() > 0 {
         let value = values.remove(0);
@@ -87,7 +90,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(when #t (throw err) 2)",
+            "(when #t (throw 'err) 2)",
         );
 
         assertion::assert_results_are_just_errors(
@@ -100,7 +103,7 @@ mod tests {
     fn returns_error_with_correct_symbol_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result= interpreter.execute("(throw cute-error-symbol)");
+        let result= interpreter.execute("(throw 'cute-error-symbol)");
         assertion::assert_is_error(&result);
 
         let error = result.err().unwrap();
@@ -115,7 +118,7 @@ mod tests {
     fn returns_error_with_correct_message_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result= interpreter.execute("(throw cute-error-symbol \"Cute error message\")");
+        let result= interpreter.execute("(throw 'cute-error-symbol \"Cute error message\")");
         assertion::assert_is_error(&result);
 
         let error = result.err().unwrap();
