@@ -292,7 +292,6 @@ fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) ->
     let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
-    let flookup = interpreter.intern_symbol_value("flookup");
 
     let quoted_value = interpreter.vec_to_list(vec!(quote, value));
 
@@ -818,7 +817,6 @@ mod tests {
         fn reads_elements_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let nil = interpreter.intern_nil_symbol_value();
             let a = interpreter.intern_symbol_value("a");
             let b = interpreter.intern_symbol_value("b");
 

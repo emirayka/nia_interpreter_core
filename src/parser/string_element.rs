@@ -6,8 +6,7 @@ use nom::{
         tag,
     },
     sequence::{
-        preceded,
-        terminated,
+        delimited,
     },
     combinator::{
         map_res
@@ -18,7 +17,6 @@ use nom::{
     },
     error::ErrorKind
 };
-use nom::sequence::delimited;
 
 #[derive(Debug)]
 pub struct StringElement {

@@ -14,7 +14,6 @@ pub fn _break(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::library::assertion;
     use crate::interpreter::error::ErrorKind;
 
     #[test]

@@ -15,6 +15,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     Ok(())
 }
 
+#[allow(non_snake_case)]
 mod func__bind {
     use super::*;
 
@@ -34,7 +35,6 @@ mod func__bind {
     mod tests {
         use super::*;
         use crate::interpreter::library::assertion;
-        use crate::interpreter::interpreter::Interpreter;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {
@@ -114,6 +114,7 @@ mod func__bind {
     }
 }
 
+#[allow(non_snake_case)]
 mod func__curry {
     use super::*;
 
@@ -143,7 +144,6 @@ mod func__curry {
     mod tests {
         use super::*;
         use crate::interpreter::library::assertion;
-        use crate::interpreter::interpreter::Interpreter;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {
@@ -238,6 +238,7 @@ mod func__curry {
     }
 }
 
+#[allow(non_snake_case)]
 mod func__curry_star {
     use super::*;
 
@@ -265,7 +266,6 @@ mod func__curry_star {
     mod tests {
         use super::*;
         use crate::interpreter::library::assertion;
-        use crate::interpreter::interpreter::Interpreter;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {

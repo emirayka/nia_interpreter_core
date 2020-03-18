@@ -42,6 +42,7 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod get_value__set_value {
         use super::*;
@@ -52,7 +53,7 @@ mod tests {
 
             let expected = Value::Integer(1);
 
-            context.set_value(SymbolId::new(0), expected);
+            context.set_value(SymbolId::new(0), expected).unwrap();
             let result = context.get_value(SymbolId::new(0));
 
             assert_eq!(expected, result.unwrap());
@@ -60,7 +61,7 @@ mod tests {
 
         #[test]
         fn returns_err_when_no_value_was_found() {
-            let mut context = Context::new();
+            let context = Context::new();
 
             let result = context.get_value(SymbolId::new(0));
 

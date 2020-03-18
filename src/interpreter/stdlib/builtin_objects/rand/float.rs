@@ -54,7 +54,6 @@ pub fn float(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::library::testing_helpers::for_special_symbols;
 
     #[test]
     fn returns_random_float() {

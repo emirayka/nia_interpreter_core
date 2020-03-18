@@ -14,7 +14,6 @@ pub fn _continue(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::library::assertion;
     use crate::interpreter::error::ErrorKind;
 
     #[test]

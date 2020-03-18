@@ -340,14 +340,12 @@ mod empty {
 
     // Woods of Desolation - An Unbroken Moment
 
-    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+    pub fn infect(_interpreter: &mut Interpreter) -> Result<(), Error> {
         Ok(())
     }
 
     #[cfg(test)]
     mod tests {
-        use super::*;
-        use crate::interpreter::library::assertion;
 
         #[test]
         fn does_nothing() {

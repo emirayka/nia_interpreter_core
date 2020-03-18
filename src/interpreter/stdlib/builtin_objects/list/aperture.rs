@@ -23,7 +23,7 @@ pub fn aperture(
         values.remove(0)
     )? as usize;
 
-    let mut values = library::read_as_vector(
+    let values = library::read_as_vector(
         interpreter,
         values.remove(0)
     )?;

@@ -54,7 +54,6 @@ pub fn object_make(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::string::StringId;
 
     macro_rules! assert_object_has_values {
         ($expected:expr, $code:expr) => {
