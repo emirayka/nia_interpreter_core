@@ -12,7 +12,7 @@ pub fn object_get(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return interpreter.make_invalid_argument_count_error(
-            "Built-in function `object:get' must take even count of arguments."
+            "Built-in function `object:get' takes two arguments exactly."
         ).into_result();
     }
 
@@ -22,7 +22,7 @@ pub fn object_get(
         values.remove(0)
     )?;
 
-    let symbol_id = library::read_as_symbol_id(
+    let symbol_id = library::read_symbol_or_keyword_as_symbol_id(
         interpreter,
         values.remove(0)
     )?;
@@ -62,7 +62,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(let ((obj {:a 1})) (object:get obj 'a))", Value::Integer(1))
+            ("(let ((obj {:a 1})) (object:get obj 'a))", Value::Integer(1)),
+            ("(let ((obj {:a 1})) (object:get obj :a))", Value::Integer(1)),
         );
 
         assertion::assert_results_are_correct(
@@ -100,25 +101,28 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_when_first_argument_is_not_an_object() {
+    fn returns_invalid_argument_when_arguments_are_invalid() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(let ((obj 2)) (object:get obj 'item))"
-        );
+            "(let ((obj 2)) (object:get obj 'item))",
+            "(let ((obj 2.2)) (object:get obj 'item))",
+            "(let ((obj #t)) (object:get obj 'item))",
+            "(let ((obj #f)) (object:get obj 'item))",
+            "(let ((obj \"string\")) (object:get obj 'item))",
+            "(let ((obj 'symbol)) (object:get obj 'item))",
+            "(let ((obj :keyword)) (object:get obj 'item))",
+            "(let ((obj '(1 2))) (object:get obj 'item))",
+            "(let ((obj #())) (object:get obj 'item))",
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector
-        );
-    }
-
-    #[test]
-    fn returns_invalid_argument_when_second_argument_is_not_a_symbol() {
-        let mut interpreter = Interpreter::new();
-
-        let code_vector = vec!(
-            "(let ((obj {:a 1})) (object:get obj 2))"
+            "(let ((obj {:a 1})) (object:get obj 2))",
+            "(let ((obj {:a 1})) (object:get obj 2.2))",
+            "(let ((obj {:a 1})) (object:get obj #t))",
+            "(let ((obj {:a 1})) (object:get obj #f))",
+            "(let ((obj {:a 1})) (object:get obj \"string\"))",
+            "(let ((obj {:a 1})) (object:get obj '(list)))",
+            "(let ((obj {:a 1})) (object:get obj {}))",
+            "(let ((obj {:a 1})) (object:get obj #()))"
         );
 
         assertion::assert_results_are_invalid_argument_errors(

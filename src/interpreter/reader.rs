@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 use crate::interpreter::value::Value;
 use crate::parser::s_expression_element::SExpressionElement;
 use crate::parser::prefix_element::{PrefixElement, Prefix};
@@ -5,7 +7,6 @@ use crate::parser::Element;
 use crate::interpreter::interpreter::Interpreter;
 use crate::parser::object_element::ObjectElement;
 use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
-use std::cmp::max;
 use crate::parser::short_lambda_element::ShortLambdaElement;
 use crate::interpreter::error::Error;
 use crate::parser::object_pattern_element::ObjectPatternElement;

@@ -25,6 +25,7 @@ mod read_as_string;
 mod read_as_symbol_id;
 mod read_as_vector;
 mod read_let_definitions;
+mod read_symbol_or_keyword_as_symbol_id;
 mod value_to_string;
 
 pub use _break::_break;
@@ -50,4 +51,5 @@ pub use read_as_string::read_as_string;
 pub use read_as_symbol_id::read_as_symbol_id;
 pub use read_as_vector::read_as_vector;
 pub use read_let_definitions::read_let_definitions;
+pub use read_symbol_or_keyword_as_symbol_id::read_symbol_or_keyword_as_symbol_id;
 pub use value_to_string::value_to_string;
