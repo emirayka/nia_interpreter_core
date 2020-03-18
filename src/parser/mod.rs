@@ -220,7 +220,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         |el| Ok(Element::DelimitedSymbols(el))
     );
 
-    let quoted_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
+    let prefix_parser = map_res::<_, _, _, _, (&str, nom::error::ErrorKind), _, _>(
         prefix_element::parse_prefixed_element,
         |el| Ok(Element::Prefix(el))
     );
@@ -235,7 +235,7 @@ pub fn parse_element(s: &str) -> Result<(&str, Element), nom::Err<(&str, nom::er
         keyword_parser,
         s_expression_parser,
         object_parser,
-        quoted_parser,
+        prefix_parser,
         symbol_parser,
         delimited_parser,
     ));
@@ -329,6 +329,7 @@ mod tests {
         assert_is_ok!(parse_code("`imaquotedsymboltoo"));
         assert_is_ok!(parse_code(",imanexecutedsymbol"));
         assert_is_ok!(parse_code(",@imanexecutedsymbolthatexpandstolist"));
+        assert_is_ok!(parse_code("#'imasharpquotedsymbol"));
         assert_is_ok!(parse_code("{}"));
         assert_is_ok!(parse_code("#{}"));
         assert_is_ok!(parse_code("#()"));
