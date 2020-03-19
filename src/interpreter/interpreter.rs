@@ -22,7 +22,7 @@ use crate::interpreter::string::VString;
 use crate::interpreter::keyword::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::Keyword;
 use crate::interpreter::function::Arguments;
-// use crate::interpreter::context::Context;
+use crate::interpreter::context::Context;
 use crate::interpreter::library;
 use crate::interpreter::garbage_collector::collect_garbage;
 
@@ -36,7 +36,7 @@ pub struct Interpreter {
     object_arena: ObjectArena,
     function_arena: FunctionArena,
 
-    // context: Context,
+    context: Context,
     exclusive_nil: SymbolId,
     exclusive_nil_value: Value,
     internal_functions: HashMap<String, FunctionId>,
@@ -55,7 +55,7 @@ impl Interpreter {
         let object_arena = ObjectArena::new();
         let function_arena = FunctionArena::new();
 
-        // let context = Context::new();
+        let context = Context::new();
         let exclusive_nil = symbol_arena.gensym("saika");
         let exclusive_nil_value = Value::Symbol(exclusive_nil);
         let internal_functions = HashMap::new();
@@ -69,7 +69,7 @@ impl Interpreter {
             object_arena,
             function_arena,
 
-            // context,
+            context,
             exclusive_nil,
             exclusive_nil_value,
             internal_functions,
@@ -723,25 +723,25 @@ impl Interpreter {
     }
 }
 
-// impl Interpreter {
-//     pub fn get_context(&self) -> &Context {
-//         &self.context
-//     }
-//
-//     pub fn get_context_mut(&mut self) -> &mut Context {
-//         &mut self.context
-//     }
-//
-//     pub fn get_context_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
-//         self.context
-//             .get_value(symbol_id)
-//     }
-//
-//     pub fn set_context_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-//         self.context
-//             .set_value(symbol_id, value)
-//     }
-// }
+impl Interpreter {
+    pub fn get_context(&self) -> &Context {
+        &self.context
+    }
+
+    pub fn get_context_mut(&mut self) -> &mut Context {
+        &mut self.context
+    }
+
+    pub fn get_context_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
+        self.context
+            .get_value(symbol_id)
+    }
+
+    pub fn set_context_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+        self.context
+            .set_value(symbol_id, value)
+    }
+}
 
 impl Interpreter {
     fn evaluate_symbol(

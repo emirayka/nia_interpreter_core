@@ -29,6 +29,54 @@ pub fn collect_garbage(interpreter: &mut Interpreter) -> Result<(), Error> {
     // iteration base
     let mut environment_ids = vec!(interpreter.get_root_environment());
 
+    // remove context values
+    let mut context_items = interpreter.get_context().get_gc_items();
+
+    while !context_items.is_empty() {
+        let context_item = context_items.remove(0);
+
+        match context_item {
+            Value::String(string_id) => {
+                candidate_string_ids.retain(|id| *id != string_id);
+            },
+            Value::Keyword(keyword_id) => {
+                candidate_keyword_ids.retain(|id| *id != keyword_id);
+            },
+            Value::Symbol(symbol_id) => {
+                candidate_symbol_ids.retain(|id| *id != symbol_id);
+            },
+            Value::Cons(cons_id) => {
+                candidate_cons_ids.retain(|id| *id != cons_id);
+
+                context_items.push(interpreter.get_car(cons_id)?);
+                context_items.push(interpreter.get_cdr(cons_id)?);
+            },
+            Value::Object(object_id) => {
+                candidate_object_ids.retain(|id| *id != object_id);
+
+                let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
+
+                context_items.append(&mut gc_items);
+            },
+            Value::Function(function_id) => {
+                candidate_function_ids.retain(|id| *id != function_id);
+
+                match interpreter.get_function_arena().get_gc_items(function_id)? {
+                    Some(mut gc_items) => context_items.append(&mut gc_items),
+                    _ => {}
+                }
+
+                match interpreter.get_function_arena().get_gc_environment(function_id)? {
+                    Some(gc_environment_id) => {
+                        environment_ids.push(gc_environment_id)
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+    }
+
     // iteration over accessible environments
     while !environment_ids.is_empty() {
         let environment_id = environment_ids.remove(0);
@@ -361,5 +409,61 @@ mod tests {
         assert!(interpreter.get_function(function2).is_ok());
         assert!(interpreter.get_symbol(symbol1).is_ok());
         assert!(interpreter.get_symbol(symbol2).is_ok());
+    }
+
+    #[test]
+    fn respects_context_values() {
+        let mut interpreter = Interpreter::new();
+
+        let symbols = vec!(
+            interpreter.intern("kekurus-closure-parameter"),
+            interpreter.intern("kekurus-arg-1"),
+            interpreter.intern("kekurus-arg-2"),
+            interpreter.intern("kekurus-opt-default-parameter"),
+            interpreter.intern("kekurus-key-default-parameter"),
+        );
+
+        let pairs = vec!(
+            (interpreter.intern("kekurus-1"), interpreter.execute("\"kekurus-string\"").unwrap()),
+            (interpreter.intern("kekurus-2"), interpreter.execute(":kekurus-keyword").unwrap()),
+            (interpreter.intern("kekurus-3"), interpreter.execute("'kekurus-symbol").unwrap()),
+            (interpreter.intern("kekurus-4"), interpreter.execute("(cons 1 2)").unwrap()),
+            (interpreter.intern("kekurus-5"), interpreter.execute("{:a 1}").unwrap()),
+            (interpreter.intern("kekurus-6"),
+             interpreter.execute(
+                 "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #opt (kekurus-arg-2 'kekurus-opt-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
+             ).unwrap()),
+            (interpreter.intern("kekurus-7"),
+             interpreter.execute(
+                 "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #keys (kekurus-arg-2 'kekurus-key-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
+             ).unwrap()),
+        );
+
+        for pair in &pairs {
+            interpreter.set_context_value(pair.0, pair.1).unwrap();
+        }
+
+        assert!(collect_garbage(&mut interpreter).is_ok());
+
+        assert!(interpreter.get_symbol(pairs[0].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[1].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[2].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[3].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[4].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[5].0).is_ok());
+        assert!(interpreter.get_symbol(pairs[6].0).is_ok());
+
+        assert!(interpreter.get_string(pairs[0].1.as_string_id()).is_ok());
+        assert!(interpreter.get_keyword(pairs[1].1.as_keyword_id()).is_ok());
+        assert!(interpreter.get_symbol(pairs[2].1.as_symbol_id()).is_ok());
+        assert!(interpreter.get_car(pairs[3].1.as_cons_id()).is_ok());
+        assert!(interpreter.get_cdr(pairs[3].1.as_cons_id()).is_ok());
+        assert!(interpreter.get_object_proto(pairs[4].1.as_object_id()).is_ok());
+        assert!(interpreter.get_function(pairs[5].1.as_function_id()).is_ok());
+        assert!(interpreter.get_function(pairs[6].1.as_function_id()).is_ok());
+
+        for symbol_id in symbols {
+            assert!(interpreter.get_symbol(symbol_id).is_ok());
+        }
     }
 }

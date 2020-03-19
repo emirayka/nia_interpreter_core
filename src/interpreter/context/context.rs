@@ -35,6 +35,18 @@ impl Context {
 
         Ok(())
     }
+
+    pub fn get_gc_items(&self) -> Vec<Value> {
+        let mut result: Vec<Value> = self.values
+            .keys()
+            .into_iter()
+            .map(|symbol_id| symbol_id.to_value())
+            .collect();
+
+        result.extend(self.values.values().into_iter());
+
+        result
+    }
 }
 
 #[cfg(test)]
