@@ -77,11 +77,6 @@ impl EnvironmentArena {
         let child_id = self.alloc();
 
         {
-            let parent = self.get_mut(parent_id)?;
-            parent.add_child(child_id);
-        }
-
-        {
             let child = self.get_mut(child_id)?;
             child.set_parent(parent_id);
         }

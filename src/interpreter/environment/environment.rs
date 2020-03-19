@@ -9,7 +9,6 @@ pub struct LexicalEnvironment {
     variables: HashMap<SymbolId, Value>,
     functions: HashMap<SymbolId, Value>,
     parent: Option<EnvironmentId>,
-    children: Vec<EnvironmentId>,
 }
 
 impl LexicalEnvironment {
@@ -18,7 +17,6 @@ impl LexicalEnvironment {
             variables: HashMap::new(),
             functions: HashMap::new(),
             parent: None,
-            children: Vec::new(),
         }
     }
 }
@@ -52,10 +50,6 @@ impl LexicalEnvironment {
 
     pub fn set_parent(&mut self, parent_id: EnvironmentId) {
         self.parent = Some(parent_id)
-    }
-
-    pub fn add_child(&mut self, child_id: EnvironmentId) {
-        self.children.push(child_id)
     }
 
     pub fn has_variable(&self, symbol_id: SymbolId) -> bool {
@@ -233,7 +227,6 @@ mod tests {
         let id1 = EnvironmentId::new(1);
         let id2 = EnvironmentId::new(2);
 
-        env1.children.push(id2);
         env2.set_parent(id1);
     }
 }
