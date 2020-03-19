@@ -112,7 +112,7 @@ mod tests {
             let mut string_arena = StringArena::new();
 
             let expected = "String";
-            let string_id = string_arena.make_string(String::from(expected));
+            string_arena.make_string(String::from(expected));
             let string_id = string_arena.make_string(String::from(expected));
 
             let result = string_arena.get_string(string_id).unwrap().get_string();

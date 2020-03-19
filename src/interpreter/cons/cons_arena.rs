@@ -50,7 +50,7 @@ impl ConsArena {
 
     pub fn free_cons(&mut self, cons_id: ConsId) -> Result<(), Error> {
         match self.arena.remove(&cons_id) {
-            Some(cons) => Ok(()),
+            Some(_) => Ok(()),
             _ => Error::failure(
                 format!("Cannot find a cons with id: {}", cons_id.get_id())
             ).into_result()

@@ -97,13 +97,13 @@ pub fn collect_garbage(interpreter: &mut Interpreter) -> Result<(), Error> {
     }
 
     // free garbage
-    interpreter.free_environments(candidate_environment_ids);
-    interpreter.free_strings(candidate_string_ids);
-    interpreter.free_keywords(candidate_keyword_ids);
-    interpreter.free_symbols(candidate_symbol_ids);
-    interpreter.free_cons_cells(candidate_cons_ids);
-    interpreter.free_objects(candidate_object_ids);
-    interpreter.free_functions(candidate_function_ids);
+    interpreter.free_environments(candidate_environment_ids)?;
+    interpreter.free_strings(candidate_string_ids)?;
+    interpreter.free_keywords(candidate_keyword_ids)?;
+    interpreter.free_symbols(candidate_symbol_ids)?;
+    interpreter.free_cons_cells(candidate_cons_ids)?;
+    interpreter.free_objects(candidate_object_ids)?;
+    interpreter.free_functions(candidate_function_ids)?;
 
     Ok(())
 }
@@ -113,7 +113,6 @@ mod tests {
     use super::*;
     use crate::interpreter::function::{Function, BuiltinFunction, SpecialFormFunction};
     use crate::interpreter::environment::EnvironmentId;
-    use crate::interpreter::function::Function::SpecialForm;
 
     fn builtin_test_function(
         _interpreter: &mut Interpreter,

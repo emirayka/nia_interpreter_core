@@ -98,8 +98,8 @@ mod tests {
 
     fn test_func(
         _interpreter: &mut Interpreter,
-        environment_id: EnvironmentId,
-        values: Vec<Value>
+        _environment_id: EnvironmentId,
+        _values: Vec<Value>
     ) -> Result<Value, Error> {
         Ok(Value::Integer(1))
     }

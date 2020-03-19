@@ -4,14 +4,13 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
 pub fn start_listening(
-    interpreter: &mut Interpreter,
-    environment_id: EnvironmentId,
-    values: Vec<Value>
+    _interpreter: &mut Interpreter,
+    _environment_id: EnvironmentId,
+    _values: Vec<Value>
 ) -> Result<Value, Error> {
     Ok(Value::Boolean(true))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::interpreter::library::assertion;
 }

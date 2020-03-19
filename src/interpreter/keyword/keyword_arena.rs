@@ -113,7 +113,6 @@ mod tests {
         fn returns_failure_when_attempts_to_free_keyword_with_unknown_id() {
             let mut keyword_arena = KeywordArena::new();
 
-            let expected = "";
             let keyword_id = KeywordId::new(23444);
 
             assert!(keyword_arena.free_keyword(keyword_id).is_err());
