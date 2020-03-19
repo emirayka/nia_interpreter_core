@@ -882,9 +882,9 @@ impl Interpreter {
 
         let values = &values[current_argument..];
         let mut current_argument = 0;
+
         // key arguments
         if arguments.get_key_arguments().len() != 0 {
-
             if values.len() % 2 != 0 {
                 return self.make_generic_execution_error(
                     "Invalid usage of key arguments."
@@ -1328,7 +1328,6 @@ impl Interpreter {
         Ok(last_result)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
