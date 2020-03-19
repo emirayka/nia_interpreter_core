@@ -1,8 +1,9 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::environment::EnvironmentId;
 
-pub fn collect_garbage(interpreter: &mut Interpreter) -> Result<(), Error> {
+pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> Result<(), Error> {
     // these would be ignored
     let mut ignored_environment_ids = Vec::new();
 
@@ -27,7 +28,7 @@ pub fn collect_garbage(interpreter: &mut Interpreter) -> Result<(), Error> {
     }
 
     // iteration base
-    let mut environment_ids = vec!(interpreter.get_root_environment());
+    let mut environment_ids = vec!(environment_id);
 
     // remove context values
     let mut context_items = interpreter.get_context().get_gc_items();
@@ -181,49 +182,53 @@ mod tests {
     #[test]
     fn collects_strings() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let string_id = interpreter.execute("\"string\"")
             .unwrap().as_string_id();
 
         assert!(interpreter.get_string(string_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_string(string_id).is_err());
     }
 
     #[test]
     fn collects_keywords() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let keyword_id = interpreter.execute(":some-unused-keyword")
             .unwrap().as_keyword_id();
 
         assert!(interpreter.get_keyword(keyword_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_keyword(keyword_id).is_err());
     }
 
     #[test]
     fn collects_symbols() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let symbol_id = interpreter.execute("'some-not-used-long-named-symbol")
             .unwrap().as_symbol_id();
 
         assert!(interpreter.get_symbol(symbol_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_symbol(symbol_id).is_err());
     }
 
     #[test]
     fn collects_cons_cells() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let cons_id = interpreter.execute("(cons 1 2)")
             .unwrap().as_cons_id();
 
         assert!(interpreter.get_car(cons_id).is_ok());
         assert!(interpreter.get_cdr(cons_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_car(cons_id).is_err());
         assert!(interpreter.get_cdr(cons_id).is_err());
     }
@@ -231,64 +236,70 @@ mod tests {
     #[test]
     fn collects_objects() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let object_id = interpreter.execute("{}")
             .unwrap().as_object_id();
 
         assert!(interpreter.get_object_proto(object_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_object_proto(object_id).is_err());
     }
 
     #[test]
     fn collects_builtin_functions() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let function = Function::Builtin(BuiltinFunction::new(builtin_test_function));
         let function_id = interpreter.register_function(function);
 
         assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
     fn collects_special_forms() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let function = Function::SpecialForm(SpecialFormFunction::new(test_special_form));
         let function_id = interpreter.register_function(function);
 
         assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
     fn collects_interpreted_functions() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let function_id = interpreter.execute("(fn () 1)").unwrap().as_function_id();
 
         assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
     fn collects_macro_functions() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let function_id = interpreter.execute("(function (macro () 1))").unwrap().as_function_id();
 
         assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
         assert!(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
     fn respects_cons_content() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let symbol_1 = interpreter.execute("'some-unused-symbol-1")
             .unwrap().as_symbol_id();
@@ -303,7 +314,7 @@ mod tests {
         assert!(interpreter.get_symbol(symbol_1).is_ok());
         assert!(interpreter.get_symbol(symbol_2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_car(cons_id).is_ok());
         assert!(interpreter.get_cdr(cons_id).is_ok());
@@ -314,6 +325,7 @@ mod tests {
     #[test]
     fn respects_object_contents() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let item_key = interpreter.execute(":some-unused-keyword-1")
             .unwrap().as_keyword_id();
@@ -332,7 +344,7 @@ mod tests {
         assert!(interpreter.get_keyword(item_value.as_keyword_id()).is_ok());
         assert!(interpreter.get_object_proto(object_id).is_ok());
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_keyword(item_key).is_err());
         assert!(interpreter.get_symbol(item_key_symbol).is_ok());
@@ -343,6 +355,7 @@ mod tests {
     #[test]
     fn respects_function_code() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let function_id = interpreter.execute(
             "(defv some-kekurus-variable (fn () 'some-unused-symbol)) some-kekurus-variable"
@@ -351,7 +364,7 @@ mod tests {
         let symbol_id = interpreter.execute("'some-unused-symbol")
             .unwrap().as_symbol_id();
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_function(function_id).is_ok());
         assert!(interpreter.get_symbol(symbol_id).is_ok());
@@ -360,6 +373,7 @@ mod tests {
     #[test]
     fn respects_function_environment() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let symbol1 = interpreter.execute("'kekurus-1")
             .unwrap().as_symbol_id();
@@ -375,7 +389,7 @@ mod tests {
         assert!(interpreter.get_symbol(symbol1).is_ok());
         assert!(interpreter.get_symbol(symbol2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_function(function_id).is_ok());
         assert!(interpreter.get_symbol(symbol1).is_ok());
@@ -385,6 +399,7 @@ mod tests {
     #[test]
     fn respects_function_arguments() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let symbol1 = interpreter.execute("'kekurus-arg-1")
             .unwrap().as_symbol_id();
@@ -403,7 +418,7 @@ mod tests {
         assert!(interpreter.get_symbol(symbol1).is_ok());
         assert!(interpreter.get_symbol(symbol2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_function(function1).is_ok());
         assert!(interpreter.get_function(function2).is_ok());
@@ -414,6 +429,7 @@ mod tests {
     #[test]
     fn respects_context_values() {
         let mut interpreter = Interpreter::new();
+        let root_environment = interpreter.get_root_environment();
 
         let symbols = vec!(
             interpreter.intern("kekurus-closure-parameter"),
@@ -443,7 +459,7 @@ mod tests {
             interpreter.set_context_value(pair.0, pair.1).unwrap();
         }
 
-        assert!(collect_garbage(&mut interpreter).is_ok());
+        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_symbol(pairs[0].0).is_ok());
         assert!(interpreter.get_symbol(pairs[1].0).is_ok());

@@ -115,13 +115,14 @@ impl Interpreter {
 
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter::raw();
+        let root_environment = interpreter.get_root_environment();
 
         match infect_stdlib(&mut interpreter) {
             Ok(()) => {},
             Err(error) => panic!("Cannot construct interpreter: {:?}", error)
         }
 
-        collect_garbage(&mut interpreter)
+        collect_garbage(&mut interpreter, root_environment)
             .expect("Garbage collector is broken");
 
         interpreter
