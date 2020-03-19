@@ -40,30 +40,44 @@ impl PartialEq for Value {
 impl Eq for Value {}
 
 impl Value {
-    pub fn as_cons(&self) -> ConsId {
+    pub fn as_string_id(&self) -> StringId {
         match self {
-            Value::Cons(cons_id) => *cons_id,
+            Value::String(string_id) => *string_id,
             _ => panic!()
         }
     }
 
-    pub fn as_function(&self) -> FunctionId {
+    pub fn as_keyword_id(&self) -> KeywordId {
         match self {
-            Value::Function(function_id) => *function_id,
+            Value::Keyword(keyword_id) => *keyword_id,
             _ => panic!()
         }
     }
 
-    pub fn as_symbol(&self) -> SymbolId {
+    pub fn as_symbol_id(&self) -> SymbolId {
         match self {
             Value::Symbol(symbol_id) => *symbol_id,
             _ => panic!()
         }
     }
 
-    pub fn as_keyword(&self) -> KeywordId {
+    pub fn as_cons_id(&self) -> ConsId {
         match self {
-            Value::Keyword(keyword_id) => *keyword_id,
+            Value::Cons(cons_id) => *cons_id,
+            _ => panic!()
+        }
+    }
+
+    pub fn as_object_id(&self) -> ObjectId {
+        match self {
+            Value::Object(object_id) => *object_id,
+            _ => panic!()
+        }
+    }
+
+    pub fn as_function_id(&self) -> FunctionId {
+        match self {
+            Value::Function(function_id) => *function_id,
             _ => panic!()
         }
     }

@@ -78,7 +78,7 @@ impl Interpreter {
 
         // nil
         let nil_value = interpreter.intern_nil_symbol_value();
-        let nil_symbol_id = nil_value.as_symbol();
+        let nil_symbol_id = nil_value.as_symbol_id();
 
         interpreter.define_variable(
             root_environment,
@@ -1430,7 +1430,7 @@ mod tests {
 
             for spec in specs {
                 let result = interpreter.execute(spec).unwrap();
-                let keyword_id = result.as_keyword();
+                let keyword_id = result.as_keyword_id();
                 let keyword = interpreter.get_keyword(keyword_id).unwrap();
 
                 let keyword_name = keyword.get_name();
