@@ -48,4 +48,68 @@ impl FunctionArena {
                 format!("Cannot get a function with id: {}", function_id.get_id())
             ))
     }
+
+    pub fn free_function(&mut self, function_id: FunctionId) -> Result<(), Error> {
+        match self.arena.remove(&function_id) {
+            Some(_) => Ok(()),
+            _ => Error::failure(
+                format!("Cannot get a function with id: {}", function_id.get_id())
+            ).into_result()
+        }
+    }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::interpreter::interpreter::Interpreter;
+    use crate::interpreter::environment::EnvironmentId;
+    use crate::interpreter::value::Value;
+
+    fn test_func(
+        _interpreter: &mut Interpreter,
+        environment_id: EnvironmentId,
+        values: Vec<Value>
+    ) -> Result<Value, Error> {
+        Ok(Value::Integer(1))
+    }
+
+    #[cfg(test)]
+    mod free_function {
+        use super::*;
+        use crate::interpreter::function::BuiltinFunction;
+
+        #[test]
+        fn frees_function() {
+            let mut function_arena = FunctionArena::new();
+
+            let function = Function::Builtin(BuiltinFunction::new(test_func));
+            let function_id = function_arena.register_function(function);
+
+            assert!(function_arena.get_function(function_id).is_ok());
+            assert!(function_arena.free_function(function_id).is_ok());
+            assert!(function_arena.get_function(function_id).is_err());
+        }
+
+        #[test]
+        fn returns_err_when_cannot_find_a_function() {
+            let mut function_arena = FunctionArena::new();
+
+            let function_id = FunctionId::new(234234);
+
+            assert!(function_arena.free_function(function_id).is_err());
+        }
+
+        #[test]
+        fn returns_err_when_attempts_to_free_function_twice() {
+            let mut function_arena = FunctionArena::new();
+
+            let function = Function::Builtin(BuiltinFunction::new(test_func));
+            let function_id = function_arena.register_function(function);
+
+            assert!(function_arena.free_function(function_id).is_ok());
+            assert!(function_arena.free_function(function_id).is_err());
+        }
+    }
+}
+

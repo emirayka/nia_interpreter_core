@@ -55,7 +55,7 @@ impl Symbol {
 
 #[derive(Debug)]
 pub struct SymbolArena {
-    symbols: HashMap<SymbolId, Symbol>,
+    arena: HashMap<SymbolId, Symbol>,
     mapping: HashMap<String, Vec<SymbolId>>,
     next_id: usize,
 }
@@ -63,7 +63,7 @@ pub struct SymbolArena {
 impl SymbolArena {
     pub fn new() -> SymbolArena {
         SymbolArena {
-            symbols: HashMap::new(),
+            arena: HashMap::new(),
             mapping: HashMap::new(),
             next_id: 0,
         }
@@ -92,7 +92,7 @@ impl SymbolArena {
                         self.next_id += 1;
 
                         vector.push(symbol_id);
-                        self.symbols.insert(symbol_id, symbol);
+                        self.arena.insert(symbol_id, symbol);
                     }
                 }
             },
@@ -104,7 +104,7 @@ impl SymbolArena {
     }
 
     pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
-        self.symbols
+        self.arena
             .get(&symbol_id)
             .ok_or(Error::failure(
                 format!("Cannot find a symbol with id: {}", symbol_id.get_id())
@@ -134,12 +134,25 @@ impl SymbolArena {
                 self.next_id += 1;
 
                 symbols.push(symbol_id);
-                self.symbols.insert(symbol_id, symbol);
+                self.arena.insert(symbol_id, symbol);
 
                 symbols[counter]
             },
             _ => unreachable!()
         }
+    }
+
+    pub fn free_symbol(&mut self, symbol_id: SymbolId) -> Result<(), Error> {
+        let symbol = match self.arena.remove(&symbol_id) {
+            Some(symbol) => symbol,
+            _ => return Error::failure(
+                format!("Cannot find a symbol with id: {}", symbol_id.get_id())
+            ).into_result()
+        };
+
+        self.mapping.remove(symbol.get_name());
+
+        Ok(())
     }
 }
 
@@ -147,31 +160,82 @@ impl SymbolArena {
 mod tests {
     use super::*;
 
-    #[test]
-    pub fn interns_correctly() {
-        let mut arena = SymbolArena::new();
+    #[cfg(test)]
+    mod intern {
+        use super::*;
 
-        let sym1 = arena.intern("test");
-        let sym2 = arena.intern("test");
+        #[test]
+        pub fn interns_correctly() {
+            let mut arena = SymbolArena::new();
 
-        assert_eq!(SymbolId::new(0), sym1);
-        assert_eq!(SymbolId::new(0), sym2);
+            let sym1 = arena.intern("test");
+            let sym2 = arena.intern("test");
+
+            assert_eq!(SymbolId::new(0), sym1);
+            assert_eq!(SymbolId::new(0), sym2);
+        }
     }
 
-    #[test]
-    pub fn gensyms_correctly() {
-        let mut arena = SymbolArena::new();
+    #[cfg(test)]
+    mod gensym {
+        use super::*;
 
-        let sym = arena.intern("test");
-        let sym1 = arena.gensym("test");
-        let sym2 = arena.gensym("test");
+        #[test]
+        pub fn gensyms_correctly() {
+            let mut arena = SymbolArena::new();
 
-        assert_ne!(sym, sym1);
-        assert_ne!(sym, sym2);
-        assert_ne!(sym1, sym2);
+            let sym = arena.intern("test");
+            let sym1 = arena.gensym("test");
+            let sym2 = arena.gensym("test");
 
-        assert_eq!(SymbolId::new(0), sym);
-        assert_eq!(SymbolId::new(1), sym1);
-        assert_eq!(SymbolId::new(2), sym2);
+            assert_ne!(sym, sym1);
+            assert_ne!(sym, sym2);
+            assert_ne!(sym1, sym2);
+
+            assert_eq!(SymbolId::new(0), sym);
+            assert_eq!(SymbolId::new(1), sym1);
+            assert_eq!(SymbolId::new(2), sym2);
+        }
     }
+
+    #[cfg(test)]
+    mod free_symbol {
+        use super::*;
+
+        #[test]
+        fn frees_symbol() {
+            let mut symbol_arena = SymbolArena::new();
+
+            let name = "symbol";
+            let symbol_id = symbol_arena.intern(name);
+
+            assert!(symbol_arena.get_symbol(symbol_id).is_ok());
+            assert!(symbol_arena.free_symbol(symbol_id).is_ok());
+            assert!(symbol_arena.get_symbol(symbol_id).is_err());
+
+            assert!(!symbol_arena.arena.contains_key(&symbol_id));
+            assert!(!symbol_arena.mapping.contains_key(name));
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_a_symbol_with_unknown_id() {
+            let mut symbol_arena = SymbolArena::new();
+
+            let symbol_id = SymbolId::new(23234234);
+
+            assert!(symbol_arena.free_symbol(symbol_id).is_err());
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_a_symbol_twice() {
+            let mut symbol_arena = SymbolArena::new();
+
+            let name = "symbol";
+            let symbol_id = symbol_arena.intern(name);
+
+            assert!(symbol_arena.free_symbol(symbol_id).is_ok());
+            assert!(symbol_arena.free_symbol(symbol_id).is_err());
+        }
+    }
+
 }

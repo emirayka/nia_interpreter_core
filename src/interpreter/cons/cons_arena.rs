@@ -47,6 +47,15 @@ impl ConsArena {
 
         cons_id
     }
+
+    pub fn free_cons(&mut self, cons_id: ConsId) -> Result<(), Error> {
+        match self.arena.remove(&cons_id) {
+            Some(cons) => Ok(()),
+            _ => Error::failure(
+                format!("Cannot find a cons with id: {}", cons_id.get_id())
+            ).into_result()
+        }
+    }
 }
 
 impl ConsArena {
@@ -213,6 +222,41 @@ mod tests {
 
     fn nil() -> Value {
         Value::Symbol(new_symbol("nil"))
+    }
+
+    #[cfg(test)]
+    mod free_cons {
+        use super::*;
+
+        #[test]
+        fn removes_cons() {
+            let mut cons_arena = ConsArena::new();
+
+            let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
+
+            assert!(cons_arena.get_cons(cons_id).is_ok());
+            assert!(cons_arena.free_cons(cons_id).is_ok());
+            assert!(cons_arena.get_cons(cons_id).is_err());
+        }
+
+        #[test]
+        fn returns_error_when_attempts_to_remove_cons_with_unknown_id() {
+            let mut cons_arena = ConsArena::new();
+
+            let cons_id = ConsId::new(342343);
+
+            assert!(cons_arena.free_cons(cons_id).is_err());
+        }
+
+        #[test]
+        fn returns_error_when_attempts_to_remove_cons_twice() {
+            let mut cons_arena = ConsArena::new();
+
+            let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
+
+            assert!(cons_arena.free_cons(cons_id).is_ok());
+            assert!(cons_arena.free_cons(cons_id).is_err());
+        }
     }
 
     #[cfg(test)]

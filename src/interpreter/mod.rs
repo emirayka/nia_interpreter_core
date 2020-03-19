@@ -10,6 +10,7 @@ mod environment;
 mod context;
 mod stdlib;
 mod reader;
+mod garbage_collector;
 pub mod library;
 pub mod interpreter;
 

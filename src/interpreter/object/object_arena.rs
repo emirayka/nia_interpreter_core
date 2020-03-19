@@ -55,6 +55,15 @@ impl ObjectArena {
             ))
     }
 
+    pub fn free_object(&mut self, object_id: ObjectId) -> Result<(), Error> {
+        match self.arena.remove(&object_id) {
+            Some(_) => Ok(()),
+            _ => Error::failure(
+                format!("Cannot find an object with id: {}", object_id.get_id())
+            ).into_result()
+        }
+    }
+
     pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, Error> {
         let object = self.get_object(object_id)?;
 
@@ -128,4 +137,38 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
+    mod free_object {
+        use super::*;
+
+        #[test]
+        fn frees_object() {
+            let mut object_arena = ObjectArena::new();
+
+            let object_id = object_arena.make();
+
+            assert!(object_arena.get_object(object_id).is_ok());
+            assert!(object_arena.free_object(object_id).is_ok());
+            assert!(object_arena.get_object(object_id).is_err());
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_object_with_unknown_id() {
+            let mut object_arena = ObjectArena::new();
+
+            let object_id = ObjectId::new(234234);
+
+            assert!(object_arena.free_object(object_id).is_err());
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_an_object_twice() {
+            let mut object_arena = ObjectArena::new();
+
+            let object_id = object_arena.make();
+
+            assert!(object_arena.free_object(object_id).is_ok());
+            assert!(object_arena.free_object(object_id).is_err());
+        }
+    }
 }

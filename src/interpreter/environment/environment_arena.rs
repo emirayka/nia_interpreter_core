@@ -80,7 +80,7 @@ impl EnvironmentArena {
         Ok(child_id)
     }
 
-    pub fn remove(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
+    pub fn free_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
         match self.arena.remove(&environment_id) {
             Some(_) => Ok(()),
             _ => Error::failure(
@@ -249,7 +249,7 @@ mod tests {
     use super::*;
 
     #[cfg(test)]
-    mod remove {
+    mod free_environment {
         use super::*;
 
         #[test]
@@ -258,7 +258,7 @@ mod tests {
             let env_id = arena.alloc();
 
             arena.get(env_id).unwrap();
-            arena.remove(env_id).unwrap();
+            arena.free_environment(env_id).unwrap();
             arena.get(env_id).err().unwrap();
         }
     }

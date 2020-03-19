@@ -60,6 +60,64 @@ impl KeywordArena {
             self.make_keyword(keyword_name)
         }
     }
+
+    pub fn free_keyword(&mut self, keyword_id: KeywordId) -> Result<(), Error> {
+        let keyword = match self.arena.remove(&keyword_id) {
+            Some(keyword) => keyword,
+            _ => return Error::failure(
+                format!("Cannot find a keyword with id: {}", keyword_id.get_id())
+            ).into_result()
+        };
+
+        self.arena.remove(&keyword_id);
+        self.mapping.remove(keyword.get_name());
+
+        Ok(())
+    }
 }
 
-// todo: arena tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg(test)]
+    mod free_keyword {
+        use super::*;
+
+        #[test]
+        fn frees_keyword() {
+            let mut keyword_arena = KeywordArena::new();
+
+            let expected = "keyword";
+            let keyword_id = keyword_arena.intern_keyword(String::from(expected));
+
+            assert!(keyword_arena.get_keyword(keyword_id).is_ok());
+            assert!(keyword_arena.free_keyword(keyword_id).is_ok());
+            assert!(keyword_arena.get_keyword(keyword_id).is_err());
+
+            assert!(!keyword_arena.arena.contains_key(&keyword_id));
+            assert!(!keyword_arena.mapping.contains_key(expected));
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_keyword_with_unknown_id() {
+            let mut keyword_arena = KeywordArena::new();
+
+            let expected = "";
+            let keyword_id = KeywordId::new(23444);
+
+            assert!(keyword_arena.free_keyword(keyword_id).is_err());
+        }
+
+        #[test]
+        fn returns_failure_when_attempts_to_free_keyword_twice() {
+            let mut keyword_arena = KeywordArena::new();
+
+            let expected = "";
+            let keyword_id = keyword_arena.intern_keyword(String::from(expected));
+
+            assert!(keyword_arena.free_keyword(keyword_id).is_ok());
+            assert!(keyword_arena.free_keyword(keyword_id).is_err());
+        }
+    }
+}
