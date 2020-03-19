@@ -75,6 +75,16 @@ impl StringArena {
 
         Ok(())
     }
+
+    pub fn get_all_string_identifiers(&self) -> Vec<StringId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]

@@ -74,6 +74,16 @@ impl KeywordArena {
 
         Ok(())
     }
+
+    pub fn get_all_keyword_identifiers(&self) -> Vec<KeywordId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]

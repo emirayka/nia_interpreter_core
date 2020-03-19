@@ -53,6 +53,15 @@ impl EnvironmentArena {
         }
     }
 
+    pub fn get_parent(&self, environment_id: EnvironmentId) -> Result<Option<EnvironmentId>, Error> {
+        match self.arena.get(&environment_id) {
+            Some(env) => Ok(env.get_parent()),
+            _ => Error::failure(
+                format!("Cannot find an environment with id: {}", environment_id.get_id())
+            ).into_result()
+        }
+    }
+
     pub fn alloc(&mut self) -> EnvironmentId {
         let env = LexicalEnvironment::new();
 
@@ -241,6 +250,27 @@ impl EnvironmentArena {
                 None => Ok(None)
             }
         }
+    }
+
+    pub fn get_all_environments(&self) -> Vec<EnvironmentId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
+
+    pub fn get_environment_gc_items(&self, environment_id: EnvironmentId) -> Result<Vec<Value>, Error> {
+        let environment = match self.arena.get(&environment_id) {
+            Some(env) => env,
+            _ => return Error::failure(
+                format!("Cannot find an environment with id: {}", environment_id.get_id())
+            ).into_result()
+        };
+
+        Ok(environment.get_gc_items())
     }
 }
 

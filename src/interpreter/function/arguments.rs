@@ -212,6 +212,26 @@ impl Arguments {
 
         Ok(())
     }
+
+    pub fn get_gc_items(&self) -> Vec<Value> {
+        let mut result = Vec::new();
+
+        for optional_argument in &self.optional {
+            match optional_argument.default {
+                Some(value) => result.push(value),
+                _ => {}
+            }
+        }
+
+        for key_argument in &self.keys {
+            match key_argument.default {
+                Some(value) => result.push(value),
+                _ => {}
+            }
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]

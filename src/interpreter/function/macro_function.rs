@@ -29,4 +29,16 @@ impl MacroFunction {
     pub fn get_code(&self) -> &Vec<Value> {
         &self.code
     }
+
+    pub fn get_gc_items(&self) -> Option<Vec<Value>> {
+        let mut result = self.code.clone();
+
+        result.extend(self.arguments.get_gc_items());
+
+        Some(result)
+    }
+
+    pub fn get_gc_environment(&self) -> Option<EnvironmentId> {
+        Some(self.environment)
+    }
 }

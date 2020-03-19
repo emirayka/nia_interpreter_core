@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use crate::interpreter::function::Function;
 use crate::interpreter::error::Error;
+use crate::interpreter::value::Value;
+use crate::interpreter::environment::EnvironmentId;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FunctionId {
@@ -52,6 +54,34 @@ impl FunctionArena {
     pub fn free_function(&mut self, function_id: FunctionId) -> Result<(), Error> {
         match self.arena.remove(&function_id) {
             Some(_) => Ok(()),
+            _ => Error::failure(
+                format!("Cannot get a function with id: {}", function_id.get_id())
+            ).into_result()
+        }
+    }
+
+    pub fn get_all_function_identifiers(&self) -> Vec<FunctionId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
+
+    pub fn get_gc_items(&self, function_id: FunctionId) -> Result<Option<Vec<Value>>, Error> {
+        match self.arena.get(&function_id) {
+            Some(function) => Ok(function.get_gc_items()),
+            _ => Error::failure(
+                format!("Cannot get a function with id: {}", function_id.get_id())
+            ).into_result()
+        }
+    }
+
+    pub fn get_gc_environment(&self, function_id: FunctionId) -> Result<Option<EnvironmentId>, Error> {
+        match self.arena.get(&function_id) {
+            Some(function) => Ok(function.get_gc_environment()),
             _ => Error::failure(
                 format!("Cannot get a function with id: {}", function_id.get_id())
             ).into_result()

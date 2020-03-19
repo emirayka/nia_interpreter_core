@@ -64,6 +64,16 @@ impl ObjectArena {
         }
     }
 
+    pub fn get_all_object_identifiers(&self) -> Vec<ObjectId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
+
     pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, Error> {
         let object = self.get_object(object_id)?;
 
@@ -73,6 +83,15 @@ impl ObjectArena {
                 Some(prototype_id) => self.get_item(prototype_id, key),
                 None => Ok(None)
             }
+        }
+    }
+
+    pub fn get_gc_items(&self, object_id: ObjectId) -> Result<Vec<Value>, Error> {
+        match self.arena.get(&object_id) {
+            Some(object) => Ok(object.get_gc_items()),
+            _ => Error::failure(
+                format!("Cannot find an object with id: {}", object_id.get_id())
+            ).into_result()
         }
     }
 

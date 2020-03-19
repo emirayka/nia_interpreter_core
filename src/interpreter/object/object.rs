@@ -71,6 +71,27 @@ impl Object {
     pub fn get_items(&self) -> &HashMap<SymbolId, Value> {
         &self.items
     }
+
+    pub fn get_gc_items(&self) -> Vec<Value> {
+        let mut result = self.items
+            .keys()
+            .into_iter()
+            .map(|symbol_id| Value::Symbol(*symbol_id))
+            .collect::<Vec<Value>>();
+
+        result.extend(
+            self.items
+                .values()
+                .into_iter()
+        );
+
+        match self.prototype {
+            Some(prototype_id) => result.push(Value::Object(prototype_id)),
+            _ => {}
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]

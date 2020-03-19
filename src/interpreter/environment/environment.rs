@@ -129,6 +129,31 @@ impl LexicalEnvironment {
             ).into_result()
         }
     }
+
+    pub fn get_gc_items(&self) -> Vec<Value> {
+        let mut result = self.variables
+            .values()
+            .into_iter()
+            .map(|value| *value)
+            .collect::<Vec<Value>>();
+
+        result.extend(self.functions
+            .values()
+            .into_iter()
+            .map(|value| *value));
+
+        result.extend(self.variables
+            .keys()
+            .into_iter()
+            .map(|symbol_id| Value::Symbol(*symbol_id)));
+
+        result.extend(self.functions
+            .keys()
+            .into_iter()
+            .map(|symbol_id| Value::Symbol(*symbol_id)));
+
+        result
+    }
 }
 
 #[cfg(test)]

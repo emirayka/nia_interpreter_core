@@ -40,4 +40,12 @@ impl SpecialFormFunction {
     pub fn get_func(&self) -> &SpecialFormFunctionType{
         &self.func
     }
+
+    pub fn get_gc_items(&self) -> Option<Vec<Value>> {
+        None
+    }
+
+    pub fn get_gc_environment(&self) -> Option<EnvironmentId> {
+        None
+    }
 }

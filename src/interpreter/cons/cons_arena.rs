@@ -56,6 +56,16 @@ impl ConsArena {
             ).into_result()
         }
     }
+
+    pub fn get_all_cons_identifiers(&self) -> Vec<ConsId> {
+        let mut result = Vec::new();
+
+        for k in self.arena.keys() {
+            result.push(*k)
+        }
+
+        result
+    }
 }
 
 impl ConsArena {

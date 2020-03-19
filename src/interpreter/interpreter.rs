@@ -24,6 +24,7 @@ use crate::interpreter::keyword::Keyword;
 use crate::interpreter::function::Arguments;
 // use crate::interpreter::context::Context;
 use crate::interpreter::library;
+use crate::interpreter::garbage_collector::collect_garbage;
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
@@ -116,9 +117,26 @@ impl Interpreter {
         let mut interpreter = Interpreter::raw();
 
         match infect_stdlib(&mut interpreter) {
-            Ok(()) => interpreter,
+            Ok(()) => {},
             Err(error) => panic!("Cannot construct interpreter: {:?}", error)
         }
+
+        collect_garbage(&mut interpreter)
+            .expect("Garbage collector is broken");
+
+        interpreter
+    }
+
+    pub fn get_ignored_symbols(&self) -> Vec<SymbolId> {
+        vec!(self.exclusive_nil)
+    }
+
+    pub fn get_ignored_functions(&self) -> Vec<FunctionId> {
+        self.internal_functions
+            .values()
+            .into_iter()
+            .map(|id| *id)
+            .collect()
     }
 }
 
@@ -204,6 +222,14 @@ impl Interpreter {
         &self.string_arena
     }
 
+    pub fn free_strings(&mut self, string_ids: Vec<StringId>) -> Result<(), Error> {
+        for string_id in string_ids {
+            self.string_arena.free_string(string_id)?;
+        }
+
+        Ok(())
+    }
+
     pub fn make_string(&mut self, string: String) -> StringId {
         self.string_arena.make_string(string)
     }
@@ -225,6 +251,14 @@ impl Interpreter {
 impl Interpreter {
     pub fn get_keyword_arena(&self) -> &KeywordArena {
         &self.keyword_arena
+    }
+
+    pub fn free_keywords(&mut self, keyword_ids: Vec<KeywordId>) -> Result<(), Error> {
+        for keyword_id in keyword_ids {
+            self.keyword_arena.free_keyword(keyword_id)?;
+        }
+
+        Ok(())
     }
 
     pub fn make_keyword(&mut self, keyword_name: String) -> KeywordId {
@@ -249,6 +283,14 @@ impl Interpreter {
 impl Interpreter {
     pub fn get_symbol_arena(&self) -> &SymbolArena {
         &self.symbol_arena
+    }
+
+    pub fn free_symbols(&mut self, symbol_ids: Vec<SymbolId>) -> Result<(), Error> {
+        for symbol_id in symbol_ids {
+            self.symbol_arena.free_symbol(symbol_id)?;
+        }
+
+        Ok(())
     }
 
     pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
@@ -341,6 +383,14 @@ impl Interpreter {
         &self.cons_arena
     }
 
+    pub fn free_cons_cells(&mut self, cons_ids: Vec<ConsId>) -> Result<(), Error> {
+        for cons_id in cons_ids {
+            self.cons_arena.free_cons(cons_id)?;
+        }
+
+        Ok(())
+    }
+
     pub fn make_cons(&mut self, car: Value, cdr: Value) -> ConsId {
         self.cons_arena.make_cons(car, cdr)
     }
@@ -430,6 +480,14 @@ impl Interpreter {
         &self.object_arena
     }
 
+    pub fn free_objects(&mut self, object_ids: Vec<ObjectId>) -> Result<(), Error> {
+        for object_id in object_ids {
+            self.object_arena.free_object(object_id)?;
+        }
+
+        Ok(())
+    }
+
     pub fn make_object(&mut self) -> ObjectId {
         self.object_arena.make()
     }
@@ -477,6 +535,14 @@ impl Interpreter {
         &self.function_arena
     }
 
+    pub fn free_functions(&mut self, function_ids: Vec<FunctionId>) -> Result<(), Error> {
+        for function_id in function_ids {
+            self.function_arena.free_function(function_id)?;
+        }
+
+        Ok(())
+    }
+
     pub fn register_function(&mut self, function: Function) -> FunctionId {
         self.function_arena.register_function(function)
     }
@@ -499,6 +565,14 @@ impl Interpreter {
 impl Interpreter {
     pub fn get_environment_arena(&self) -> &EnvironmentArena {
         &self.environment_arena
+    }
+
+    pub fn free_environments(&mut self, environment_ids: Vec<EnvironmentId>) -> Result<(), Error> {
+        for environment_id in environment_ids {
+            self.environment_arena.free_environment(environment_id)?;
+        }
+
+        Ok(())
     }
 
     pub fn get_root_environment(&self) -> EnvironmentId {
@@ -641,6 +715,11 @@ impl Interpreter {
     pub fn remove_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
         self.environment_arena
             .free_environment(environment_id)
+    }
+
+    pub fn get_environment_items(&self, environment_id: EnvironmentId) -> Result<Vec<Value>, Error> {
+        self.environment_arena
+            .get_environment_gc_items(environment_id)
     }
 }
 
