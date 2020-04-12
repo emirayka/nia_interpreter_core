@@ -209,12 +209,30 @@ impl Interpreter {
 
 impl Interpreter {
     pub fn print_value(&mut self, value: Value) {
-        match library::value_to_string(self, value) {
-            Ok(string) => print!("{}", string),
-            Err(_) => {
-                print!("Cannot print value")
+        let string = match value {
+            Value::String(string_id) => {
+                match library::value_to_string(self, value) {
+                    Ok(string) => {
+                        let mut result = String::from("\"");
+                        result.push_str(&string);
+                        result.push_str("\"");
+
+                        result
+                    },
+                    Err(_) => panic!("Cannot print value")
+                }
+            },
+            other => {
+                match library::value_to_string(self, value) {
+                    Ok(string) => {
+                        string
+                    },
+                    Err(_) => panic!("Cannot print value")
+                }
             }
-        }
+        };
+
+        println!("{}", string)
     }
 }
 

@@ -2,12 +2,12 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    keyboards::infect(interpreter)?;
+    registered_keyboards::infect(interpreter)?;
 
     Ok(())
 }
 
-mod keyboards {
+mod registered_keyboards {
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {

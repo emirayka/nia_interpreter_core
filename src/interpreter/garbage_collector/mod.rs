@@ -29,17 +29,17 @@ struct GarbageCollector {
 impl GarbageCollector {
     pub fn new(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> GarbageCollector {
         // these would be ignored
-        let mut ignored_environment_ids = Vec::new();
+        let ignored_environment_ids = Vec::new();
 
         // these are candidates for deletion
-        let mut candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
+        let candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
 
-        let mut candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
-        let mut candidate_keyword_ids = interpreter.get_keyword_arena().get_all_keyword_identifiers();
+        let candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
+        let candidate_keyword_ids = interpreter.get_keyword_arena().get_all_keyword_identifiers();
         let mut candidate_symbol_ids = interpreter.get_symbol_arena().get_all_symbol_identifiers();
 
-        let mut candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
-        let mut candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
+        let candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
+        let candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
         let mut candidate_function_ids = interpreter.get_function_arena().get_all_function_identifiers();
 
         // remove which should be persisted

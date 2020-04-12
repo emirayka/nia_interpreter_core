@@ -4,6 +4,7 @@ pub mod testing_helpers;
 
 mod _break;
 mod check_if_symbol_is_assignable;
+mod check_value_is_string;
 mod _continue;
 mod deep_equal;
 mod execute_forms;
@@ -30,6 +31,7 @@ mod value_to_string;
 
 pub use _break::_break;
 pub use check_if_symbol_is_assignable::check_if_symbol_assignable;
+pub use check_value_is_string::check_value_is_string;
 pub use _continue::_continue;
 pub use deep_equal::deep_equal;
 pub use execute_forms::execute_forms;
