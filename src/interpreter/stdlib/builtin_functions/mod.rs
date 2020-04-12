@@ -27,6 +27,8 @@ mod neq_question;
 mod nequal_question;
 mod not;
 mod rem;
+mod set_car_mark;
+mod set_cdr_mark;
 mod string;
 mod sub;
 mod sum;
@@ -37,6 +39,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("assert", assert::assert),
         ("car", car::car),
         ("cdr", cdr::cdr),
+        ("set-car!", set_car_mark::set_car_mark),
+        ("set-cdr!", set_cdr_mark::set_cdr_mark),
         ("cons", cons::cons),
         ("list", list::list),
         ("string", string::string),

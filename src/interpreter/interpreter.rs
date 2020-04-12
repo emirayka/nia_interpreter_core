@@ -122,8 +122,8 @@ impl Interpreter {
             Err(error) => panic!("Cannot construct interpreter: {:?}", error)
         }
 
-        collect_garbage(&mut interpreter, root_environment)
-            .expect("Garbage collector is broken");
+        // collect_garbage(&mut interpreter, root_environment)
+        //     .expect("Garbage collector is broken");
 
         interpreter
     }
