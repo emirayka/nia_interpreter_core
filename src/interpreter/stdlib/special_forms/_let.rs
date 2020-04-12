@@ -42,9 +42,7 @@ fn set_variable_via_cons(
 
     match interpreter.get_cddr(cons_id) {
         Ok(Value::Symbol(symbol_id))  => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if !symbol.is_nil() {
+            if interpreter.symbol_is_not_nil(symbol_id)? {
                 return interpreter.make_invalid_argument_error(
                     "The definitions of the special form `let' must have exactly two arguments."
                 ).into_result()
@@ -88,9 +86,7 @@ fn set_definition(
             cons_id
         ),
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
+            if interpreter.symbol_is_nil(symbol_id)? {
                 return interpreter.make_invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `let'."
                 ).into_result()

@@ -30,15 +30,7 @@ pub fn list_question(
 
                 match cdr {
                     Value::Symbol(symbol_id) => {
-                        let symbol = match interpreter.get_symbol(symbol_id) {
-                            Ok(value) => value,
-                            Err(error) => return interpreter.make_generic_execution_error_caused(
-                                "",
-                                error
-                            ).into_result()
-                        };
-
-                        is_list_correct = symbol.is_nil();
+                        is_list_correct = interpreter.symbol_is_nil(symbol_id)?;
 
                         break;
                     },
@@ -55,15 +47,7 @@ pub fn list_question(
             is_list_correct
         },
         Value::Symbol(symbol_id) => {
-            let symbol = match interpreter.get_symbol(symbol_id) {
-                Ok(value) => value,
-                Err(error) => return interpreter.make_generic_execution_error_caused(
-                    "",
-                    error
-                ).into_result()
-            };
-
-            symbol.is_nil()
+            interpreter.symbol_is_nil(symbol_id)?
         },
         _ => false
     };

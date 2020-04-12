@@ -104,9 +104,7 @@ pub fn _try(
 
                     match catch_code {
                         Value::Symbol(symbol_id) => {
-                            let symbol = interpreter.get_symbol(symbol_id)?;
-
-                            if symbol.is_nil() {
+                            if interpreter.symbol_is_nil(symbol_id)? {
                                 Ok(interpreter.intern_nil_symbol_value())
                             } else {
                                 return interpreter.make_generic_execution_error(

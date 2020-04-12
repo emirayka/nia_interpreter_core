@@ -113,12 +113,9 @@ pub fn assert_is_object(param: Value) {
 pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
     assert!(
         match param {
-            Value::Symbol(symbol) => {
-                interpreter
-                    .get_symbol(symbol)
-                    .unwrap()
-                    .is_nil()
-            },
+            Value::Symbol(symbol_id) => {
+                interpreter.symbol_is_nil(symbol_id).unwrap()
+            }
             _ => false
         }
     );

@@ -9,11 +9,9 @@ pub fn is_falsy(
     match value {
         Value::Boolean(false) => Ok(true),
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(
-                symbol_id
-            )?;
+            let result = interpreter.symbol_is_nil(symbol_id)?;
 
-            Ok(symbol.is_nil())
+            Ok(result)
         },
         _ => Ok(false)
     }

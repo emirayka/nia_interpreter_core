@@ -365,6 +365,18 @@ impl Interpreter {
         Value::Symbol(symbol_id)
     }
 
+    pub fn symbol_is_nil(&self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let symbol = self.get_symbol(symbol_id)?;
+
+        Ok(symbol.get_name() == "nil" && symbol.get_gensym_id() == 0)
+    }
+
+    pub fn symbol_is_not_nil(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+        let symbol = self.get_symbol(symbol_id)?;
+
+        Ok(symbol.get_name() != "nil" || symbol.get_gensym_id() != 0)
+    }
+
     pub fn check_if_symbol_special(&self, symbol_id: SymbolId) -> Result<bool, Error> {
         let symbol_name = self.get_symbol_name(symbol_id)?;
 
@@ -480,9 +492,7 @@ impl Interpreter {
         match vector.last() {
             Some(&val   @ _) => {
                 if let Value::Symbol(symbol_id) = val {
-                    let symbol = self.get_symbol(symbol_id)?;
-
-                    if symbol.is_nil() {
+                    if self.symbol_is_nil(symbol_id)? {
                         vector.remove(vector.len() - 1);
                     }
                 }
@@ -783,9 +793,7 @@ impl Interpreter {
         match cdr {
             Value::Cons(cons) => self.list_to_vec(cons),
             Value::Symbol(symbol_id) => {
-                let symbol = self.get_symbol(symbol_id)?;
-
-                if symbol.is_nil() {
+                if self.symbol_is_nil(symbol_id)? {
                     Ok(Vec::new())
                 } else {
                     self.make_generic_execution_error(

@@ -6,9 +6,7 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
     let vector = match value {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)?,
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
+            if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return interpreter.make_invalid_argument_error(

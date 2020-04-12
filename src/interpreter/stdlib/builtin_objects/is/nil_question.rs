@@ -18,13 +18,7 @@ pub fn nil_question(
 
     let result = match values.remove(0) {
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)
-                .map_err(|err| interpreter.make_generic_execution_error_caused(
-                    "",
-                    err
-                ))?;
-
-            symbol.is_nil()
+            interpreter.symbol_is_nil(symbol_id)?
         },
         _ => false
     };

@@ -20,9 +20,7 @@ pub fn iterate_through_list(
 
         match cdr {
             Value::Symbol(symbol_id) => {
-                let symbol = interpreter.get_symbol(symbol_id)?;
-
-                if symbol.is_nil() {
+                if interpreter.symbol_is_nil(symbol_id)? {
                     break;
                 } else {
                     return interpreter.make_generic_execution_error(

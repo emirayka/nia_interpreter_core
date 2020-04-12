@@ -52,10 +52,6 @@ impl Symbol {
     pub fn get_gensym_id(&self) -> usize {
         self.gensym_id
     }
-
-    pub fn is_nil(&self) -> bool {
-        &self.name == "nil"
-    }
 }
 
 #[derive(Debug)]

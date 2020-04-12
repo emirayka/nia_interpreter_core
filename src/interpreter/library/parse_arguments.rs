@@ -28,9 +28,7 @@ fn extract_three_items_from_cons(
             Some(cons_id)
         },
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if !symbol.is_nil() {
+            if interpreter.symbol_is_not_nil(symbol_id)? {
                 second = Some(Value::Symbol(symbol_id));
             }
 
@@ -51,9 +49,7 @@ fn extract_three_items_from_cons(
                 third = Some(interpreter.get_car(cons_id)?);
             },
             Value::Symbol(symbol_id) => {
-                let symbol = interpreter.get_symbol(symbol_id)?;
-
-                if !symbol.is_nil() {
+                if interpreter.symbol_is_not_nil(symbol_id)? {
                     third = Some(Value::Symbol(symbol_id));
                 }
             },
@@ -223,9 +219,7 @@ pub fn parse_arguments_from_value(
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)
             .map_err(|_| interpreter.make_generic_execution_error(""))?,
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
+            if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return interpreter.make_invalid_argument_error("")

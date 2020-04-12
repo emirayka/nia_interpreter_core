@@ -15,15 +15,7 @@ pub fn read_let_definitions(
                 ))?
         },
         Value::Symbol(symbol_id) => {
-            let symbol = match interpreter.get_symbol(symbol_id) {
-                Ok(symbol) => symbol,
-                Err(error) => return interpreter.make_generic_execution_error_caused(
-                    "",
-                    error
-                ).into_result()
-            };
-
-            if symbol.is_nil() {
+            if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return interpreter.make_invalid_argument_error("")
@@ -37,15 +29,7 @@ pub fn read_let_definitions(
         match definition {
             Value::Cons(_) => {},
             Value::Symbol(symbol_id) => {
-                let symbol = match interpreter.get_symbol(*symbol_id) {
-                    Ok(symbol) => symbol,
-                    Err(error) => return interpreter.make_generic_execution_error_caused(
-                        "",
-                        error
-                    ).into_result()
-                };
-
-                if symbol.is_nil() {
+                if interpreter.symbol_is_nil(*symbol_id)? {
                     return interpreter.make_invalid_argument_error("").into_result()
                 }
             }

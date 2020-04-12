@@ -21,9 +21,9 @@ fn set_function_via_cons(
 
     let function_symbol_id = match car {
         Value::Symbol(symbol_id)  => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
+            let result = interpreter.symbol_is_nil(symbol_id)?;
 
-            if symbol.is_nil() {
+            if result {
                 return interpreter.make_invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `flet'."
                 ).into_result()
@@ -54,9 +54,7 @@ fn set_function_via_cons(
     let code = match cddr {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
         Value::Symbol(symbol_id) => {
-            let symbol = interpreter.get_symbol(symbol_id)?;
-
-            if symbol.is_nil() {
+            if interpreter.symbol_is_nil(symbol_id)? {
                 Ok(Vec::new())
             } else {
                 return interpreter.make_invalid_argument_error(
