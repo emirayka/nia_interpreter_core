@@ -13,7 +13,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         when::infect,
         unless::infect,
 
-        // cr::infect,
+        //cr::infect,
 
         empty::infect
     );
@@ -397,31 +397,31 @@ mod cr {
             (defn set-cdar! (c v) (set-cdr! (car c) v))
             (defn set-cddr! (c v) (set-cdr! (cdr c) v))
 
-            (defn set-caaar! (c v) (set-car! (car (car c)) v ))
-            (defn set-caadr! (c v) (set-car! (car (cdr c)) v ))
-            (defn set-cadar! (c v) (set-car! (cdr (car c)) v ))
-            (defn set-caddr! (c v) (set-car! (cdr (cdr c)) v ))
-            (defn set-cdaar! (c v) (set-cdr! (car (car c)) v ))
-            (defn set-cdadr! (c v) (set-cdr! (car (cdr c)) v ))
-            (defn set-cddar! (c v) (set-cdr! (cdr (car c)) v ))
-            (defn set-cdddr! (c v) (set-cdr! (cdr (cdr c)) v ))
+            (defn set-caaar! (c v) (set-car! (car (car c)) v))
+            (defn set-caadr! (c v) (set-car! (car (cdr c)) v))
+            (defn set-cadar! (c v) (set-car! (cdr (car c)) v))
+            (defn set-caddr! (c v) (set-car! (cdr (cdr c)) v))
+            (defn set-cdaar! (c v) (set-cdr! (car (car c)) v))
+            (defn set-cdadr! (c v) (set-cdr! (car (cdr c)) v))
+            (defn set-cddar! (c v) (set-cdr! (cdr (car c)) v))
+            (defn set-cdddr! (c v) (set-cdr! (cdr (cdr c)) v))
 
-            (defn set-caaaar! (c v) (set-car! (car (car (car c))) v ))
-            (defn set-caaadr! (c v) (set-car! (car (car (cdr c))) v ))
-            (defn set-caadar! (c v) (set-car! (car (cdr (car c))) v ))
-            (defn set-caaddr! (c v) (set-car! (car (cdr (cdr c))) v ))
-            (defn set-cadaar! (c v) (set-car! (cdr (car (car c))) v ))
-            (defn set-cadadr! (c v) (set-car! (cdr (car (cdr c))) v ))
-            (defn set-caddar! (c v) (set-car! (cdr (cdr (car c))) v ))
-            (defn set-cadddr! (c v) (set-car! (cdr (cdr (cdr c))) v ))
-            (defn set-cdaaar! (c v) (set-cdr! (car (car (car c))) v ))
-            (defn set-cdaadr! (c v) (set-cdr! (car (car (cdr c))) v ))
-            (defn set-cdadar! (c v) (set-cdr! (car (cdr (car c))) v ))
-            (defn set-cdaddr! (c v) (set-cdr! (car (cdr (cdr c))) v ))
-            (defn set-cddaar! (c v) (set-cdr! (cdr (car (car c))) v ))
-            (defn set-cddadr! (c v) (set-cdr! (cdr (car (cdr c))) v ))
-            (defn set-cdddar! (c v) (set-cdr! (cdr (cdr (car c))) v ))
-            (defn set-cddddr! (c v) (set-cdr! (cdr (cdr (cdr c))) v ))
+            (defn set-caaaar! (c v) (set-car! (car (car (car c))) v))
+            (defn set-caaadr! (c v) (set-car! (car (car (cdr c))) v))
+            (defn set-caadar! (c v) (set-car! (car (cdr (car c))) v))
+            (defn set-caaddr! (c v) (set-car! (car (cdr (cdr c))) v))
+            (defn set-cadaar! (c v) (set-car! (cdr (car (car c))) v))
+            (defn set-cadadr! (c v) (set-car! (cdr (car (cdr c))) v))
+            (defn set-caddar! (c v) (set-car! (cdr (cdr (car c))) v))
+            (defn set-cadddr! (c v) (set-car! (cdr (cdr (cdr c))) v))
+            (defn set-cdaaar! (c v) (set-cdr! (car (car (car c))) v))
+            (defn set-cdaadr! (c v) (set-cdr! (car (car (cdr c))) v))
+            (defn set-cdadar! (c v) (set-cdr! (car (cdr (car c))) v))
+            (defn set-cdaddr! (c v) (set-cdr! (car (cdr (cdr c))) v))
+            (defn set-cddaar! (c v) (set-cdr! (cdr (car (car c))) v))
+            (defn set-cddadr! (c v) (set-cdr! (cdr (car (cdr c))) v))
+            (defn set-cdddar! (c v) (set-cdr! (cdr (cdr (car c))) v))
+            (defn set-cddddr! (c v) (set-cdr! (cdr (cdr (cdr c))) v))
 
             (defn set-caaaaar! (c v) (set-car! (car (car (car (car c)))) v))
             (defn set-caaaadr! (c v) (set-car! (car (car (car (cdr c)))) v))
