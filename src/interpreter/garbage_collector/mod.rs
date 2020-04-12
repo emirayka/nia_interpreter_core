@@ -3,156 +3,222 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::environment::EnvironmentId;
 
-pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> Result<(), Error> {
-    // these would be ignored
-    let mut ignored_environment_ids = Vec::new();
+use crate::interpreter::string::StringId;
+use crate::interpreter::keyword::KeywordId;
+use crate::interpreter::symbol::SymbolId;
+use crate::interpreter::cons::ConsId;
+use crate::interpreter::object::ObjectId;
+use crate::interpreter::function::FunctionId;
 
-    // these are candidates for deletion
-    let mut candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
+struct GarbageCollector {
+    ignored_environment_ids: Vec<EnvironmentId>,
+    candidate_environment_ids: Vec<EnvironmentId>,
+    environment_ids: Vec<EnvironmentId>,
 
-    let mut candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
-    let mut candidate_function_ids = interpreter.get_function_arena().get_all_function_identifiers();
-    let mut candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
+    candidate_string_ids: Vec<StringId>,
+    candidate_keyword_ids: Vec<KeywordId>,
+    candidate_symbol_ids: Vec<SymbolId>,
 
-    let mut candidate_keyword_ids = interpreter.get_keyword_arena().get_all_keyword_identifiers();
-    let mut candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
-    let mut candidate_symbol_ids = interpreter.get_symbol_arena().get_all_symbol_identifiers();
+    candidate_cons_ids: Vec<ConsId>,
+    candidate_object_ids: Vec<ObjectId>,
+    candidate_function_ids: Vec<FunctionId>,
 
-    // remove which should be persisted
-    for symbol_id in interpreter.get_ignored_symbols() {
-        candidate_symbol_ids.retain(|id| *id != symbol_id);
+    items: Vec<Value>,
+}
+
+impl GarbageCollector {
+    pub fn new(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> GarbageCollector {
+        // these would be ignored
+        let mut ignored_environment_ids = Vec::new();
+
+        // these are candidates for deletion
+        let mut candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
+
+        let mut candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
+        let mut candidate_keyword_ids = interpreter.get_keyword_arena().get_all_keyword_identifiers();
+        let mut candidate_symbol_ids = interpreter.get_symbol_arena().get_all_symbol_identifiers();
+
+        let mut candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
+        let mut candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
+        let mut candidate_function_ids = interpreter.get_function_arena().get_all_function_identifiers();
+
+        // remove which should be persisted
+        for symbol_id in interpreter.get_ignored_symbols() {
+            candidate_symbol_ids.retain(|id| *id != symbol_id);
+        }
+
+        for function_id in interpreter.get_ignored_functions() {
+            candidate_function_ids.retain(|id| *id != function_id);
+        }
+
+        // iteration base
+        let mut environment_ids = vec!(environment_id);
+
+        let items = Vec::new();
+
+        GarbageCollector {
+            ignored_environment_ids,
+            candidate_environment_ids,
+            environment_ids,
+
+            candidate_string_ids,
+            candidate_keyword_ids,
+            candidate_symbol_ids,
+            candidate_cons_ids,
+            candidate_object_ids,
+            candidate_function_ids,
+
+            items,
+        }
     }
 
-    for function_id in interpreter.get_ignored_functions() {
-        candidate_function_ids.retain(|id| *id != function_id);
+    fn retain_string_id(&mut self, string_id: StringId) {
+        self.candidate_string_ids.retain(|id| *id != string_id);
     }
 
-    // iteration base
-    let mut environment_ids = vec!(environment_id);
+    fn retain_keyword_id(&mut self, keyword_id: KeywordId) {
+        self.candidate_keyword_ids.retain(|id| *id != keyword_id);
+    }
 
-    // remove context values
-    let mut context_items = interpreter.get_context().get_gc_items();
+    fn retain_symbol_id(&mut self, symbol_id: SymbolId) {
+        self.candidate_symbol_ids.retain(|id| *id != symbol_id);
+    }
 
-    while !context_items.is_empty() {
-        let context_item = context_items.remove(0);
+    fn retain_cons_id(&mut self, interpreter: &mut Interpreter, cons_id: ConsId) -> Result<(), Error> {
+        self.candidate_cons_ids.retain(|id| *id != cons_id);
 
-        match context_item {
+        self.items.push(interpreter.get_car(cons_id)?);
+        self.items.push(interpreter.get_cdr(cons_id)?);
+
+        Ok(())
+    }
+
+    fn retain_object_id(&mut self, interpreter: &mut Interpreter, object_id: ObjectId) -> Result<(), Error> {
+        self.candidate_object_ids.retain(|id| *id != object_id);
+
+        let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
+
+        self.items.append(&mut gc_items);
+
+        Ok(())
+    }
+
+    fn retain_function_id(&mut self, interpreter: &mut Interpreter, function_id: FunctionId) -> Result<(), Error> {
+        self.candidate_function_ids.retain(|id| *id != function_id);
+
+        match interpreter.get_function_arena().get_gc_items(function_id)? {
+            Some(mut gc_items) => self.items.append(&mut gc_items),
+            _ => {}
+        }
+
+        match interpreter.get_function_arena().get_gc_environment(function_id)? {
+            Some(gc_environment_id) => {
+                if !self.ignored_environment_ids.contains(&gc_environment_id) {
+                    self.environment_ids.push(gc_environment_id)
+                }
+            },
+            _ => {}
+        }
+
+        Ok(())
+    }
+
+    fn retain_value(&mut self, interpreter: &mut Interpreter, value: Value) -> Result<(), Error> {
+        match value {
             Value::String(string_id) => {
-                candidate_string_ids.retain(|id| *id != string_id);
+                self.retain_string_id(string_id);
             },
             Value::Keyword(keyword_id) => {
-                candidate_keyword_ids.retain(|id| *id != keyword_id);
+                self.retain_keyword_id(keyword_id);
             },
             Value::Symbol(symbol_id) => {
-                candidate_symbol_ids.retain(|id| *id != symbol_id);
+                self.retain_symbol_id(symbol_id);
             },
             Value::Cons(cons_id) => {
-                candidate_cons_ids.retain(|id| *id != cons_id);
-
-                context_items.push(interpreter.get_car(cons_id)?);
-                context_items.push(interpreter.get_cdr(cons_id)?);
+                self.retain_cons_id(interpreter, cons_id)?;
             },
             Value::Object(object_id) => {
-                candidate_object_ids.retain(|id| *id != object_id);
-
-                let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
-
-                context_items.append(&mut gc_items);
+                self.retain_object_id(interpreter, object_id)?;
             },
             Value::Function(function_id) => {
-                candidate_function_ids.retain(|id| *id != function_id);
-
-                match interpreter.get_function_arena().get_gc_items(function_id)? {
-                    Some(mut gc_items) => context_items.append(&mut gc_items),
-                    _ => {}
-                }
-
-                match interpreter.get_function_arena().get_gc_environment(function_id)? {
-                    Some(gc_environment_id) => {
-                        environment_ids.push(gc_environment_id)
-                    },
-                    _ => {}
-                }
+                self.retain_function_id(interpreter, function_id)?;
             },
             _ => {}
         }
+
+        Ok(())
     }
 
-    // iteration over accessible environments
-    while !environment_ids.is_empty() {
-        let environment_id = environment_ids.remove(0);
+    fn collect_context_items(&mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+        // remove context values
+        let mut context_items = interpreter.get_context().get_gc_items();
 
-        candidate_environment_ids.retain(|id| *id != environment_id);
+        while !context_items.is_empty() {
+            let context_item = context_items.remove(0);
 
-        ignored_environment_ids.push(environment_id);
-
-        match interpreter.get_environment_arena().get_parent(environment_id)? {
-            Some(parent_id) => {
-                if !ignored_environment_ids.contains(&parent_id) {
-                    environment_ids.push(parent_id)
-                }
-            },
-            _ => {}
+            self.retain_value(interpreter, context_item)?;
         }
 
-        let mut items = interpreter.get_environment_items(environment_id)?;
+        Ok(())
+    }
 
-        while !items.is_empty() {
-            let item = items.remove(0);
+    fn collect_ordinary_items(&mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+        // iteration over accessible environments
+        while !self.environment_ids.is_empty() {
+            let environment_id = self.environment_ids.remove(0);
 
-            match item {
-                Value::String(string_id) => {
-                    candidate_string_ids.retain(|id| *id != string_id);
-                },
-                Value::Keyword(keyword_id) => {
-                    candidate_keyword_ids.retain(|id| *id != keyword_id);
-                },
-                Value::Symbol(symbol_id) => {
-                    candidate_symbol_ids.retain(|id| *id != symbol_id);
-                },
-                Value::Cons(cons_id) => {
-                    candidate_cons_ids.retain(|id| *id != cons_id);
+            self.candidate_environment_ids.retain(|id| *id != environment_id);
+            self.ignored_environment_ids.push(environment_id);
 
-                    items.push(interpreter.get_car(cons_id)?);
-                    items.push(interpreter.get_cdr(cons_id)?);
-                },
-                Value::Object(object_id) => {
-                    candidate_object_ids.retain(|id| *id != object_id);
-
-                    let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
-
-                    items.append(&mut gc_items);
-                },
-                Value::Function(function_id) => {
-                    candidate_function_ids.retain(|id| *id != function_id);
-
-                    match interpreter.get_function_arena().get_gc_items(function_id)? {
-                        Some(mut gc_items) => items.append(&mut gc_items),
-                        _ => {}
-                    }
-
-                    match interpreter.get_function_arena().get_gc_environment(function_id)? {
-                        Some(gc_environment_id) => {
-                            if !ignored_environment_ids.contains(&gc_environment_id) {
-                                environment_ids.push(gc_environment_id)
-                            }
-                        },
-                        _ => {}
+            match interpreter.get_environment_arena().get_parent(environment_id)? {
+                Some(parent_id) => {
+                    if !self.ignored_environment_ids.contains(&parent_id) {
+                        self.environment_ids.push(parent_id)
                     }
                 },
                 _ => {}
             }
+            let mut items_to_persist = interpreter.get_environment_arena()
+                .get_environment_gc_items(environment_id)?;
+
+            self.items.append(&mut items_to_persist);
+
+            while !self.items.is_empty() {
+                let item = self.items.remove(0);
+
+                self.retain_value(interpreter, item)?;
+            }
         }
+
+        Ok(())
     }
 
-    // free garbage
-    interpreter.free_environments(candidate_environment_ids)?;
-    interpreter.free_strings(candidate_string_ids)?;
-    interpreter.free_keywords(candidate_keyword_ids)?;
-    interpreter.free_symbols(candidate_symbol_ids)?;
-    interpreter.free_cons_cells(candidate_cons_ids)?;
-    interpreter.free_objects(candidate_object_ids)?;
-    interpreter.free_functions(candidate_function_ids)?;
+    fn free(self, interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.free_environments(self.candidate_environment_ids)?;
+
+        interpreter.free_strings(self.candidate_string_ids)?;
+        interpreter.free_keywords(self.candidate_keyword_ids)?;
+        interpreter.free_symbols(self.candidate_symbol_ids)?;
+        interpreter.free_cons_cells(self.candidate_cons_ids)?;
+        interpreter.free_objects(self.candidate_object_ids)?;
+        interpreter.free_functions(self.candidate_function_ids)?;
+
+        Ok(())
+    }
+
+    pub fn collect(mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+        self.collect_context_items(interpreter)?;
+        self.collect_ordinary_items(interpreter)?;
+        self.free(interpreter)?;
+
+        Ok(())
+    }
+}
+
+pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> Result<(), Error> {
+    let mut gc = GarbageCollector::new(interpreter, environment_id);
+
+    gc.collect(interpreter)?;
 
     Ok(())
 }

@@ -1,3 +1,4 @@
+extern crate evdev_rs;
 extern crate rand;
 extern crate nom;
 

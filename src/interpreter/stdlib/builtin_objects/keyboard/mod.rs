@@ -4,13 +4,15 @@ use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
 use crate::interpreter::function::BuiltinFunctionType;
 
+mod register;
 mod start_listening;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let keyboard_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
-        ("start-listening", start_listening::start_listening)
+        ("register", register::register),
+        ("start-listening", start_listening::start_listening),
     );
 
     for (name, func) in bindings {
