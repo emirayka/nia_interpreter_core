@@ -52,7 +52,7 @@ impl GarbageCollector {
         }
 
         // iteration base
-        let mut environment_ids = vec!(environment_id);
+        let environment_ids = vec!(environment_id);
 
         let items = Vec::new();
 
@@ -216,7 +216,7 @@ impl GarbageCollector {
 }
 
 pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> Result<(), Error> {
-    let mut gc = GarbageCollector::new(interpreter, environment_id);
+    let gc = GarbageCollector::new(interpreter, environment_id);
 
     gc.collect(interpreter)?;
 

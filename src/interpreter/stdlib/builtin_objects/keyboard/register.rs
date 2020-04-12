@@ -62,7 +62,7 @@ pub fn register(
         root_environment_id,
         symbol_id_registered_keyboards,
         cons
-    );
+    )?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }

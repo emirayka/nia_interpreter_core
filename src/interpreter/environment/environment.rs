@@ -220,13 +220,14 @@ mod tests {
     }
 
     #[test]
-    fn able_to_make_child_parent_relationship() {
-        let mut env1 = LexicalEnvironment::new();
+    fn able_to_make_parent_relationship() {
         let mut env2 = LexicalEnvironment::new();
-
         let id1 = EnvironmentId::new(1);
-        let id2 = EnvironmentId::new(2);
+
+        assert_eq!(None, env2.get_parent());
 
         env2.set_parent(id1);
+
+        assert_eq!(Some(id1), env2.get_parent());
     }
 }
