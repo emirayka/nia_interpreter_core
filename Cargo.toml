@@ -9,8 +9,8 @@ edition = "2018"
 [dependencies]
 rand = "0.7.3"
 nom = "5.1.0"
-# evdev-rs = "0.3.1"
 nia_state_machine = { path = "../nia_state_machine" }
+nia_events = { path = "../nia_events" }
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

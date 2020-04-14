@@ -26,7 +26,6 @@ use crate::interpreter::reader::read_elements;
 use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::garbage_collector::collect_garbage;
 
-
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
 

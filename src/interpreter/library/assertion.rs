@@ -128,9 +128,7 @@ pub fn assert_results_are_equal(interpreter: &mut Interpreter, pairs: Vec<(&str,
 
         println!("{}", code_expected);
         interpreter.print_value(expected);
-        println!();
         interpreter.print_value(result);
-        println!();
 
         assert_deep_equal(
             interpreter,

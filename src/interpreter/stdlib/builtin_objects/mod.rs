@@ -13,6 +13,8 @@ mod rand;
 mod string;
 mod to;
 
+mod nia; // :3
+
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     bit::infect(interpreter)?;
     func::infect(interpreter)?;
@@ -25,6 +27,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     rand::infect(interpreter)?;
     string::infect(interpreter)?;
     to::infect(interpreter)?;
+
+    nia::infect(interpreter)?;
 
     Ok(())
 }

@@ -1,37 +1,33 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
+
+use crate::interpreter::library::infect::infect_object_builtin_function;
 use crate::interpreter::function::BuiltinFunctionType;
 
-mod register;
-mod start_listening;
-mod define_global_mapping;
+mod quit;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let keyboard_object_id = interpreter.make_object();
+    let nia_symbol_id = interpreter.intern("nia");
+    let nia_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
-        ("register", register::register),
-        ("start-listening", start_listening::start_listening),
-        ("define-global-mapping", define_global_mapping::define_global_mapping),
+        ("quit", quit::quit),
     );
 
     for (name, func) in bindings {
         infect_object_builtin_function(
             interpreter,
-            keyboard_object_id,
+            nia_object_id,
             name,
             func
         )?;
     }
 
-    let keyboard_symbol_id = interpreter.intern("keyboard");
-
     interpreter.define_variable(
         interpreter.get_root_environment(),
-        keyboard_symbol_id,
-        Value::Object(keyboard_object_id)
+        nia_symbol_id,
+        Value::Object(nia_object_id)
     )?;
 
     Ok(())
