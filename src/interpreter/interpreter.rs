@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parser::parse_code;
-
 use crate::interpreter::value::Value;
-use crate::interpreter::reader::read_elements;
 use crate::interpreter::function::{Function};
 use crate::interpreter::function::InterpretedFunction;
 use crate::interpreter::function::BuiltinFunction;
@@ -11,7 +8,6 @@ use crate::interpreter::function::SpecialFormFunction;
 use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
 use crate::interpreter::function::MacroFunction;
 use crate::interpreter::error::Error;
-use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::environment::{EnvironmentArena, EnvironmentId};
 use crate::interpreter::object::ObjectArena;
 use crate::interpreter::object::ObjectId;
@@ -24,7 +20,12 @@ use crate::interpreter::keyword::Keyword;
 use crate::interpreter::function::Arguments;
 use crate::interpreter::context::Context;
 use crate::interpreter::library;
+use crate::parser::parse_code;
+
+use crate::interpreter::reader::read_elements;
+use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::garbage_collector::collect_garbage;
+
 
 pub struct Interpreter {
     environment_arena: EnvironmentArena,

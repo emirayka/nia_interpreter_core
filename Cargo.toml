@@ -1,5 +1,5 @@
 [package]
-name = "test_interpreter"
+name = "nia_interpreter_core"
 version = "0.1.0"
 authors = ["mirai"]
 edition = "2018"
@@ -9,8 +9,8 @@ edition = "2018"
 [dependencies]
 rand = "0.7.3"
 nom = "5.1.0"
-evdev-rs = "0.3.1"
-state_machine = { path = "../state_machine" }
+# evdev-rs = "0.3.1"
+nia_state_machine = { path = "../nia_state_machine" }
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"

@@ -7,72 +7,47 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
+use crate::keyboard_remapper::{
+    KeyId,
+    KeyboardId,
+    KeyChord,
+    KeyboardListener,
+    KeyboardListenerUnifier,
+    KeyChordProducer,
+};
 use crate::interpreter::library;
 
-use evdev_rs;
 
-// pub fn start_loop() -> Result<(), Error> {
-//     let (tx, rx) = mpsc::channel();
-//
-//     {
-//         let tx = tx.clone();
-//     }
-//
-//     {
-//         let tx = tx.clone();
-//         thread::spawn(move || {
-//             let f1 = File::open("/dev/input/event14").unwrap();
-//
-//             let mut d1 = evdev_rs::device::Device::new().unwrap();
-//
-//             d1.set_fd(f1);
-//             d1.grab(evdev_rs::GrabMode::Grab);
-//
-//             let flags = evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING;
-//
-//             loop {
-//                 match d1.next_event(flags) {
-//                     Ok((read_status, event)) => {
-//                         match read_status {
-//                             evdev_rs::ReadStatus::Sync => {
-//                             },
-//                             evdev_rs::ReadStatus::Success => {
-//                                 match event.event_type {
-//                                     evdev_rs::enums::EventType::EV_KEY => {
-//                                         tx.send((
-//                                             2,
-//                                             event.event_code,
-//                                             event.value
-//                                         ));
-//                                     },
-//                                     _ => {}
-//                                 }
-//                             },
-//                         }
-//                     },
-//                     Err(_) => {
-//                         panic!();
-//                     }
-//                 }
-//             }
-//         });
-//     }
-//
-//     loop {
-//         let result = rx.recv().unwrap();
-//
-//         let str = format!(
-//             "Keyboard id: {}, event code: {}, event value: {}",
-//             result.0,
-//             result.1,
-//             result.2,
-//         );
-//
-//         println!("{}", str)
-//     }
-//
-//     Ok(())
-// }
+pub fn start_event_loop(
+    interpreter: &mut Interpreter,
+    keyboards: Vec<(String, String)>
+) -> Result<(), Error>{
+    let mut keyboard_listener_unifier = KeyboardListenerUnifier::new();
+
+    for (index, keyboard) in keyboards.into_iter().enumerate() {
+        let keyboard_listener = KeyboardListener::new(
+            KeyboardId::new(index),
+            String::from(keyboard.0)
+        );
+
+        keyboard_listener_unifier.add_keyboard_listener(keyboard_listener);
+    }
+
+    let key_chord_producer = KeyChordProducer::new(
+        keyboard_listener_unifier,
+        vec!()
+    );
+
+    let receiver = key_chord_producer.start_listening();
+
+    loop {
+        let key_chord = receiver.recv().unwrap();
+
+        println!("{:?}", key_chord);
+    }
+
+    Ok(())
+}
 
 pub fn start_loop(interpreter: &mut Interpreter) -> Result<(), Error> {
     let root_environment_id = interpreter.get_root_environment();
@@ -85,11 +60,34 @@ pub fn start_loop(interpreter: &mut Interpreter) -> Result<(), Error> {
 
     library::check_value_is_cons(
         interpreter,
-        registered_keyboards
+        registered_keyboards,
     )?;
 
     let registered_keyboards = interpreter.list_to_vec(
         registered_keyboards.as_cons_id()
+    )?;
+
+    let mut keyboards = Vec::new();
+
+    for registered_keyboard in registered_keyboards {
+        library::check_value_is_cons(
+            interpreter,
+            registered_keyboard,
+        )?;
+
+        let registered_keyboard = interpreter.list_to_vec(
+            registered_keyboard.as_cons_id()
+        )?;
+
+        let path = library::read_as_string(interpreter, registered_keyboard[0])?;
+        let name = library::read_as_string(interpreter, registered_keyboard[1])?;
+
+        keyboards.push((path.clone(), name.clone()))
+    }
+
+    start_event_loop(
+        interpreter,
+        keyboards
     )?;
 
     Ok(())
@@ -98,19 +96,18 @@ pub fn start_loop(interpreter: &mut Interpreter) -> Result<(), Error> {
 pub fn start_listening(
     interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 0 {
         return interpreter.make_invalid_argument_count_error(
             "Built-in function `keyboard:start-listening' takes no arguments."
-        ).into_result()
+        ).into_result();
     }
 
-    // start_loop()?;
+    start_loop(interpreter)?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
