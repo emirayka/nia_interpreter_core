@@ -142,15 +142,15 @@ mod tests {
             "(keyboard:define-global-mapping {} #())",
             "(keyboard:define-global-mapping #() #())",
 
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
-            "(keyboard:define-global-mapping \"q\")",
+            "(keyboard:define-global-mapping \"q\" 1)",
+            "(keyboard:define-global-mapping \"q\" 1.1)",
+            "(keyboard:define-global-mapping \"q\" #t)",
+            "(keyboard:define-global-mapping \"q\" #f)",
+            "(keyboard:define-global-mapping \"q\" \"string\")",
+            "(keyboard:define-global-mapping \"q\" :keyword)",
+            "(keyboard:define-global-mapping \"q\" 'symbol)",
+            "(keyboard:define-global-mapping \"q\" '())",
+            "(keyboard:define-global-mapping \"q\" {})",
         );
 
         assertion::assert_results_are_invalid_argument_errors(
