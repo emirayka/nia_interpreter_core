@@ -48,51 +48,29 @@ fn read_keyboards(
     Ok(keyboards)
 }
 
-fn read_key_chord_part(
-    interpreter: &mut Interpreter,
-    key_chord_part_value: Value
-) -> Result<KeyChordPart, Error> {
-    match key_chord_part_value {
-        Value::Integer(key_id) => Ok(KeyChordPart::Key1(KeyId::new(key_id as u16))),
-        Value::Cons(cons_id) => {
-            let mut values = interpreter.list_to_vec(cons_id)?;
+fn read_modifiers(
+    interpreter: &mut Interpreter
+) -> Result<Vec<KeyChordPart>, Error> {
+    let modifiers_value = library::get_root_variable(
+        interpreter,
+        "modifiers"
+    )?;
 
-            let keyboard_id = library::read_as_i64(interpreter, values.remove(0))?;
-            let key_id = library::read_as_i64(interpreter, values.remove(0))?;
+    library::check_value_is_list(interpreter, modifiers_value);
 
-            Ok(KeyChordPart::Key2(
-                KeyboardId::new(keyboard_id as u16),
-                KeyId::new(key_id as u16),
-            ))
-        },
-        _ => interpreter.make_invalid_argument_error(
-            "Invalid key chord part"
-        ).into_result()
-    }
-}
+    let modifiers_values = interpreter.list_to_vec(modifiers_value.as_cons_id())?;
+    let mut modifiers = Vec::new();
 
-fn read_key_chord(
-    interpreter: &mut Interpreter,
-    key_chord_value: Value
-) -> Result<KeyChord, Error> {
-    library::check_value_is_cons(interpreter, key_chord_value)?;
+    for modifier_value in modifiers_values {
+        let modifier = library::read_as_key_chord_part(
+            interpreter,
+            modifier_value
+        )?;
 
-    let key_chord_part_values = interpreter.list_to_vec(key_chord_value.as_cons_id())?;
-    let mut key_chord_parts = Vec::new();
-
-    for key_chord_part_value in key_chord_part_values {
-        let key_chord_part = read_key_chord_part(interpreter, key_chord_part_value)?;
-        key_chord_parts.push(key_chord_part);
+        modifiers.push(modifier);
     }
 
-    let (modifiers, key) = key_chord_parts.split_at(
-        key_chord_parts.len() - 1
-    );
-
-    Ok(KeyChord::new(
-        modifiers.to_vec(),
-        key[0]
-    ))
+    Ok(modifiers)
 }
 
 fn read_key_chords(
@@ -105,7 +83,7 @@ fn read_key_chords(
     let mut key_chords = Vec::new();
 
     for key_chord_value in key_chords_values {
-        let key_chord = read_key_chord(interpreter, key_chord_value)?;
+        let key_chord = library::read_as_key_chord(interpreter, key_chord_value)?;
 
         key_chords.push(key_chord);
     }
@@ -150,6 +128,7 @@ fn read_mappings(
 fn start_event_loop(
     interpreter: &mut Interpreter,
     keyboards: Vec<(String, String)>,
+    modifiers: Vec<KeyChordPart>,
     mappings: Vec<(Vec<KeyChord>, Value)>
 ) -> Result<(), Error> {
     let mut settings_builder = nia_events::EventListenerSettingsBuilder::new();
@@ -158,6 +137,10 @@ fn start_event_loop(
     for (index, (keyboard_path, keyboard_name)) in keyboards.into_iter().enumerate() {
         settings_builder = settings_builder.add_keyboard(keyboard_path);
         map.insert(keyboard_name, nia_events::KeyboardId::new(index as u16));
+    }
+
+    for modifier in modifiers {
+        settings_builder = settings_builder.add_modifier(modifier);
     }
 
     let settings = settings_builder.build();
@@ -177,6 +160,8 @@ fn start_event_loop(
     loop {
         let event = receiver.recv()
             .expect("Failure while listening event.");
+        
+        println!("{:?}", event);
 
         match event {
             nia_events::Event::KeyChordEvent(key_chord) => {
@@ -207,11 +192,13 @@ pub fn start_loop(
     interpreter: &mut Interpreter,
 ) -> Result<(), Error> {
     let keyboards = read_keyboards(interpreter)?;
+    let modifiers = read_modifiers(interpreter)?;
     let mappings = read_mappings(interpreter)?;
 
     start_event_loop(
         interpreter,
         keyboards,
+        modifiers,
         mappings
     )?;
 

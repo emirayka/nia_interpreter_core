@@ -9,40 +9,6 @@ use crate::interpreter::library;
 
 use nia_events::{KeyChord, KeyChordPart};
 
-fn key_chord_part_to_list(
-    interpreter: &mut Interpreter,
-    key_chord_part: &KeyChordPart
-) -> Value {
-    match key_chord_part {
-        KeyChordPart::Key1(key_id) => {
-            Value::Integer(key_id.get_id() as i64)
-        },
-        KeyChordPart::Key2(keyboard_id, key_id) => {
-            interpreter.vec_to_list(
-                vec!(
-                    Value::Integer(keyboard_id.get_id() as i64),
-                    Value::Integer(key_id.get_id() as i64)
-                )
-            )
-        }
-    }
-}
-
-fn key_chord_to_list(
-    interpreter: &mut Interpreter,
-    key_chord: KeyChord
-) -> Value {
-    let mut vector = Vec::new();
-
-    for modifier in key_chord.get_modifiers() {
-        vector.push(key_chord_part_to_list(interpreter, modifier));
-    }
-
-    vector.push(key_chord_part_to_list(interpreter, key_chord.get_key()));
-
-    interpreter.vec_to_list(vector)
-}
-
 fn key_chords_to_list(
     interpreter: &mut Interpreter,
     key_chords: Vec<KeyChord>
@@ -50,7 +16,7 @@ fn key_chords_to_list(
     let mut vector = Vec::new();
 
     for key_chord in key_chords {
-        vector.push(key_chord_to_list(interpreter, key_chord));
+        vector.push(library::key_chord_to_list(interpreter, key_chord));
     }
 
     interpreter.vec_to_list(vector)

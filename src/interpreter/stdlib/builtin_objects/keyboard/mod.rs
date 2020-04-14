@@ -4,9 +4,10 @@ use crate::interpreter::library::infect::{infect_object_builtin_function};
 use crate::interpreter::value::Value;
 use crate::interpreter::function::BuiltinFunctionType;
 
+mod define_global_mapping;
+mod define_modifier;
 mod register;
 mod start_listening;
-mod define_global_mapping;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let keyboard_object_id = interpreter.make_object();
@@ -15,6 +16,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("register", register::register),
         ("start-listening", start_listening::start_listening),
         ("define-global-mapping", define_global_mapping::define_global_mapping),
+        ("define-modifier", define_modifier::define_modifier),
     );
 
     for (name, func) in bindings {
