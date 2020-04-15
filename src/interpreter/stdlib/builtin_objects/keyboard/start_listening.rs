@@ -175,7 +175,7 @@ fn start_event_loop(
         let event = receiver.recv()
             .expect("Failure while listening event.");
 
-        // println!("{:?}", event);
+        println!("{:?}", event);
 
         match event {
             Event::KeyChordEvent(key_chord) => {
@@ -249,10 +249,10 @@ pub fn start_listening(
 mod tests {
     use super::*;
 
-    #[test]
-    fn simple_test() {
-        let mut interpreter = Interpreter::new();
-
-        interpreter.execute(r#"(keyboard:register "/dev/input/event6" "first") (keyboard:start-listening)"#).unwrap();
-    }
+    // #[test]
+    // fn simple_test() {
+    //     let mut interpreter = Interpreter::new();
+    //
+    //     interpreter.execute(r#"(keyboard:register "/dev/input/event6" "first") (keyboard:start-listening)"#).unwrap();
+    // }
 }
