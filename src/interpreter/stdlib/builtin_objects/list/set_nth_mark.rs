@@ -39,7 +39,7 @@ pub fn set_nth_mark(
         )?;
     }
 
-    interpreter.set_car(cons_id, setting_value);
+    interpreter.set_car(cons_id, setting_value)?;
 
     Ok(setting_value)
 }

@@ -115,7 +115,7 @@ impl Interpreter {
 
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter::raw();
-        let root_environment = interpreter.get_root_environment();
+        // let root_environment = interpreter.get_root_environment();
 
         match infect_stdlib(&mut interpreter) {
             Ok(()) => {},
@@ -1258,10 +1258,10 @@ impl Interpreter {
             .get_car(s_expression)?;
 
         match car {
-            Value::Symbol(func_name) => {
+            Value::Symbol(func_symbol_id) => {
                 let function_value = self.lookup_function(
                     environment_id,
-                    func_name
+                    func_symbol_id
                 )?;
 
                 let function_id = match function_value {
@@ -1276,7 +1276,7 @@ impl Interpreter {
                     function_id,
                     s_expression
                 )
-            },
+            }
             Value::Function(function_id) => self.evaluate_s_expression_function_invocation(
                 environment_id,
                 function_id,

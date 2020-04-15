@@ -4,6 +4,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::function::Arguments;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ArgumentParsingMode {
     Ordinary,
     Optional,
@@ -131,13 +132,31 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                 let symbol_name = symbol.get_name();
 
                 if symbol_name == "#opt" {
-                    mode = ArgumentParsingMode::Optional;
+                    if mode == ArgumentParsingMode::Ordinary {
+                        mode = ArgumentParsingMode::Optional;
+                    } else {
+                        return interpreter.make_generic_execution_error(
+                            "Invalid argument specification: optional arguments may occur only after ordinary arguments."
+                        ).into_result();
+                    }
                     continue;
                 } else if symbol_name == "#rest" {
-                    mode = ArgumentParsingMode::Rest;
+                    if mode == ArgumentParsingMode::Ordinary || mode == ArgumentParsingMode::Optional {
+                        mode = ArgumentParsingMode::Rest;
+                    } else {
+                        return interpreter.make_generic_execution_error(
+                            "Invalid argument specification: rest argument may occur only after ordinary or optional arguments."
+                        ).into_result();
+                    }
                     continue;
                 } else if symbol_name == "#keys" {
-                    mode = ArgumentParsingMode::Keys;
+                    if mode == ArgumentParsingMode::Ordinary {
+                        mode = ArgumentParsingMode::Keys;
+                    } else {
+                        return interpreter.make_generic_execution_error(
+                            "Invalid argument specification: key arguments may occur only after ordinary arguments."
+                        ).into_result();
+                    }
                     continue;
                 }
 
@@ -235,8 +254,202 @@ pub fn parse_arguments_from_value(
     parse_arguments(interpreter, arguments)
 }
 
-// todo: add tests here
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::interpreter::library::assertion;
+
+    #[test]
+    fn assert_returns_correctly_parsed_arguments() {
+        let mut interpreter = Interpreter::new();
+
+        let specs = vec!(
+            // tests for each variation of every argument type
+            (
+                "'()",
+                {
+                    Arguments::new()
+                }
+            ),
+            (
+                "'(a)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#opt a)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_optional_argument(String::from("a"), None, None).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#opt (a 1))",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_optional_argument(String::from("a"), Some(Value::Integer(1)), None).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#opt (a 1 a?))",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_optional_argument(String::from("a"), Some(Value::Integer(1)), Some(String::from("a?"))).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#rest a)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_rest_argument(String::from("a")).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#keys a)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_key_argument(String::from("a"), None, None).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#keys (a 1))",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_key_argument(String::from("a"), Some(Value::Integer(1)), None).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(#keys (a 1 a?))",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_key_argument(String::from("a"), Some(Value::Integer(1)), Some(String::from("a?"))).unwrap();
+
+                    arguments
+                }
+            ),
+            // tests for combinations
+            (
+                "'(a b)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+                    arguments.add_ordinary_argument(String::from("b")).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(a #opt b)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+                    arguments.add_optional_argument(String::from("b"), None, None).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(a #rest b)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+                    arguments.add_rest_argument(String::from("b")).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(a #opt b c #rest d)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+                    arguments.add_optional_argument(String::from("b"), None, None).unwrap();
+                    arguments.add_optional_argument(String::from("c"), None, None).unwrap();
+                    arguments.add_rest_argument(String::from("d")).unwrap();
+
+                    arguments
+                }
+            ),
+            (
+                "'(a #keys b)",
+                {
+                    let mut arguments = Arguments::new();
+
+                    arguments.add_ordinary_argument(String::from("a")).unwrap();
+                    arguments.add_key_argument(String::from("b"), None, None).unwrap();
+
+                    arguments
+                }
+            ),
+        );
+
+        for spec in specs {
+            let expected = spec.1;
+
+            let value = interpreter.execute(spec.0).unwrap();
+            let result = parse_arguments_from_value(
+                &mut interpreter,
+                value
+            ).unwrap();
+        }
+    }
+
+    #[test]
+    fn assert_returns_error_when_invalid_argument_sets_were_provided() {
+        let mut interpreter = Interpreter::new();
+
+        let specs = vec!(
+            "'(#opt a #opt b)",
+            "'(#opt a #keys b)",
+
+            "'(#rest a b)",
+            "'(#rest a #opt b)",
+            "'(#rest a #rest b)",
+            "'(#rest a #keys b)",
+
+            "'(#keys a #opt b)",
+            "'(#keys a #rest b)",
+            "'(#keys a #keys b)",
+        );
+
+        for spec in specs {
+            println!("{}", spec);
+            let value = interpreter.execute(spec).unwrap();
+            let result = parse_arguments_from_value(
+                &mut interpreter,
+                value
+            );
+
+            assertion::assert_is_err(result);
+        }
+    }
 }

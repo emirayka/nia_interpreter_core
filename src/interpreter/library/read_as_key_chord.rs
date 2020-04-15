@@ -4,11 +4,11 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
-use nia_events::{KeyChordPart, KeyId, KeyboardId, KeyChord};
+use nia_events::KeyChord;
 
 pub fn read_as_key_chord(
     interpreter: &mut Interpreter,
-    key_chord_value: Value
+    key_chord_value: Value,
 ) -> Result<KeyChord, Error> {
     library::check_value_is_cons(interpreter, key_chord_value)?;
 
@@ -26,8 +26,123 @@ pub fn read_as_key_chord(
 
     Ok(KeyChord::new(
         modifiers.to_vec(),
-        key[0]
+        key[0],
     ))
 }
 
-// todo: tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use nia_events::{KeyChordPart, KeyId, KeyboardId};
+
+    fn assert_returns_correct_key_chord(s: &str, key_chord: KeyChord) {
+        let mut interpreter = Interpreter::new();
+
+        let expected = key_chord;
+
+        let list = interpreter.execute(
+            s
+        ).unwrap();
+
+        let result = read_as_key_chord(
+            &mut interpreter,
+            list
+        ).unwrap();
+
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn returns_correct_key_chord() {
+        let mut interpreter = Interpreter::new();
+
+        let specs = vec!(
+            (
+                "'(0 2 4)",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key1(KeyId::new(0)),
+                        KeyChordPart::Key1(KeyId::new(2)),
+                    ),
+                    KeyChordPart::Key1(KeyId::new(4)),
+                )
+            ),
+            (
+                "'(0 2 (4 5))",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key1(KeyId::new(0)),
+                        KeyChordPart::Key1(KeyId::new(2)),
+                    ),
+                    KeyChordPart::Key2(KeyboardId::new(4), KeyId::new(5)),
+                )
+            ),
+            (
+                "'(0 (2 3) 4)",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key1(KeyId::new(0)),
+                        KeyChordPart::Key2(KeyboardId::new(2), KeyId::new(3)),
+                    ),
+                    KeyChordPart::Key1(KeyId::new(4)),
+                )
+            ),
+            (
+                "'(0 (2 3) (4 5))",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key1(KeyId::new(0)),
+                        KeyChordPart::Key2(KeyboardId::new(2), KeyId::new(3)),
+                    ),
+                    KeyChordPart::Key2(KeyboardId::new(4), KeyId::new(5)),
+                )
+            ),
+            (
+                "'((0 1) 2 4)",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key2(KeyboardId::new(0), KeyId::new(1)),
+                        KeyChordPart::Key1(KeyId::new(2)),
+                    ),
+                    KeyChordPart::Key1(KeyId::new(4)),
+                )
+            ),
+            (
+                "'((0 1) 2 (4 5))",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key2(KeyboardId::new(0), KeyId::new(1)),
+                        KeyChordPart::Key1(KeyId::new(2)),
+                    ),
+                    KeyChordPart::Key2(KeyboardId::new(4), KeyId::new(5)),
+                )
+            ),
+            (
+                "'((0 1) (2 3) 4)",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key2(KeyboardId::new(0), KeyId::new(1)),
+                        KeyChordPart::Key2(KeyboardId::new(2), KeyId::new(3)),
+                    ),
+                    KeyChordPart::Key1(KeyId::new(4)),
+                )
+            ),
+            (
+                "'((0 1) (2 3) (4 5))",
+                KeyChord::new(
+                    vec!(
+                        KeyChordPart::Key2(KeyboardId::new(0), KeyId::new(1)),
+                        KeyChordPart::Key2(KeyboardId::new(2), KeyId::new(3)),
+                    ),
+                    KeyChordPart::Key2(KeyboardId::new(4), KeyId::new(5)),
+                )
+            )
+        );
+
+        for spec in specs {
+            assert_returns_correct_key_chord(spec.0, spec.1);
+        }
+    }
+}
+

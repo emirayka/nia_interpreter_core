@@ -7,7 +7,7 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
-use nia_events::{KeyChord, KeyChordPart};
+use nia_events::{KeyChord};
 
 fn key_chords_to_list(
     interpreter: &mut Interpreter,
@@ -56,7 +56,7 @@ pub fn define_global_mapping(
         key_chords.push(key_chord);
     }
 
-    let mut values = key_chords_to_list(interpreter, key_chords);
+    let values = key_chords_to_list(interpreter, key_chords);
 
     let new_mapping = interpreter.vec_to_list(vec!(values, function_id.to_value()));
     let new_list = interpreter.make_cons_value(new_mapping, global_map_cons_cell);
@@ -65,7 +65,7 @@ pub fn define_global_mapping(
         interpreter,
         "global-map",
         new_list
-    );
+    )?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }

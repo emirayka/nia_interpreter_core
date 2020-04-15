@@ -28,3 +28,40 @@ pub fn read_as_key_chord_part(
         ).into_result()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_returns_correct_key_chord_part(s: &str, key_chord_part: KeyChordPart) {
+        let mut interpreter = Interpreter::new();
+
+        let expected = key_chord_part;
+        let list = interpreter.execute(s).unwrap();
+
+        let result = read_as_key_chord_part(
+            &mut interpreter,
+            list
+        ).unwrap();
+
+        assert_eq!(expected, result)
+    }
+
+    #[test]
+    fn returns_correct_key_chord_parts() {
+        let specs = vec!(
+            (
+                "0",
+                KeyChordPart::Key1(KeyId::new(0))
+            ),
+            (
+                "'(0 1)",
+                KeyChordPart::Key2(KeyboardId::new(0), KeyId::new(1))
+            )
+        );
+
+        for spec in specs {
+            assert_returns_correct_key_chord_part(spec.0, spec.1);
+        }
+    }
+}

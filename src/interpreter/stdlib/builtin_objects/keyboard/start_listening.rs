@@ -6,13 +6,11 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::library;
 
-use nia_events::{KeyChord, KeyChordPart, KeyId, KeyboardId, Event, EventListener, EventListenerSettingsBuilder};
+use nia_events::{KeyChord, KeyChordPart, KeyboardId, Event, EventListener, EventListenerSettingsBuilder};
 
 use nia_state_machine::{
-    StateMachine,
     StateMachineResult,
 };
-use nia_events::Command;
 use nia_events::KeyCommand;
 
 fn read_keyboards(
@@ -61,7 +59,7 @@ fn read_modifiers(
         "modifiers"
     )?;
 
-    library::check_value_is_list(interpreter, modifiers_value);
+    library::check_value_is_list(interpreter, modifiers_value)?;
 
     let modifiers_values = library::read_as_vector(
         interpreter,

@@ -7,8 +7,6 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
-use nia_events::{KeyChord, KeyChordPart};
-
 pub fn define_modifier(
     interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,

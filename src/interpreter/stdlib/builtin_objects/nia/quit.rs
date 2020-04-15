@@ -5,8 +5,6 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 
-use crate::interpreter::library;
-
 pub fn quit(
     _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
@@ -18,6 +16,4 @@ pub fn quit(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::library::assertion;
-    use crate::interpreter::library::testing_helpers::for_special_symbols;
 }
