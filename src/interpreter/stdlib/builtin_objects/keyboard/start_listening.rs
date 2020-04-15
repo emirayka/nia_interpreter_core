@@ -6,9 +6,14 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::library;
 
-use nia_events::{KeyChord, KeyChordPart, KeyId, KeyboardId};
-use nia_state_machine;
-use nom::combinator::map;
+use nia_events::{KeyChord, KeyChordPart, KeyId, KeyboardId, Event, EventListener, EventListenerSettingsBuilder};
+
+use nia_state_machine::{
+    StateMachine,
+    StateMachineResult,
+};
+use nia_events::Command;
+use nia_events::KeyCommand;
 
 fn read_keyboards(
     interpreter: &mut Interpreter
@@ -58,7 +63,10 @@ fn read_modifiers(
 
     library::check_value_is_list(interpreter, modifiers_value);
 
-    let modifiers_values = interpreter.list_to_vec(modifiers_value.as_cons_id())?;
+    let modifiers_values = library::read_as_vector(
+        interpreter,
+        modifiers_value
+    )?;
     let mut modifiers = Vec::new();
 
     for modifier_value in modifiers_values {
@@ -112,9 +120,12 @@ fn read_mappings(
         "global-map"
     )?;
 
-    library::check_value_is_cons(interpreter, mappings)?;
+    library::check_value_is_list(interpreter, mappings)?;
 
-    let mappings_values = interpreter.list_to_vec(mappings.as_cons_id())?;
+    let mappings_values = library::read_as_vector(
+        interpreter,
+        mappings
+    )?;
     let mut mappings = Vec::new();
 
     for mapping_value in mappings_values {
@@ -131,12 +142,12 @@ fn start_event_loop(
     modifiers: Vec<KeyChordPart>,
     mappings: Vec<(Vec<KeyChord>, Value)>
 ) -> Result<(), Error> {
-    let mut settings_builder = nia_events::EventListenerSettingsBuilder::new();
+    let mut settings_builder = EventListenerSettingsBuilder::new();
     let mut map = HashMap::new();
 
     for (index, (keyboard_path, keyboard_name)) in keyboards.into_iter().enumerate() {
         settings_builder = settings_builder.add_keyboard(keyboard_path);
-        map.insert(keyboard_name, nia_events::KeyboardId::new(index as u16));
+        map.insert(keyboard_name, KeyboardId::new(index as u16));
     }
 
     for modifier in modifiers {
@@ -145,8 +156,11 @@ fn start_event_loop(
 
     let settings = settings_builder.build();
 
-    let event_listener = nia_events::EventListener::new(settings);
+    let event_listener = EventListener::new(settings);
     let receiver = event_listener.start_listening();
+
+    let command_sender = nia_events::CommandSender::new();
+    let sender = command_sender.start_sending();
 
     let mut state_machine = nia_state_machine::StateMachine::new();
 
@@ -154,32 +168,42 @@ fn start_event_loop(
         state_machine.add(path, action)
             .map_err(|_| interpreter.make_invalid_argument_error(
                 "Can't bind binding."
-            ));
+            ))?;
     }
 
     loop {
         let event = receiver.recv()
             .expect("Failure while listening event.");
-        
-        println!("{:?}", event);
+
+        // println!("{:?}", event);
 
         match event {
-            nia_events::Event::KeyChordEvent(key_chord) => {
-                match state_machine.excite(&key_chord) {
-                    Some(value) => {
+            Event::KeyChordEvent(key_chord) => {
+                match state_machine.excite(key_chord) {
+                    StateMachineResult::Excited(value) => {
                         let root_environment_id = interpreter.get_root_environment();
                         let nil = interpreter.intern_nil_symbol_value();
                         let value_to_execute = interpreter.make_cons_value(
-                            *value,
+                            value,
                             nil
                         );
 
                         interpreter.evaluate_value(
                             root_environment_id,
                             value_to_execute
-                        ).expect("");
+                        ).expect("Failure while evaluating value.");
                     },
-                    _ => {}
+                    StateMachineResult::Fallback(previous) => {
+                        for key_chord in previous {
+                            let command = nia_events::Command::KeyCommand(
+                                KeyCommand::ForwardKeyChord(key_chord)
+                            );
+
+                            sender.send(command)
+                                .expect("Failure while sending command");
+                        }
+                    },
+                    StateMachineResult::Transition() => {}
                 }
             }
         }
@@ -222,4 +246,13 @@ pub fn start_listening(
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_test() {
+        let mut interpreter = Interpreter::new();
+
+        interpreter.execute(r#"(keyboard:register "/dev/input/event6" "first") (keyboard:start-listening)"#).unwrap();
+    }
+}
