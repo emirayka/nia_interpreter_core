@@ -7,7 +7,7 @@ use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
-use nia_events::{KeyChord};
+use nia_events::{KeyChord, KeyboardId};
 
 fn key_chords_to_list(
     interpreter: &mut Interpreter,
@@ -20,6 +20,38 @@ fn key_chords_to_list(
     }
 
     interpreter.vec_to_list(vector)
+}
+
+fn read_registered_keyboards(
+    interpreter: &mut Interpreter
+) -> Result<HashMap<String, KeyboardId>, Error> {
+    let mut result = HashMap::new();
+
+    let registered_keyboards = library::get_root_variable(
+        interpreter,
+        "registered-keyboards"
+    )?;
+
+    let registered_keyboards = library::read_as_vector(
+        interpreter,
+        registered_keyboards
+    )?;
+
+    for (index, registered_keyboard) in registered_keyboards.into_iter().enumerate() {
+        let part = library::read_as_vector(
+            interpreter,
+            registered_keyboard
+        )?;
+
+        let keyboard_name = library::read_as_string(
+            interpreter,
+            part[1]
+        )?.clone();
+
+        result.insert(keyboard_name, KeyboardId::new(index as u16));
+    }
+
+    Ok(result)
 }
 
 pub fn define_global_mapping(
@@ -38,17 +70,13 @@ pub fn define_global_mapping(
     let mapping = library::read_as_string(interpreter, values.remove(0))?.clone(); // todo: fix
     let function_id = library::read_as_function_id(interpreter, values.remove(0))?;
 
-    let global_map_cons_cell = library::get_root_variable(
-        interpreter,
-        "global-map"
-    )?;
-
     let mut key_chords = Vec::new();
+    let keyboard_name_to_index = read_registered_keyboards(interpreter)?;
 
     for mapping_part in mapping.split(" ") {
         let key_chord = nia_events::str_to_key_chord(
             mapping_part,
-            &HashMap::new() // todo: change
+            &keyboard_name_to_index
         ).map_err(|_| interpreter.make_invalid_argument_error(
             "Invalid key chord."
         ))?;
@@ -83,6 +111,45 @@ mod tests {
             ("global-map", "(list (list (list (list 29 48)) #(+ 1 2)))"),
             ("(keyboard:define-global-mapping \"LeftControl+c LeftControl+b\" #())", "nil"),
             ("global-map", "(list (list (list (list 29 46) (list 29 48)) #()) (list (list (list 29 48)) #(+ 1 2)))"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        )
+    }
+
+    #[test]
+    fn defines_new_mappings_with_keyboard_identifiers() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            ("global-map", "'()"),
+            ("(keyboard:define-global-mapping \"0:LeftControl+0:b\" #(+ 1 2))", "nil"),
+            ("global-map", "(list (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))"),
+            ("(keyboard:define-global-mapping \"1:LeftControl+1:c 1:LeftControl+1:b\" #())", "nil"),
+            ("global-map", "(list (list (list (list (list 1 29) (list 1 46)) (list (list 1 29) (list 1 48))) #()) (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            pairs
+        )
+    }
+
+    #[test]
+    fn defines_new_mappings_with_keyboard_names() {
+        let mut interpreter = Interpreter::new();
+
+        interpreter.execute("(keyboard:register \"/dev/input/event0\" \"second\")").unwrap();
+        interpreter.execute("(keyboard:register \"/dev/input/event1\" \"first\")").unwrap();
+
+        let pairs = vec!(
+            ("global-map", "'()"),
+            ("(keyboard:define-global-mapping \"first:LeftControl+first:b\" #(+ 1 2))", "nil"),
+            ("global-map", "(list (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))"),
+            ("(keyboard:define-global-mapping \"second:LeftControl+second:c second:LeftControl+second:b\" #())", "nil"),
+            ("global-map", "(list (list (list (list (list 1 29) (list 1 46)) (list (list 1 29) (list 1 48))) #()) (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))"),
         );
 
         assertion::assert_results_are_equal(
