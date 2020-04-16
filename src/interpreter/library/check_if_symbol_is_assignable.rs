@@ -24,7 +24,6 @@ mod tests {
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_ok_on_ordinary_symbols() {
         let mut interpreter = Interpreter::new();
@@ -35,7 +34,6 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_on_constants() {
         for_constants(|interpreter, string| {
@@ -47,7 +45,6 @@ mod tests {
         })
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_on_special_symbols() {
         for_special_symbols(|interpreter, string| {

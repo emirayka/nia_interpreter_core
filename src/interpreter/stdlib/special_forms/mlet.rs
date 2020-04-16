@@ -1,68 +1,23 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
+use crate::interpreter::function::{Function, Arguments};
 use crate::interpreter::function::MacroFunction;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::cons::ConsId;
 use crate::interpreter::library;
 
-fn set_macro_via_cons(
+fn set_macro_definition(
     interpreter: &mut Interpreter,
     macro_parent_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    cons_id: ConsId
+    definition: (Value, Arguments, Vec<Value>)
 ) -> Result<(), Error> {
-    let car = interpreter.get_car(cons_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
-            "",
-            err
-        ))?;
+    let function_symbol_value = definition.0;
+    let function_symbol_id = function_symbol_value.as_symbol_id();
 
-    let function_symbol_id = match car {
-        Value::Symbol(symbol_id) => {
-            if interpreter.symbol_is_nil(symbol_id)? {
-                return interpreter.make_invalid_argument_error(
-                    "It's not possible to redefine `nil' via special form `mlet'."
-                ).into_result()
-            } else {
-                symbol_id
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The first element of lists in the first argument of the special form `let' must be a symbol that represents macro name."
-        ).into_result()
-    };
-
-    library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
-
-    let cadr = interpreter.get_cadr(cons_id)
-        .map_err(|_| interpreter.make_invalid_argument_error(
-            "The macro definitions of the special form `mlet' must have at least two items."
-        ))?;
-
-    let arguments = library::parse_arguments_from_value(interpreter, cadr)?;
-
-    let code = match interpreter.get_cddr(cons_id) {
-        Ok(Value::Cons(cons_id)) => interpreter.list_to_vec(cons_id),
-        Ok(Value::Symbol(symbol_id)) => {
-            if interpreter.symbol_is_nil(symbol_id)? {
-                Ok(Vec::new())
-            } else {
-                return interpreter.make_invalid_argument_error(
-                    "The macro definitions of the special form `mlet' must have at least two items.",
-                ).into_result()
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The macro definitions of the special form `mlet' must have at least two items.",
-        ).into_result()
-    };
-
-    let code = code.map_err(|err| interpreter.make_generic_execution_error_caused(
-        "",
-        err
-    ))?;
+    let arguments = definition.1;
+    let code = definition.2;
 
     let function = Function::Macro(MacroFunction::new(
         macro_parent_environment,
@@ -80,33 +35,14 @@ fn set_macro_via_cons(
     )
 }
 
-fn set_definition(
-    interpreter: &mut Interpreter,
-    macro_parent_environment: EnvironmentId,
-    macro_definition_environment: EnvironmentId,
-    definition: Value
-) -> Result<(), Error> {
-    match definition {
-        Value::Cons(cons) => set_macro_via_cons(
-            interpreter,
-            macro_parent_environment,
-            macro_definition_environment,
-            cons
-        ),
-        _ => return interpreter.make_invalid_argument_error(
-            "The first argument of special form `mlet' must be a list of lists that represent macros."
-        ).into_result()
-    }
-}
-
 pub fn set_definitions(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    definitions: Vec<Value>
+    definitions: Vec<(Value, Arguments, Vec<Value>)>
 ) -> Result<(), Error> {
     for definition in definitions {
-        set_definition(
+        set_macro_definition(
             interpreter,
             special_form_calling_environment,
             macro_definition_environment,
@@ -130,7 +66,7 @@ pub fn mlet(
 
     let mut values = values;
 
-    let definitions = library::read_let_definitions(
+    let definitions = library::read_as_flet_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(

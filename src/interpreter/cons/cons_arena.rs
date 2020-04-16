@@ -19,6 +19,10 @@ impl ConsId {
     pub fn get_id(&self) -> usize {
         self.id
     }
+
+    pub fn to_value(self) -> Value {
+        Value::Cons(self)
+    }
 }
 
 pub struct ConsArena {

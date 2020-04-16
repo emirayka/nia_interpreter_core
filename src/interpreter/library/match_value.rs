@@ -132,7 +132,7 @@ pub fn match_value(
     match result {
         Ok(_) => Ok(environment_id),
         Err(err) => {
-            // todo: remove environment here
+            interpreter.remove_environment(environment_id)?;
             Err(err)
         }
     }

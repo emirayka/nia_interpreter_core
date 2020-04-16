@@ -1,76 +1,24 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
+use crate::interpreter::function::{Function, Arguments};
 use crate::interpreter::function::InterpretedFunction;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::cons::ConsId;
+
 use crate::interpreter::library;
 
-fn set_function_via_cons(
+fn set_definition(
     interpreter: &mut Interpreter,
     function_parent_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
-    cons_id: ConsId
+    definition: (Value, Arguments, Vec<Value>)
 ) -> Result<(), Error> {
-    let car = interpreter.get_car(cons_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
-            "",
-            err
-        ))?;
+    let function_symbol_value = definition.0;
+    let function_symbol_id = function_symbol_value.as_symbol_id();
 
-    let function_symbol_id = match car {
-        Value::Symbol(symbol_id)  => {
-            let result = interpreter.symbol_is_nil(symbol_id)?;
-
-            if result {
-                return interpreter.make_invalid_argument_error(
-                    "It's not possible to redefine `nil' via special form `flet'."
-                ).into_result()
-            } else {
-                symbol_id
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The first element of lists in the first argument of the special form `flet' must be a symbol that represents function name."
-        ).into_result()
-    };
-
-    library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
-
-    let cadr = interpreter.get_cadr(cons_id)
-        .map_err(|_| interpreter.make_invalid_argument_error(
-            "The function definitions of the special form `flet' must have at least two items."
-        ))?;
-
-    let arguments = library::parse_arguments_from_value(interpreter, cadr)?;
-
-    let cddr = interpreter.get_cddr(cons_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
-            "",
-            err
-        ))?;
-
-    let code = match cddr {
-        Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
-        Value::Symbol(symbol_id) => {
-            if interpreter.symbol_is_nil(symbol_id)? {
-                Ok(Vec::new())
-            } else {
-                return interpreter.make_invalid_argument_error(
-                    "The function definitions of the special form `flet' must have at least two items.",
-                ).into_result()
-            }
-        },
-        _ => return interpreter.make_invalid_argument_error(
-            "The function definitions of the special form `flet' must have at least two items.",
-        ).into_result()
-    };
-
-    let code = code.map_err(|err| interpreter.make_generic_execution_error_caused(
-        "",
-        err
-    ))?;
+    let arguments = definition.1;
+    let code = definition.2;
 
     let function = Function::Interpreted(InterpretedFunction::new(
         function_parent_environment,
@@ -88,30 +36,11 @@ fn set_function_via_cons(
     )
 }
 
-fn set_definition(
-    interpreter: &mut Interpreter,
-    function_parent_environment: EnvironmentId,
-    function_definition_environment: EnvironmentId,
-    definition: Value
-) -> Result<(), Error> {
-    match definition {
-        Value::Cons(cons_id) => set_function_via_cons(
-            interpreter,
-            function_parent_environment,
-            function_definition_environment,
-            cons_id
-        ),
-        _ => interpreter.make_invalid_argument_error(
-            "The first argument of special form `flet' must be a list of lists that represent functions."
-        ).into_result()
-    }
-}
-
 pub fn set_definitions(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     function_definition_environment: EnvironmentId,
-    definitions: Vec<Value>
+    definitions: Vec<(Value, Arguments, Vec<Value>)>
 ) -> Result<(), Error> {
     for definition in definitions {
         set_definition(
@@ -138,7 +67,7 @@ pub fn flet(
 
     let mut values = values;
 
-    let definitions = library::read_let_definitions(
+    let definitions = library::read_as_flet_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(

@@ -78,7 +78,7 @@ pub fn function(
 
     let lambda_or_macro_symbol = values.remove(0);
 
-    let arguments = library::parse_arguments_from_value(
+    let arguments = library::read_as_arguments(
         interpreter,
         values.remove(0)
     )?;

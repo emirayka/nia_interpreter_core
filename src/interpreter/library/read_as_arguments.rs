@@ -230,7 +230,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
     Ok(arguments)
 }
 
-pub fn parse_arguments_from_value(
+pub fn read_as_arguments(
     interpreter: &mut Interpreter,
     value: Value
 ) -> Result<Arguments, Error> {
@@ -416,7 +416,7 @@ mod tests {
             let expected = spec.1;
 
             let value = interpreter.execute(spec.0).unwrap();
-            let result = parse_arguments_from_value(
+            let result = read_as_arguments(
                 &mut interpreter,
                 value
             ).unwrap();
@@ -444,7 +444,7 @@ mod tests {
         for spec in specs {
             println!("{}", spec);
             let value = interpreter.execute(spec).unwrap();
-            let result = parse_arguments_from_value(
+            let result = read_as_arguments(
                 &mut interpreter,
                 value
             );

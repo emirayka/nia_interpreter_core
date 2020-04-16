@@ -26,10 +26,11 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::new();
+
+        let root_environment_id = interpreter.get_root_environment();
         let symbol_id = interpreter.intern("test");
 
         interpreter.define_variable(
@@ -43,32 +44,28 @@ mod tests {
             Value::Symbol(symbol_id)
         );
 
-        let root_env = interpreter.get_root_environment();
-
         let result = execute_forms(
             &mut interpreter,
-            root_env,
+            root_environment_id,
             &forms
         );
 
         assert_eq!(Value::Integer(10), result.unwrap());
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_execution_failed() {
         let mut interpreter = Interpreter::new();
+        let root_environment_id = interpreter.get_root_environment();
 
         let forms = vec!(
             Value::Integer(1),
             interpreter.intern_symbol_value("test")
         );
 
-        let root_env = interpreter.get_root_environment();
-
         let result = execute_forms(
             &mut interpreter,
-            root_env,
+            root_environment_id,
             &forms
         );
 

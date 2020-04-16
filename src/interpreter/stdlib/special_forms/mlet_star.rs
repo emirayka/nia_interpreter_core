@@ -17,7 +17,7 @@ pub fn mlet_star(
 
     let mut values = values;
 
-    let definitions = library::read_let_definitions(
+    let definitions = library::read_as_flet_definitions(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(

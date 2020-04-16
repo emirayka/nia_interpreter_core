@@ -422,7 +422,6 @@ mod tests {
 
         assert_is_ok(parse_code("1 :t"));
         assert_is_ok(parse_code("1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
-        // todo: likely it's need to change that
 
         assert_is_ok(parse_code("1 t"));
         assert_is_ok(parse_code("1t")); // because, "1t" is a valid symbol
@@ -862,7 +861,7 @@ mod tests {
         assert_is_err(parse_code("("));
         assert_is_err(parse_code("()("));
         assert_is_err(parse_code("(()"));
-        assert_is_err(parse_code("\"string")); // todo: move to another test
+        assert_is_err(parse_code("\"string"));
         assert_is_err(parse_code("((\"string))"));
     }
 

@@ -8,10 +8,7 @@ pub mod interpreter;
 
 mod repl;
 
-// todo: implement reference counting
 // todo: Add better error handling
-// todo: Write stdlib
-// todo: Implement keyboard listening
 // todo: binary plugins
 // todo: ordinary plugins
 // todo: file system
