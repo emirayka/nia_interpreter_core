@@ -75,75 +75,69 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn cond_works_correctly() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(cond (#t 1) (#t 2) (#t 3))").unwrap());
-        assert_eq!(Value::Integer(2), interpreter.execute("(cond (#f 1) (#t 2) (#t 3))").unwrap());
-        assert_eq!(Value::Integer(3), interpreter.execute("(cond (#f 1) (#f 2) (#t 3))").unwrap());
-        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(cond (#f 1) (#f 2) (#f 3))").unwrap());
-        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(cond)").unwrap());
+        let specs = vec!(
+            ("1", "(cond (#t 1) (#t 2) (#t 3))"),
+            ("2", "(cond (#f 1) (#t 2) (#t 3))"),
+            ("3", "(cond (#f 1) (#f 2) (#t 3))"),
+            ("nil", "(cond (#f 1) (#f 2) (#f 3))"),
+            ("nil", "(cond)"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();
 
-        let invalid_forms = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "symbol",
-            "\"string\"",
-            ":keyword",
+        let specs = vec!(
+            "(cond 1)",
+            "(cond 1.1)",
+            "(cond #t)",
+            "(cond #f)",
+            "(cond symbol)",
+            "(cond \"string\")",
+            "(cond :keyword)",
         );
 
-        for invalid_form in invalid_forms {
-            let result = interpreter.execute(&format!("(cond {})", invalid_form));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_invalid_clause_was_provided_to_cond_2() {
         let mut interpreter = Interpreter::new();
 
-        let invalid_forms = vec!(
-            "(1)",
-            "(1.1)",
-            "(#t)",
-            "(#f)",
-            "(symbol)",
-            "(\"string\")",
-            "(:keyword)",
+        let specs = vec!(
+            "(cond 1)",
+            "(cond 1.1)",
+            "(cond #t)",
+            "(cond #f)",
+            "(cond symbol)",
+            "(cond \"string\")",
+            "(cond :keyword)",
         );
 
-        for invalid_form in invalid_forms {
-            let result = interpreter.execute(&format!("(cond {})", invalid_form));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond() {
         let mut interpreter = Interpreter::new();
 
-        let name = interpreter.intern("test");
-        interpreter.define_variable(
-            interpreter.get_root_environment(),
-            name,
-            Value::Integer(1)
-        ).unwrap();
-
-        let invalid_forms = vec!(
+        let specs = vec!(
             "(cond (1 1))",
             "(cond (1.1 1))",
             "(cond (test1))",
@@ -152,10 +146,9 @@ mod tests {
             "(cond ((cond (#t 1)) 1))",
         );
 
-        for invalid_form in invalid_forms {
-            let result = interpreter.execute(invalid_form);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

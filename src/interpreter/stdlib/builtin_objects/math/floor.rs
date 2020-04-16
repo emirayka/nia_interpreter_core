@@ -30,7 +30,6 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_the_integer_itself_if_it_was_passed() {
         let mut interpreter = Interpreter::new();

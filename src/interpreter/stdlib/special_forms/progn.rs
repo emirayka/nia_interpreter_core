@@ -20,21 +20,22 @@ pub fn progn(
 mod tests {
     use super::*;
 
-    // todo: ensure this test is fine
+    use crate::interpreter::library::assertion;
+
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(3), interpreter.execute("(progn 3)").unwrap());
-        assert_eq!(Value::Integer(2), interpreter.execute("(progn 3 2)").unwrap());
-        assert_eq!(Value::Integer(1), interpreter.execute("(progn 3 2 1)").unwrap());
-    }
+        let specs = vec!(
+            ("nil", "(progn)"),
+            ("3", "(progn 3)"),
+            ("2", "(progn 3 2)"),
+            ("1", "(progn 3 2 1)"),
+        );
 
-    // todo: ensure this test is fine
-    #[test]
-    fn returns_nil_if_no_form_were_provided() {
-        let mut interpreter = Interpreter::new();
-
-        assert_eq!(interpreter.intern_nil_symbol_value(), interpreter.execute("(progn)").unwrap());
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            specs
+        );
     }
 }

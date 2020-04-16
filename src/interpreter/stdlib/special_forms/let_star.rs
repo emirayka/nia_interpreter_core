@@ -46,22 +46,26 @@ pub fn let_star(
     )
 }
 
-// todo: simplify tests somehow by using tests of `let'
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(let* () 3 2 1)").unwrap());
+        let specs = vec!(
+            ("(let* () 3 2 1)", Value::Integer(1))
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
@@ -69,81 +73,69 @@ mod tests {
         let symbol = interpreter.intern_symbol_value("symbol");
         let nil = interpreter.intern_nil_symbol_value();
 
-        let cons = interpreter.make_cons_value(
-            symbol,
-            nil
+        let specs = vec!(
+            ("(let* ((value 1)) value)", Value::Integer(1)),
+            ("(let* ((value 1.1)) value)", Value::Float(1.1)),
+            ("(let* ((value #t)) value)", Value::Boolean(true)),
+            ("(let* ((value #f)) value)", Value::Boolean(false)),
+            ("(let* ((value 'symbol)) value)", interpreter.intern_symbol_value("symbol")),
+            ("(let* ((value (quote symbol))) value)", interpreter.intern_symbol_value("symbol")),
+            ("(let* ((value \"string\")) value)", interpreter.intern_string_value(String::from("string"))),
+            ("(let* ((value :keyword)) value)", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(let* ((value '(symbol))) value)", interpreter.make_cons_value(symbol, nil)),
         );
 
-        let definitions = vec!(
-            (Value::Integer(1), "1"),
-            (Value::Float(1.1), "1.1"),
-            (Value::Boolean(true), "#t"),
-            (Value::Boolean(false), "#f"),
-            (interpreter.intern_symbol_value("symbol"), "'symbol"),
-            (interpreter.intern_symbol_value("symbol"), "(quote symbol)"),
-            (interpreter.intern_string_value(String::from("string")), "\"string\""),
-            (interpreter.intern_keyword_value(String::from("keyword")), ":keyword"),
-            (cons, "'(symbol)"),
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
         );
-
-        for (value, code_representation) in definitions {
-            let result = interpreter.execute(
-                &format!("(let* ((value {})) value)", code_representation)
-            ).unwrap();
-
-            assertion::assert_deep_equal(
-                &mut interpreter,
-                value,
-                result
-            );
-        }
     }
 
-
-    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            interpreter.intern_nil_symbol_value(),
-            interpreter.execute("(let* (nil-symbol) nil-symbol)").unwrap()
+        let specs = vec!(
+            ("nil", "(let* (nil-symbol) nil-symbol)")
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            specs
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn possible_to_nest_let_invocations() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(let* ((a 1)) a)").unwrap()
+        let specs = vec!(
+            ("(let* ((a 1)) a)", Value::Integer(1)),
+            ("(let* ((a 1)) (let* ((a 2) (b 3)) a))", Value::Integer(2)),
+            ("(let* ((a 1)) (let* ((a 2) (b 3)) b))", Value::Integer(3)),
         );
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(let* ((a 1)) (let* ((a 2) (b 3)) a))").unwrap()
-        );
-
-        assert_eq!(
-            Value::Integer(3),
-            interpreter.execute("(let* ((a 1)) (let* ((a 2) (b 3)) b))").unwrap()
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
         );
     }
 
     // the only difference between `let' `let*'
-    // todo: ensure this test is fine
     #[test]
     fn able_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)").unwrap();
+        let specs = vec!(
+            ("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)", Value::Integer(1)),
+        );
 
-        assert_eq!(Value::Integer(1), result);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -161,7 +153,6 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -179,110 +170,109 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
+            "(let* 1)",
+            "(let* 1.1)",
+            "(let* #t)",
+            "(let* #f)",
+            "(let* \"string\")",
+            "(let* :keyword)",
+            "(let* {})",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(&format!(
-                "(let* {})",
-                incorrect_string
-            ));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            incorrect_strings
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "()",
-            "nil",
+        let specs = vec!(
+            "(let* (1))",
+            "(let* (1.1))",
+            "(let* (#t))",
+            "(let* (#f))",
+            "(let* (\"string\"))",
+            "(let* (:keyword))",
+            "(let* (()))",
+            "(let* (nil))",
+            "(let* ({}))",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(
-                &format!("(let* ({}))", incorrect_string)
-            );
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_part_of_definitions_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
-            "(quote symbol)",
+        let specs = vec!(
+            "(let* ((1 2)) 1)",
+            "(let* ((1.1 2)) 1.1)",
+            "(let* ((#t 2)) #t)",
+            "(let* ((#f 2)) #f)",
+            "(let* ((:keyword 2)) :keyword)",
+            "(let* ((\"string\" 2)) \"string\")",
+            "(let* (((quote symbol) 2)) (quote symbol))",
+            "(let* (({} 2)) {})",
         );
 
-        for incorrect_string in incorrect_strings {
-            let result = interpreter.execute(
-                &format!("(let* (({} 2)) {})", incorrect_string, incorrect_string)
-            );
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let* ((nil 2)) nil)");
+        let specs = vec!(
+            "(let* ((nil 2)) nil)",
+        );
 
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let* ((sym)) nil)");
+        let specs = vec!(
+            "(let* ((sym)) nil)",
+            "(let* ((sym 1 2)) nil)"
+        );
 
-        assertion::assert_invalid_argument_error(&result);
-
-        let result = interpreter.execute("(let* ((sym 1 2)) nil)");
-
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempt_to_redefine_already_defined_value() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let* ((sym-1 1) (sym-1 2)) sym-1)");
+        let specs = vec!(
+            "(let* ((sym-1 1) (sym-1 2)) sym-1)",
+        );
 
-        assert!(result.is_err())
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

@@ -79,62 +79,55 @@ mod tests {
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_value_that_was_set_to_variable() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let ((a 1)) (set! a 2))");
+        let specs = vec!(
+            ("(let ((a 1)) (set! a 2))", Value::Integer(2)),
+        );
 
-        assert_eq!(Value::Integer(2), result.unwrap());
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
+        )
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_to_current_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
-        let variable_symbol_id = interpreter.intern("a");
+        interpreter.execute("(define-variable a 0)").unwrap();
 
-        interpreter.define_variable(
-            interpreter.get_root_environment(),
-            variable_symbol_id,
-            Value::Integer(0)
-        ).unwrap();
+        let specs = vec!(
+            ("(let ((a 1)) a)", Value::Integer(1)),
+            ("(let ((a 1)) (set! a 2) a)", Value::Integer(2)),
+            ("a", Value::Integer(0))
+        );
 
-        let result1 = interpreter.execute("(let ((a 1)) a)").unwrap();
-        let result2 = interpreter.execute("(let ((a 1)) (set! a 2) a)").unwrap();
-
-        assert_eq!(
-            Value::Integer(0),
-            interpreter.lookup_variable(
-                interpreter.get_root_environment(),
-                variable_symbol_id
-            ).unwrap());
-        assert_eq!(Value::Integer(1), result1);
-        assert_eq!(Value::Integer(2), result2);
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_to_parent_environment_when_variable_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
-        let variable_name_b = interpreter.intern("b");
-
         interpreter.execute("(define-variable b 0)").unwrap();
         interpreter.execute("(let ((a 1)) (set! b 2))").unwrap();
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.lookup_variable(
-                interpreter.get_root_environment(),
-                variable_name_b
-            ).unwrap()
+        let specs = vec!(
+            ("b", Value::Integer(2)),
+        );
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -152,35 +145,38 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(set!)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let specs = vec!(
+            "(set!)",
+            "(set! a b c)",
+        );
 
-        let result = interpreter.execute("(set! a b c)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_variables = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            ":keyword",
-            "\"string\"",
+        let specs = vec!(
+            "(set! 1 1)",
+            "(set! 1.1 1)",
+            "(set! #t 1)",
+            "(set! #f 1)",
+            "(set! :keyword 1)",
+            "(set! \"string\" 1)",
+            "(set! {} 1)",
         );
 
-        for incorrect_variable in incorrect_variables {
-            let result = interpreter.execute(&format!("(set! {} 1)", incorrect_variable));
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

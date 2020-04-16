@@ -120,7 +120,6 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn constructs_simple_function() {
         let mut interpreter = Interpreter::new();
@@ -141,7 +140,6 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-
         let result = interpreter.execute(
             "(function (lambda (first-arg second-arg) first-arg second-arg))"
         );
@@ -150,7 +148,6 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn constructs_simple_macro() {
         let mut interpreter = Interpreter::new();
@@ -171,7 +168,6 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-
         let result = interpreter.execute(
             "(function (macro (first-arg second-arg) first-arg second-arg))"
         );
@@ -180,7 +176,6 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -197,7 +192,6 @@ mod tests {
         let function_id = interpreter.register_function( function);
 
         let expected = Value::Function(function_id);
-
         let result = interpreter.execute(
             "(function (lambda () 1))"
         );
@@ -206,7 +200,6 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -223,7 +216,6 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-
         let result = interpreter.execute(
             "(function (macro () 1))"
         );
@@ -382,27 +374,27 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_amount_of_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(function)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let specs = vec!(
+            "(function)",
+            "(function 1 2)",
+            "(function 1 2 3)"
+        );
 
-        let result = interpreter.execute("(function 1 2)");
-        assertion::assert_invalid_argument_count_error(&result);
-
-        let result = interpreter.execute("(function 1 2 3)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_not_a_cons_cell_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let not_valid_code = vec!(
+        let specs = vec!(
             "(function 1)",
             "(function 1.1)",
             "(function #t)",
@@ -412,78 +404,66 @@ mod tests {
             "(function :keyword)",
         );
 
-        for code in not_valid_code {
-            let result = interpreter.execute(&code);
-
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_element_is_not_lambda_nor_macro() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(function (special-form () 2))");
-        assertion::assert_invalid_argument_error(&result);
+        let specs = vec!(
+            "(function (special-form () 2))"
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(function (lambda))");
-        assertion::assert_invalid_argument_error(&result);
+        let specs = vec!(
+            "(function (lambda))",
+            "(function (lambda ()))"
+        );
 
-        let result = interpreter.execute("(function (lambda ()))");
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_incorrect_constructed_function_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let not_valid_arguments = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            "\"string\"",
-            ":keyword",
+        let specs = vec!(
+            "(function (lambda 1 1))",
+            "(function (lambda 1.1 1))",
+            "(function (lambda #t 1))",
+            "(function (lambda #f 1))",
+            "(function (lambda \"string\" 1))",
+            "(function (lambda :keyword 1))",
+            "(function (lambda {} 1))",
+
+            "(function (lambda (1) 1))",
+            "(function (lambda (1.1) 1))",
+            "(function (lambda (#t) 1))",
+            "(function (lambda (#f) 1))",
+            "(function (lambda (\"string\") 1))",
+            "(function (lambda (:keyword) 1))",
+            "(function (lambda ({}) 1))",
         );
 
-        for not_valid_argument in &not_valid_arguments {
-            let result = interpreter.execute(&format!(
-                "(function (lambda {} 1))",
-                not_valid_argument
-            ));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
-
-        for not_valid_argument in &not_valid_arguments {
-            let result = interpreter.execute(&format!(
-                "(function (lambda ({}) 1))",
-                not_valid_argument
-            ));
-
-            assertion::assert_invalid_argument_error(&result);
-        }
-
-        for not_valid_argument_1 in &not_valid_arguments {
-            for not_valid_argument_2 in &not_valid_arguments {
-                let result = interpreter.execute(&format!(
-                    "(function (lambda ({} {}) 1))",
-                    not_valid_argument_1,
-                    not_valid_argument_2
-                ));
-
-                assertion::assert_invalid_argument_error(&result);
-            }
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
-
-
 }

@@ -72,7 +72,6 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_when_attempt_get_item_by_special_symbol() {
         for_special_symbols(|interpreter, string| {
@@ -83,7 +82,6 @@ mod tests {
         })
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();

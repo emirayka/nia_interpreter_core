@@ -141,7 +141,7 @@ mod tests {
                         {
                             let mut arguments = Arguments::new();
 
-                            arguments.add_ordinary_argument(String::from("b"));
+                            arguments.add_ordinary_argument(String::from("b")).unwrap();
 
                             arguments
                         },
@@ -159,7 +159,7 @@ mod tests {
                         {
                             let mut arguments = Arguments::new();
 
-                            arguments.add_optional_argument(String::from("b"), None, None);
+                            arguments.add_optional_argument(String::from("b"), None, None).unwrap();
 
                             arguments
                         },
@@ -177,7 +177,7 @@ mod tests {
                         {
                             let mut arguments = Arguments::new();
 
-                            arguments.add_rest_argument(String::from("b"));
+                            arguments.add_rest_argument(String::from("b")).unwrap();
 
                             arguments
                         },
@@ -195,7 +195,7 @@ mod tests {
                         {
                             let mut arguments = Arguments::new();
 
-                            arguments.add_key_argument(String::from("b"), None, None);
+                            arguments.add_key_argument(String::from("b"), None, None).unwrap();
 
                             arguments
                         },

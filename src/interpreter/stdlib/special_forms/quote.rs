@@ -26,7 +26,6 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn quote_works_correctly_when_used_quote_special_form() {
         let mut interpreter = Interpreter::new();
@@ -41,46 +40,28 @@ mod tests {
             cdr
         );
 
-        assert_eq!(Value::Integer(1), interpreter.execute("(quote 1)").unwrap());
-        assert_eq!(Value::Float(1.1), interpreter.execute("(quote 1.1)").unwrap());
-        assert_eq!(Value::Boolean(true), interpreter.execute("(quote #t)").unwrap());
-        assert_eq!(Value::Boolean(false), interpreter.execute("(quote #f)").unwrap());
-
-        let expected = interpreter.intern_keyword_value(String::from("test"));
-        let result = interpreter.execute("(quote :test)").unwrap();
-        assertion::assert_deep_equal(
-            &mut interpreter,
-            expected,
-            result
-        );
-        assert_eq!(interpreter.intern_symbol_value("cute-symbol"), interpreter.execute("(quote cute-symbol)").unwrap());
-
-        let expected = interpreter.intern_string_value(String::from("test"));
-        let result = interpreter.execute("(quote \"test\")").unwrap();
-        assertion::assert_deep_equal(
-            &mut interpreter,
-            expected,
-            result
+        let specs = vec!(
+            ("(quote 1)", Value::Integer(1)),
+            ("(quote 1.1)", Value::Float(1.1)),
+            ("(quote #t)", Value::Boolean(true)),
+            ("(quote #f)", Value::Boolean(false)),
+            ("(quote :test)", interpreter.intern_keyword_value(String::from("test"))),
+            ("(quote cute-symbol)", interpreter.intern_symbol_value("cute-symbol")),
+            ("(quote \"test\")", interpreter.intern_string_value(String::from("test"))),
+            ("(quote (1 2))", cons),
         );
 
-        let expected = cons;
-        let result = interpreter.execute("(quote (1 2))").unwrap();
-
-        assertion::assert_deep_equal(
+        assertion::assert_results_are_correct(
             &mut interpreter,
-            expected,
-            result
+            specs
         );
-
-//        Function(func) - lol, how to test this
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn quote_works_correctly_when_used_quote_sign() {
         let mut interpreter = Interpreter::new();
-
         let nil = interpreter.intern_nil_symbol_value();
+
         let cdr = interpreter.make_cons_value(
             Value::Integer(2),
             nil
@@ -90,77 +71,35 @@ mod tests {
             cdr
         );
 
-        assert_eq!(Value::Integer(1), interpreter.execute("'1").unwrap());
-        assert_eq!(Value::Float(1.1), interpreter.execute("'1.1").unwrap());
-        assert_eq!(Value::Boolean(true), interpreter.execute("'#t").unwrap());
-        assert_eq!(Value::Boolean(false), interpreter.execute("'#f").unwrap());
-
-        let expected = interpreter.intern_keyword_value(String::from("test"));
-        let result = interpreter.execute("':test").unwrap();
-        assertion::assert_deep_equal(
-            &mut interpreter,
-            expected,
-            result
-        );
-        assert_eq!(interpreter.intern_symbol_value("cute-symbol"), interpreter.execute("'cute-symbol").unwrap());
-
-        let expected = interpreter.intern_string_value(String::from("test"));
-        let result = interpreter.execute("'\"test\"").unwrap();
-        assertion::assert_deep_equal(
-            &mut interpreter,
-            expected,
-            result
+        let specs = vec!(
+            ("'1", Value::Integer(1)),
+            ("'1.1", Value::Float(1.1)),
+            ("'#t", Value::Boolean(true)),
+            ("'#f", Value::Boolean(false)),
+            ("':test", interpreter.intern_keyword_value(String::from("test"))),
+            ("'cute-symbol", interpreter.intern_symbol_value("cute-symbol")),
+            ("'\"test\"", interpreter.intern_string_value(String::from("test"))),
+            ("'(1 2)", cons),
         );
 
-        let expected = cons;
-        let result = interpreter.execute("'(1 2)").unwrap();
-        assertion::assert_deep_equal(
+        assertion::assert_results_are_correct(
             &mut interpreter,
-            expected,
-            result
+            specs
         );
-
-//        Function(func) - lol, how to test this
     }
 
-    // todo: ensure this test is fine
-    #[test]
-    fn quote_works_correctly_for_quote_invocation() {
-        let mut interpreter = Interpreter::new();
-
-        let quote = interpreter.intern_symbol_value("quote");
-        let cute_symbol = interpreter.intern_symbol_value("cute-symbol");
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            cute_symbol,
-            nil
-        );
-        let expected = interpreter.make_cons_value(
-            quote,
-            cdr
-        );
-
-        let result = interpreter.execute("(quote (quote cute-symbol))").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
-
-        let result = interpreter.execute("(quote 'cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
-
-        let result = interpreter.execute("'(quote cute-symbol)").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
-
-        let result = interpreter.execute("''cute-symbol").unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
-
-//        Function(func) - lol, how to test this
-    }
-
-    // todo: ensure this test is fine
     #[test]
     fn quote_returns_err_when_improper_count_of_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote)"));
-        assertion::assert_invalid_argument_count_error(&interpreter.execute("(quote 1 2)"));
+        let specs = vec!(
+            "(quote 1 2)",
+            "(quote)"
+        );
+
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

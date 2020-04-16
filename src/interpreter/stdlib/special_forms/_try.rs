@@ -139,38 +139,31 @@ mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_result_of_try_clause_if_it_was_ok() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(try (progn 1) (catch cute-error))").unwrap()
+        let specs = vec!(
+            ("(try (progn 1) (catch cute-error))", Value::Integer(1)),
+            ("(try (progn 1 2) (catch cute-error))", Value::Integer(2)),
         );
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(try (progn 1 2) (catch cute-error))").unwrap()
+
+        assertion::assert_results_are_correct(
+            &mut interpreter,
+            specs
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn able_to_catch_error() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error 1))").unwrap()
-        );
-
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error 1 2))").unwrap()
+        let specs = vec!(
+            ("(try (progn 1 (throw 'cute-error)) (catch cute-error 1))", Value::Integer(1)),
+            ("(try (progn 1 (throw 'cute-error)) (catch cute-error 1 2))", Value::Integer(2)),
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
@@ -185,7 +178,6 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
@@ -200,7 +192,6 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_not_enough_arguments_was_provided() {
         let mut interpreter = Interpreter::new();
@@ -209,15 +200,18 @@ mod tests {
         assertion::assert_invalid_argument_count_error(&result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_catch_clause_has_invalid_count_of_items() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(try 1 ())");
-        assertion::assert_invalid_argument_error(&result);
+        let specs = vec!(
+            "(try 1 ())",
+            "(try 1 (catch))"
+        );
 
-        let result = interpreter.execute("(try 1 (catch))");
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

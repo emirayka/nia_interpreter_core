@@ -82,7 +82,6 @@ mod tests {
     use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
     use crate::interpreter::function::Arguments;
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_value_that_was_set_to_function() {
         let mut interpreter = Interpreter::new();
@@ -106,23 +105,24 @@ mod tests {
         assertion::assert_deep_equal(&mut interpreter, expected, result.unwrap());
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_to_current_environment_when_function_is_defined_here() {
         let mut interpreter = Interpreter::new();
 
         interpreter.execute("(define-function a (function (lambda () 0)))").unwrap();
 
-        let result0 = interpreter.execute("(a)").unwrap();
-        let result1 = interpreter.execute("(flet ((a () 1)) (a))").unwrap();
-        let result2 = interpreter.execute("(flet ((a () 1)) (fset! a (function (lambda () 2))) (a))").unwrap();
+        let specs = vec!(
+            ("0", "(a)"),
+            ("1", "(flet ((a () 1)) (a))"),
+            ("2", "(flet ((a () 1)) (fset! a (function (lambda () 2))) (a))"),
+        );
 
-        assert_eq!(Value::Integer(0), result0);
-        assert_eq!(Value::Integer(1), result1);
-        assert_eq!(Value::Integer(2), result2);
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_to_parent_environment_when_function_is_defined_here() {
         let mut interpreter = Interpreter::new();
@@ -135,7 +135,6 @@ mod tests {
         assert_eq!(Value::Integer(2), result);
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -153,35 +152,39 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_count_of_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(fset!)");
-        assertion::assert_invalid_argument_count_error(&result);
+        let specs = vec!(
+            "(fset!)",
+            "(fset! a b c)"
+        );
 
-        let result = interpreter.execute("(fset! a b c)");
-        assertion::assert_invalid_argument_count_error(&result);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_incorrect_arguments_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_functions = vec!(
-            "1",
-            "1.1",
-            "#t",
-            "#f",
-            ":keyword",
-            "\"string\"",
+        let specs = vec!(
+            "(fset! 1 1)",
+            "(fset! 1.1 1)",
+            "(fset! #t 1)",
+            "(fset! #f 1)",
+            "(fset! :keyword 1)",
+            "(fset! \"string\" 1)",
+            "(fset! '() 1)",
+            "(fset! {} 1)",
         );
 
-        for incorrect_function in incorrect_functions {
-            let result = interpreter.execute(&format!("(fset! {} 1)", incorrect_function));
-            assertion::assert_invalid_argument_error(&result);
-        }
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 }

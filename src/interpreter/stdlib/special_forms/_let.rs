@@ -169,7 +169,6 @@ mod tests {
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_with_executed_value() {
         let mut interpreter = Interpreter::new();
@@ -177,7 +176,7 @@ mod tests {
         let symbol = interpreter.intern_symbol_value("symbol");
         let nil = interpreter.intern_nil_symbol_value();
 
-        let definitions = vec!(
+        let specs = vec!(
             (Value::Integer(1), "1"),
             (Value::Float(1.1), "1.1"),
             (Value::Boolean(true), "#t"),
@@ -189,7 +188,7 @@ mod tests {
             (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
         );
 
-        for (value, string) in definitions {
+        for (value, string) in specs {
             let result = interpreter.execute(
                 &format!("(let ((value {})) value)", string)
             ).unwrap();
@@ -203,7 +202,6 @@ mod tests {
     }
 
 
-    // todo: ensure this test is fine
     #[test]
     fn sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::new();
@@ -214,28 +212,27 @@ mod tests {
         );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn possible_to_nest_let_invocations() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
-            Value::Integer(1),
-            interpreter.execute("(let ((a 1)) a)").unwrap()
+        let specs = vec!(
+            (Value::Integer(1), "(let ((a 1)) a)"),
+            (Value::Integer(2), "(let ((a 1)) (let ((a 2) (b 3)) a))"),
+            (Value::Integer(3), "(let ((a 1)) (let ((a 2) (b 3)) b))"),
         );
 
-        assert_eq!(
-            Value::Integer(2),
-            interpreter.execute("(let ((a 1)) (let ((a 2) (b 3)) a))").unwrap()
-        );
+        for (expected, code) in specs {
+            let result = interpreter.execute(code).unwrap();
 
-        assert_eq!(
-            Value::Integer(3),
-            interpreter.execute("(let ((a 1)) (let ((a 2) (b 3)) b))").unwrap()
-        );
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                expected,
+                result
+            );
+        }
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -253,7 +250,6 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_definition_is_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -271,12 +267,11 @@ mod tests {
         });
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_is_not_a_list() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
+        let specs = vec!(
             "1",
             "1.1",
             "#t",
@@ -285,22 +280,21 @@ mod tests {
             ":keyword",
         );
 
-        for incorrect_string in incorrect_strings {
+        for spec in specs {
             let result = interpreter.execute(&format!(
                 "(let {})",
-                incorrect_string
+                spec
             ));
 
             assertion::assert_invalid_argument_error(&result);
         }
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_argument_contains_not_a_symbol_nor_cons() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
+        let specs = vec!(
             "1",
             "1.1",
             "#t",
@@ -311,21 +305,20 @@ mod tests {
             "nil",
         );
 
-        for incorrect_string in incorrect_strings {
+        for spec in specs {
             let result = interpreter.execute(
-                &format!("(let ({}))", incorrect_string)
+                &format!("(let ({}))", spec)
             );
 
             assertion::assert_invalid_argument_error(&result);
         }
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_part_of_definitions_is_not_a_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let incorrect_strings = vec!(
+        let specs = vec!(
             "1",
             "1.1",
             "#t",
@@ -335,40 +328,44 @@ mod tests {
             "(quote symbol)",
         );
 
-        for incorrect_string in incorrect_strings {
+        for spec in specs {
             let result = interpreter.execute(
-                &format!("(let (({} 2)) {})", incorrect_string, incorrect_string)
+                &format!("(let (({} 2)) {})", spec, spec)
             );
 
             assertion::assert_invalid_argument_error(&result);
         }
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_nil() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let ((nil 2)) nil)");
+        let specs = vec!(
+            "(let ((nil 2)) nil)"
+        );
 
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute("(let ((sym)) nil)");
+        let specs = vec!(
+            "(let ((sym)) nil)",
+            "(let ((sym 1 2)) nil)"
+        );
 
-        assertion::assert_invalid_argument_error(&result);
-
-        let result = interpreter.execute("(let ((sym 1 2)) nil)");
-
-        assertion::assert_invalid_argument_error(&result);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs
+        );
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempt_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::new();
@@ -378,7 +375,6 @@ mod tests {
         assert!(result.is_err())
     }
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_err_when_attempt_to_redefine_already_defined_value() {
         let mut interpreter = Interpreter::new();

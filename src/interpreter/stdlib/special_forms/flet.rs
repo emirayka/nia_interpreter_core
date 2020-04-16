@@ -4,7 +4,6 @@ use crate::interpreter::error::Error;
 use crate::interpreter::function::{Function, Arguments};
 use crate::interpreter::function::InterpretedFunction;
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::cons::ConsId;
 
 use crate::interpreter::library;
 

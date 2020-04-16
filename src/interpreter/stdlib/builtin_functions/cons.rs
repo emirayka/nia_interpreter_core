@@ -26,30 +26,26 @@ pub fn cons(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::library::testing_helpers::{
-        for_meta_value_pairs_evaluated_ifbsyko
-    };
 
-    // todo: ensure this test is fine
     #[test]
     fn returns_a_cons_cell() {
-        for_meta_value_pairs_evaluated_ifbsyko(
-            |interpreter, str1, val1, str2, val2| {
-                let code = &format!("(cons {} {})", str1, str2);
-                let result = interpreter.execute(code).unwrap();
+        let mut interpreter = Interpreter::new();
 
-                let expected = interpreter.make_cons_value(
-                    val1,
-                    val2
-                );
-
-                assertion::assert_deep_equal(
-                    interpreter,
-                    expected,
-                    result
-                );
-            }
+        let specs = vec!(
+            (interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)), "(cons 1 2)"),
+            (interpreter.make_cons_value(Value::Float(1.1), Value::Float(2.2)), "(cons 1.1 2.2)"),
         );
+
+        for spec in specs {
+            let expected = spec.0;
+            let result = interpreter.execute(spec.1).unwrap();
+
+            assertion::assert_deep_equal(
+                &mut interpreter,
+                expected,
+                result
+            )
+        }
     }
 
     #[test]

@@ -420,6 +420,8 @@ mod tests {
                 &mut interpreter,
                 value
             ).unwrap();
+
+            assert_eq!(expected, result)
         }
     }
 

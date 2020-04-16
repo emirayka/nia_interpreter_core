@@ -55,8 +55,6 @@ mod tests {
 
     #[test]
     fn returns_correct_key_chord() {
-        let mut interpreter = Interpreter::new();
-
         let specs = vec!(
             (
                 "'(0 2 4)",
