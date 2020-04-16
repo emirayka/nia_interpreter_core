@@ -21,7 +21,7 @@ pub fn let_star(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
-        "The first argument of special form `let*' must be a list of definitions: symbol, or 2-element lists."
+        "Invalid `let*' definitions."
     ))?;
 
     let forms = values;

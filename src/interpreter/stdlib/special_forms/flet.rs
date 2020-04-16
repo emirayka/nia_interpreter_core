@@ -71,7 +71,7 @@ pub fn flet(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
-        "Special form `flet' must have a first argument of function definitions"
+    "Invalid `flet' definitions."
     ))?;
 
     let forms = values;

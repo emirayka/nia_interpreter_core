@@ -21,7 +21,7 @@ pub fn mlet_star(
         interpreter,
         values.remove(0)
     ).map_err(|_| interpreter.make_invalid_argument_error(
-        "Special form `mlet*' must have a first argument of macro definitions"
+        "Invalid `mlet*' definitions."
     ))?;
 
     let forms = values;

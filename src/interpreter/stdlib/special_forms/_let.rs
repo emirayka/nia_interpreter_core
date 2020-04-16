@@ -10,12 +10,12 @@ fn set_variable_via_cons(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    cons_id: ConsId
+    cons_id: ConsId,
 ) -> Result<(), Error> {
     let car = interpreter.get_car(cons_id)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
             "",
-            err
+            err,
         ))?;
 
     let variable_symbol_id = match car {
@@ -37,17 +37,17 @@ fn set_variable_via_cons(
     let value = interpreter.execute_value(definition_value_execution_environment, cadr)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
             "The definitions of the special form `let' must have exactly two arguments.",
-            err
+            err,
         ))?;
 
     match interpreter.get_cddr(cons_id) {
-        Ok(Value::Symbol(symbol_id))  => {
+        Ok(Value::Symbol(symbol_id)) => {
             if interpreter.symbol_is_not_nil(symbol_id)? {
                 return interpreter.make_invalid_argument_error(
                     "The definitions of the special form `let' must have exactly two arguments."
-                ).into_result()
+                ).into_result();
             }
-        },
+        }
         _ => return interpreter.make_invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         ).into_result()
@@ -56,14 +56,14 @@ fn set_variable_via_cons(
     interpreter.define_variable(
         definition_setting_environment,
         variable_symbol_id,
-        value
+        value,
     )
 }
 
 fn set_variable_to_nil(
     interpreter: &mut Interpreter,
     definition_setting_environment: EnvironmentId,
-    symbol_id: SymbolId
+    symbol_id: SymbolId,
 ) -> Result<(), Error> {
     library::check_if_symbol_assignable(interpreter, symbol_id)?;
 
@@ -76,30 +76,30 @@ fn set_definition(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    definition: Value
+    definition: Value,
 ) -> Result<(), Error> {
     match definition {
         Value::Cons(cons_id) => set_variable_via_cons(
             interpreter,
             definition_value_execution_environment,
             definition_setting_environment,
-            cons_id
+            cons_id,
         ),
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
                 return interpreter.make_invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `let'."
-                ).into_result()
+                ).into_result();
             } else {
                 set_variable_to_nil(
                     interpreter,
                     definition_setting_environment,
-                    symbol_id
+                    symbol_id,
                 )
             }
-        },
+        }
         _ => return interpreter.make_invalid_argument_error(
-            "The first argument of special form `let' must be a list of symbols, or lists."
+            "Invalid `let*' definitions."
         ).into_result()
     }
 }
@@ -108,14 +108,14 @@ pub fn set_definitions(
     interpreter: &mut Interpreter,
     definition_value_execution_environment: EnvironmentId,
     definition_setting_environment: EnvironmentId,
-    definitions: Vec<Value>
+    definitions: Vec<Value>,
 ) -> Result<(), Error> {
     for definition in definitions {
         set_definition(
             interpreter,
             definition_value_execution_environment,
             definition_setting_environment,
-            definition
+            definition,
         )?;
     }
 
@@ -125,7 +125,7 @@ pub fn set_definitions(
 pub fn _let(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() == 0 {
         return interpreter.make_invalid_argument_count_error(
@@ -137,7 +137,7 @@ pub fn _let(
 
     let definitions = library::read_as_let_definitions(
         interpreter,
-        values.remove(0)
+        values.remove(0),
     ).map_err(|_| interpreter.make_invalid_argument_error(
         "The first argument of special form `let' must be a list of definitions: symbol, or 2-element lists."
     ))?;
@@ -146,20 +146,20 @@ pub fn _let(
     let execution_environment = interpreter.make_environment(environment)
         .map_err(|err| interpreter.make_generic_execution_error_caused(
             "",
-            err
+            err,
         ))?;
 
     set_definitions(
         interpreter,
         environment,
         execution_environment,
-        definitions
+        definitions,
     )?;
 
     library::execute_forms(
         interpreter,
         execution_environment,
-        &forms
+        &forms,
     )
 }
 
@@ -197,7 +197,7 @@ mod tests {
             assertion::assert_deep_equal(
                 &mut interpreter,
                 value,
-                result
+                result,
             );
         }
     }
@@ -301,14 +301,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let incorrect_strings = vec!(
-             "1",
-             "1.1",
-             "#t",
-             "#f",
-             "\"string\"",
-             ":keyword",
-             "()",
-             "nil",
+            "1",
+            "1.1",
+            "#t",
+            "#f",
+            "\"string\"",
+            ":keyword",
+            "()",
+            "nil",
         );
 
         for incorrect_string in incorrect_strings {
