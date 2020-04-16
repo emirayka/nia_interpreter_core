@@ -59,12 +59,10 @@ pub fn define_global_mapping(
     let values = key_chords_to_list(interpreter, key_chords);
 
     let new_mapping = interpreter.vec_to_list(vec!(values, function_id.to_value()));
-    let new_list = interpreter.make_cons_value(new_mapping, global_map_cons_cell);
-
-    library::set_root_variable(
+    library::add_value_to_root_list(
         interpreter,
         "global-map",
-        new_list
+        new_mapping
     )?;
 
     Ok(interpreter.intern_nil_symbol_value())
