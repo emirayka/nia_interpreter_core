@@ -40,7 +40,7 @@ pub fn _while(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `while' takes one argument at least."
         ).into_result();
     }
@@ -65,7 +65,7 @@ pub fn _while(
             Value::Boolean(false) => {
                 break;
             },
-            _ => return interpreter.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Special form while expects booleans only in condition."
             ).into_result()
         }

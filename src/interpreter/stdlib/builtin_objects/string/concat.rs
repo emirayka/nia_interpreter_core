@@ -10,7 +10,7 @@ pub fn concat(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:concat' one argument at least."
         ).into_result();
     }

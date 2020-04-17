@@ -9,7 +9,7 @@ pub fn int(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `to:int' takes one argument exactly."
         ).into_result();
     }
@@ -21,7 +21,7 @@ pub fn int(
         Value::Float(float) => Value::Integer(float as i64),
         Value::Boolean(true) => Value::Integer(1),
         Value::Boolean(false) => Value::Integer(0),
-        _ => return interpreter.make_generic_execution_error(
+        _ => return Error::generic_execution_error(
             "Only integers, floats or booleans can be converted to int."
         ).into_result()
     };

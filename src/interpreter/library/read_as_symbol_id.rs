@@ -9,7 +9,7 @@ pub fn read_as_symbol_id(
 ) -> Result<SymbolId, Error> {
     let symbol_id = match value {
         Value::Symbol(symbol_id) => symbol_id,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected symbol."
         ).into_result()
     };

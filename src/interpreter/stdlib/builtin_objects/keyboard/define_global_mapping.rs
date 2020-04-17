@@ -60,7 +60,7 @@ pub fn define_global_mapping(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `keyboard:define-global-mapping' takes two arguments exactly."
         ).into_result();
     }
@@ -77,7 +77,7 @@ pub fn define_global_mapping(
         let key_chord = nia_events::str_to_key_chord(
             mapping_part,
             &keyboard_name_to_index
-        ).map_err(|_| interpreter.make_invalid_argument_error(
+        ).map_err(|_| Error::invalid_argument_error(
             "Invalid key chord."
         ))?;
 

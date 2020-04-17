@@ -11,7 +11,7 @@ pub fn set(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `bit:set' takes two arguments exactly."
         ).into_result();
     }
@@ -24,7 +24,7 @@ pub fn set(
     )?;
 
     if index < 0 || index > 63 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `bit:set' takes value between [0; 64) as bit index."
         ).into_result()
     }

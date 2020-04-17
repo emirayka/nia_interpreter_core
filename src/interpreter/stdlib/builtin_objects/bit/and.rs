@@ -11,7 +11,7 @@ pub fn and(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `bit:and' takes two arguments exactly."
         ).into_result();
     }

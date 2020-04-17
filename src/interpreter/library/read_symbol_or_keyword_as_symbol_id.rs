@@ -16,7 +16,7 @@ pub fn read_symbol_or_keyword_as_symbol_id(
 
             symbol_id
         },
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Built-in function `object:get' takes only symbols or keywords as its second argument."
         ).into_result()
     };

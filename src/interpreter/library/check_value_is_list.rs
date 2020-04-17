@@ -12,11 +12,11 @@ pub fn check_value_is_list(
             if interpreter.symbol_is_nil(symbol_id)? {
                 Ok(())
             } else {
-                interpreter.make_invalid_argument_error("Expected list")
+                Error::invalid_argument_error("Expected list")
                     .into_result()
             }
         },
-        _ => interpreter.make_invalid_argument_error("Expected list")
+        _ => Error::invalid_argument_error("Expected list")
             .into_result()
     }
 }

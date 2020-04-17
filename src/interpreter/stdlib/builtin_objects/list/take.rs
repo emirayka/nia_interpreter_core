@@ -11,7 +11,7 @@ pub fn take(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:take' takes two arguments."
         ).into_result();
     }
@@ -29,7 +29,7 @@ pub fn take(
     )?;
 
     if values.len() < count {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:take' takes a list that has length greater than count."
         ).into_result();
     }

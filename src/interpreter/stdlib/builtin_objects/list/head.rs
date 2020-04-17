@@ -11,7 +11,7 @@ pub fn head(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `head' takes one argument."
         ).into_result();
     }
@@ -26,7 +26,7 @@ pub fn head(
     if values.len() > 0 {
         Ok(values.remove(0))
     } else {
-        interpreter.make_invalid_argument_error(
+        Error::invalid_argument_error(
         "Built-in function `head' takes one list with values."
         ).into_result()
     }

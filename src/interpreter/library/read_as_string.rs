@@ -8,13 +8,13 @@ pub fn read_as_string(
 ) -> Result<&String, Error> {
     let string_id = match value {
         Value::String(string_id) => string_id,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected string."
         ).into_result()
     };
 
     let string = interpreter.get_string(string_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
         ))?;

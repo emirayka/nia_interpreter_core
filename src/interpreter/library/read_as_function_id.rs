@@ -9,7 +9,7 @@ pub fn read_as_function_id(
 ) -> Result<FunctionId, Error> {
     let function_id = match value {
         Value::Function(function_id) => function_id,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected a function."
         ).into_result()
     };

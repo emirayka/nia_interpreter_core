@@ -8,7 +8,7 @@ pub fn check_value_is_cons(
 ) -> Result<(), Error> {
     match value {
         Value::Cons(_) => Ok(()),
-        _ => interpreter.make_invalid_argument_error("Expected cons")
+        _ => Error::invalid_argument_error("Expected cons")
             .into_result()
     }
 }

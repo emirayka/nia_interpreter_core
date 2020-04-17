@@ -10,10 +10,10 @@ fn execute_part(
     part_cons_id: ConsId
 ) -> Result<Option<Value>, Error> {
     let part_action = interpreter.get_cadr(part_cons_id)
-        .map_err(|_| interpreter.make_invalid_argument_error("Invalid action part."))?;
+        .map_err(|_| Error::invalid_argument_error("Invalid action part."))?;
 
     let part_predicate = interpreter.get_car(part_cons_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
         ))?;
@@ -26,7 +26,7 @@ fn execute_part(
     match predicate_result {
         Value::Boolean(true) => {
             let action_result = interpreter.execute_value(environment, part_action)
-                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                .map_err(|err| Error::generic_execution_error_caused(
                     "Cannot evaluate the action part.",
                     err
                 ))?;
@@ -34,7 +34,7 @@ fn execute_part(
             Ok(Some(action_result))
         },
         Value::Boolean(false) => Ok(None),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Predicate must evaluate to boolean value."
         ).into_result()
     }
@@ -51,7 +51,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
                     break;
                 },
                 Err(error) => {
-                    result = interpreter.make_generic_execution_error_caused(
+                    result = Error::generic_execution_error_caused(
                         "Cannot execute special form `cond' clause.",
                         error
                     ).into_result();
@@ -60,7 +60,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
                 _ => ()
             }
         } else {
-            result = interpreter.make_invalid_argument_error(
+            result = Error::invalid_argument_error(
                 "Invalid usage of special form `cond'."
             ).into_result();
             break;

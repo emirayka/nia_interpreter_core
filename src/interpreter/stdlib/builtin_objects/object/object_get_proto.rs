@@ -11,7 +11,7 @@ pub fn object_get_proto(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `object:get-proto' must take only one argument."
         ).into_result();
     }
@@ -23,7 +23,7 @@ pub fn object_get_proto(
     )?;
 
     let proto_id = interpreter.get_object_proto(object_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
         ))?;

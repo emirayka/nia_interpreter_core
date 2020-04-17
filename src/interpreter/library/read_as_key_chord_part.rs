@@ -23,7 +23,7 @@ pub fn read_as_key_chord_part(
                 KeyId::new(key_id as u16),
             ))
         },
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Invalid key chord part"
         ).into_result()
     }

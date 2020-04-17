@@ -9,7 +9,7 @@ pub fn read_as_object_id(
 ) -> Result<ObjectId, Error> {
     let object_id = match value {
         Value::Object(object_id) => object_id,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected an object."
         ).into_result()
     };

@@ -11,7 +11,7 @@ pub fn register(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 2 || values.len() > 3 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `keyboard:register' takes two or three arguments."
         ).into_result()
     }

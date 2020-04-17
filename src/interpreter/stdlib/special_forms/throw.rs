@@ -11,7 +11,7 @@ pub fn throw(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `throw' must be called with no more than two arguments"
         ).into_result();
     }
@@ -37,14 +37,14 @@ pub fn throw(
 
         let string = match value {
             Value::String(string_id) => interpreter.get_string(string_id),
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "The second argument of special form `throw' (if any) must be a string."
             ).into_result()
         };
 
         string
             .map(|string| String::from(string.get_string()))
-            .map_err(|err| interpreter.make_generic_execution_error_caused(
+            .map_err(|err| Error::generic_execution_error_caused(
                 "Cannot yield a string",
                 err
             ))?
@@ -54,12 +54,12 @@ pub fn throw(
 
     let symbol_name = interpreter.get_symbol_name(
         symbol
-    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+    ).map_err(|err| Error::generic_execution_error_caused(
         "",
         err
     ))?;
 
-    interpreter.make_generic_error(
+    Error::generic_error(
         symbol_name.clone(),
         &message
     ).into_result()

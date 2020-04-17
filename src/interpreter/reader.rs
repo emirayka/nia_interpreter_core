@@ -45,7 +45,7 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
         );
 
         interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id))
-            .map_err(|err| interpreter.make_generic_execution_error_caused(
+            .map_err(|err| Error::generic_execution_error_caused(
                 "",
                 err
             ))?;

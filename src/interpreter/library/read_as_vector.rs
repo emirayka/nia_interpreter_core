@@ -9,12 +9,12 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
-                return interpreter.make_invalid_argument_error(
+                return Error::invalid_argument_error(
                     "Expected list."
                 ).into_result()
             }
         },
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected list."
         ).into_result()
     };

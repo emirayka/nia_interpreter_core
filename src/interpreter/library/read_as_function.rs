@@ -16,7 +16,7 @@ pub fn read_as_function(
 
     let function = match interpreter.get_function(function_id) {
         Ok(function) => function,
-        Err(error) => return interpreter.make_generic_execution_error_caused(
+        Err(error) => return Error::generic_execution_error_caused(
             "",
             error
         ).into_result()

@@ -9,7 +9,7 @@ pub fn keyword(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `to:keyword' takes one argument exactly."
         ).into_result();
     }
@@ -25,7 +25,7 @@ pub fn keyword(
             Ok(keyword)
         },
         keyword @ Value::Keyword(_) => Ok(keyword),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Only keywords or strings can be casted to keyword."
         ).into_result()
     }

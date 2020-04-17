@@ -9,7 +9,7 @@ pub fn round(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `math:round' must take exactly one argument."
         ).into_result();
     }
@@ -19,7 +19,7 @@ pub fn round(
     match values.remove(0) {
         Value::Integer(int) => Ok(Value::Integer(int)),
         Value::Float(float) => Ok(Value::Integer(float.round() as i64)),
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Built-in function `math:round' must take only integer or float values."
         ).into_result()
     }

@@ -8,8 +8,8 @@ pub fn check_if_symbol_assignable(
 ) -> Result<(), Error> {
     match interpreter.check_if_symbol_assignable(symbol_id) {
         Ok(true) => {},
-        Ok(false) => return interpreter.make_invalid_argument_error("").into_result(),
-        Err(error) => return interpreter.make_generic_execution_error_caused(
+        Ok(false) => return Error::invalid_argument_error("").into_result(),
+        Err(error) => return Error::generic_execution_error_caused(
             "",
             error
         ).into_result()

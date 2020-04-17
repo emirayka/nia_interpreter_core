@@ -16,7 +16,7 @@ pub fn combine(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `func:combine' takes one argument at least."
         ).into_result();
     }

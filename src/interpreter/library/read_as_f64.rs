@@ -5,7 +5,7 @@ use crate::interpreter::interpreter::Interpreter;
 pub fn read_as_f64(interpreter: &Interpreter, value: Value) -> Result<f64, Error> {
     match value {
         Value::Float(float) => Ok(float),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Expected int."
         ).into_result()
     }

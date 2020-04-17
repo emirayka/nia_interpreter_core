@@ -10,7 +10,7 @@ pub fn set(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `set!' must be used with exactly two arguments"
         ).into_result();
     }
@@ -19,7 +19,7 @@ pub fn set(
 
     let variable_symbol_id = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "The first argument of special form `set!' must be a symbol."
         ).into_result()
     };
@@ -30,7 +30,7 @@ pub fn set(
 
 //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
     let value = interpreter.execute_value(environment, value)
-        .map_err(|err| return interpreter.make_generic_execution_error_caused(
+        .map_err(|err| return Error::generic_execution_error_caused(
             "Cannot execute value: \"{}\"",
             err
         ))?;
@@ -38,7 +38,7 @@ pub fn set(
     let target_env = interpreter.lookup_environment_by_variable(
         environment,
         variable_symbol_id
-    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+    ).map_err(|err| Error::generic_execution_error_caused(
         "",
         err
     ))?;
@@ -53,7 +53,7 @@ pub fn set(
                         interpreter.get_symbol_name(variable_symbol_id)?
                     );
 
-                    interpreter.make_generic_execution_error_caused(
+                    Error::generic_execution_error_caused(
                         message,
                         error
                     ).into_result()
@@ -66,7 +66,7 @@ pub fn set(
                 interpreter.get_symbol_name(variable_symbol_id)?
             );
 
-            interpreter.make_generic_execution_error(
+            Error::generic_execution_error(
                 message
             ).into_result()
         }

@@ -10,7 +10,7 @@ pub fn format(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:format' takes at least one argument."
         ).into_result();
     }
@@ -25,7 +25,7 @@ pub fn format(
     let strings: Vec<&str> = string.split("{}").collect();
 
     if strings.len() - 1 != values.len() {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Invalid count of arguments were provided."
         ).into_result();
     }

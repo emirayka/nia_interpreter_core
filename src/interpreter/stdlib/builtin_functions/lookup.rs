@@ -11,7 +11,7 @@ pub fn lookup(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `lookup' must take exactly one string argument."
         ).into_result();
     }
@@ -28,7 +28,7 @@ pub fn lookup(
         symbol_id
     ) {
         Ok(value) => Ok(value),
-        _ => interpreter.make_generic_execution_error("")
+        _ => Error::generic_execution_error("")
             .into_result()
     }
 }

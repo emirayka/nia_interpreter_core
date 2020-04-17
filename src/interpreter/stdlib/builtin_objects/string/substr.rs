@@ -12,7 +12,7 @@ pub fn substr(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 3 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:substr' takes only one argument."
         ).into_result();
     }
@@ -30,13 +30,13 @@ pub fn substr(
     )?;
 
     if index < 0 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "The first argument of built-in function `string:substring' must be a positive int value."
         ).into_result();
     }
 
     if diff < 0 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "The second argument of built-in function `string:substring' must be a positive int value."
         ).into_result();
     }

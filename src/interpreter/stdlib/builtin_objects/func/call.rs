@@ -12,7 +12,7 @@ pub fn call(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `func:call' takes one argument at least."
         ).into_result();
     }
@@ -40,7 +40,7 @@ pub fn call(
                 evaluated_arguments
             )?
         },
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Built-in function `func:call' can invoke only built-in or interpreted functions."
         ).into_result()
     };

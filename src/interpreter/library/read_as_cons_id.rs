@@ -6,7 +6,7 @@ use crate::interpreter::error::Error;
 pub fn read_as_cons_id(interpreter: &Interpreter, value: Value) -> Result<ConsId, Error> {
     let cons_id = match value {
         Value::Cons(cons_id) => cons_id,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Expected cons cell."
         ).into_result()
     };

@@ -11,7 +11,7 @@ pub fn take_while(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:take-while' takes one argument."
         ).into_result();
     }
@@ -45,7 +45,7 @@ pub fn take_while(
             Value::Boolean(false) => {
                 break;
             },
-            _ => return interpreter.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Function returned non-boolean value."
             ).into_result()
         }

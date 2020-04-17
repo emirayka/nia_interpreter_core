@@ -67,7 +67,7 @@ fn extract_argument_name(interpreter: &mut Interpreter, value: Value) -> Result<
     match value {
         Value::Symbol(symbol_id) => {
             if !interpreter.check_if_symbol_assignable(symbol_id)? {
-                return interpreter.make_invalid_argument_error("")
+                return Error::invalid_argument_error("")
                     .into_result()
             }
 
@@ -75,7 +75,7 @@ fn extract_argument_name(interpreter: &mut Interpreter, value: Value) -> Result<
 
             Ok(String::from(symbol_name))
         },
-        _ => return interpreter.make_invalid_argument_error("")
+        _ => return Error::invalid_argument_error("")
             .into_result()
     }
 }
@@ -110,21 +110,21 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
         match value {
             Value::Symbol(symbol_id) => {
                 let is_constant = interpreter.check_if_symbol_constant(symbol_id)
-                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    .map_err(|err| Error::generic_execution_error_caused(
                         "",
                         err
                     ))?;
 
                 let symbol = match interpreter.get_symbol(symbol_id) {
                     Ok(symbol) => symbol,
-                    Err(error) => return interpreter.make_generic_execution_error_caused(
+                    Err(error) => return Error::generic_execution_error_caused(
                         "",
                         error
                     ).into_result()
                 };
 
                 if is_constant {
-                    return interpreter.make_invalid_argument_error(
+                    return Error::invalid_argument_error(
                         "Cannot set constants as arguments"
                     ).into_result()
                 }
@@ -135,7 +135,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     if mode == ArgumentParsingMode::Ordinary {
                         mode = ArgumentParsingMode::Optional;
                     } else {
-                        return interpreter.make_generic_execution_error(
+                        return Error::generic_execution_error(
                             "Invalid argument specification: optional arguments may occur only after ordinary arguments."
                         ).into_result();
                     }
@@ -144,7 +144,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     if mode == ArgumentParsingMode::Ordinary || mode == ArgumentParsingMode::Optional {
                         mode = ArgumentParsingMode::Rest;
                     } else {
-                        return interpreter.make_generic_execution_error(
+                        return Error::generic_execution_error(
                             "Invalid argument specification: rest argument may occur only after ordinary or optional arguments."
                         ).into_result();
                     }
@@ -153,7 +153,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     if mode == ArgumentParsingMode::Ordinary {
                         mode = ArgumentParsingMode::Keys;
                     } else {
-                        return interpreter.make_generic_execution_error(
+                        return Error::generic_execution_error(
                             "Invalid argument specification: key arguments may occur only after ordinary arguments."
                         ).into_result();
                     }
@@ -163,25 +163,25 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                 match mode {
                     ArgumentParsingMode::Ordinary => {
                         arguments.add_ordinary_argument(symbol.get_name().clone())
-                            .map_err(|_| interpreter.make_generic_execution_error(""))?;
+                            .map_err(|_| Error::generic_execution_error(""))?;
                     },
                     ArgumentParsingMode::Optional => {
                         arguments.add_optional_argument(
                             symbol.get_name().clone(),
                             None,
                             None
-                        ).map_err(|_| interpreter.make_generic_execution_error(""))?;
+                        ).map_err(|_| Error::generic_execution_error(""))?;
                     },
                     ArgumentParsingMode::Rest => {
                         arguments.add_rest_argument(symbol.get_name().clone())
-                            .map_err(|_| interpreter.make_generic_execution_error(""))?;
+                            .map_err(|_| Error::generic_execution_error(""))?;
                     },
                     ArgumentParsingMode::Keys => {
                         arguments.add_key_argument(
                             symbol.get_name().clone(),
                             None,
                             None
-                        ).map_err(|_| interpreter.make_generic_execution_error(""))?;
+                        ).map_err(|_| Error::generic_execution_error(""))?;
                     },
                 }
 
@@ -189,7 +189,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
             Value::Cons(cons_id) => {
                 match mode {
                     ArgumentParsingMode::Ordinary => {
-                        return interpreter.make_invalid_argument_error("")
+                        return Error::invalid_argument_error("")
                             .into_result();
                     },
                     ArgumentParsingMode::Optional => {
@@ -202,10 +202,10 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                             triplet.0,
                             triplet.1,
                             triplet.2
-                        ).map_err(|_| interpreter.make_generic_execution_error(""))?;
+                        ).map_err(|_| Error::generic_execution_error(""))?;
                     },
                     ArgumentParsingMode::Rest => {
-                        return interpreter.make_invalid_argument_error("")
+                        return Error::invalid_argument_error("")
                             .into_result();
                     },
                     ArgumentParsingMode::Keys => {
@@ -218,11 +218,11 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                             triplet.0,
                             triplet.1,
                             triplet.2
-                        ).map_err(|_| interpreter.make_generic_execution_error(""))?;
+                        ).map_err(|_| Error::generic_execution_error(""))?;
                     },
                 }
             },
-            _ => return interpreter.make_invalid_argument_error("")
+            _ => return Error::invalid_argument_error("")
                 .into_result()
         }
     }
@@ -236,17 +236,17 @@ pub fn read_as_arguments(
 ) -> Result<Arguments, Error> {
     let arguments = match value {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)
-            .map_err(|_| interpreter.make_generic_execution_error(""))?,
+            .map_err(|_| Error::generic_execution_error(""))?,
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
-                return interpreter.make_invalid_argument_error("")
+                return Error::invalid_argument_error("")
                     .into_result()
             }
         },
         _ => {
-            return interpreter.make_invalid_argument_error("")
+            return Error::invalid_argument_error("")
                 .into_result()
         }
     };

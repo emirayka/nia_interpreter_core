@@ -56,7 +56,7 @@ pub fn match_value_recursive(
                     Ok(())
                 },
                 _ => {
-                    return interpreter.make_generic_execution_error(
+                    return Error::generic_execution_error(
                         ""
                     ).into_result()
                 }
@@ -75,7 +75,7 @@ pub fn match_value_recursive(
                             Some(value_value) => {
                                 checkings.push((*binding_value, *value_value));
                             },
-                            _ => return interpreter.make_generic_execution_error(
+                            _ => return Error::generic_execution_error(
                                 ""
                             ).into_result()
                         }
@@ -93,20 +93,20 @@ pub fn match_value_recursive(
                     Ok(())
                 },
                 _ => {
-                    return interpreter.make_generic_execution_error(
+                    return Error::generic_execution_error(
                         ""
                     ).into_result()
                 }
             }
         },
-        Value::Function(_) => return interpreter.make_generic_execution_error(
+        Value::Function(_) => return Error::generic_execution_error(
             ""
         ).into_result(),
         binding => {
             if binding == value {
                 Ok(())
             } else {
-                interpreter.make_generic_execution_error(
+                Error::generic_execution_error(
                     ""
                 ).into_result()
             }

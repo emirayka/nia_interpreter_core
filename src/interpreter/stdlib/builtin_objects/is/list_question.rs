@@ -9,7 +9,7 @@ pub fn list_question(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list?' must take exactly one argument."
         ).into_result();
     }
@@ -23,7 +23,7 @@ pub fn list_question(
 
             loop {
                 let cdr = interpreter.get_cdr(current_cons)
-                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    .map_err(|err| Error::generic_execution_error_caused(
                         "",
                         err
                     ))?;

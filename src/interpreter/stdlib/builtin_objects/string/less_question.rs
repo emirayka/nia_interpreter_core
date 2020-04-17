@@ -12,7 +12,7 @@ pub fn less_question(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:less?' takes two arguments exactly"
         ).into_result();
     }

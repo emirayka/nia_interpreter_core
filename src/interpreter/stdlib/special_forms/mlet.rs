@@ -59,7 +59,7 @@ pub fn mlet(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form mlet must have at least one argument."
         ).into_result();
     }
@@ -69,14 +69,14 @@ pub fn mlet(
     let definitions = library::read_as_flet_definitions(
         interpreter,
         values.remove(0)
-    ).map_err(|_| interpreter.make_invalid_argument_error(
+    ).map_err(|_| Error::invalid_argument_error(
     "Invalid `mlet' definitions."
     ))?;
 
     let forms = values;
     let macro_definition_environment = interpreter.make_environment(
         special_form_calling_environment
-    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+    ).map_err(|err| Error::generic_execution_error_caused(
         "",
         err
     ))?;

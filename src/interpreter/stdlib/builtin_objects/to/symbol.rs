@@ -9,7 +9,7 @@ pub fn symbol(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `to:symbol' takes one argument exactly."
         ).into_result();
     }
@@ -25,7 +25,7 @@ pub fn symbol(
             Ok(symbol)
         },
         symbol @ Value::Symbol(_) => Ok(symbol),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Only keywords or strings can be casted to keyword."
         ).into_result()
     }

@@ -12,7 +12,7 @@ pub fn define_variable(
     let mut values = values;
 
     if values.len() < 1 || values.len() > 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `define-variable' must be used with one or two forms."
         ).into_result();
     }
@@ -26,7 +26,7 @@ pub fn define_variable(
 
     let variable_symbol_id = match first_argument {
         Value::Symbol(symbol) => symbol,
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "First form of `define-variable' must be a symbol."
         ).into_result()
     };
@@ -36,7 +36,7 @@ pub fn define_variable(
     let evaluated_value = match second_argument {
         Some(value) => {
             interpreter.evaluate_value(environment, value)
-                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                .map_err(|err| Error::generic_execution_error_caused(
                     "Cannot evaluate the second form of define-variable.",
                     err,
                 ))?
@@ -51,7 +51,7 @@ pub fn define_variable(
     ).map_err(|err| {
         let symbol_name = match interpreter.get_symbol_name(variable_symbol_id) {
             Ok(symbol_name) => symbol_name,
-            _ => return interpreter.make_generic_execution_error("")
+            _ => return Error::generic_execution_error("")
         };
 
         let variable_name = &format!(
@@ -59,7 +59,7 @@ pub fn define_variable(
             symbol_name
         );
 
-        interpreter.make_generic_execution_error_caused(
+        Error::generic_execution_error_caused(
             variable_name,
             err,
         )

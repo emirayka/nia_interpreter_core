@@ -5,7 +5,7 @@ use crate::interpreter::interpreter::Interpreter;
 pub fn read_as_positive_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error> {
     match value {
         Value::Integer(int) if int > 0 => Ok(int),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Expected positive int."
         ).into_result()
     }

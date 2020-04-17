@@ -11,7 +11,7 @@ pub fn shift_left(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `bit:shift-left' takes two arguments exactly."
         ).into_result();
     }
@@ -24,7 +24,7 @@ pub fn shift_left(
     )?;
 
     if shift < 0 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `bit:shift-right' takes positive shift."
         ).into_result()
     }
@@ -36,7 +36,7 @@ pub fn shift_left(
 
     let result = match value.checked_shl(shift as u32) {
         Some(result) => result,
-        _ => return interpreter.make_overflow_error(
+        _ => return Error::overflow_error(
             ""
         ).into_result()
     };

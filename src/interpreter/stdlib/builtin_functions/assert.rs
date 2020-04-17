@@ -9,7 +9,7 @@ pub fn assert(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `assert' takes exactly one argument."
         ).into_result();
     }
@@ -22,11 +22,11 @@ pub fn assert(
             Ok(Value::Boolean(true))
         },
         Value::Boolean(false) => {
-            interpreter.make_assertion_error("Assertion failed: ")
+            Error::assertion_error("Assertion failed: ")
                 .into_result()
         },
         _ => {
-            interpreter.make_invalid_argument_error(
+            Error::invalid_argument_error(
                 "Built-in function `assert' takes exactly one boolean argument."
             ).into_result()
         }

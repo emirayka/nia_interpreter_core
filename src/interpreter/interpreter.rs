@@ -142,72 +142,6 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    pub fn make_failure(&self, message: String) -> Error {
-        Error::failure(message)
-    }
-
-    pub fn make_parse_error(&self, message: &str) -> Error {
-        Error::parse_error(message)
-    }
-
-    pub fn make_generic_error(&self, symbol_name: String, message: &str) -> Error {
-        Error::generic_error(symbol_name, message)
-    }
-
-    pub fn make_generic_execution_error(&self, message: &str) -> Error {
-        Error::generic_execution_error(message)
-    }
-
-    pub fn make_generic_execution_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::generic_execution_error_caused(message, cause)
-    }
-
-    pub fn make_overflow_error(&self, message: &str) -> Error {
-        Error::overflow_error(message)
-    }
-
-    pub fn make_overflow_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::overflow_error_caused(message, cause)
-    }
-
-    pub fn make_zero_division_error(&self, message: &str) -> Error {
-        Error::zero_division_error(message)
-    }
-
-    pub fn make_zero_division_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::zero_division_error_caused(message, cause)
-    }
-
-    pub fn make_invalid_cons_error(&self, message: &str) -> Error {
-        Error::invalid_cons_error(message)
-    }
-
-    pub fn make_invalid_cons_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::invalid_cons_error_caused(message, cause)
-    }
-
-    pub fn make_invalid_argument_error(&self, message: &str) -> Error {
-        Error::invalid_argument_error(message)
-    }
-
-    pub fn make_invalid_argument_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::invalid_argument_error_caused(message, cause)
-    }
-
-    pub fn make_invalid_argument_count_error(&self, message: &str) -> Error {
-        Error::invalid_argument_count_error(message)
-    }
-
-    pub fn make_invalid_argument_count_error_caused(&self, message: &str, cause: Error) -> Error {
-        Error::invalid_argument_count_error_caused(message, cause)
-    }
-
-    pub fn make_assertion_error(&self, message: &str) -> Error {
-        Error::assertion_error(message)
-    }
-}
-
-impl Interpreter {
     pub fn print_value(&mut self, value: Value) {
         let string = match value {
             Value::String(string_id) => {
@@ -447,7 +381,7 @@ impl Interpreter {
             Value::Cons(cdr_cons_id) => {
                 self.get_car(cdr_cons_id)
             },
-            _ => return self.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Cannot get car of not a cons value"
             ).into_result()
         }
@@ -460,7 +394,7 @@ impl Interpreter {
             Value::Cons(cdr_cons_id) => {
                 self.get_cdr(cdr_cons_id)
             },
-            _ => return self.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Cannot get cdr of not a cons value"
             ).into_result()
         }
@@ -584,7 +518,7 @@ impl Interpreter {
     pub fn get_internal_function(&self, name: &str) -> Result<FunctionId, Error> {
         match self.internal_functions.get(name) {
             Some(function_id) => Ok(*function_id),
-            _ => self.make_failure(
+            _ => Error::failure(
                 format!("Cannot find internal function: {}", name)
             ).into_result()
         }
@@ -719,7 +653,7 @@ impl Interpreter {
     ) -> Result<Value, Error> {
         self.environment_arena
             .lookup_variable(environment_id, variable_symbol_id)?
-            .ok_or_else(|| self.make_generic_execution_error(
+            .ok_or_else(|| Error::generic_execution_error(
                 "Cannot find variable."
             ))
     }
@@ -731,7 +665,7 @@ impl Interpreter {
     ) -> Result<Value, Error> {
         self.environment_arena
             .lookup_function(environment_id, function_symbol_id)?
-            .ok_or_else(|| self.make_generic_execution_error(
+            .ok_or_else(|| Error::generic_execution_error(
                 "Cannot find function."
             ))
     }
@@ -780,7 +714,7 @@ impl Interpreter {
     ) -> Result<Value, Error> {
         match self.check_if_symbol_special(symbol_id)? {
             false => self.lookup_variable(environment_id, symbol_id),
-            true => self.make_generic_execution_error(
+            true => Error::generic_execution_error(
                 "Cannot evaluate special symbols."
             ).into_result(),
         }
@@ -796,12 +730,12 @@ impl Interpreter {
                 if self.symbol_is_nil(symbol_id)? {
                     Ok(Vec::new())
                 } else {
-                    self.make_generic_execution_error(
+                    Error::generic_execution_error(
                         "Cannot extract arguments from not a list."
                     ).into_result()
                 }
             }
-            _ => self.make_generic_execution_error(
+            _ => Error::generic_execution_error(
                 "Cannot extract arguments from not a list."
             ).into_result()
         }
@@ -818,7 +752,7 @@ impl Interpreter {
             let evaluated_argument = self
                 .evaluate_value(environment_id, argument)
                 .map_err(|err|
-                    self.make_generic_execution_error_caused(
+                    Error::generic_execution_error_caused(
                         "Cannot evaluate arguments.",
                         err
                     )
@@ -913,7 +847,7 @@ impl Interpreter {
         // key arguments
         if arguments.get_key_arguments().len() != 0 {
             if values.len() % 2 != 0 {
-                return self.make_generic_execution_error(
+                return Error::generic_execution_error(
                     "Invalid usage of key arguments."
                 ).into_result()
             }
@@ -937,7 +871,7 @@ impl Interpreter {
 
                     self.intern(keyword.get_name())
                 } else {
-                    return self.make_generic_execution_error("")
+                    return Error::generic_execution_error("")
                         .into_result()
                 };
 
@@ -979,11 +913,11 @@ impl Interpreter {
         }
 
         if values.len() > current_argument {
-            return self.make_generic_execution_error(
+            return Error::generic_execution_error(
                 "Function was called with too many arguments."
             ).into_result();
         } else if values.len() < current_argument {
-            return self.make_generic_execution_error(
+            return Error::generic_execution_error(
                 "Function was called with too little arguments."
             ).into_result();
         }
@@ -1064,7 +998,7 @@ impl Interpreter {
         evaluated_arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > evaluated_arguments.len() {
-            return self.make_generic_execution_error(
+            return Error::generic_execution_error(
                 "Not enough arguments to call a function."
             ).into_result();
         }
@@ -1123,7 +1057,7 @@ impl Interpreter {
         arguments: Vec<Value>
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > arguments.len() {
-            return self.make_generic_execution_error(
+            return Error::generic_execution_error(
                 "Not enough arguments to call a macro."
             ).into_result();
         }
@@ -1223,7 +1157,7 @@ impl Interpreter {
         let mut arguments = self.extract_arguments(cons_id)?;
 
         if arguments.len() != 1 {
-            return self.make_generic_execution_error(
+            return Error::generic_execution_error(
                 "Invalid argument count in keyword s-expression."
             ).into_result();
         }
@@ -1238,11 +1172,11 @@ impl Interpreter {
         match evaluated_argument {
             Value::Object(object_id) => {
                 self.object_arena.get_item(object_id, symbol_id)?
-                    .ok_or_else(|| self.make_generic_execution_error(
+                    .ok_or_else(|| Error::generic_execution_error(
                         "Object have not an item to yield."
                     ))
             },
-            _ => return self.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Cannot get an item of not an object."
             ).into_result()
         }
@@ -1266,7 +1200,7 @@ impl Interpreter {
 
                 let function_id = match function_value {
                     Value::Function(function_id) => function_id,
-                    _ => return self.make_generic_execution_error(
+                    _ => return Error::generic_execution_error(
                         "The result of evaluation of first item of an s-expression must be a function or keyword."
                     ).into_result(),
                 };
@@ -1290,7 +1224,7 @@ impl Interpreter {
 
                 let function_id = match evaluation_result {
                     Value::Function(function_id) => function_id,
-                    _ => return self.make_generic_execution_error(
+                    _ => return Error::generic_execution_error(
                         "."
                     ).into_result(),
                 };
@@ -1306,7 +1240,7 @@ impl Interpreter {
                 keyword_id,
                 s_expression
             ),
-            _ => return self.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "The result of evaluation of first item of an s-expression must be a function or keyword."
             ).into_result(),
         }
@@ -1330,7 +1264,7 @@ impl Interpreter {
         // first step: parse code
         let code = parse_code(code)
             .map(|result| result.1)
-            .map_err(|err| self.make_parse_error(
+            .map_err(|err| Error::parse_error(
                 format!("Error while parsing code: {:?}", err)
                     .as_str()
             ))?;
@@ -1724,7 +1658,7 @@ mod tests {
                     match evaluated_condition {
                         Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
                         Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => interpreter.make_generic_execution_error("").into_result()
+                        _ => Error::generic_execution_error("").into_result()
                     }
                 }
             ));

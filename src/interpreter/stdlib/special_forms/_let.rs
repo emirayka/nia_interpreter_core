@@ -13,7 +13,7 @@ fn set_variable_via_cons(
     cons_id: ConsId,
 ) -> Result<(), Error> {
     let car = interpreter.get_car(cons_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err,
         ))?;
@@ -24,18 +24,18 @@ fn set_variable_via_cons(
 
             symbol_id
         }
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol."
         ).into_result()
     };
 
     let cadr = interpreter.get_cadr(cons_id)
-        .map_err(|_| interpreter.make_invalid_argument_error(
+        .map_err(|_| Error::invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         ))?;
 
     let value = interpreter.execute_value(definition_value_execution_environment, cadr)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "The definitions of the special form `let' must have exactly two arguments.",
             err,
         ))?;
@@ -43,12 +43,12 @@ fn set_variable_via_cons(
     match interpreter.get_cddr(cons_id) {
         Ok(Value::Symbol(symbol_id)) => {
             if interpreter.symbol_is_not_nil(symbol_id)? {
-                return interpreter.make_invalid_argument_error(
+                return Error::invalid_argument_error(
                     "The definitions of the special form `let' must have exactly two arguments."
                 ).into_result();
             }
         }
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
         ).into_result()
     };
@@ -87,7 +87,7 @@ fn set_definition(
         ),
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
-                return interpreter.make_invalid_argument_error(
+                return Error::invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `let'."
                 ).into_result();
             } else {
@@ -98,7 +98,7 @@ fn set_definition(
                 )
             }
         }
-        _ => return interpreter.make_invalid_argument_error(
+        _ => return Error::invalid_argument_error(
             "Invalid `let*' definitions."
         ).into_result()
     }
@@ -128,7 +128,7 @@ pub fn _let(
     values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() == 0 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form let must have at least one argument."
         ).into_result();
     }
@@ -138,13 +138,13 @@ pub fn _let(
     let definitions = library::read_as_let_definitions(
         interpreter,
         values.remove(0),
-    ).map_err(|_| interpreter.make_invalid_argument_error(
+    ).map_err(|_| Error::invalid_argument_error(
         "The first argument of special form `let' must be a list of definitions: symbol, or 2-element lists."
     ))?;
 
     let forms = values;
     let execution_environment = interpreter.make_environment(environment)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err,
         ))?;

@@ -11,7 +11,7 @@ pub fn none_question(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:none?' takes two arguments exactly."
         ).into_result()
     }
@@ -45,7 +45,7 @@ pub fn none_question(
             Value::Boolean(true) => {
                 return Ok(Value::Boolean(false))
             },
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "Built-in function `list:none?' takes a function that returns boolean value."
             ).into_result()
         }

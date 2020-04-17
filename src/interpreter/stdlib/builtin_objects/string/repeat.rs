@@ -10,7 +10,7 @@ pub fn repeat(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:repeat' takes two arguments exactly."
         ).into_result();
     }
@@ -23,7 +23,7 @@ pub fn repeat(
     )?;
 
     if count < 0 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "The first argument of built-in functino `string:repeat' must be a positive number"
         ).into_result();
     }

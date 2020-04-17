@@ -11,7 +11,7 @@ pub fn _match(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             ""
         ).into_result()
     }
@@ -24,7 +24,7 @@ pub fn _match(
     let value_to_match = interpreter.evaluate_value(
         environment_id,
         expression
-    ).map_err(|err| interpreter.make_generic_execution_error_caused(
+    ).map_err(|err| Error::generic_execution_error_caused(
         "Cannot evaluate value in the `match' special form.",
         err
     ))?;
@@ -71,7 +71,7 @@ pub fn _match(
                 &code_to_execute.unwrap()
             )
         },
-        _ => interpreter.make_generic_execution_error(
+        _ => Error::generic_execution_error(
             ""
         ).into_result()
     }

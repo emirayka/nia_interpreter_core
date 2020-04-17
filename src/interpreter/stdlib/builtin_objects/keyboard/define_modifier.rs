@@ -13,7 +13,7 @@ pub fn define_modifier(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `keyboard:define-modifier' takes one argument exactly."
         ).into_result();
     }
@@ -26,7 +26,7 @@ pub fn define_modifier(
             values.remove(0)
         )?,
         &HashMap::new() // todo: fix
-    ).map_err(|_| interpreter.make_invalid_argument_error(
+    ).map_err(|_| Error::invalid_argument_error(
         "Cannot parse key chord part."
     ))?;
 

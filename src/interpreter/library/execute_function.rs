@@ -28,7 +28,7 @@ pub fn execute_function(
                 arguments
             )
         },
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             ""
         ).into_result()
     }

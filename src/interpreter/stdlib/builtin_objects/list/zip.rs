@@ -11,7 +11,7 @@ pub fn zip(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:zip' takes two arguments exactly."
         ).into_result();
     }
@@ -29,7 +29,7 @@ pub fn zip(
     )?;
 
     if vector1.len() != vector2.len() {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `list:zip' takes two lists of equal length."
         ).into_result();
     }

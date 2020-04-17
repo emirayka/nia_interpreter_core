@@ -11,7 +11,7 @@ pub fn all_question(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:all?' takes two arguments exactly."
         ).into_result()
     }
@@ -41,7 +41,7 @@ pub fn all_question(
             Value::Boolean(false) => {
                 return Ok(Value::Boolean(false))
             },
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "Built-in function `list:all?' takes a function that returns boolean value."
             ).into_result()
         }

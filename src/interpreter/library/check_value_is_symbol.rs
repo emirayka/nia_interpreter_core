@@ -8,7 +8,7 @@ pub fn check_value_is_symbol(
 ) -> Result<(), Error> {
     match value {
         Value::Symbol(_) => Ok(()),
-        _ => interpreter.make_invalid_argument_error("Expected symbol")
+        _ => Error::invalid_argument_error("Expected symbol")
             .into_result()
     }
 }

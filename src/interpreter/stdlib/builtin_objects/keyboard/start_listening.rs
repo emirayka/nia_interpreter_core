@@ -164,7 +164,7 @@ fn start_event_loop(
 
     for (path, action) in mappings {
         state_machine.add(path, action)
-            .map_err(|_| interpreter.make_invalid_argument_error(
+            .map_err(|_| Error::invalid_argument_error(
                 "Can't bind binding."
             ))?;
     }
@@ -233,7 +233,7 @@ pub fn start_listening(
     values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 0 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `keyboard:start-listening' takes no arguments."
         ).into_result();
     }

@@ -8,7 +8,7 @@ pub fn check_value_is_string(
 ) -> Result<(), Error> {
     match value {
         Value::String(_) => Ok(()),
-        _ => interpreter.make_invalid_argument_error("Expected string")
+        _ => Error::invalid_argument_error("Expected string")
             .into_result()
     }
 }

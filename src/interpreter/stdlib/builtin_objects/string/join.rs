@@ -10,7 +10,7 @@ pub fn join(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:join' takes two arguments at least."
         ).into_result();
     }
@@ -26,7 +26,7 @@ pub fn join(
         match values.remove(0) {
             Value::Cons(cons_id) => {
                 interpreter.list_to_vec(cons_id)
-                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    .map_err(|err| Error::generic_execution_error_caused(
                         "",
                         err
                     ))?
@@ -35,13 +35,13 @@ pub fn join(
                 if interpreter.symbol_is_nil(symbol_id)? {
                     Vec::new()
                 } else {
-                    return interpreter.make_invalid_argument_error(
+                    return Error::invalid_argument_error(
                         "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
                     ).into_result();
                 }
             },
             value @ Value::String(_) => vec!(value),
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
             ).into_result()
         }

@@ -264,12 +264,12 @@ mod tests {
     fn final_cause_works() {
         let interpreter = Interpreter::new();
 
-        let cause_cause_error = interpreter.make_invalid_argument_count_error("r");
-        let cause_error = interpreter.make_invalid_argument_count_error_caused(
+        let cause_cause_error = Error::invalid_argument_count_error("r");
+        let cause_error = Error::invalid_argument_count_error_caused(
             "r",
             cause_cause_error
         );
-        let error = interpreter.make_generic_execution_error_caused(
+        let error = Error::generic_execution_error_caused(
             "r",
             cause_error
         );

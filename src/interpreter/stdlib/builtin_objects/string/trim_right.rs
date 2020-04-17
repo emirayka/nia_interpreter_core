@@ -10,7 +10,7 @@ pub fn trim_right(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `string:trim-right' takes only one argument."
         ).into_result();
     }

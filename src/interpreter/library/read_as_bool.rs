@@ -5,7 +5,7 @@ use crate::interpreter::interpreter::Interpreter;
 pub fn read_as_bool(interpreter: &Interpreter, value: Value) -> Result<bool, Error> {
     match value {
         Value::Boolean(bool) => Ok(bool),
-        _ => interpreter.make_invalid_argument_error(
+        _ => Error::invalid_argument_error(
             "Expected boolean."
         ).into_result()
     }

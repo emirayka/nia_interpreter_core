@@ -11,7 +11,7 @@ pub fn boolean(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `to:boolean' takes one argument exactly."
         ).into_result();
     }

@@ -9,7 +9,7 @@ pub fn gt(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `>' takes two argument at least."
         ).into_result();
     }
@@ -41,7 +41,7 @@ pub fn gt(
                     return Ok(Value::Boolean(false))
                 }
             },
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "Built-in function `>' takes only integer or float arguments"
             ).into_result()
         }

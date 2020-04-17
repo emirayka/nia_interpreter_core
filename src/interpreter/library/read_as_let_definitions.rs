@@ -20,7 +20,7 @@ pub fn read_as_let_definitions(
                         )?;
 
                         if vector.len() != 2 {
-                            return interpreter.make_generic_execution_error(
+                            return Error::generic_execution_error(
                                 "If let definition is a list, it must have 2 items exactly."
                             ).into_result();
                         }
@@ -43,7 +43,7 @@ pub fn read_as_let_definitions(
                             symbol_id,
                         )?;
                     },
-                    _ => return interpreter.make_invalid_argument_error(
+                    _ => return Error::invalid_argument_error(
                         "Let definitions consist of assignable symbols or lists of structure `(symbol value)'."
                     ).into_result()
                 }
@@ -55,11 +55,11 @@ pub fn read_as_let_definitions(
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
-                return interpreter.make_invalid_argument_error("")
+                return Error::invalid_argument_error("")
                     .into_result();
             }
         }
-        _ => return interpreter.make_invalid_argument_error("").into_result()
+        _ => return Error::invalid_argument_error("").into_result()
     };
 
     Ok(definitions)

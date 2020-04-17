@@ -13,7 +13,7 @@ pub fn int(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `rand:int' takes no more than two arguments."
         ).into_result()
     }
@@ -39,7 +39,7 @@ pub fn int(
     };
 
     if min > max {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `rand:int' expects min <= max."
         ).into_result()
     }

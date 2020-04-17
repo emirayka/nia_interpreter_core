@@ -49,7 +49,7 @@ pub fn dolist(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `dolist' takes one argument at least."
         ).into_result();
     }
@@ -61,7 +61,7 @@ pub fn dolist(
     )?;
 
     if binding.len() != 2 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Special form `dolist' takes 2 item list as its first argument."
         ).into_result()
     }

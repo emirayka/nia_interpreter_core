@@ -11,7 +11,7 @@ pub fn replace(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 3 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:replace' takes exactly three arguments."
         ).into_result();
     }
@@ -33,7 +33,7 @@ pub fn replace(
     if let Some(value_ref) = values.get_mut(index) {
         *value_ref = value;
     } else {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `list:replace' takes a list that has enough items."
         ).into_result();
     }

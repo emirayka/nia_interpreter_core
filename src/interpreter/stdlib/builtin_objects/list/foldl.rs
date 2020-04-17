@@ -10,7 +10,7 @@ pub fn foldl(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 3 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:foldl' takes three arguments exactly."
         ).into_result()
     }

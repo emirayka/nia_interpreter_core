@@ -9,7 +9,7 @@ pub fn object_new(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() > 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `object:new' must take zero or one arguments."
         ).into_result();
     }
@@ -20,7 +20,7 @@ pub fn object_new(
     let proto_id = if values.len() > 0 {
         match values.remove(0) {
             Value::Object(proto_id) => Some(proto_id),
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "The first argument of `object:new' must be an object."
             ).into_result()
         }
@@ -30,7 +30,7 @@ pub fn object_new(
 
     match proto_id {
         Some(proto_id) => interpreter.set_object_proto(object_id, proto_id)
-            .map_err(|err| interpreter.make_generic_execution_error_caused(
+            .map_err(|err| Error::generic_execution_error_caused(
                 "",
                 err
             ))?,

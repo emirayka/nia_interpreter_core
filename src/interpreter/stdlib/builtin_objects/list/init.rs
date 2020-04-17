@@ -11,7 +11,7 @@ pub fn init(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:init' takes one argument exactly."
         ).into_result();
     }
@@ -28,7 +28,7 @@ pub fn init(
 
         Ok(interpreter.vec_to_list(vector))
     } else {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Built-in function `list:init' takes a list, that has one value at least."
         ).into_result()
     }

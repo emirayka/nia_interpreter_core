@@ -11,7 +11,7 @@ pub fn tail(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `list:tail' takes one argument."
         ).into_result();
     }
@@ -28,7 +28,7 @@ pub fn tail(
 
         Ok(interpreter.vec_to_list(values))
     } else {
-        interpreter.make_invalid_argument_error(
+        Error::invalid_argument_error(
             "Built-in function `list:tail' takes one list with values."
         ).into_result()
     }

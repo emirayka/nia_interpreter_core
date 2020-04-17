@@ -11,7 +11,7 @@ pub fn not(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `bit:not' takes two arguments exactly."
         ).into_result();
     }

@@ -9,7 +9,7 @@ pub fn object_make(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() % 2 != 0 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `object:make' must take even count of arguments."
         ).into_result();
     }
@@ -23,7 +23,7 @@ pub fn object_make(
 
         if let Value::Keyword(keyword_id) = key {
             let keyword = interpreter.get_keyword(keyword_id)
-                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                .map_err(|err| Error::generic_execution_error_caused(
                     "",
                     err
                 ))?;
@@ -36,12 +36,12 @@ pub fn object_make(
                 object_id,
                 symbol_id,
                 value
-            ).map_err(|err| interpreter.make_generic_execution_error_caused(
+            ).map_err(|err| Error::generic_execution_error_caused(
                 "",
                 err
             ))?;
         } else {
-            return interpreter.make_invalid_argument_error(
+            return Error::invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword."
             ).into_result();
         }

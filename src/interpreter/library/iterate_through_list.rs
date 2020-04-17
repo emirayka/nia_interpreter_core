@@ -23,7 +23,7 @@ pub fn iterate_through_list(
                 if interpreter.symbol_is_nil(symbol_id)? {
                     break;
                 } else {
-                    return interpreter.make_generic_execution_error(
+                    return Error::generic_execution_error(
                         "Invalid list"
                     ).into_result()
                 }
@@ -32,7 +32,7 @@ pub fn iterate_through_list(
                 car = interpreter.get_car(cons_id)?;
                 cdr = interpreter.get_cdr(cons_id)?;
             },
-            _ => return interpreter.make_generic_execution_error(
+            _ => return Error::generic_execution_error(
                 "Invalid list"
             ).into_result()
         };

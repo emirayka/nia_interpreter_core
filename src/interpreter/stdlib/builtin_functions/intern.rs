@@ -11,7 +11,7 @@ pub fn intern(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `intern' must take exactly one string argument."
         ).into_result();
     }

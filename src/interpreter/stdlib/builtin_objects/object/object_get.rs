@@ -11,7 +11,7 @@ pub fn object_get(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Built-in function `object:get' takes two arguments exactly."
         ).into_result();
     }
@@ -30,7 +30,7 @@ pub fn object_get(
     library::check_if_symbol_assignable(interpreter, symbol_id)?;
 
     let value = interpreter.get_object_item(object_id, symbol_id)
-        .map_err(|err| interpreter.make_generic_execution_error_caused(
+        .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
         ))?;
@@ -44,7 +44,7 @@ pub fn object_get(
                 interpreter.get_symbol_name(symbol_id)?
             );
 
-            return interpreter.make_generic_execution_error(
+            return Error::generic_execution_error(
                 message
             ).into_result()
         }

@@ -49,7 +49,7 @@ pub fn dotimes(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 1 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form dotimes`' takes one argument at least."
         ).into_result();
     }
@@ -61,7 +61,7 @@ pub fn dotimes(
     )?;
 
     if binding.len() != 2 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Special form `dotimes' takes 2 item list as its first argument."
         ).into_result()
     }
@@ -82,7 +82,7 @@ pub fn dotimes(
     )?;
 
     if count < 0 {
-        return interpreter.make_invalid_argument_error(
+        return Error::invalid_argument_error(
             "Special form `dotimes' takes positive count."
         ).into_result()
     }

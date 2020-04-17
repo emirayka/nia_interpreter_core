@@ -12,7 +12,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
         match clause {
             Value::Cons(cons_id) => {
                 let car = interpreter.get_car(cons_id)
-                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    .map_err(|err| Error::generic_execution_error_caused(
                         "",
                         err
                     ))?;
@@ -25,12 +25,12 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
                             catch_clauses.push(cons_id)
                         }
                     },
-                    _ => return interpreter.make_invalid_argument_error(
+                    _ => return Error::invalid_argument_error(
                         "The first item of catch clauses must be a catch symbol."
                     ).into_result(),
                 }
             }
-            _ => return interpreter.make_invalid_argument_error(
+            _ => return Error::invalid_argument_error(
                 "The clauses of special form `try' must be lists."
             ).into_result()
         }
@@ -38,7 +38,7 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
 
     for clause in &catch_clauses {
         interpreter.get_cddr(*clause)
-            .map_err(|_| interpreter.make_invalid_argument_error(
+            .map_err(|_| Error::invalid_argument_error(
                 "The clauses of special form `try' must be lists with two items at least."
             ))?;
     }
@@ -52,7 +52,7 @@ pub fn _try(
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() < 2 {
-        return interpreter.make_invalid_argument_count_error(
+        return Error::invalid_argument_count_error(
             "Special form `try' must take at least two arguments"
         ).into_result();
     }
@@ -72,19 +72,19 @@ pub fn _try(
 
             for catch_clause in catch_clauses {
                 let catch_value = interpreter.get_cadr(catch_clause)
-                    .map_err(|_| interpreter.make_invalid_argument_error(
+                    .map_err(|_| Error::invalid_argument_error(
                         "The catch clauses of special form `try' must have two items at least."
                     ))?;
 
                 let catch_symbol_id = match catch_value {
                     Value::Symbol(symbol) => symbol,
-                    _ => return interpreter.make_invalid_argument_error(
+                    _ => return Error::invalid_argument_error(
                         "The first item of catch clause of the special form `try' must be a symbol."
                     ).into_result(),
                 };
 
                 let catch_symbol_name = interpreter.get_symbol_name(catch_symbol_id)
-                    .map_err(|err| interpreter.make_generic_execution_error_caused(
+                    .map_err(|err| Error::generic_execution_error_caused(
                         "",
                         err
                     ))?;
@@ -98,7 +98,7 @@ pub fn _try(
             match found_clause {
                 Some(catch_clause) => {
                     let catch_code = interpreter.get_cddr(catch_clause)
-                        .map_err(|_| interpreter.make_invalid_argument_error(
+                        .map_err(|_| Error::invalid_argument_error(
                             "The catch clauses of special form `try' must have two items at least."
                         ))?;
 
@@ -107,14 +107,14 @@ pub fn _try(
                             if interpreter.symbol_is_nil(symbol_id)? {
                                 Ok(interpreter.intern_nil_symbol_value())
                             } else {
-                                return interpreter.make_generic_execution_error(
+                                return Error::generic_execution_error(
                                     ""
                                 ).into_result()
                             }
                         },
                         Value::Cons(cons_id) => {
                             let values = interpreter.list_to_vec(cons_id)
-                                .map_err(|err| interpreter.make_generic_execution_error_caused(
+                                .map_err(|err| Error::generic_execution_error_caused(
                                     "",
                                     err
                                 ))?;
