@@ -12,8 +12,9 @@ mod stdlib;
 mod reader;
 mod garbage_collector;
 pub mod library;
-pub mod interpreter;
+mod interpreter;
 
+pub use interpreter::Interpreter;
 pub use value::*;
 pub use error::*;
 

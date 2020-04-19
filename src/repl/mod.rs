@@ -2,7 +2,7 @@ use std::path::Path;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
-use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::Interpreter;
 use crate::interpreter::ErrorKind;
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";

@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
 pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse-error";
@@ -62,21 +64,33 @@ impl Error {
         }
     }
 
+    pub fn is_failure(&self) -> bool {
+        self.get_total_cause().get_error_kind() == ErrorKind::Failure
+    }
+
     pub fn into_result<T>(self) -> Result<T, Error> {
         Err(self)
     }
 
     pub fn describe(&self) {
-        print!("({} \"{}\")", self.symbol_name, self.message);
+        let s = format!("{}", self);
+
+        print!("{}", s)
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({} \"{}\")", self.symbol_name, self.message);
 
         if let Some(cause) = &self.caused_by {
             let cause_error = cause.as_ref();
 
-            print!(" caused by:");
-            println!();
-            cause_error.describe();
+            write!(f, " caused by:");
+            write!(f, "\n");
+            cause_error.fmt(f)
         } else {
-            println!();
+            write!(f, "\n")
         }
     }
 }

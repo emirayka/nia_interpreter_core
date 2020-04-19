@@ -155,10 +155,10 @@ fn start_event_loop(
     let settings = settings_builder.build();
 
     let event_listener = EventListener::new(settings);
-    let receiver = event_listener.start_listening();
+    let (receiver, listener_stopper) = event_listener.start_listening();
 
     let command_sender = nia_events::CommandSender::new();
-    let sender = command_sender.start_sending();
+    let (sender, sender_stopper) = command_sender.start_sending();
 
     let mut state_machine = nia_state_machine::StateMachine::new();
 
@@ -206,6 +206,9 @@ fn start_event_loop(
             }
         }
     }
+
+    listener_stopper.send(());
+    sender_stopper.send(());
 
     Ok(())
 }
