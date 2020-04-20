@@ -5,6 +5,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 
+#[derive(Clone)]
 pub struct LexicalEnvironment {
     variables: HashMap<SymbolId, Value>,
     functions: HashMap<SymbolId, Value>,

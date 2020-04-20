@@ -25,6 +25,7 @@ impl ConsId {
     }
 }
 
+#[derive(Clone)]
 pub struct ConsArena {
     arena: HashMap<ConsId, Cons>,
     next_id: usize,

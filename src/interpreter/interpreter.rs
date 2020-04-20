@@ -26,6 +26,7 @@ use crate::interpreter::reader::read_elements;
 use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::garbage_collector::collect_garbage;
 
+#[derive(Clone)]
 pub struct Interpreter {
     environment_arena: EnvironmentArena,
 
@@ -1287,6 +1288,12 @@ impl Interpreter {
         };
 
         Ok(last_result)
+    }
+}
+
+impl Interpreter {
+    pub fn run_event_loop(interpreter: &mut Interpreter) {
+
     }
 }
 

@@ -25,6 +25,7 @@ impl FunctionId {
     }
 }
 
+#[derive(Clone)]
 pub struct FunctionArena {
     arena: HashMap<FunctionId, Function>,
     next_id: usize,

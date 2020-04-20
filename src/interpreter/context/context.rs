@@ -3,6 +3,7 @@ use crate::interpreter::symbol::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
+#[derive(Clone)]
 pub struct Context {
     values: HashMap<SymbolId, Value>,
 }

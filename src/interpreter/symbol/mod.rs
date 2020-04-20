@@ -54,7 +54,7 @@ impl Symbol {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct SymbolArena {
     arena: HashMap<SymbolId, Symbol>,
     mapping: HashMap<String, Vec<SymbolId>>,

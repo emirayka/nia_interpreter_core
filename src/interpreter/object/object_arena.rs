@@ -4,6 +4,7 @@ use crate::interpreter::object::{Object, ObjectId};
 use nom::lib::std::collections::HashMap;
 use crate::interpreter::error::Error;
 
+#[derive(Clone)]
 pub struct ObjectArena {
     arena: HashMap<ObjectId, Object>,
     next_id: usize,

@@ -22,6 +22,7 @@ impl EnvironmentId {
     }
 }
 
+#[derive(Clone)]
 pub struct EnvironmentArena {
     arena: HashMap<EnvironmentId, LexicalEnvironment>,
     next_id: usize,

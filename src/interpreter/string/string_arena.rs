@@ -19,6 +19,7 @@ impl StringId {
     }
 }
 
+#[derive(Clone)]
 pub struct StringArena {
     arena: HashMap<StringId, VString>,
     mapping: HashMap<String, StringId>,

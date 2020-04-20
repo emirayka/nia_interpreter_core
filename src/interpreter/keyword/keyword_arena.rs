@@ -19,6 +19,7 @@ impl KeywordId {
     }
 }
 
+#[derive(Clone)]
 pub struct KeywordArena {
     arena: HashMap<KeywordId, Keyword>,
     mapping: HashMap<String, KeywordId>,
