@@ -5,9 +5,10 @@ extern crate nia_state_machine;
 extern crate nia_events;
 
 pub mod parser;
+pub mod repl;
 pub mod interpreter;
 
-mod repl;
+pub use interpreter::*;
 
 // todo: Add better error handling
 // todo: binary plugins

@@ -7,7 +7,7 @@ use crate::interpreter::error::Error;
 
 use crate::interpreter::library;
 
-pub fn start_listening(
+pub fn stop_listening(
     interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
     values: Vec<Value>,
@@ -18,7 +18,7 @@ pub fn start_listening(
         ).into_result();
     }
 
-    interpreter.start_listening();
+    interpreter.stop_listening();
 
     Ok(interpreter.intern_nil_symbol_value())
 }

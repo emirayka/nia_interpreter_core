@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::interpreter::value::Value;
-use crate::interpreter::function::{Function};
+use crate::interpreter::function::Function;
 use crate::interpreter::function::InterpretedFunction;
 use crate::interpreter::function::BuiltinFunction;
 use crate::interpreter::function::SpecialFormFunction;
@@ -42,6 +42,8 @@ pub struct Interpreter {
     exclusive_nil_value: Value,
     internal_functions: HashMap<String, FunctionId>,
     root_environment: EnvironmentId,
+
+    is_listening: bool,
 }
 
 impl Interpreter {
@@ -75,6 +77,8 @@ impl Interpreter {
             exclusive_nil_value,
             internal_functions,
             root_environment,
+
+            is_listening: false,
         };
 
         // nil
@@ -84,7 +88,7 @@ impl Interpreter {
         interpreter.define_variable(
             root_environment,
             nil_symbol_id,
-            nil_value
+            nil_value,
         ).expect("Cannot define `nil' symbol");
 
         // break
@@ -96,7 +100,7 @@ impl Interpreter {
         );
         interpreter.internal_functions.insert(
             String::from("break"),
-            break_function_id
+            break_function_id,
         );
 
         // continue
@@ -108,7 +112,7 @@ impl Interpreter {
         );
         interpreter.internal_functions.insert(
             String::from("continue"),
-            continue_function_id
+            continue_function_id,
         );
 
         interpreter
@@ -119,7 +123,7 @@ impl Interpreter {
         // let root_environment = interpreter.get_root_environment();
 
         match infect_stdlib(&mut interpreter) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(error) => panic!("Cannot construct interpreter: {:?}", error)
         }
 
@@ -140,6 +144,18 @@ impl Interpreter {
             .map(|id| *id)
             .collect()
     }
+
+    pub fn is_listening(&self) -> bool {
+        self.is_listening
+    }
+
+    pub fn start_listening(&mut self) {
+        self.is_listening = true;
+    }
+
+    pub fn stop_listening(&mut self) {
+        self.is_listening = false;
+    }
 }
 
 impl Interpreter {
@@ -156,12 +172,12 @@ impl Interpreter {
                 result.push_str("\"");
 
                 result
-            },
+            }
             _ => {
                 match library::value_to_string(self, value) {
                     Ok(string) => {
                         string
-                    },
+                    }
                     Err(_) => panic!("Cannot print value")
                 }
             }
@@ -251,7 +267,7 @@ impl Interpreter {
         self.symbol_arena
             .get_symbol(symbol_id)
     }
-    
+
     pub fn get_symbol_name(&self, symbol_id: SymbolId) -> Result<&String, Error> {
         let symbol = self.get_symbol(symbol_id)?;
 
@@ -381,7 +397,7 @@ impl Interpreter {
         match cdr {
             Value::Cons(cdr_cons_id) => {
                 self.get_car(cdr_cons_id)
-            },
+            }
             _ => return Error::generic_execution_error(
                 "Cannot get car of not a cons value"
             ).into_result()
@@ -394,7 +410,7 @@ impl Interpreter {
         match cdr {
             Value::Cons(cdr_cons_id) => {
                 self.get_cdr(cdr_cons_id)
-            },
+            }
             _ => return Error::generic_execution_error(
                 "Cannot get cdr of not a cons value"
             ).into_result()
@@ -425,13 +441,13 @@ impl Interpreter {
         // if a SymbolId is the one registered for nil, so it returns all items in the list,
         // including the nil at the cdr of the last cell of the list.
         match vector.last() {
-            Some(&val   @ _) => {
+            Some(&val @ _) => {
                 if let Value::Symbol(symbol_id) = val {
                     if self.symbol_is_nil(symbol_id)? {
                         vector.remove(vector.len() - 1);
                     }
                 }
-            },
+            }
             _ => {}
         }
 
@@ -480,7 +496,7 @@ impl Interpreter {
         Ok(object.get_prototype())
     }
 
-    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) -> Result<(), Error>{
+    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) -> Result<(), Error> {
         let object = self.object_arena.get_object_mut(object_id)?;
         object.set_prototype(proto_id);
 
@@ -546,44 +562,44 @@ impl Interpreter {
     pub fn lookup_environment_by_variable(
         &mut self,
         environment_id: EnvironmentId,
-        variable_symbol_id: SymbolId
+        variable_symbol_id: SymbolId,
     ) -> Result<Option<EnvironmentId>, Error> {
         self.environment_arena.lookup_environment_by_variable(
             environment_id,
-            variable_symbol_id
+            variable_symbol_id,
         )
     }
 
     pub fn lookup_environment_by_function(
         &mut self,
         environment_id: EnvironmentId,
-        function_symbol_id: SymbolId
+        function_symbol_id: SymbolId,
     ) -> Result<Option<EnvironmentId>, Error> {
         self.environment_arena.lookup_environment_by_function(
             environment_id,
-            function_symbol_id
+            function_symbol_id,
         )
     }
 
     pub fn has_variable(
         &mut self,
         environment_id: EnvironmentId,
-        variable_symbol_id: SymbolId
+        variable_symbol_id: SymbolId,
     ) -> Result<bool, Error> {
         self.environment_arena.has_variable(
             environment_id,
-            variable_symbol_id
+            variable_symbol_id,
         )
     }
 
     pub fn has_function(
         &mut self,
         environment_id: EnvironmentId,
-        function_symbol_id: SymbolId
+        function_symbol_id: SymbolId,
     ) -> Result<bool, Error> {
         self.environment_arena.has_function(
             environment_id,
-            function_symbol_id
+            function_symbol_id,
         )
     }
 
@@ -591,7 +607,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         variable_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .define_variable(environment_id, variable_symbol_id, value)
@@ -601,7 +617,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         function_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .define_function(environment_id, function_symbol_id, value)
@@ -611,7 +627,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         variable_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .set_environment_variable(environment_id, variable_symbol_id, value)
@@ -621,7 +637,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         function_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .set_environment_function(environment_id, function_symbol_id, value)
@@ -631,7 +647,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         variable_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .set_variable(environment_id, variable_symbol_id, value)
@@ -641,7 +657,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         function_symbol_id: SymbolId,
-        value: Value
+        value: Value,
     ) -> Result<(), Error> {
         self.environment_arena
             .set_function(environment_id, function_symbol_id, value)
@@ -650,7 +666,7 @@ impl Interpreter {
     pub fn lookup_variable(
         &mut self,
         environment_id: EnvironmentId,
-        variable_symbol_id: SymbolId
+        variable_symbol_id: SymbolId,
     ) -> Result<Value, Error> {
         self.environment_arena
             .lookup_variable(environment_id, variable_symbol_id)?
@@ -662,7 +678,7 @@ impl Interpreter {
     pub fn lookup_function(
         &mut self,
         environment_id: EnvironmentId,
-        function_symbol_id: SymbolId
+        function_symbol_id: SymbolId,
     ) -> Result<Value, Error> {
         self.environment_arena
             .lookup_function(environment_id, function_symbol_id)?
@@ -711,7 +727,7 @@ impl Interpreter {
     fn evaluate_symbol(
         &mut self,
         environment_id: EnvironmentId,
-        symbol_id: SymbolId
+        symbol_id: SymbolId,
     ) -> Result<Value, Error> {
         match self.check_if_symbol_special(symbol_id)? {
             false => self.lookup_variable(environment_id, symbol_id),
@@ -745,7 +761,7 @@ impl Interpreter {
     fn evaluate_arguments(
         &mut self,
         environment_id: EnvironmentId,
-        arguments: Vec<Value>
+        arguments: Vec<Value>,
     ) -> Result<Vec<Value>, Error> {
         let mut evaluated_arguments = Vec::new();
 
@@ -755,7 +771,7 @@ impl Interpreter {
                 .map_err(|err|
                     Error::generic_execution_error_caused(
                         "Cannot evaluate arguments.",
-                        err
+                        err,
                     )
                 )?;
 
@@ -769,7 +785,7 @@ impl Interpreter {
         &mut self,
         execution_environment_id: EnvironmentId,
         arguments: &Arguments,
-        values: &Vec<Value>
+        values: &Vec<Value>,
     ) -> Result<(), Error> {
         let mut current_argument = 0;
 
@@ -798,7 +814,7 @@ impl Interpreter {
                     self.define_variable(
                         execution_environment_id,
                         variable_symbol_id,
-                        Value::Boolean(true)
+                        Value::Boolean(true),
                     )?;
                 }
 
@@ -807,7 +823,7 @@ impl Interpreter {
                 let value = match optional_argument.get_default() {
                     Some(default_value) => {
                         self.evaluate_value(execution_environment_id, default_value)?
-                    },
+                    }
                     None => self.intern_nil_symbol_value()
                 };
 
@@ -819,7 +835,7 @@ impl Interpreter {
                     self.define_variable(
                         execution_environment_id,
                         variable_symbol_id,
-                        Value::Boolean(false)
+                        Value::Boolean(false),
                     )?;
                 }
             }
@@ -836,7 +852,7 @@ impl Interpreter {
             self.define_variable(
                 execution_environment_id,
                 variable_symbol_id,
-                rest_values_cons
+                rest_values_cons,
             )?;
 
             return Ok(());
@@ -850,7 +866,7 @@ impl Interpreter {
             if values.len() % 2 != 0 {
                 return Error::generic_execution_error(
                     "Invalid usage of key arguments."
-                ).into_result()
+                ).into_result();
             }
 
             for key_argument in arguments.get_key_arguments() {
@@ -873,7 +889,7 @@ impl Interpreter {
                     self.intern(keyword.get_name())
                 } else {
                     return Error::generic_execution_error("")
-                        .into_result()
+                        .into_result();
                 };
 
                 let value = values[current_argument + 1];
@@ -930,7 +946,7 @@ impl Interpreter {
         &mut self,
         execution_environment_id: EnvironmentId,
         arguments: &Arguments,
-        values: &Vec<Value>
+        values: &Vec<Value>,
     ) -> Result<(), Error> {
         let mut current_argument = 0;
 
@@ -965,7 +981,7 @@ impl Interpreter {
                 let value = match optional_argument.get_default() {
                     Some(default_value) => {
                         self.evaluate_value(execution_environment_id, default_value)?
-                    },
+                    }
                     None => self.intern_nil_symbol_value()
                 };
 
@@ -982,7 +998,7 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute_code(&mut self, execution_environment:EnvironmentId, code: &Vec<Value>) -> Result<Option<Value>, Error> {
+    fn execute_code(&mut self, execution_environment: EnvironmentId, code: &Vec<Value>) -> Result<Option<Value>, Error> {
         let mut last_result = None;
 
         for value in code {
@@ -996,7 +1012,7 @@ impl Interpreter {
     pub fn evaluate_interpreted_function_invocation(
         &mut self,
         func: &InterpretedFunction,
-        evaluated_arguments: Vec<Value>
+        evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > evaluated_arguments.len() {
             return Error::generic_execution_error(
@@ -1013,19 +1029,19 @@ impl Interpreter {
         self.define_environment_variables(
             execution_environment_id,
             func.get_arguments(),
-            &evaluated_arguments
+            &evaluated_arguments,
         )?;
 
         self.define_environment_functions(
             execution_environment_id,
             func.get_arguments(),
-            &evaluated_arguments
+            &evaluated_arguments,
         )?;
 
         // 3) execute code
         let execution_result = self.execute_code(
             execution_environment_id,
-            func.get_code()
+            func.get_code(),
         )?;
 
         // 4) return result
@@ -1038,7 +1054,7 @@ impl Interpreter {
         &mut self,
         builtin_function: &BuiltinFunction,
         execution_environment: EnvironmentId,
-        evaluated_arguments: Vec<Value>
+        evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         (builtin_function.get_func())(self, execution_environment, evaluated_arguments)
     }
@@ -1047,7 +1063,7 @@ impl Interpreter {
         &mut self,
         execution_environment: EnvironmentId,
         special_form: &SpecialFormFunction,
-        arguments: Vec<Value>
+        arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         (special_form.get_func())(self, execution_environment, arguments)
     }
@@ -1055,7 +1071,7 @@ impl Interpreter {
     pub fn evaluate_macro_invocation(
         &mut self,
         func: &MacroFunction,
-        arguments: Vec<Value>
+        arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > arguments.len() {
             return Error::generic_execution_error(
@@ -1072,19 +1088,19 @@ impl Interpreter {
         self.define_environment_variables(
             execution_environment_id,
             func.get_arguments(),
-            &arguments
+            &arguments,
         )?;
 
         self.define_environment_functions(
             execution_environment_id,
             func.get_arguments(),
-            &arguments
+            &arguments,
         )?;
 
         // 3) execute code
         let execution_result = self.execute_code(
             execution_environment_id,
-            func.get_code()
+            func.get_code(),
         )?;
 
         // 4) return result
@@ -1097,7 +1113,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         function: FunctionId,
-        cons_id: ConsId
+        cons_id: ConsId,
     ) -> Result<Value, Error> {
         let function = self.get_function(function)
             .map(|function| function.clone())?;
@@ -1112,9 +1128,9 @@ impl Interpreter {
                 self.evaluate_builtin_function_invocation(
                     &builtin_function,
                     environment_id,
-                    evaluated_arguments
+                    evaluated_arguments,
                 )
-            },
+            }
             Function::Interpreted(interpreted_function) => {
                 // 2) evaluate arguments
                 let arguments = self.extract_arguments(cons_id)?;
@@ -1123,18 +1139,18 @@ impl Interpreter {
                 // 3) apply function from step 1 to arguments from step 2
                 self.evaluate_interpreted_function_invocation(
                     &interpreted_function,
-                    evaluated_arguments
+                    evaluated_arguments,
                 )
-            },
+            }
             Function::SpecialForm(special_form) => {
                 let arguments = self.extract_arguments(cons_id)?;
 
                 self.evaluate_special_form_invocation(
                     environment_id,
                     &special_form,
-                    arguments
+                    arguments,
                 )
-            },
+            }
             Function::Macro(macro_function) => {
                 let arguments = self.extract_arguments(cons_id)?;
                 let evaluation_result = self.evaluate_macro_invocation(&macro_function, arguments)?;
@@ -1148,7 +1164,7 @@ impl Interpreter {
         &mut self,
         environment_id: EnvironmentId,
         keyword_id: KeywordId,
-        cons_id: ConsId
+        cons_id: ConsId,
     ) -> Result<Value, Error> {
         let keyword_name = self.get_keyword(keyword_id)
             .map(|keyword| keyword.get_name().clone())?;
@@ -1167,7 +1183,7 @@ impl Interpreter {
 
         let evaluated_argument = self.evaluate_value(
             environment_id,
-            argument
+            argument,
         )?;
 
         match evaluated_argument {
@@ -1176,7 +1192,7 @@ impl Interpreter {
                     .ok_or_else(|| Error::generic_execution_error(
                         "Object have not an item to yield."
                     ))
-            },
+            }
             _ => return Error::generic_execution_error(
                 "Cannot get an item of not an object."
             ).into_result()
@@ -1186,7 +1202,7 @@ impl Interpreter {
     fn evaluate_s_expression(
         &mut self,
         environment_id: EnvironmentId,
-        s_expression: ConsId
+        s_expression: ConsId,
     ) -> Result<Value, Error> {
         // 1) evaluate first symbol
         let car = self.cons_arena
@@ -1196,7 +1212,7 @@ impl Interpreter {
             Value::Symbol(func_symbol_id) => {
                 let function_value = self.lookup_function(
                     environment_id,
-                    func_symbol_id
+                    func_symbol_id,
                 )?;
 
                 let function_id = match function_value {
@@ -1209,18 +1225,18 @@ impl Interpreter {
                 self.evaluate_s_expression_function_invocation(
                     environment_id,
                     function_id,
-                    s_expression
+                    s_expression,
                 )
             }
             Value::Function(function_id) => self.evaluate_s_expression_function_invocation(
                 environment_id,
                 function_id,
-                s_expression
+                s_expression,
             ),
             Value::Cons(cons_id) => {
                 let evaluation_result = self.evaluate_s_expression(
                     environment_id,
-                    cons_id
+                    cons_id,
                 )?;
 
                 let function_id = match evaluation_result {
@@ -1233,13 +1249,13 @@ impl Interpreter {
                 self.evaluate_s_expression_function_invocation(
                     environment_id,
                     function_id,
-                    s_expression
+                    s_expression,
                 )
             }
             Value::Keyword(keyword_id) => self.evaluate_s_expression_keyword(
                 environment_id,
                 keyword_id,
-                s_expression
+                s_expression,
             ),
             _ => return Error::generic_execution_error(
                 "The result of evaluation of first item of an s-expression must be a function or keyword."
@@ -1291,11 +1307,7 @@ impl Interpreter {
     }
 }
 
-impl Interpreter {
-    pub fn run_event_loop(interpreter: &mut Interpreter) {
 
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -1343,7 +1355,7 @@ mod tests {
             assertion::assert_deep_equal(
                 &mut interpreter,
                 expected,
-                result
+                result,
             );
         }
 
@@ -1355,7 +1367,7 @@ mod tests {
             interpreter.environment_arena.define_variable(
                 interpreter.root_environment,
                 name,
-                Value::Integer(1)
+                Value::Integer(1),
             ).unwrap();
 
             let result = interpreter.execute("test");
@@ -1377,7 +1389,7 @@ mod tests {
                 interpreter.environment_arena.define_variable(
                     interpreter.root_environment,
                     symbol_id,
-                    Value::Integer(1)
+                    Value::Integer(1),
                 ).unwrap();
 
                 let result = interpreter.execute(special_symbol_name);
@@ -1441,7 +1453,7 @@ mod tests {
                 assertion::assert_deep_equal(
                     &mut interpreter,
                     expected,
-                    result
+                    result,
                 );
             }
         }
@@ -1460,7 +1472,7 @@ mod tests {
                 assertion::assert_deep_equal(
                     &mut interpreter,
                     expected,
-                    result
+                    result,
                 );
             }
         }
@@ -1533,17 +1545,17 @@ mod tests {
 
             let value = Value::Cons(interpreter.make_cons(
                 b,
-                nil
+                nil,
             ));
 
             let value = Value::Cons(interpreter.make_cons(
                 a,
-                value
+                value,
             ));
 
             let value = Value::Cons(interpreter.make_cons(
                 plus,
-                value
+                value,
             ));
 
             let code = vec!(
@@ -1559,7 +1571,7 @@ mod tests {
             let function = Function::Interpreted(InterpretedFunction::new(
                 interpreter.root_environment,
                 arguments,
-                code
+                code,
             ));
 
             let function_id = interpreter.register_function(function);
@@ -1567,7 +1579,7 @@ mod tests {
             interpreter.environment_arena.define_function(
                 interpreter.root_environment,
                 name,
-                Value::Function(function_id)
+                Value::Function(function_id),
             ).unwrap();
 
             let result = interpreter.execute("(test 3 2)");
@@ -1583,12 +1595,10 @@ mod tests {
                 ("((function (lambda (#opt a b c) (list a b c))) 1)", "(list 1 nil nil)"),
                 ("((function (lambda (#opt a b c) (list a b c))) 1 2)", "(list 1 2 nil)"),
                 ("((function (lambda (#opt a b c) (list a b c))) 1 2 3)", "(list 1 2 3)"),
-
                 ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))))", "(list 4 5 6)"),
                 ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1)", "(list 1 5 6)"),
                 ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2)", "(list 1 2 6)"),
                 ("((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2 3)", "(list 1 2 3)"),
-
                 ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
                 ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1)", "(list 1 #t 4 #f)"),
                 ("((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1 2)", "(list 1 #t 2 #t)"),
@@ -1596,7 +1606,7 @@ mod tests {
 
             assertion::assert_results_are_equal(
                 &mut interpreter,
-                pairs
+                pairs,
             );
         }
 
@@ -1613,7 +1623,7 @@ mod tests {
 
             assertion::assert_results_are_equal(
                 &mut interpreter,
-                pairs
+                pairs,
             );
         }
 
@@ -1627,13 +1637,11 @@ mod tests {
                 ("((function (lambda (#keys a b) (list a b))) :b 2)", "(list nil 2)"),
                 ("((function (lambda (#keys a b) (list a b))) :a 1 :b 2)", "(list 1 2)"),
                 ("((function (lambda (#keys a b) (list a b))) :b 2 :a 1)", "(list 1 2)"),
-
                 ("((function (lambda (#keys (a 3) (b 4)) (list a b))))", "(list 3 4)"),
                 ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1)", "(list 1 4)"),
                 ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2)", "(list 3 2)"),
                 ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1 :b 2)", "(list 1 2)"),
                 ("((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2 :a 1)", "(list 1 2)"),
-
                 ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))))", "(list 3 #f 4 #f)"),
                 ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1)", "(list 1 #t 4 #f)"),
                 ("((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2)", "(list 3 #f 2 #t)"),
@@ -1643,7 +1651,7 @@ mod tests {
 
             assertion::assert_results_are_equal(
                 &mut interpreter,
-                pairs
+                pairs,
             );
         }
 
@@ -1676,7 +1684,7 @@ mod tests {
             interpreter.environment_arena.define_function(
                 interpreter.root_environment,
                 name,
-                function_value
+                function_value,
             ).unwrap();
 
             let pairs = vec!(
@@ -1703,7 +1711,7 @@ mod tests {
 
             assertion::assert_results_are_equal(
                 &mut interpreter,
-                pairs
+                pairs,
             );
         }
     }

@@ -4,6 +4,7 @@ use rustyline::Editor;
 
 use crate::interpreter::Interpreter;
 use crate::interpreter::ErrorKind;
+use crate::{EventLoop, InterpreterCommand, CommandResult};
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";
 
@@ -26,6 +27,10 @@ pub fn run() -> Result<(), std::io::Error> {
 
     let mut interpreter = Interpreter::new();
 
+    let (sender, receiver) = EventLoop::run_event_loop(
+        interpreter
+    );
+
     let mut rl = Editor::<()>::new();
 
     if let Some(history) = &history_file {
@@ -36,28 +41,19 @@ pub fn run() -> Result<(), std::io::Error> {
 
     loop {
         let readline = rl.readline(">> ");
+
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
 
-                let value = interpreter.execute(&line);
+                sender.send(InterpreterCommand::Execution(line));
 
-                match value {
-                    Ok(value) => {
-                        interpreter.print_value(value);
-                    },
-                    Err(err) =>  {
-                        err.describe();
+                let result = match receiver.recv() {
+                    Ok(CommandResult::ExecutionResult(result)) => result,
+                    Err(_) => break
+                };
 
-                        if err.get_error_kind() == ErrorKind::Failure {
-                            println!(
-                                "Failure occured. Interpreter will be terminated now.\
-Likely it's a bug. Please open an issue."
-                            );
-                            break;
-                        }
-                    }
-                }
+                println!("{}", result);
             },
             Err(ReadlineError::Interrupted) => {
                 // break;
