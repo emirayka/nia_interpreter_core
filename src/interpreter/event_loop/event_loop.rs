@@ -11,6 +11,7 @@ use crate::NiaEventListener;
 use crate::Action;
 
 use crate::library;
+use std::time::Duration;
 
 pub struct EventLoop {}
 
@@ -81,7 +82,6 @@ impl EventLoop {
                         Err(error) => break
                     }
                 } else if !interpreter.is_listening() && event_listener_v.is_some() {
-                    println!("Stopped, probably...");
                     let (_, _, stopper) = event_listener_v.unwrap();
 
                     stopper.send(());
@@ -101,10 +101,7 @@ impl EventLoop {
                                 match action {
                                     Action::Empty => {},
                                     Action::Execute(value) => {
-                                        let root_environment_id = interpreter.get_root_environment();
-
-                                        match interpreter.execute_value(
-                                            root_environment_id,
+                                        match interpreter.execute_function(
                                             value
                                         ) {
                                             Ok(_) => {},
@@ -128,6 +125,8 @@ impl EventLoop {
                         }
                     }
                 }
+
+                thread::sleep(Duration::from_millis(10));
             }
 
             match event_listener_v {

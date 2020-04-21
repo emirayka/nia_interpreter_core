@@ -1277,6 +1277,20 @@ impl Interpreter {
         self.evaluate_value(environment, value)
     }
 
+    pub fn execute_function(&mut self, value: Value) -> Result<Value, Error> {
+        match value {
+            Value::Function(function_id) => {
+                let nil = self.intern_nil_symbol_value();
+                let function_invocation_cons = self.make_cons_value(value, nil);
+                let root_environment_id = self.get_root_environment();
+
+                self.execute_value(root_environment_id, function_invocation_cons)
+            },
+            _ => Error::invalid_argument_error("")
+                .into_result()
+        }
+    }
+
     pub fn execute(&mut self, code: &str) -> Result<Value, Error> {
         // first step: parse code
         let code = parse_code(code)
