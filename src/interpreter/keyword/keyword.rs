@@ -13,4 +13,8 @@ impl Keyword {
     pub fn get_name(&self) -> &String {
         &self.keyword
     }
+
+    pub fn is_const(&self) -> bool {
+        self.keyword == "const"
+    }
 }

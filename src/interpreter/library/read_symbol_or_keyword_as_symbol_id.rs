@@ -10,9 +10,10 @@ pub fn read_symbol_or_keyword_as_symbol_id(
     let symbol_id = match value {
         Value::Symbol(symbol_id) => symbol_id,
         Value::Keyword(keyword_id) => {
-            let keyword = interpreter.get_keyword(keyword_id)?;
-            let keyword_name = keyword.get_name();
-            let symbol_id = interpreter.intern(keyword_name);
+            let keyword_name = interpreter.get_keyword(keyword_id)?
+                .get_name().clone();
+
+            let symbol_id = interpreter.intern(&keyword_name);
 
             symbol_id
         },

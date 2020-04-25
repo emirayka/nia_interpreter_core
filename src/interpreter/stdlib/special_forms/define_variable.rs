@@ -11,7 +11,7 @@ pub fn define_variable(
 ) -> Result<Value, Error> {
     let mut values = values;
 
-    if values.len() < 1 || values.len() > 2 {
+    if values.len() < 1 || values.len() > 3 {
         return Error::invalid_argument_count_error(
             "Special form `define-variable' must be used with one or two forms."
         ).into_result();
@@ -22,6 +22,23 @@ pub fn define_variable(
         Some(values.remove(0))
     } else {
         None
+    };
+
+    let need_to_be_const = if values.len() > 0 {
+        let result = library::read_as_keyword(
+            interpreter,
+            values.remove(0),
+        )?.is_const();
+
+        if !result {
+            return Error::invalid_argument_error(
+                "Third argument of special form `define-variable' must be a keyword `:const'."
+            ).into_result();
+        }
+
+        result
+    } else {
+        false
     };
 
     let variable_symbol_id = match first_argument {
@@ -44,11 +61,21 @@ pub fn define_variable(
         None => interpreter.intern_nil_symbol_value()
     };
 
-    interpreter.define_variable(
-        interpreter.get_root_environment(),
-        variable_symbol_id,
-        evaluated_value,
-    ).map_err(|err| {
+    let result = if need_to_be_const {
+        interpreter.define_const_variable(
+            interpreter.get_root_environment(),
+            variable_symbol_id,
+            evaluated_value,
+        )
+    } else {
+        interpreter.define_variable(
+            interpreter.get_root_environment(),
+            variable_symbol_id,
+            evaluated_value,
+        )
+    };
+
+    result.map_err(|err| {
         let symbol_name = match interpreter.get_symbol_name(variable_symbol_id) {
             Ok(symbol_name) => symbol_name,
             _ => return Error::generic_execution_error("")
@@ -113,6 +140,20 @@ mod tests {
             ).unwrap());
     }
 
+
+    #[test]
+    fn able_to_define_const_variable() {
+        let mut interpreter = Interpreter::new();
+
+        interpreter.execute("(define-variable test 3 :const)").unwrap();
+
+        let result = interpreter.execute("test");
+        assert_eq!(Value::Integer(3), result.unwrap());
+
+        let result = interpreter.execute("(set! test 2)");
+        assertion::assert_is_err(result)
+    }
+
     #[test]
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         for_constants(|interpreter, constant| {
@@ -136,7 +177,7 @@ mod tests {
 
         let specs = vec!(
             "(define-variable)",
-            "(define-variable test 2 kek)"
+            "(define-variable test 2 :const kek)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

@@ -239,10 +239,10 @@ impl Interpreter {
         Value::Keyword(self.make_keyword(keyword_name))
     }
 
-    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<Keyword, Error> {
+    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
         self.keyword_arena
             .get_keyword(keyword_id)
-            .map(|keyword| keyword.clone())
+            .map(|keyword| keyword)
     }
 
     pub fn intern_keyword_value(&mut self, keyword_name: String) -> Value {
@@ -613,6 +613,16 @@ impl Interpreter {
             .define_variable(environment_id, variable_symbol_id, value)
     }
 
+    pub fn define_const_variable(
+        &mut self,
+        environment_id: EnvironmentId,
+        variable_symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
+        self.environment_arena
+            .define_const_variable(environment_id, variable_symbol_id, value)
+    }
+
     pub fn define_function(
         &mut self,
         environment_id: EnvironmentId,
@@ -621,6 +631,16 @@ impl Interpreter {
     ) -> Result<(), Error> {
         self.environment_arena
             .define_function(environment_id, function_symbol_id, value)
+    }
+
+    pub fn define_const_function(
+        &mut self,
+        environment_id: EnvironmentId,
+        function_symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
+        self.environment_arena
+            .define_const_function(environment_id, function_symbol_id, value)
     }
 
     pub fn set_environment_variable(
@@ -884,9 +904,10 @@ impl Interpreter {
                 let keyword = values[current_argument];
 
                 let variable_symbol_id = if let Value::Keyword(keyword_id) = keyword {
-                    let keyword = self.get_keyword(keyword_id)?;
+                    let keyword_name = self.get_keyword(keyword_id)?
+                        .get_name().clone();
 
-                    self.intern(keyword.get_name())
+                    self.intern(&keyword_name)
                 } else {
                     return Error::generic_execution_error("")
                         .into_result();

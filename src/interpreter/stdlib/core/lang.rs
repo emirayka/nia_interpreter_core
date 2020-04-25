@@ -4,6 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let functions: Vec<fn(&mut Interpreter) -> Result<(), Error>> = vec!(
         defv::infect,
+        defc::infect,
         defn::infect,
         defm::infect,
 
@@ -57,6 +58,41 @@ mod defv {
             let pairs = vec!(
                 ("(defv a 1) a", "1"),
                 ("(defv b) b", "nil")
+            );
+
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs
+            );
+        }
+    }
+}
+
+mod defc {
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute(
+            "(define-function defc (function (macro (name #opt (value nil)) (list 'define-variable name value :const))))"
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::interpreter::library::assertion;
+
+        #[test]
+        fn defines_const_variable() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec!(
+                ("(defc a 1) a", "1"),
+                ("(defc b) b", "nil"),
+                // todo: probably change error symbol to smth like "setting-constant-error"
+                ("(try (progn (defc c 2) (set! c 3) c) (catch generic-execution-error #t))", "#t"),
             );
 
             assertion::assert_results_are_equal(

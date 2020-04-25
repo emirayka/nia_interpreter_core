@@ -109,7 +109,7 @@ impl EnvironmentArena {
     pub fn lookup_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         let env = self.get(id)?;
 
-        match env.lookup_variable(symbol_id) {
+        match env.lookup_variable(symbol_id)? {
             Some(result) => Ok(Some(result)),
             None => {
                 match env.get_parent() {
@@ -123,7 +123,7 @@ impl EnvironmentArena {
     pub fn lookup_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
         let env = self.get(id)?;
 
-        match env.lookup_function(symbol_id) {
+        match env.lookup_function(symbol_id)? {
             Some(result) => Ok(Some(result)),
             None => {
                 match env.get_parent() {
@@ -145,6 +145,17 @@ impl EnvironmentArena {
         env.define_variable(symbol_id, value)
     }
 
+    pub fn define_const_variable(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), Error> {
+        let env = self.get_mut(id)?;
+
+        env.define_const_variable(symbol_id, value)
+    }
+
     pub fn define_function(
         &mut self,
         id: EnvironmentId,
@@ -154,6 +165,17 @@ impl EnvironmentArena {
         let env = self.get_mut(id)?;
 
         env.define_function(symbol_id, value)
+    }
+
+    pub fn define_const_function(
+        &mut self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+        value: Value
+    ) -> Result<(), Error> {
+        let env = self.get_mut(id)?;
+
+        env.define_const_function(symbol_id, value)
     }
 
     pub fn set_environment_variable(

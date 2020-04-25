@@ -7,13 +7,13 @@ use crate::interpreter::library;
 pub fn define_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     let mut values = values;
 
-    if values.len() < 1 || values.len() > 2 {
+    if values.len() < 1 || values.len() > 3 {
         return Error::invalid_argument_count_error(
-            "Special form `define-function' must be used with one or two forms."
+            "Special form `define-function' must be used with one or two or three forms."
         ).into_result();
     }
 
@@ -22,6 +22,23 @@ pub fn define_function(
         Some(values.remove(0))
     } else {
         None
+    };
+
+    let need_to_be_const = if values.len() > 0 {
+        let result = library::read_as_keyword(
+            interpreter,
+            values.remove(0),
+        )?.is_const();
+
+        if !result {
+            return Error::invalid_argument_error(
+                "Third argument of special form `define-function' must be a keyword `:const'."
+            ).into_result();
+        }
+
+        result
+    } else {
+        false
     };
 
     let function_symbol_id = match first_argument {
@@ -38,14 +55,24 @@ pub fn define_function(
         None => Ok(interpreter.intern_nil_symbol_value())
     }.map_err(|err| Error::generic_execution_error_caused(
         "Cannot evaluate the second form of define-function.",
-        err
+        err,
     ))?;
 
-    interpreter.define_function(
-        interpreter.get_root_environment(),
-        function_symbol_id,
-        evaluated_value
-    ).map_err(|err| {
+    let result = if need_to_be_const {
+        interpreter.define_const_function(
+            interpreter.get_root_environment(),
+            function_symbol_id,
+            evaluated_value,
+        )
+    } else {
+        interpreter.define_function(
+            interpreter.get_root_environment(),
+            function_symbol_id,
+            evaluated_value,
+        )
+    };
+
+    result.map_err(|err| {
         let symbol_name = match interpreter.get_symbol_name(function_symbol_id) {
             Ok(symbol_name) => symbol_name,
             _ => return Error::generic_execution_error("")
@@ -57,7 +84,7 @@ pub fn define_function(
         );
         Error::generic_execution_error_caused(
             message,
-            err
+            err,
         )
     })?;
 
@@ -79,14 +106,14 @@ mod tests {
 
         assert!(interpreter.has_function(
             interpreter.get_root_environment(),
-            name
+            name,
         ).unwrap());
 
         assert_eq!(
             Value::Integer(2),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
-                name
+                name,
             ).unwrap()
         );
     }
@@ -106,7 +133,7 @@ mod tests {
             interpreter.intern_nil_symbol_value(),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
-                name
+                name,
             ).unwrap()
         );
     }
@@ -119,6 +146,19 @@ mod tests {
         let result = interpreter.execute("(test 2 3)");
 
         assert_eq!(Value::Integer(3), result.unwrap());
+    }
+
+    #[test]
+    fn able_to_define_const_function() {
+        let mut interpreter = Interpreter::new();
+
+        interpreter.execute("(define-function test (function (lambda (a b) b)) :const)").unwrap();
+
+        let result = interpreter.execute("(test 2 3)");
+        assert_eq!(Value::Integer(3), result.unwrap());
+
+        let result = interpreter.execute("(fset! test 2)");
+        assertion::assert_is_err(result)
     }
 
     #[test]
@@ -154,12 +194,12 @@ mod tests {
 
         let specs = vec!(
             "(define-function)",
-            "(define-function test 2 kek)"
+            "(define-function test 2 :const 2)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
-            specs
+            specs,
         );
     }
 
@@ -173,7 +213,7 @@ mod tests {
 
         assertion::assert_results_are_invalid_argument_errors(
             &mut interpreter,
-            specs
+            specs,
         );
     }
 }

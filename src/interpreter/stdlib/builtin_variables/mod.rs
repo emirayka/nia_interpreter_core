@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
-fn define_empty_list(
+fn define_variable_with_nil(
     interpreter: &mut Interpreter,
     name: &str
 ) -> Result<(), Error> {
@@ -17,6 +17,17 @@ fn define_empty_list(
 
     Ok(())
 }
+
+fn define_empty_list(
+    interpreter: &mut Interpreter,
+    name: &str
+) -> Result<(), Error> {
+    define_variable_with_nil(
+        interpreter,
+        name
+    )
+}
+
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     define_empty_list(interpreter, "registered-keyboards")?;
