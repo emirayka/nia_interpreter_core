@@ -1,6 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
+mod action;
 mod bit;
 mod func;
 mod is;
@@ -16,6 +17,7 @@ mod to;
 mod nia; // :3
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+    action::infect(interpreter)?;
     bit::infect(interpreter)?;
     func::infect(interpreter)?;
     is::infect(interpreter)?;

@@ -34,7 +34,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     define_empty_list(interpreter, "global-map")?;
     define_empty_list(interpreter, "modifiers")?;
 
-    define_empty_list(interpreter, "--events")?;
+    define_empty_list(interpreter, "--actions")?;
 
     Ok(())
 }

@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::thread;
-use std::sync::mpsc::TryRecvError;
+use std::sync::mpsc::{TryRecvError, Sender};
 
 use nia_events::{KeyChordPart, EventListener};
 use nia_events::Event;
-use nia_events::KeyCommand;
+use nia_events::UinputCommand;
 use nia_events::EventListenerSettingsBuilder;
 use nia_events::KeyboardId;
 use nia_events::Command;
@@ -200,8 +200,9 @@ impl NiaEventListener {
     }
 
     pub fn start_listening(
-        &self
-    ) -> Result<(mpsc::Sender<Command>, mpsc::Receiver<Action>, mpsc::Sender<()>), Error> {
+        &self,
+        cmd_sender: Sender<Command>
+    ) -> Result<(mpsc::Receiver<Action>, mpsc::Sender<()>), Error> {
         let mut settings_builder = EventListenerSettingsBuilder::new();
         let mut map = HashMap::new();
         let mut iterator = self.keyboards.iter().enumerate();
@@ -220,9 +221,6 @@ impl NiaEventListener {
         let event_listener = EventListener::new(settings);
         let (event_receiver, event_stopper) = event_listener.start_listening();
 
-        let command_sender = nia_events::CommandSender::new();
-        let (cmd_sender, cmd_stopper) = command_sender.start_sending();
-
         let mut state_machine = nia_state_machine::StateMachine::new();
 
         for (path, action) in self.mappings.iter() {
@@ -235,7 +233,7 @@ impl NiaEventListener {
 
         {
             let action_sender = action_sender.clone();
-            let cmd_sender = cmd_sender.clone();
+            let cmd_sender = cmd_sender;
 
             thread::spawn(move || {
                 loop {
@@ -256,8 +254,8 @@ impl NiaEventListener {
                                 },
                                 StateMachineResult::Fallback(previous) => {
                                     for key_chord in previous {
-                                        let command = nia_events::Command::KeyCommand(
-                                            KeyCommand::ForwardKeyChord(key_chord)
+                                        let command = nia_events::Command::UinputCommand(
+                                            UinputCommand::ForwardKeyChord(key_chord)
                                         );
 
                                         match cmd_sender.send(command) {
@@ -279,11 +277,10 @@ impl NiaEventListener {
                     }
                 }
 
-                cmd_stopper.send(());
                 event_stopper.send(());
             });
         }
 
-        Ok((cmd_sender, action_receiver, tx))
+        Ok((action_receiver, tx))
     }
 }
