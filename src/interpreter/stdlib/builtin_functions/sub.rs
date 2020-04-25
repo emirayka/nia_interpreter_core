@@ -8,7 +8,7 @@ pub fn sub(
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() != 2 {
+    if values.len() < 1 || values.len() > 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `-' must take exactly two argument"
         ).into_result();
@@ -16,19 +16,29 @@ pub fn sub(
 
     let mut values = values;
 
-    let result = match (values.remove(0), values.remove(0)) {
-        (Value::Integer(int1), Value::Integer(int2)) => match int1.checked_sub(int2) {
-            Some(int_result) => Value::Integer(int_result),
-            None => return Error::overflow_error(
-                &format!("Attempt to subtract values {} {} leads to overflow", int1, int2)
+    let result = if values.len() == 2 {
+        match (values.remove(0), values.remove(0)) {
+            (Value::Integer(int1), Value::Integer(int2)) => match int1.checked_sub(int2) {
+                Some(int_result) => Value::Integer(int_result),
+                None => return Error::overflow_error(
+                    &format!("Attempt to subtract values {} {} leads to overflow", int1, int2)
+                ).into_result()
+            },
+            (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) - float2),
+            (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 - (int2 as f64)),
+            (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 - float2),
+            _ => return Error::invalid_argument_error(
+                "Built-in function `-' takes only integers or float."
             ).into_result()
-        },
-        (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) - float2),
-        (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 - (int2 as f64)),
-        (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 - float2),
-        _ => return Error::invalid_argument_error(
-            "Built-in function `-' must take only integers or float."
-        ).into_result()
+        }
+    } else {
+        match values.remove(0) {
+            Value::Integer(int) => Value::Integer(-int),
+            Value::Float(float) => Value::Float(-float),
+            _ => return Error::invalid_argument_error(
+                "Built-in function `-' takes only integers or float."
+            ).into_result()
+        }
     };
 
     Ok(result)
@@ -44,20 +54,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            ("(- 1 2)", Value::Integer(-1))
-        );
+            ("(- 1)", Value::Integer(-1)),
+            ("(- 1 2)", Value::Integer(-1)),
 
-        assertion::assert_results_are_correct(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    fn returns_correct_float_subtraction() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
+            ("(- 1.0)", Value::Float(-1.0)),
             ("(- 1 2.0)", Value::Float(-1.0)),
             ("(- 1.0 2)", Value::Float(-1.0)),
             ("(- 1.0 2.0)", Value::Float(-1.0)),
@@ -70,12 +70,11 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_invalid_count_of_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
             "(-)",
-            "(- 1)",
             "(- 1 2 3)"
         );
 
