@@ -5,7 +5,7 @@ use std::thread;
 use nia_events::{Command, KeyId, ButtonId};
 use nia_events::UinputCommand;
 
-use crate::{Interpreter, NiaCommandSender, Value};
+use crate::{Interpreter, NiaCommandSender, Value, ExecutionResult};
 use crate::InterpreterCommand;
 use crate::CommandResult;
 use crate::NiaEventListener;
@@ -364,19 +364,31 @@ impl EventLoop {
                             InterpreterCommand::Execution(code) => {
                                 let result = interpreter.execute(&code);
 
-                                let string_result = match result {
+                                let execution_result = match result {
                                     Ok(value) => {
                                         match library::value_to_string(&mut interpreter, value) {
-                                            Ok(string) => string,
-                                            Err(err) => err.to_string()
+                                            Ok(string) => {
+                                                ExecutionResult::Success(string)
+                                            },
+                                            Err(error) => {
+                                                if error.is_failure() {
+                                                    ExecutionResult::Failure(error.to_string())
+                                                } else {
+                                                    ExecutionResult::Error(error.to_string())
+                                                }
+                                            }
                                         }
                                     }
                                     Err(error) => {
-                                        error.to_string()
+                                        if error.is_failure() {
+                                            ExecutionResult::Failure(error.to_string())
+                                        } else {
+                                            ExecutionResult::Error(error.to_string())
+                                        }
                                     }
                                 };
 
-                                match result_sender.send(CommandResult::ExecutionResult(string_result)) {
+                                match result_sender.send(CommandResult::ExecutionResult(execution_result)) {
                                     Ok(()) => {}
                                     Err(_) => break
                                 }
