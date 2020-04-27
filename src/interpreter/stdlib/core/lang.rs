@@ -29,15 +29,6 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 mod defv {
     use super::*;
 
-    // The god of man is a failure
-    // Our fortress is burning against the grain of the shattered sky
-    // Charred birds escape from the ruins and return as cascading blood
-    // Dying bloodbirds pooling, feeding the flood
-    // The god of man is a failure
-    // And all of our shadows are ashes against the grain
-
-    // Agalloch - Our Fortress is Burning... II - Bloodbirds
-
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute(
             "(define-function defv (function (macro (name #opt (value nil)) (list 'define-variable name value))))"
@@ -292,43 +283,6 @@ mod when {
 mod unless {
     use super::*;
 
-    // The emptiness that we confess
-    // In the dimmest hour of day
-    // In the common town they make a sound
-    // Like the low sad moan of prey
-
-    // The bitter taste the hidden face
-    // Of the lost forgotten child
-    // The darkest need the slowest speed
-    // The debt unreconciled
-
-    // These photographs mean nothing
-    // To the poison that they take
-    // Before a moment's glory
-    // The light begins to fade
-
-    // The awful cost of all we lost
-    // As we looked the other way
-    // We've paid the price of this cruel device
-    // Till we've nothing left to pay
-
-    // The river goes where the current flows
-    // The light we must destroy
-    // Events conspire to set afire
-    // The methods we employ
-
-    // These dead men walk on water
-    // Cold blood runs through their veins
-    // The angry river rises
-    // As we step into the rain
-
-    // These photographs mean nothing
-    // To the poison that they take
-    // The angry river rises
-    // As we step into the rain
-
-    // The Hat - The Angry River
-
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute(
             "(defm unless (condition else-clause)\
@@ -499,22 +453,6 @@ mod cr {
 
 mod empty {
     use super::*;
-
-    // I walk a million miles and get nowhere
-    // Against the cold rain
-    // Torn asunder
-    // Clutching at the withered strands of life
-
-    // Dreams splintered in two
-    // Replaced by the endless drone
-    // Of broken spirits and open wounds
-    // Emptiness deeply sown
-
-    // Distant voices echo in a sea of beings
-    // Within it's ebb. Half forgotten memories
-    // An Unbroken Moment
-
-    // Woods of Desolation - An Unbroken Moment
 
     pub fn infect(_interpreter: &mut Interpreter) -> Result<(), Error> {
         Ok(())
