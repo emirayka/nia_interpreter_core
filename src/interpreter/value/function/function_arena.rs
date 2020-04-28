@@ -1,29 +1,11 @@
 use std::collections::HashMap;
-use crate::interpreter::function::Function;
-use crate::interpreter::error::Error;
+
+use crate::interpreter::value::FunctionId;
+use crate::interpreter::value::Function;
 use crate::interpreter::value::Value;
+use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FunctionId {
-    id: usize,
-}
-
-impl FunctionId {
-    pub fn new(id: usize) -> FunctionId {
-        FunctionId {
-            id
-        }
-    }
-
-    pub fn get_id(&self) -> usize {
-        self.id
-    }
-
-    pub fn to_value(&self) -> Value {
-        Value::Function(*self)
-    }
-}
 
 #[derive(Clone)]
 pub struct FunctionArena {

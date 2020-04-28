@@ -4,7 +4,7 @@ use crate::interpreter::error::{Error, ErrorKind};
 use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
-use crate::interpreter::symbol::SymbolId;
+use crate::interpreter::value::SymbolId;
 
 fn make_dotimes_environment(
     interpreter: &mut Interpreter,

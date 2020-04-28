@@ -1,58 +1,8 @@
-use std::hash::Hash;
 use std::collections::HashMap;
+
+use crate::interpreter::value::SymbolId;
+use crate::interpreter::value::Symbol;
 use crate::interpreter::error::Error;
-use crate::interpreter::value::Value;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SymbolId {
-    id: usize
-}
-
-impl SymbolId {
-    pub fn new(id: usize) -> SymbolId {
-        SymbolId {
-            id
-        }
-    }
-
-    pub fn get_id(&self) -> usize {
-        self.id
-    }
-
-    pub fn to_value(&self) -> Value {
-        Value::Symbol(*self)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub struct Symbol {
-    name: String,
-    gensym_id: usize
-}
-
-impl Symbol {
-    fn new(name: String, counter: usize) -> Symbol {
-        Symbol {
-            name,
-            gensym_id: counter
-        }
-    }
-
-    fn from(name: &str) -> Symbol {
-        Symbol {
-            name: String::from(name),
-            gensym_id: 0
-        }
-    }
-
-    pub fn get_name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn get_gensym_id(&self) -> usize {
-        self.gensym_id
-    }
-}
 
 #[derive(Clone)]
 pub struct SymbolArena {

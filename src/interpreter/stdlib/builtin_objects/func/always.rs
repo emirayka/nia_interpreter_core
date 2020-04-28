@@ -4,7 +4,7 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::function::{
-    Arguments,
+    FunctionArguments,
     Function,
     InterpretedFunction,
 };
@@ -30,7 +30,7 @@ pub fn always(
     let cons = interpreter.make_cons_value(quote, cons);
 
     let code = vec!(cons);
-    let arguments = Arguments::new();
+    let arguments = FunctionArguments::new();
 
     let interpreted_function = InterpretedFunction::new(
         environment_id,

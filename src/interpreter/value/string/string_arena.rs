@@ -1,27 +1,12 @@
 use std::collections::HashMap;
-use crate::interpreter::string::VString;
+
+use crate::interpreter::value::StringId;
+use crate::interpreter::value::NiaString;
 use crate::interpreter::error::Error;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct StringId {
-    id: usize
-}
-
-impl StringId {
-    pub fn new(id: usize) -> StringId {
-        StringId {
-            id
-        }
-    }
-
-    pub fn get_id(&self) -> usize {
-        self.id
-    }
-}
 
 #[derive(Clone)]
 pub struct StringArena {
-    arena: HashMap<StringId, VString>,
+    arena: HashMap<StringId, NiaString>,
     mapping: HashMap<String, StringId>,
     next_id: usize,
 }
@@ -35,18 +20,26 @@ impl StringArena {
         }
     }
 
-    pub fn make_string(&mut self, string: String) -> StringId {
-        let vstring = VString::new(string.clone());
+    fn make_string(&mut self, s: &str) -> StringId {
+        let string = NiaString::new(String::from(s));
         let string_id = StringId::new(self.next_id);
 
-        self.arena.insert(string_id, vstring);
-        self.mapping.insert(string, string_id);
+        self.arena.insert(string_id, string);
+        self.mapping.insert(String::from(s), string_id);
         self.next_id += 1;
 
         string_id
     }
 
-    pub fn get_string(&self, string_id: StringId) -> Result<&VString, Error> {
+    pub fn intern_string(&mut self, string_name: &str) -> StringId {
+        if self.mapping.contains_key(string_name) {
+            *self.mapping.get(&string_name).unwrap()
+        } else {
+            self.make_string(string_name)
+        }
+    }
+
+    pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
         self.arena
             .get(&string_id)
             .ok_or(Error::failure(
@@ -54,19 +47,11 @@ impl StringArena {
             ))
     }
 
-    pub fn intern_string(&mut self, string_name: String) -> StringId {
-        if self.mapping.contains_key(&string_name) {
-            *self.mapping.get(&string_name).unwrap()
-        } else {
-            self.make_string(string_name)
-        }
-    }
-
     pub fn free_string(&mut self, string_id: StringId) -> Result<(), Error> {
         let string = match self.arena.remove(&string_id) {
-            Some(vstring) => {
-                vstring
-            },
+            Some(hia_string) => {
+                hia_string
+            }
             _ => return Error::failure(
                 format!("Cannot find a string with id: {}", string_id.get_id())
             ).into_result()
@@ -101,7 +86,7 @@ mod tests {
             let mut string_arena = StringArena::new();
 
             let expected = "String";
-            let string_id = string_arena.make_string(String::from(expected));
+            let string_id = string_arena.make_string(expected);
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
@@ -113,8 +98,8 @@ mod tests {
             let mut string_arena = StringArena::new();
 
             let expected = "String";
-            string_arena.make_string(String::from(expected));
-            let string_id = string_arena.make_string(String::from(expected));
+            string_arena.make_string(expected);
+            let string_id = string_arena.make_string(expected);
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
@@ -131,7 +116,7 @@ mod tests {
             let mut string_arena = StringArena::new();
 
             let expected = "String";
-            let string_id = string_arena.intern_string(String::from(expected));
+            let string_id = string_arena.intern_string(expected);
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
@@ -148,7 +133,7 @@ mod tests {
             let mut string_arena = StringArena::new();
 
             let string = "string";
-            let string_id = string_arena.intern_string(String::from(string));
+            let string_id = string_arena.intern_string(string);
 
             assert!(string_arena.get_string(string_id).is_ok());
             assert!(string_arena.free_string(string_id).is_ok());
@@ -171,7 +156,7 @@ mod tests {
         fn returns_error_when_freed_twice() {
             let mut string_arena = StringArena::new();
 
-            let string_id = string_arena.intern_string(String::from("arst"));
+            let string_id = string_arena.intern_string("string");
 
             string_arena.free_string(string_id).unwrap();
             assert!(string_arena.free_string(string_id).is_err());

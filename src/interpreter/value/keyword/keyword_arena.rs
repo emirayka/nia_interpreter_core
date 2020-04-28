@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use crate::interpreter::keyword::Keyword;
+
+use crate::interpreter::value::Keyword;
 use crate::interpreter::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -35,12 +36,12 @@ impl KeywordArena {
         }
     }
 
-    pub fn make_keyword(&mut self, keyword_name: String) -> KeywordId {
-        let keyword = Keyword::new(keyword_name.clone());
+    fn make_keyword(&mut self, keyword_name: &str) -> KeywordId {
+        let keyword = Keyword::new(String::from(keyword_name));
         let keyword_id = KeywordId::new(self.next_id);
 
         self.arena.insert(keyword_id, keyword);
-        self.mapping.insert(keyword_name, keyword_id);
+        self.mapping.insert(String::from(keyword_name), keyword_id);
         self.next_id += 1;
 
         keyword_id
@@ -54,7 +55,7 @@ impl KeywordArena {
             ))
     }
 
-    pub fn intern_keyword(&mut self, keyword_name: String) -> KeywordId {
+    pub fn intern_keyword(&mut self, keyword_name: &str) -> KeywordId {
         if self.mapping.contains_key(&keyword_name) {
             *self.mapping.get(&keyword_name).unwrap()
         } else {
@@ -100,7 +101,7 @@ mod tests {
             let mut keyword_arena = KeywordArena::new();
 
             let expected = "keyword";
-            let keyword_id = keyword_arena.intern_keyword(String::from(expected));
+            let keyword_id = keyword_arena.intern_keyword(expected);
 
             assert!(keyword_arena.get_keyword(keyword_id).is_ok());
             assert!(keyword_arena.free_keyword(keyword_id).is_ok());
@@ -124,7 +125,7 @@ mod tests {
             let mut keyword_arena = KeywordArena::new();
 
             let expected = "";
-            let keyword_id = keyword_arena.intern_keyword(String::from(expected));
+            let keyword_id = keyword_arena.intern_keyword(expected);
 
             assert!(keyword_arena.free_keyword(keyword_id).is_ok());
             assert!(keyword_arena.free_keyword(keyword_id).is_err());

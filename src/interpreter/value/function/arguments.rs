@@ -67,16 +67,16 @@ impl KeyArgument {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Arguments {
+pub struct FunctionArguments {
     ordinary: Vec<String>,
     optional: Vec<OptionalArgument>,
     rest: Option<String>,
     keys: Vec<KeyArgument>,
 }
 
-impl Arguments {
-    pub fn new() -> Arguments {
-        Arguments {
+impl FunctionArguments {
+    pub fn new() -> FunctionArguments {
+        FunctionArguments {
             ordinary: Vec::new(),
             optional: Vec::new(),
             rest: None,
@@ -240,7 +240,7 @@ mod tests {
     
     #[test]
     fn allows_to_add_ordinary_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         assert_eq!(&Vec::<String>::new(), arguments.get_ordinary_arguments());
 
@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_optional_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         assert_eq!(0, arguments.get_optional_arguments().len());
 
@@ -270,7 +270,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_rest_argument() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         assert_eq!(None, arguments.get_rest_argument());
 
@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_key_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         assert_eq!(0, arguments.get_key_arguments().len());
 
@@ -296,7 +296,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_ordinary_arguments_after_ordinary_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_optional_arguments_after_ordinary_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -318,7 +318,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_rest_argument_after_ordinary_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -329,7 +329,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_key_arguments_after_ordinary_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -340,7 +340,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_ordinary_arguments_after_optional_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -351,7 +351,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_optional_arguments_after_optional_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -362,7 +362,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_rest_arguments_after_optional_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_key_arguments_after_optional_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -384,7 +384,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_ordinary_arguments_after_rest_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_rest_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -395,7 +395,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_optional_arguments_after_rest_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_rest_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_rest_arguments_after_rest_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_rest_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -417,7 +417,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_key_arguments_after_rest_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_rest_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -428,7 +428,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_ordinary_arguments_after_key_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -439,7 +439,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_optional_arguments_after_key_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -450,7 +450,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_rest_arguments_after_key_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -461,7 +461,7 @@ mod tests {
 
     #[test]
     fn allows_to_add_key_arguments_after_key_arguments() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -472,7 +472,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_ordinary_arguments_after_ordinary_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -483,7 +483,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_optional_arguments_after_ordinary_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -494,7 +494,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_rest_argument_after_ordinary_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -505,7 +505,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_key_arguments_after_ordinary_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         assert_eq!(Ok(()), result);
@@ -516,7 +516,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_optional_arguments_after_optional_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -527,7 +527,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_rest_arguments_after_optional_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);
@@ -538,7 +538,7 @@ mod tests {
 
     #[test]
     fn does_not_allow_to_add_key_arguments_after_key_arguments_with_the_same_name() {
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         assert_eq!(Ok(()), result);

@@ -80,12 +80,12 @@ mod tests {
     use crate::interpreter::function::Function;
     use crate::interpreter::function::InterpretedFunction;
     use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
-    use crate::interpreter::function::Arguments;
+    use crate::interpreter::function::FunctionArguments;
 
     #[test]
     fn returns_value_that_was_set_to_function() {
         let mut interpreter = Interpreter::new();
-        let arguments = Arguments::new();
+        let arguments = FunctionArguments::new();
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),

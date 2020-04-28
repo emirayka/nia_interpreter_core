@@ -14,10 +14,10 @@ use crate::interpreter::object::ObjectId;
 use crate::interpreter::cons::{ConsArena, ConsId};
 use crate::interpreter::function::{FunctionArena, FunctionId};
 use crate::interpreter::string::{StringArena, StringId};
-use crate::interpreter::string::VString;
+use crate::interpreter::string::NiaString;
 use crate::interpreter::keyword::{KeywordArena, KeywordId};
 use crate::interpreter::keyword::Keyword;
-use crate::interpreter::function::Arguments;
+use crate::interpreter::function::FunctionArguments;
 use crate::interpreter::context::Context;
 use crate::interpreter::library;
 use crate::parser::parse_code;
@@ -208,12 +208,12 @@ impl Interpreter {
         Value::String(self.make_string(string))
     }
 
-    pub fn get_string(&self, string_id: StringId) -> Result<&VString, Error> {
+    pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
         self.string_arena
             .get_string(string_id)
     }
 
-    pub fn intern_string_value(&mut self, string: String) -> Value {
+    pub fn intern_string_value(&mut self, string: &str) -> Value {
         Value::String(self.string_arena.intern_string(string))
     }
 }
@@ -804,7 +804,7 @@ impl Interpreter {
     fn define_environment_variables(
         &mut self,
         execution_environment_id: EnvironmentId,
-        arguments: &Arguments,
+        arguments: &FunctionArguments,
         values: &Vec<Value>,
     ) -> Result<(), Error> {
         let mut current_argument = 0;
@@ -966,7 +966,7 @@ impl Interpreter {
     fn define_environment_functions(
         &mut self,
         execution_environment_id: EnvironmentId,
-        arguments: &Arguments,
+        arguments: &FunctionArguments,
         values: &Vec<Value>,
     ) -> Result<(), Error> {
         let mut current_argument = 0;
@@ -1598,7 +1598,7 @@ mod tests {
             );
 
             let name = interpreter.intern("test");
-            let mut arguments = Arguments::new();
+            let mut arguments = FunctionArguments::new();
 
             arguments.add_ordinary_argument(String::from("a")).unwrap();
             arguments.add_ordinary_argument(String::from("b")).unwrap();

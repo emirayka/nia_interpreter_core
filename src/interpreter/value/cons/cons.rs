@@ -63,8 +63,8 @@ mod tests {
         fn works_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let string1 = interpreter.intern_string_value(String::from("car"));
-            let string2 = interpreter.intern_string_value(String::from("cdr"));
+            let string1 = interpreter.intern_string_value("car");
+            let string2 = interpreter.intern_string_value("cdr");
 
             let mut l = Cons::new(string1, string2);
 

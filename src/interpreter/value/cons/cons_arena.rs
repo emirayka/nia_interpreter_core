@@ -1,29 +1,11 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::Value;
-use crate::interpreter::cons::cons::Cons;
+use crate::interpreter::value::{
+    ConsId,
+    Cons,
+    Value,
+};
 use crate::interpreter::error::Error;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ConsId {
-    id: usize
-}
-
-impl ConsId {
-    pub fn new(id: usize) -> ConsId {
-        ConsId {
-            id
-        }
-    }
-
-    pub fn get_id(&self) -> usize {
-        self.id
-    }
-
-    pub fn to_value(self) -> Value {
-        Value::Cons(self)
-    }
-}
 
 #[derive(Clone)]
 pub struct ConsArena {

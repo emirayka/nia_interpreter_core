@@ -1,11 +1,11 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::InterpretedFunction;
-use crate::interpreter::function::MacroFunction;
+use crate::interpreter::value::Function;
+use crate::interpreter::value::InterpretedFunction;
+use crate::interpreter::value::MacroFunction;
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::function::Arguments;
+use crate::interpreter::value::FunctionArguments;
 use crate::interpreter::library;
 
 const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
@@ -16,7 +16,7 @@ const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
 fn construct_interpreted_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    arguments: Arguments,
+    arguments: FunctionArguments,
     code: Vec<Value>
 ) -> Value {
     let function = Function::Interpreted(InterpretedFunction::new(
@@ -33,7 +33,7 @@ fn construct_interpreted_function(
 fn construct_macro_function(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    arguments: Arguments,
+    arguments: FunctionArguments,
     code: Vec<Value>
 ) -> Value {
     let function = Function::Macro(MacroFunction::new(
@@ -123,7 +123,7 @@ mod tests {
     #[test]
     fn constructs_simple_function() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_ordinary_argument(String::from("first-arg")).unwrap();
         arguments.add_ordinary_argument(String::from("second-arg")).unwrap();
@@ -151,7 +151,7 @@ mod tests {
     #[test]
     fn constructs_simple_macro() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_ordinary_argument(String::from("first-arg")).unwrap();
         arguments.add_ordinary_argument(String::from("second-arg")).unwrap();
@@ -179,7 +179,7 @@ mod tests {
     #[test]
     fn returns_correct_function_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
-        let arguments = Arguments::new();
+        let arguments = FunctionArguments::new();
 
         let function = Function::Interpreted(InterpretedFunction::new(
             interpreter.get_root_environment(),
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn returns_correct_macro_when_no_argument_was_provided() {
         let mut interpreter = Interpreter::new();
-        let arguments = Arguments::new();
+        let arguments = FunctionArguments::new();
 
         let function = Function::Macro(MacroFunction::new(
             interpreter.get_root_environment(),
@@ -227,7 +227,7 @@ mod tests {
     #[test]
     fn able_to_construct_functions_with_optional_arguments() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_optional_argument(
             String::from("a"),
@@ -267,7 +267,7 @@ mod tests {
     #[test]
     fn able_to_construct_functions_with_rest_arguments() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_rest_argument(
             String::from("a"),
@@ -295,7 +295,7 @@ mod tests {
     #[test]
     fn able_to_construct_functions_with_key_arguments() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_key_argument(
             String::from("a"),
@@ -336,7 +336,7 @@ mod tests {
     #[test]
     fn able_to_construct_functions_with_rest_arguments_after_optional_arguments() {
         let mut interpreter = Interpreter::new();
-        let mut arguments = Arguments::new();
+        let mut arguments = FunctionArguments::new();
 
         arguments.add_optional_argument(
             String::from("a"),

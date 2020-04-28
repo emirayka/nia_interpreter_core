@@ -1,9 +1,9 @@
-use crate::interpreter::symbol::SymbolId;
-use crate::interpreter::string::StringId;
-use crate::interpreter::keyword::KeywordId;
-use crate::interpreter::cons::ConsId;
-use crate::interpreter::object::ObjectId;
-use crate::interpreter::function::FunctionId;
+use crate::interpreter::value::SymbolId;
+use crate::interpreter::value::StringId;
+use crate::interpreter::value::KeywordId;
+use crate::interpreter::value::ConsId;
+use crate::interpreter::value::ObjectId;
+use crate::interpreter::value::FunctionId;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Value {

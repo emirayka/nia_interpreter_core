@@ -1,3 +1,4 @@
+extern crate either;
 extern crate dirs;
 extern crate rand;
 extern crate nom;

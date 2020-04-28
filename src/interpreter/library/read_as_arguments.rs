@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::cons::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Arguments;
+use crate::interpreter::function::FunctionArguments;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ArgumentParsingMode {
@@ -102,8 +102,8 @@ fn extract_optional_argument_from_cons(
     Ok((first, second, third))
 }
 
-fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<Arguments, Error> {
-    let mut arguments = Arguments::new();
+fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<FunctionArguments, Error> {
+    let mut arguments = FunctionArguments::new();
     let mut mode = ArgumentParsingMode::Ordinary;
 
     for value in values {
@@ -233,7 +233,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
 pub fn read_as_arguments(
     interpreter: &mut Interpreter,
     value: Value
-) -> Result<Arguments, Error> {
+) -> Result<FunctionArguments, Error> {
     let arguments = match value {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)
             .map_err(|_| Error::generic_execution_error(""))?,
@@ -269,13 +269,13 @@ mod tests {
             (
                 "'()",
                 {
-                    Arguments::new()
+                    FunctionArguments::new()
                 }
             ),
             (
                 "'(a)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
 
@@ -285,7 +285,7 @@ mod tests {
             (
                 "'(#opt a)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_optional_argument(String::from("a"), None, None).unwrap();
 
@@ -295,7 +295,7 @@ mod tests {
             (
                 "'(#opt (a 1))",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_optional_argument(String::from("a"), Some(Value::Integer(1)), None).unwrap();
 
@@ -305,7 +305,7 @@ mod tests {
             (
                 "'(#opt (a 1 a?))",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_optional_argument(String::from("a"), Some(Value::Integer(1)), Some(String::from("a?"))).unwrap();
 
@@ -315,7 +315,7 @@ mod tests {
             (
                 "'(#rest a)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_rest_argument(String::from("a")).unwrap();
 
@@ -325,7 +325,7 @@ mod tests {
             (
                 "'(#keys a)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_key_argument(String::from("a"), None, None).unwrap();
 
@@ -335,7 +335,7 @@ mod tests {
             (
                 "'(#keys (a 1))",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_key_argument(String::from("a"), Some(Value::Integer(1)), None).unwrap();
 
@@ -345,7 +345,7 @@ mod tests {
             (
                 "'(#keys (a 1 a?))",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_key_argument(String::from("a"), Some(Value::Integer(1)), Some(String::from("a?"))).unwrap();
 
@@ -356,7 +356,7 @@ mod tests {
             (
                 "'(a b)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
                     arguments.add_ordinary_argument(String::from("b")).unwrap();
@@ -367,7 +367,7 @@ mod tests {
             (
                 "'(a #opt b)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
                     arguments.add_optional_argument(String::from("b"), None, None).unwrap();
@@ -378,7 +378,7 @@ mod tests {
             (
                 "'(a #rest b)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
                     arguments.add_rest_argument(String::from("b")).unwrap();
@@ -389,7 +389,7 @@ mod tests {
             (
                 "'(a #opt b c #rest d)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
                     arguments.add_optional_argument(String::from("b"), None, None).unwrap();
@@ -402,7 +402,7 @@ mod tests {
             (
                 "'(a #keys b)",
                 {
-                    let mut arguments = Arguments::new();
+                    let mut arguments = FunctionArguments::new();
 
                     arguments.add_ordinary_argument(String::from("a")).unwrap();
                     arguments.add_key_argument(String::from("b"), None, None).unwrap();

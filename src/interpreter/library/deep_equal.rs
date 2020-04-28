@@ -1,6 +1,6 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::function::{
-    Arguments,
+    FunctionArguments,
     KeyArgument,
     OptionalArgument
 };
@@ -120,8 +120,8 @@ fn deep_equal_optional_arguments(
 
 fn deep_equal_arguments(
     interpreter: &Interpreter,
-    arguments1: &Arguments,
-    arguments2: &Arguments
+    arguments1: &FunctionArguments,
+    arguments2: &FunctionArguments
 ) -> Result<bool, Error> {
     if arguments1.get_ordinary_arguments() != arguments2.get_ordinary_arguments() {
         return Ok(false)

@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VString {
+pub struct NiaString {
     string: String
 }
 
-impl VString {
-    pub fn new(string: String) -> VString {
-        VString {
+impl NiaString {
+    pub fn new(string: String) -> NiaString {
+        NiaString {
             string
         }
     }

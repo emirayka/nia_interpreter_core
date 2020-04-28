@@ -2,7 +2,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::cons::ConsId;
+use crate::interpreter::value::ConsId;
 
 fn execute_part(
     interpreter: &mut Interpreter,

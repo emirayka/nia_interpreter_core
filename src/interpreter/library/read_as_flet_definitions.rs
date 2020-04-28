@@ -1,4 +1,4 @@
-use crate::interpreter::function::Arguments;
+use crate::interpreter::function::FunctionArguments;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
@@ -8,7 +8,7 @@ use crate::interpreter::library;
 pub fn read_as_flet_definitions(
     interpreter: &mut Interpreter,
     value: Value,
-) -> Result<Vec<(Value, Arguments, Vec<Value>)>, Error> {
+) -> Result<Vec<(Value, FunctionArguments, Vec<Value>)>, Error> {
     let mut definitions = vec!();
 
     match value {
@@ -94,7 +94,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            Arguments::new()
+                            FunctionArguments::new()
                         },
                         vec!(),
                     ),
@@ -106,7 +106,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            Arguments::new()
+                            FunctionArguments::new()
                         },
                         vec!(
                             Value::Integer(1)
@@ -120,14 +120,14 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            Arguments::new()
+                            FunctionArguments::new()
                         },
                         vec!(),
                     ),
                     (
                         interpreter.execute("'b").unwrap(),
                         {
-                            Arguments::new()
+                            FunctionArguments::new()
                         },
                         vec!(),
                     ),
@@ -139,7 +139,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            let mut arguments = Arguments::new();
+                            let mut arguments = FunctionArguments::new();
 
                             arguments.add_ordinary_argument(String::from("b")).unwrap();
 
@@ -157,7 +157,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            let mut arguments = Arguments::new();
+                            let mut arguments = FunctionArguments::new();
 
                             arguments.add_optional_argument(String::from("b"), None, None).unwrap();
 
@@ -175,7 +175,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            let mut arguments = Arguments::new();
+                            let mut arguments = FunctionArguments::new();
 
                             arguments.add_rest_argument(String::from("b")).unwrap();
 
@@ -193,7 +193,7 @@ mod tests {
                     (
                         interpreter.execute("'a").unwrap(),
                         {
-                            let mut arguments = Arguments::new();
+                            let mut arguments = FunctionArguments::new();
 
                             arguments.add_key_argument(String::from("b"), None, None).unwrap();
 

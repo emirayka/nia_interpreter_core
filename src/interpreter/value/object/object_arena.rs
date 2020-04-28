@@ -1,7 +1,12 @@
-use crate::interpreter::symbol::SymbolId;
-use crate::interpreter::value::Value;
-use crate::interpreter::object::{Object, ObjectId};
-use nom::lib::std::collections::HashMap;
+use std::collections::HashMap;
+
+use crate::interpreter::value::{
+    Object,
+    SymbolId,
+    ObjectId,
+    Value,
+};
+
 use crate::interpreter::error::Error;
 
 #[derive(Clone)]

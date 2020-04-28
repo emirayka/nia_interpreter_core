@@ -1,18 +1,18 @@
-use crate::interpreter::function::{
-    builtin_function,
-    interpreted_function,
-    macro_function,
-    special_form_function
+use crate::interpreter::value::{
+    BuiltinFunction,
+    InterpretedFunction,
+    MacroFunction,
+    SpecialFormFunction,
 };
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Function {
-    Builtin(builtin_function::BuiltinFunction),
-    Interpreted(interpreted_function::InterpretedFunction),
-    Macro(macro_function::MacroFunction),
-    SpecialForm(special_form_function::SpecialFormFunction),
+    Builtin(BuiltinFunction),
+    Interpreted(InterpretedFunction),
+    Macro(MacroFunction),
+    SpecialForm(SpecialFormFunction),
 }
 
 impl Function {

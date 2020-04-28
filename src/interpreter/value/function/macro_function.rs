@@ -1,17 +1,17 @@
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::function::arguments::Arguments;
+use crate::interpreter::value::FunctionArguments;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InterpretedFunction {
+pub struct MacroFunction {
     environment: EnvironmentId,
-    arguments: Arguments,
+    arguments: FunctionArguments,
     code: Vec<Value>,
 }
 
-impl InterpretedFunction {
-    pub fn new(environment: EnvironmentId, arguments: Arguments, code: Vec<Value>) -> InterpretedFunction {
-        InterpretedFunction {
+impl MacroFunction {
+    pub fn new(environment: EnvironmentId, arguments: FunctionArguments, code: Vec<Value>) -> MacroFunction {
+        MacroFunction {
             environment,
             arguments,
             code
@@ -22,7 +22,7 @@ impl InterpretedFunction {
         self.environment
     }
 
-    pub fn get_arguments(&self) -> &Arguments {
+    pub fn get_arguments(&self) -> &FunctionArguments {
         &self.arguments
     }
 

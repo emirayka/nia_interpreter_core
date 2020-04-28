@@ -5,7 +5,7 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::function::{
-    Arguments,
+    FunctionArguments,
 };
 
 use crate::interpreter::library;
@@ -53,7 +53,7 @@ pub fn combine(
 
     let interpreted_function = InterpretedFunction::new(
         environment_id,
-        Arguments::new(),
+        FunctionArguments::new(),
         vec!(result)
     );
 

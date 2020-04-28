@@ -1,17 +1,17 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::{Function, Arguments};
-use crate::interpreter::function::MacroFunction;
+use crate::interpreter::value::{Function, FunctionArguments};
+use crate::interpreter::value::MacroFunction;
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::cons::ConsId;
+use crate::interpreter::value::ConsId;
 use crate::interpreter::library;
 
 fn set_macro_definition(
     interpreter: &mut Interpreter,
     macro_parent_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    definition: (Value, Arguments, Vec<Value>)
+    definition: (Value, FunctionArguments, Vec<Value>)
 ) -> Result<(), Error> {
     let function_symbol_value = definition.0;
     let function_symbol_id = function_symbol_value.as_symbol_id();
@@ -39,7 +39,7 @@ pub fn set_definitions(
     interpreter: &mut Interpreter,
     special_form_calling_environment: EnvironmentId,
     macro_definition_environment: EnvironmentId,
-    definitions: Vec<(Value, Arguments, Vec<Value>)>
+    definitions: Vec<(Value, FunctionArguments, Vec<Value>)>
 ) -> Result<(), Error> {
     for definition in definitions {
         set_macro_definition(

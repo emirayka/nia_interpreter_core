@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::interpreter::symbol::SymbolId;
+use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 

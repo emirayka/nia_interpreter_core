@@ -1,9 +1,3 @@
-mod keyword;
-mod string;
-mod symbol;
-mod cons;
-mod function;
-mod object;
 mod value;
 mod error;
 mod environment;
