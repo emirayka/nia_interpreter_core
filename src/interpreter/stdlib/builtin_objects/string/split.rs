@@ -36,7 +36,7 @@ pub fn split(
     let mut values = Vec::new();
 
     for string in splitted {
-        values.push(interpreter.intern_string_value(string));
+        values.push(interpreter.intern_string_value(&string));
     }
 
     let cons = interpreter.vec_to_list(values);

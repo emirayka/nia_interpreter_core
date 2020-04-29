@@ -37,7 +37,7 @@ pub fn concat(
         result.push_str(next_string);
     }
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

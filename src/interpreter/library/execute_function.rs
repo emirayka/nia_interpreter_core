@@ -2,8 +2,8 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::FunctionId;
-use crate::interpreter::function::Function;
+use crate::interpreter::value::FunctionId;
+use crate::interpreter::value::Function;
 
 pub fn execute_function(
     interpreter: &mut Interpreter,

@@ -1,11 +1,11 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::function::{
+use crate::interpreter::value::{
     FunctionArguments,
     KeyArgument,
     OptionalArgument
 };
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
+use crate::interpreter::value::Function;
 use crate::interpreter::value::Value;
 
 fn deep_equal_option_values(

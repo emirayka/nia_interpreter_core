@@ -63,7 +63,7 @@ pub fn substr(
     let result = chars.take((second - first) as usize)
         .collect::<String>();
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

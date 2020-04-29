@@ -1,8 +1,8 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::cons::ConsId;
+use crate::interpreter::value::ConsId;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
-use crate::interpreter::function::FunctionArguments;
+use crate::interpreter::value::FunctionArguments;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ArgumentParsingMode {

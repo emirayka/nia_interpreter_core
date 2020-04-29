@@ -77,10 +77,10 @@ pub fn fset(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::function::Function;
-    use crate::interpreter::function::InterpretedFunction;
+    use crate::interpreter::value::Function;
+    use crate::interpreter::value::InterpretedFunction;
     use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
-    use crate::interpreter::function::FunctionArguments;
+    use crate::interpreter::value::FunctionArguments;
 
     #[test]
     fn returns_value_that_was_set_to_function() {

@@ -1,23 +1,23 @@
 use std::collections::HashMap;
 
 use crate::interpreter::value::Value;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::InterpretedFunction;
-use crate::interpreter::function::BuiltinFunction;
-use crate::interpreter::function::SpecialFormFunction;
-use crate::interpreter::symbol::{SymbolId, SymbolArena, Symbol};
-use crate::interpreter::function::MacroFunction;
+use crate::interpreter::value::Function;
+use crate::interpreter::value::InterpretedFunction;
+use crate::interpreter::value::BuiltinFunction;
+use crate::interpreter::value::SpecialFormFunction;
+use crate::interpreter::value::{SymbolId, SymbolArena, Symbol};
+use crate::interpreter::value::MacroFunction;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::{EnvironmentArena, EnvironmentId};
-use crate::interpreter::object::ObjectArena;
-use crate::interpreter::object::ObjectId;
-use crate::interpreter::cons::{ConsArena, ConsId};
-use crate::interpreter::function::{FunctionArena, FunctionId};
-use crate::interpreter::string::{StringArena, StringId};
-use crate::interpreter::string::NiaString;
-use crate::interpreter::keyword::{KeywordArena, KeywordId};
-use crate::interpreter::keyword::Keyword;
-use crate::interpreter::function::FunctionArguments;
+use crate::interpreter::value::ObjectArena;
+use crate::interpreter::value::ObjectId;
+use crate::interpreter::value::{ConsArena, ConsId};
+use crate::interpreter::value::{FunctionArena, FunctionId};
+use crate::interpreter::value::{StringArena, StringId};
+use crate::interpreter::value::NiaString;
+use crate::interpreter::value::{KeywordArena, KeywordId};
+use crate::interpreter::value::Keyword;
+use crate::interpreter::value::FunctionArguments;
 use crate::interpreter::context::Context;
 use crate::interpreter::library;
 use crate::parser::parse_code;
@@ -200,21 +200,17 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn make_string(&mut self, string: String) -> StringId {
-        self.string_arena.make_string(string)
+    pub fn intern_string(&mut self, string: &str) -> StringId {
+        self.string_arena.intern_string(string)
     }
 
-    pub fn make_string_value(&mut self, string: String) -> Value {
-        Value::String(self.make_string(string))
+    pub fn intern_string_value(&mut self, string: &str) -> Value {
+        Value::String(self.intern_string(string))
     }
 
     pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
         self.string_arena
             .get_string(string_id)
-    }
-
-    pub fn intern_string_value(&mut self, string: &str) -> Value {
-        Value::String(self.string_arena.intern_string(string))
     }
 }
 
@@ -231,22 +227,18 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn make_keyword(&mut self, keyword_name: String) -> KeywordId {
-        self.keyword_arena.make_keyword(keyword_name)
+    pub fn intern_keyword(&mut self, keyword_name: &str) -> KeywordId {
+        self.keyword_arena.intern_keyword(keyword_name)
     }
 
-    pub fn make_keyword_value(&mut self, keyword_name: String) -> Value {
-        Value::Keyword(self.make_keyword(keyword_name))
+    pub fn intern_keyword_value(&mut self, keyword_name: &str) -> Value {
+        Value::From(self.intern_keyword(keyword_name))
     }
 
     pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
         self.keyword_arena
             .get_keyword(keyword_id)
             .map(|keyword| keyword)
-    }
-
-    pub fn intern_keyword_value(&mut self, keyword_name: String) -> Value {
-        Value::Keyword(self.keyword_arena.intern_keyword(keyword_name))
     }
 }
 

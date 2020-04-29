@@ -18,15 +18,15 @@ pub fn _type(
     let value = values.remove(0);
 
     let type_string = match value {
-        Value::Integer(_) => interpreter.intern_string_value(String::from("integer")),
-        Value::Float(_) => interpreter.intern_string_value(String::from("float")),
-        Value::Boolean(_) => interpreter.intern_string_value(String::from("boolean")),
-        Value::String(_) => interpreter.intern_string_value(String::from("string")),
-        Value::Keyword(_) => interpreter.intern_string_value(String::from("keyword")),
-        Value::Symbol(_) => interpreter.intern_string_value(String::from("symbol")),
-        Value::Cons(_) => interpreter.intern_string_value(String::from("cons")),
-        Value::Object(_) => interpreter.intern_string_value(String::from("object")),
-        Value::Function(_) => interpreter.intern_string_value(String::from("function")),
+        Value::Integer(_) => interpreter.intern_string_value("integer"),
+        Value::Float(_) => interpreter.intern_string_value("float"),
+        Value::Boolean(_) => interpreter.intern_string_value("boolean"),
+        Value::String(_) => interpreter.intern_string_value("string"),
+        Value::Keyword(_) => interpreter.intern_string_value("keyword"),
+        Value::Symbol(_) => interpreter.intern_string_value("symbol"),
+        Value::Cons(_) => interpreter.intern_string_value("cons"),
+        Value::Object(_) => interpreter.intern_string_value("object"),
+        Value::Function(_) => interpreter.intern_string_value("function"),
     };
 
     Ok(type_string)

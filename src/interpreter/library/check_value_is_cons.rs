@@ -17,7 +17,7 @@ pub fn check_value_is_cons(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::cons::ConsId;
+    use crate::interpreter::value::ConsId;
 
     #[test]
     fn returns_nothing_when_a_cons_was_passed() {
@@ -42,8 +42,8 @@ mod tests {
             Value::Boolean(false),
             interpreter.intern_symbol_value("test"),
             interpreter.intern_nil_symbol_value(),
-            interpreter.make_string_value(String::from("test")),
-            interpreter.make_keyword_value(String::from("test")),
+            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_keyword_value(String::from("test")),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()
         );

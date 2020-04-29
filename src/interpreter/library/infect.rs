@@ -1,16 +1,16 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::function::{
+use crate::interpreter::value::{
     BuiltinFunctionType,
     BuiltinFunction
 };
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Value;
-use crate::interpreter::function::Function;
-use crate::interpreter::function::{
+use crate::interpreter::value::Function;
+use crate::interpreter::value::{
     SpecialFormFunctionType,
     SpecialFormFunction
 };
-use crate::interpreter::object::ObjectId;
+use crate::interpreter::value::ObjectId;
 
 pub fn infect_object_builtin_function(
     interpreter: &mut Interpreter,

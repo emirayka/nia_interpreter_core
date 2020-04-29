@@ -24,7 +24,7 @@ pub fn trim_right(
 
     let trimmed_string = String::from(string.trim_end());
 
-    Ok(interpreter.intern_string_value(trimmed_string))
+    Ok(interpreter.intern_string_value(&trimmed_string))
 }
 
 #[cfg(test)]

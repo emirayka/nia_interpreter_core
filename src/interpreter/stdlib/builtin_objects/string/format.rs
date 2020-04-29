@@ -46,7 +46,7 @@ pub fn format(
     let s = iter_strings.next().unwrap();
     result.push_str(s);
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

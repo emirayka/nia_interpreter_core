@@ -3,7 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library::infect::infect_object_builtin_function;
-use crate::interpreter::function::BuiltinFunctionType;
+use crate::interpreter::value::BuiltinFunctionType;
 
 mod quit;
 

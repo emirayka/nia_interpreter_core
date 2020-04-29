@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::symbol::SymbolId;
+use crate::interpreter::value::SymbolId;
 
 pub fn read_symbol_or_keyword_as_symbol_id(
     interpreter: &mut Interpreter,

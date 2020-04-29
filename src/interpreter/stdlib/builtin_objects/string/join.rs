@@ -62,7 +62,7 @@ pub fn join(
         result.replace_range((result.len() - joiner.len()).., "");
     }
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

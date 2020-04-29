@@ -21,7 +21,7 @@ pub fn lower(
 
     let lowercase_string = string.to_lowercase();
 
-    Ok(interpreter.intern_string_value(lowercase_string))
+    Ok(interpreter.intern_string_value(&lowercase_string))
 }
 
 #[cfg(test)]

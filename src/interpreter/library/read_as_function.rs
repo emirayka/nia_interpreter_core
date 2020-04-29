@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 
 use crate::interpreter::library;
-use crate::interpreter::function::Function;
+use crate::interpreter::value::Function;
 
 pub fn read_as_function(
     interpreter: &Interpreter,
@@ -59,9 +59,9 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
-            interpreter.make_string_value(String::from("test")),
+            interpreter.intern_string_value(String::from("test")),
             interpreter.intern_symbol_value("test"),
-            interpreter.make_keyword_value(String::from("test")),
+            interpreter.intern_keyword_value(String::from("test")),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
         );

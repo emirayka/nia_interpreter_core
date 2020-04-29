@@ -17,7 +17,7 @@ pub fn check_value_is_symbol(
 mod tests {
     use super::*;
     use crate::interpreter::library::assertion;
-    use crate::interpreter::string::StringId;
+    use crate::interpreter::value::StringId;
 
     #[test]
     fn returns_nothing_when_a_string_was_passed() {
@@ -47,7 +47,7 @@ mod tests {
             Value::Boolean(true),
             Value::Boolean(false),
             Value::String(StringId::new(0)),
-            interpreter.make_keyword_value(String::from("test")),
+            interpreter.intern_keyword_value(String::from("test")),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()

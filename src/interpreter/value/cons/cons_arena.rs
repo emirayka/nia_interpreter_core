@@ -40,7 +40,7 @@ impl ConsArena {
             Some(_) => Ok(()),
             _ => Error::failure(
                 format!("Cannot find a cons with id: {}", cons_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -207,7 +207,7 @@ impl ConsArena {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::symbol::{SymbolId};
+    use crate::interpreter::value::{SymbolId};
 
     fn new_symbol(name: &str) -> SymbolId {
         if name == "nil" {
@@ -259,9 +259,9 @@ mod tests {
     #[cfg(test)]
     mod list_to_vec {
         use super::*;
-        use crate::interpreter::string::StringId;
-        use crate::interpreter::keyword::KeywordId;
-        use crate::interpreter::function::FunctionId;
+        use crate::interpreter::value::StringId;
+        use crate::interpreter::value::KeywordId;
+        use crate::interpreter::value::FunctionId;
 
         #[test]
         fn returns_correct_vector_that_represents_values_in_cons_cells() {

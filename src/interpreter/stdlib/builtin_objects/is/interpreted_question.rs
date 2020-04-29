@@ -1,5 +1,5 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::function::Function;
+use crate::interpreter::value::Function;
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;

@@ -4,7 +4,7 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
-use crate::interpreter::function::Function;
+use crate::interpreter::value::Function;
 
 pub fn apply(
     interpreter: &mut Interpreter,

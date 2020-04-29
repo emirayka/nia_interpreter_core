@@ -388,7 +388,7 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
         Element::String(string_element) => {
             let string = string_element.get_value();
 
-            interpreter.intern_string_value(string)
+            interpreter.intern_string_value(&string)
         },
         Element::Symbol(symbol_element) =>
             interpreter.intern_symbol_value(symbol_element.get_value_ref()),

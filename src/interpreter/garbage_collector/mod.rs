@@ -3,12 +3,12 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::environment::EnvironmentId;
 
-use crate::interpreter::string::StringId;
-use crate::interpreter::keyword::KeywordId;
-use crate::interpreter::symbol::SymbolId;
-use crate::interpreter::cons::ConsId;
-use crate::interpreter::object::ObjectId;
-use crate::interpreter::function::FunctionId;
+use crate::interpreter::value::StringId;
+use crate::interpreter::value::KeywordId;
+use crate::interpreter::value::SymbolId;
+use crate::interpreter::value::ConsId;
+use crate::interpreter::value::ObjectId;
+use crate::interpreter::value::FunctionId;
 
 struct GarbageCollector {
     ignored_environment_ids: Vec<EnvironmentId>,
@@ -226,7 +226,7 @@ pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: Environmen
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::interpreter::function::{Function, BuiltinFunction, SpecialFormFunction};
+    use crate::interpreter::value::{Function, BuiltinFunction, SpecialFormFunction};
     use crate::interpreter::environment::EnvironmentId;
 
     fn builtin_test_function(

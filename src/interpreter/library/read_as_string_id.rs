@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::string::StringId;
+use crate::interpreter::value::StringId;
 
 pub fn read_as_string_id(
     interpreter: &Interpreter,
@@ -47,7 +47,7 @@ mod tests {
             Value::Boolean(true),
             Value::Boolean(false),
             interpreter.intern_symbol_value("test"),
-            interpreter.make_keyword_value(String::from("test")),
+            interpreter.intern_keyword_value(String::from("test")),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()

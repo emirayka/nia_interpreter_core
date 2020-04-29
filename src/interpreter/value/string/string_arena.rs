@@ -33,7 +33,7 @@ impl StringArena {
 
     pub fn intern_string(&mut self, string_name: &str) -> StringId {
         if self.mapping.contains_key(string_name) {
-            *self.mapping.get(&string_name).unwrap()
+            *self.mapping.get(string_name).unwrap()
         } else {
             self.make_string(string_name)
         }

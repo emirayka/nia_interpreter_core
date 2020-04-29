@@ -43,7 +43,7 @@ pub fn repeat(
         result.push_str(string);
     }
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::keyword::KeywordId;
+use crate::interpreter::value::KeywordId;
 
 pub fn read_as_keyword_id(
     interpreter: &Interpreter,

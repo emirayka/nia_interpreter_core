@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::interpreter::value::Value;
+
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
 pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse-error";
@@ -66,32 +68,6 @@ impl Error {
 
     pub fn is_failure(&self) -> bool {
         self.get_total_cause().get_error_kind() == ErrorKind::Failure
-    }
-
-    pub fn into_result<T>(self) -> Result<T, Error> {
-        Err(self)
-    }
-
-    pub fn describe(&self) {
-        let s = format!("{}", self);
-
-        print!("{}", s)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} \"{}\")", self.symbol_name, self.message);
-
-        if let Some(cause) = &self.caused_by {
-            let cause_error = cause.as_ref();
-
-            write!(f, " caused by:");
-            write!(f, "\n");
-            cause_error.fmt(f)
-        } else {
-            write!(f, "\n")
-        }
     }
 }
 
@@ -268,6 +244,35 @@ impl Error {
         )
     }
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({} \"{}\")", self.symbol_name, self.message);
+
+        if let Some(cause) = &self.caused_by {
+            let cause_error = cause.as_ref();
+
+            write!(f, " caused by:");
+            write!(f, "\n");
+            cause_error.fmt(f)
+        } else {
+            write!(f, "\n")
+        }
+    }
+}
+
+macro_rules! make_impl_into_result {
+    ($into_type: ty) => {
+        impl Into<Result<$into_type, Error>> for Error {
+            fn into(self) -> Result<$into_type, Error> {
+                Err(self)
+            }
+        }
+    }
+}
+
+make_impl_into_result!(());
+make_impl_into_result!(Value);
 
 #[cfg(test)]
 mod tests {

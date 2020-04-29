@@ -12,7 +12,7 @@ use crate::interpreter::interpreter::Interpreter;
 // u -> function
 
 pub fn make_value_pairs_evaluated_ifbsyko(interpreter: & mut Interpreter) -> Vec<(String, Value)> {
-    let string_value = interpreter.intern_string_value(String::from("string"));
+    let string_value = interpreter.intern_string_value("string");
     let symbol_value = interpreter.intern_symbol_value("symbol");
     let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
     let object_value = interpreter.make_object_value();

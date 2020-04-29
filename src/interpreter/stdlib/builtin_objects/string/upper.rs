@@ -24,7 +24,7 @@ pub fn upper(
 
     let uppercase_string = string.to_uppercase();
 
-    Ok(interpreter.intern_string_value(uppercase_string))
+    Ok(interpreter.intern_string_value(&uppercase_string))
 }
 
 #[cfg(test)]

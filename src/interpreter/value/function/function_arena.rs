@@ -94,7 +94,7 @@ mod tests {
     #[cfg(test)]
     mod free_function {
         use super::*;
-        use crate::interpreter::function::BuiltinFunction;
+        use crate::interpreter::value::BuiltinFunction;
 
         #[test]
         fn frees_function() {

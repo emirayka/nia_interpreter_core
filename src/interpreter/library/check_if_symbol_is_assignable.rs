@@ -1,5 +1,5 @@
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::symbol::SymbolId;
+use crate::interpreter::value::SymbolId;
 use crate::interpreter::error::Error;
 
 pub fn check_if_symbol_assignable(

@@ -56,8 +56,8 @@ impl KeywordArena {
     }
 
     pub fn intern_keyword(&mut self, keyword_name: &str) -> KeywordId {
-        if self.mapping.contains_key(&keyword_name) {
-            *self.mapping.get(&keyword_name).unwrap()
+        if self.mapping.contains_key(keyword_name) {
+            *self.mapping.get(keyword_name).unwrap()
         } else {
             self.make_keyword(keyword_name)
         }

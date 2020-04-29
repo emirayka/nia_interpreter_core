@@ -44,7 +44,7 @@ pub fn left(
 
     let result = chars.take(right_index - left_index).collect::<String>();
 
-    Ok(interpreter.intern_string_value(result))
+    Ok(interpreter.intern_string_value(&result))
 }
 
 #[cfg(test)]

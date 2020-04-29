@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-use crate::interpreter::function::{
+use crate::interpreter::value::{
     FunctionArguments,
     Function,
     InterpretedFunction,

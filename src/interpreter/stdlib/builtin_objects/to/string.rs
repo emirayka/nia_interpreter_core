@@ -23,7 +23,7 @@ pub fn string(
         values.remove(0)
     )?;
 
-    let string_value = interpreter.intern_string_value(string);
+    let string_value = interpreter.intern_string_value(&string);
 
     Ok(string_value)
 }
