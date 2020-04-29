@@ -1438,7 +1438,8 @@ mod tests {
 
             for spec in specs {
                 let result = interpreter.execute(spec).unwrap();
-                let keyword_id = result.try_into()?;
+                let keyword_id = result.try_into()
+                    .unwrap();
                 let keyword = interpreter.get_keyword(keyword_id)
                     .unwrap();
 

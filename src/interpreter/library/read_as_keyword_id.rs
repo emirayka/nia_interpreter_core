@@ -20,13 +20,19 @@ pub fn read_as_keyword_id(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use std::convert::TryInto;
+
     use crate::interpreter::library::assertion;
 
     #[test]
     fn returns_correct_keyword_id() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern_keyword_value(String::from("test")).try_into();
+        let expected = interpreter.intern_keyword_value("test")
+            .try_into()
+            .unwrap();
+
         let value = Value::Keyword(expected);
 
         let result = read_as_keyword_id(
@@ -46,7 +52,7 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
-            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_string_value("test"),
             interpreter.intern_symbol_value("test"),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),

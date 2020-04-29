@@ -519,7 +519,7 @@ mod tests {
 
         assert_reading_result_equal!(
             vec!(
-                interpreter.intern_string_value(String::from("cute string"))
+                interpreter.intern_string_value("cute string")
             ),
             r#""cute string""#
         );
@@ -527,8 +527,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
         assert_reading_result_equal!(
             vec!(
-                interpreter.intern_string_value(String::from("first cute string")),
-                interpreter.intern_string_value(String::from("second cute string")),
+                interpreter.intern_string_value("first cute string"),
+                interpreter.intern_string_value("second cute string"),
             ),
             r#""first cute string" "second cute string""#
         );
@@ -562,7 +562,7 @@ mod tests {
 
         assert_reading_result_equal!(
             vec!(
-                interpreter.intern_keyword_value(String::from("cutekeyword"))
+                interpreter.intern_keyword_value("cutekeyword")
             ),
             r#":cutekeyword"#
         );
@@ -570,9 +570,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
         assert_reading_result_equal!(
             vec!(
-                interpreter.intern_keyword_value(String::from("cutekeyword1")),
-                interpreter.intern_keyword_value(String::from("cutekeyword1")),
-                interpreter.intern_keyword_value(String::from("cutekeyword2"))
+                interpreter.intern_keyword_value("cutekeyword1"),
+                interpreter.intern_keyword_value("cutekeyword1"),
+                interpreter.intern_keyword_value("cutekeyword2")
             ),
             r#":cutekeyword1 :cutekeyword1 :cutekeyword2"#
         );
@@ -791,7 +791,7 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             // todo: uncomment two lines below, and find out why it doesn't work
-//            let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
+//            let keyword_value = interpreter.intern_keyword_value("keyword");
             let symbol_value = interpreter.intern_symbol_value("symbol");
             let string_value = interpreter.intern_string_value("string");
 

@@ -42,8 +42,8 @@ mod tests {
             Value::Boolean(false),
             interpreter.intern_symbol_value("test"),
             interpreter.intern_nil_symbol_value(),
-            interpreter.intern_string_value(String::from("test")),
-            interpreter.intern_keyword_value(String::from("test")),
+            interpreter.intern_string_value("test"),
+            interpreter.intern_keyword_value("test"),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()
         );

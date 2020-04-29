@@ -37,6 +37,9 @@ pub fn execute_function(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use std::convert::TryInto;
+
     use crate::interpreter::library::assertion;
 
     fn execute_forms(interpreter: &mut Interpreter, values: Vec<&str>) -> Vec<Value> {
@@ -63,7 +66,8 @@ mod tests {
         for spec in specs {
             let function_id = interpreter.execute(spec.0)
                 .unwrap()
-                .try_into();
+                .try_into()
+                .unwrap();
 
             let arguments = execute_forms(&mut interpreter, spec.1);
             let expected = interpreter.execute(spec.2).unwrap();
@@ -96,7 +100,8 @@ mod tests {
         for spec in specs {
             let function_id = interpreter.execute(spec.0)
                 .unwrap()
-                .try_into();
+                .try_into()
+                .unwrap();
 
             let arguments = execute_forms(&mut interpreter, spec.1);
             let environment_id = interpreter.get_root_environment();

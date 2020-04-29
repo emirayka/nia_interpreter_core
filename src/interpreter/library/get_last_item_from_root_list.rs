@@ -118,8 +118,8 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(false),
             Value::Boolean(true),
-            interpreter.intern_string_value(String::from("string")),
-            interpreter.intern_keyword_value(String::from("string")),
+            interpreter.intern_string_value("string"),
+            interpreter.intern_keyword_value("string"),
             interpreter.intern_symbol_value("symbol"),
             interpreter.make_object_value(),
         ];

@@ -42,9 +42,9 @@ mod tests {
         let not_boolean_values = vec!(
             Value::Integer(1),
             Value::Float(1.1),
-            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_string_value("test"),
             interpreter.intern_symbol_value("test"),
-            interpreter.intern_keyword_value(String::from("test")),
+            interpreter.intern_keyword_value("test"),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()

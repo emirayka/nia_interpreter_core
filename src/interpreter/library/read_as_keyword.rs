@@ -27,7 +27,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let expected = "test";
-        let keyword = interpreter.intern_keyword_value(String::from(expected));
+        let keyword = interpreter.intern_keyword_value(expected);
 
         let result = read_as_keyword(
             &mut interpreter,
@@ -46,7 +46,7 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
-            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_string_value("test"),
             interpreter.intern_symbol_value("test"),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
