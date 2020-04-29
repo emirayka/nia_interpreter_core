@@ -13,7 +13,7 @@ pub fn cdr(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `cdr' must take exactly two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -46,9 +46,9 @@ mod tests {
             ("(cdr (cons 1 1.1))", Value::Float(1.1)),
             ("(cdr (cons 1 #t))", Value::Boolean(true)),
             ("(cdr (cons 1 #f))", Value::Boolean(false)),
-            ("(cdr (cons 1 \"string\"))", interpreter.intern_string_value(String::from("string"))),
+            ("(cdr (cons 1 \"string\"))", interpreter.intern_string_value("string")),
             ("(cdr (cons 1 'symbol))", interpreter.intern_symbol_value("symbol")),
-            ("(cdr (cons 1 :keyword))", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(cdr (cons 1 :keyword))", interpreter.intern_keyword_value("keyword")),
             ("(cdr (cons 1 {}))", interpreter.make_object_value()),
             ("(cdr (cons 1 (cons 1 2)))", interpreter.make_cons_value(Value::Integer(1), Value::Integer(2))),
         );

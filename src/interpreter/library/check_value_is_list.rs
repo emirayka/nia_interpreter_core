@@ -13,11 +13,11 @@ pub fn check_value_is_list(
                 Ok(())
             } else {
                 Error::invalid_argument_error("Expected list")
-                    .into_result()
+                    .into()
             }
         },
         _ => Error::invalid_argument_error("Expected list")
-            .into_result()
+            .into()
     }
 }
 

@@ -47,7 +47,7 @@ impl EnvironmentValueWrapper {
         } else {
             Error::generic_execution_error(
                 "Cannot intern not internable item."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -57,7 +57,7 @@ impl EnvironmentValueWrapper {
         } else {
             Error::generic_execution_error(
                 "Cannot change const item."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -67,7 +67,7 @@ impl EnvironmentValueWrapper {
         } else {
             Error::generic_execution_error(
                 "Cannot configure not configurable item."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -130,7 +130,7 @@ fn define_value(
     } else {
         Error::generic_execution_error(
             "Cannot define already defined value."
-        ).into_result()
+        ).into()
     }
 }
 
@@ -145,7 +145,7 @@ fn set_value(
     } else {
         Error::generic_execution_error(
             "Cannot set value that does not exist"
-        ).into_result()
+        ).into()
     }
 }
 

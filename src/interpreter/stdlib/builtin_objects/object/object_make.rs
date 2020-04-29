@@ -11,7 +11,7 @@ pub fn object_make(
     if values.len() % 2 != 0 {
         return Error::invalid_argument_count_error(
             "Built-in function `object:make' must take even count of arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -43,7 +43,7 @@ pub fn object_make(
         } else {
             return Error::invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword."
-            ).into_result();
+            ).into();
         }
     }
 

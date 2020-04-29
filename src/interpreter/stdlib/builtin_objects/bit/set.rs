@@ -13,7 +13,7 @@ pub fn set(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `bit:set' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -26,7 +26,7 @@ pub fn set(
     if index < 0 || index > 63 {
         return Error::invalid_argument_error(
             "Built-in function `bit:set' takes value between [0; 64) as bit index."
-        ).into_result()
+        ).into()
     }
 
     let value = library::read_as_i64(

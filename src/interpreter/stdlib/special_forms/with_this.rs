@@ -13,12 +13,12 @@ pub fn with_this(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Special form `with-this' takes one argument at least."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
 
-    let object_id = library::read_as_object_id(
+    let object_id = library::read_try_into(
         interpreter,
         values.remove(0),
     )?;

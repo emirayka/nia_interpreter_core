@@ -11,7 +11,7 @@ pub fn symbol(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `to:symbol' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -27,7 +27,7 @@ pub fn symbol(
         symbol @ Value::Symbol(_) => Ok(symbol),
         _ => Error::invalid_argument_error(
             "Only keywords or strings can be casted to keyword."
-        ).into_result()
+        ).into()
     }
 }
 

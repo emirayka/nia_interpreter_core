@@ -68,7 +68,7 @@ fn extract_argument_name(interpreter: &mut Interpreter, value: Value) -> Result<
         Value::Symbol(symbol_id) => {
             if !interpreter.check_if_symbol_assignable(symbol_id)? {
                 return Error::invalid_argument_error("")
-                    .into_result()
+                    .into()
             }
 
             let symbol_name = interpreter.get_symbol_name(symbol_id)?;
@@ -76,7 +76,7 @@ fn extract_argument_name(interpreter: &mut Interpreter, value: Value) -> Result<
             Ok(String::from(symbol_name))
         },
         _ => return Error::invalid_argument_error("")
-            .into_result()
+            .into()
     }
 }
 
@@ -120,13 +120,13 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     Err(error) => return Error::generic_execution_error_caused(
                         "",
                         error
-                    ).into_result()
+                    ).into()
                 };
 
                 if is_constant {
                     return Error::invalid_argument_error(
                         "Cannot set constants as arguments"
-                    ).into_result()
+                    ).into()
                 }
 
                 let symbol_name = symbol.get_name();
@@ -137,7 +137,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     } else {
                         return Error::generic_execution_error(
                             "Invalid argument specification: optional arguments may occur only after ordinary arguments."
-                        ).into_result();
+                        ).into();
                     }
                     continue;
                 } else if symbol_name == "#rest" {
@@ -146,7 +146,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     } else {
                         return Error::generic_execution_error(
                             "Invalid argument specification: rest argument may occur only after ordinary or optional arguments."
-                        ).into_result();
+                        ).into();
                     }
                     continue;
                 } else if symbol_name == "#keys" {
@@ -155,7 +155,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     } else {
                         return Error::generic_execution_error(
                             "Invalid argument specification: key arguments may occur only after ordinary arguments."
-                        ).into_result();
+                        ).into();
                     }
                     continue;
                 }
@@ -190,7 +190,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                 match mode {
                     ArgumentParsingMode::Ordinary => {
                         return Error::invalid_argument_error("")
-                            .into_result();
+                            .into();
                     },
                     ArgumentParsingMode::Optional => {
                         let triplet = extract_optional_argument_from_cons(
@@ -206,7 +206,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                     },
                     ArgumentParsingMode::Rest => {
                         return Error::invalid_argument_error("")
-                            .into_result();
+                            .into();
                     },
                     ArgumentParsingMode::Keys => {
                         let triplet = extract_optional_argument_from_cons(
@@ -223,7 +223,7 @@ fn parse_arguments(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<
                 }
             },
             _ => return Error::invalid_argument_error("")
-                .into_result()
+                .into()
         }
     }
 
@@ -242,12 +242,12 @@ pub fn read_as_arguments(
                 Vec::new()
             } else {
                 return Error::invalid_argument_error("")
-                    .into_result()
+                    .into()
             }
         },
         _ => {
             return Error::invalid_argument_error("")
-                .into_result()
+                .into()
         }
     };
 

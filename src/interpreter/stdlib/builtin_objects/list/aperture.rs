@@ -13,7 +13,7 @@ pub fn aperture(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:aperture' takes two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

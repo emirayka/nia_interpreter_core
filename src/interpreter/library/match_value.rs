@@ -58,7 +58,7 @@ pub fn match_value_recursive(
                 _ => {
                     return Error::generic_execution_error(
                         ""
-                    ).into_result()
+                    ).into()
                 }
             }
         },
@@ -77,7 +77,7 @@ pub fn match_value_recursive(
                             },
                             _ => return Error::generic_execution_error(
                                 ""
-                            ).into_result()
+                            ).into()
                         }
                     }
 
@@ -95,20 +95,20 @@ pub fn match_value_recursive(
                 _ => {
                     return Error::generic_execution_error(
                         ""
-                    ).into_result()
+                    ).into()
                 }
             }
         },
         Value::Function(_) => return Error::generic_execution_error(
             ""
-        ).into_result(),
+        ).into(),
         binding => {
             if binding == value {
                 Ok(())
             } else {
                 Error::generic_execution_error(
                     ""
-                ).into_result()
+                ).into()
             }
         }
     }

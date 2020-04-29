@@ -13,7 +13,7 @@ pub fn set_car_mark(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `set-car!' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

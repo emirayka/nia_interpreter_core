@@ -14,7 +14,7 @@ pub fn define_variable(
     if values.len() < 1 || values.len() > 3 {
         return Error::invalid_argument_count_error(
             "Special form `define-variable' must be used with one or two forms."
-        ).into_result();
+        ).into();
     }
 
     let first_argument = values.remove(0);
@@ -33,7 +33,7 @@ pub fn define_variable(
         if !result {
             return Error::invalid_argument_error(
                 "Third argument of special form `define-variable' must be a keyword `:const'."
-            ).into_result();
+            ).into();
         }
 
         result
@@ -45,7 +45,7 @@ pub fn define_variable(
         Value::Symbol(symbol) => symbol,
         _ => return Error::invalid_argument_error(
             "First form of `define-variable' must be a symbol."
-        ).into_result()
+        ).into()
     };
 
     library::check_if_symbol_assignable(interpreter, variable_symbol_id)?;

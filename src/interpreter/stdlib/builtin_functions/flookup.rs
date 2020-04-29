@@ -13,7 +13,7 @@ pub fn flookup(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `flookup' must take exactly one string argument."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -29,7 +29,7 @@ pub fn flookup(
     ) {
         Ok(value) => Ok(value),
         _ => return Error::generic_execution_error("")
-            .into_result()
+            .into()
     }
 }
 

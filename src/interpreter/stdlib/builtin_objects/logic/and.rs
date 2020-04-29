@@ -13,7 +13,7 @@ pub fn and(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `logic:and' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

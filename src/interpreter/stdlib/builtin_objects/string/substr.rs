@@ -14,7 +14,7 @@ pub fn substr(
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:substr' takes only one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -32,13 +32,13 @@ pub fn substr(
     if index < 0 {
         return Error::invalid_argument_error(
             "The first argument of built-in function `string:substring' must be a positive int value."
-        ).into_result();
+        ).into();
     }
 
     if diff < 0 {
         return Error::invalid_argument_error(
             "The second argument of built-in function `string:substring' must be a positive int value."
-        ).into_result();
+        ).into();
     }
 
     let string = library::read_as_string(

@@ -14,7 +14,7 @@ pub fn less_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:less?' takes two arguments exactly"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

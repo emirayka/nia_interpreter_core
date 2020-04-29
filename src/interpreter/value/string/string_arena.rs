@@ -54,7 +54,7 @@ impl StringArena {
             }
             _ => return Error::failure(
                 format!("Cannot find a string with id: {}", string_id.get_id())
-            ).into_result()
+            ).into()
         };
 
         self.mapping.remove(string.get_string());

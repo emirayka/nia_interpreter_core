@@ -13,7 +13,7 @@ pub fn gensym(
     if values.len() > 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `gensym' must take exactly one string argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

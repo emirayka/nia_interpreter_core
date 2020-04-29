@@ -12,7 +12,7 @@ pub fn fold(
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:fold' takes three arguments exactly."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;

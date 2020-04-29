@@ -81,7 +81,7 @@ fn count_short_lambda_argument_count(
 
         match candidate {
             Element::Symbol(symbol_element) => {
-                let name = symbol_element.get_value_ref();
+                let name = symbol_element.get_value();
 
                 match (&name['%'.len_utf8()..]).parse::<u8>() {
                     Ok(val) => {
@@ -185,7 +185,7 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
         nil
     ));
 
-    let keyword = interpreter.intern_keyword_value(String::from("make"));
+    let keyword = interpreter.intern_keyword_value("make");
 
     let car = Value::Cons(interpreter.make_cons(
         keyword,
@@ -242,7 +242,7 @@ fn read_object_pattern(
         nil
     ));
 
-    let keyword = interpreter.intern_keyword_value(String::from("make"));
+    let keyword = interpreter.intern_keyword_value("make");
 
     let car = Value::Cons(interpreter.make_cons(
         keyword,
@@ -263,11 +263,11 @@ fn read_delimited_symbols_element(
 ) -> Value {
     let values = delimited_symbols_element.get_symbols();
 
-    let object_symbol_name = values[0].get_value_ref();
+    let object_symbol_name = values[0].get_value();
     let mut previous_cons = interpreter.intern_symbol_value(object_symbol_name);
 
     for symbol_element in &values[1..] {
-        let symbol_name = symbol_element.get_value_ref();
+        let symbol_name = symbol_element.get_value();
 
         let nil = interpreter.intern_nil_symbol_value();
         let current_cons = Value::Cons(interpreter.make_cons(
@@ -275,7 +275,7 @@ fn read_delimited_symbols_element(
             nil
         ));
 
-        let keyword = interpreter.intern_keyword_value(String::from(symbol_name));
+        let keyword = interpreter.intern_keyword_value(symbol_name);
 
         let current_cons = Value::Cons(interpreter.make_cons(
             keyword,
@@ -390,8 +390,10 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
 
             interpreter.intern_string_value(&string)
         },
-        Element::Symbol(symbol_element) =>
-            interpreter.intern_symbol_value(symbol_element.get_value_ref()),
+        Element::Symbol(symbol_element) => {
+            let symbol_name = symbol_element.get_value();
+            interpreter.intern_symbol_value(symbol_name)
+        }
         Element::Keyword(keyword_element) => {
             let keyword_name = keyword_element.get_value();
 
@@ -791,7 +793,7 @@ mod tests {
             // todo: uncomment two lines below, and find out why it doesn't work
 //            let keyword_value = interpreter.intern_keyword_value(String::from("keyword"));
             let symbol_value = interpreter.intern_symbol_value("symbol");
-            let string_value = interpreter.intern_string_value(String::from("string"));
+            let string_value = interpreter.intern_string_value("string");
 
             assert_object_has_items(
                 &mut interpreter,
@@ -867,7 +869,7 @@ mod tests {
             nil
         );
 
-        let keyword = interpreter.intern_keyword_value(String::from("value"));
+        let keyword = interpreter.intern_keyword_value("value");
         let expected = interpreter.make_cons_value(
             keyword,
             cdr
@@ -882,7 +884,7 @@ mod tests {
             nil
         );
 
-        let keyword = interpreter.intern_keyword_value(String::from("value1"));
+        let keyword = interpreter.intern_keyword_value("value1");
         let car = interpreter.make_cons_value(
             keyword,
             cdr
@@ -894,7 +896,7 @@ mod tests {
             nil
         );
 
-        let keyword = interpreter.intern_keyword_value(String::from("value2"));
+        let keyword = interpreter.intern_keyword_value("value2");
         let expected = interpreter.make_cons_value(
             keyword,
             cdr
@@ -909,7 +911,7 @@ mod tests {
             nil
         );
 
-        let keyword = interpreter.intern_keyword_value(String::from("value1"));
+        let keyword = interpreter.intern_keyword_value("value1");
         let car = interpreter.make_cons_value(
             keyword,
             cdr
@@ -921,7 +923,7 @@ mod tests {
             nil
         );
 
-        let keyword = interpreter.intern_keyword_value(String::from("value2"));
+        let keyword = interpreter.intern_keyword_value("value2");
         let car = interpreter.make_cons_value(
             keyword,
             cdr

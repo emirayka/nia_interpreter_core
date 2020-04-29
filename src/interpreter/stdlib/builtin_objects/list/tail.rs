@@ -13,7 +13,7 @@ pub fn tail(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:tail' takes one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -30,7 +30,7 @@ pub fn tail(
     } else {
         Error::invalid_argument_error(
             "Built-in function `list:tail' takes one list with values."
-        ).into_result()
+        ).into()
     }
 }
 

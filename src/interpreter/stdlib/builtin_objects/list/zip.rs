@@ -13,7 +13,7 @@ pub fn zip(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:zip' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -31,7 +31,7 @@ pub fn zip(
     if vector1.len() != vector2.len() {
         return Error::invalid_argument_error(
             "Built-in function `list:zip' takes two lists of equal length."
-        ).into_result();
+        ).into();
     }
 
     let mut result = Vec::new();

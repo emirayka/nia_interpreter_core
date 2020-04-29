@@ -13,7 +13,7 @@ pub fn send_text_type(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `action:send-text-type' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

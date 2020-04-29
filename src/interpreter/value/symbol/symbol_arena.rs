@@ -98,7 +98,7 @@ impl SymbolArena {
             Some(symbol) => symbol,
             _ => return Error::failure(
                 format!("Cannot find a symbol with id: {}", symbol_id.get_id())
-            ).into_result()
+            ).into()
         };
 
         self.mapping.remove(symbol.get_name());

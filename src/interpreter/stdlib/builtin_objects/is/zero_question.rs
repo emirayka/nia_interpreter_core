@@ -11,7 +11,7 @@ pub fn zero_question(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `is:zero?' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

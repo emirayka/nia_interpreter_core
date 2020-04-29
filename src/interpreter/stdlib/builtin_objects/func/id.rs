@@ -11,7 +11,7 @@ pub fn id(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `func:id' takes one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

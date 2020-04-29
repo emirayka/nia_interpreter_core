@@ -11,7 +11,7 @@ pub fn rem(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `%' must take exactly two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -20,32 +20,32 @@ pub fn rem(
         (Value::Integer(int1), Value::Integer(int2)) => match int2 {
             0 => return Error::zero_division_error(
                 &format!("Can't compute the remainder of {} on {}.", int1, int2)
-            ).into_result(),
+            ).into(),
             _ => Value::Integer(int1 % int2),
         },
         (Value::Integer(int1), Value::Float(float2)) => if float2 == 0.0 {
             return Error::zero_division_error(
                 &format!("Can't compute the remainder of {} on {}.", int1, float2)
-            ).into_result();
+            ).into();
         } else {
             Value::Float((int1 as f64) % float2)
         },
         (Value::Float(float1), Value::Integer(int2)) => match int2 {
             0 => return Error::zero_division_error(
                 &format!("Can't compute the remainder of {} on {}.", float1, int2)
-            ).into_result(),
+            ).into(),
             _ => Value::Float(float1 % (int2 as f64)),
         },
         (Value::Float(float1), Value::Float(float2)) => if float2 == 0.0 {
             return Error::zero_division_error(
                 &format!("Can't compute the remainder of {} on {}.", float1, float2)
-            ).into_result();
+            ).into();
         } else {
             Value::Float(float1 % float2)
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `%' must take only integer or float values."
-        ).into_result()
+        ).into()
     };
 
     Ok(result)

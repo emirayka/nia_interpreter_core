@@ -11,7 +11,7 @@ pub fn sub(
     if values.len() < 1 || values.len() > 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `-' must take exactly two argument"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -22,14 +22,14 @@ pub fn sub(
                 Some(int_result) => Value::Integer(int_result),
                 None => return Error::overflow_error(
                     &format!("Attempt to subtract values {} {} leads to overflow", int1, int2)
-                ).into_result()
+                ).into()
             },
             (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) - float2),
             (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 - (int2 as f64)),
             (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 - float2),
             _ => return Error::invalid_argument_error(
                 "Built-in function `-' takes only integers or float."
-            ).into_result()
+            ).into()
         }
     } else {
         match values.remove(0) {
@@ -37,7 +37,7 @@ pub fn sub(
             Value::Float(float) => Value::Float(-float),
             _ => return Error::invalid_argument_error(
                 "Built-in function `-' takes only integers or float."
-            ).into_result()
+            ).into()
         }
     };
 

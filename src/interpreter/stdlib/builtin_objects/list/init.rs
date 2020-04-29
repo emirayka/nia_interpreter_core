@@ -13,7 +13,7 @@ pub fn init(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:init' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -30,7 +30,7 @@ pub fn init(
     } else {
         return Error::invalid_argument_error(
             "Built-in function `list:init' takes a list, that has one value at least."
-        ).into_result()
+        ).into()
     }
 
 }

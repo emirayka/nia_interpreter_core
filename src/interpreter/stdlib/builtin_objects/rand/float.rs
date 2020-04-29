@@ -15,7 +15,7 @@ pub fn float(
     if values.len() > 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `rand:float' takes no more than two arguments."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -41,7 +41,7 @@ pub fn float(
     if min > max {
         return Error::invalid_argument_error(
             "Built-in function `rand:float' expects min <= max."
-        ).into_result()
+        ).into()
     }
 
     let mut rng = rand::thread_rng();

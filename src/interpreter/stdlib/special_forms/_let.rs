@@ -26,7 +26,7 @@ fn set_variable_via_cons(
         }
         _ => return Error::invalid_argument_error(
             "The first element of lists in the first argument of the special form `let' must be a symbol."
-        ).into_result()
+        ).into()
     };
 
     let cadr = interpreter.get_cadr(cons_id)
@@ -45,12 +45,12 @@ fn set_variable_via_cons(
             if interpreter.symbol_is_not_nil(symbol_id)? {
                 return Error::invalid_argument_error(
                     "The definitions of the special form `let' must have exactly two arguments."
-                ).into_result();
+                ).into();
             }
         }
         _ => return Error::invalid_argument_error(
             "The definitions of the special form `let' must have exactly two arguments."
-        ).into_result()
+        ).into()
     };
 
     interpreter.define_variable(
@@ -89,7 +89,7 @@ fn set_definition(
             if interpreter.symbol_is_nil(symbol_id)? {
                 return Error::invalid_argument_error(
                     "It's not possible to redefine `nil' via special form `let'."
-                ).into_result();
+                ).into();
             } else {
                 set_variable_to_nil(
                     interpreter,
@@ -100,7 +100,7 @@ fn set_definition(
         }
         _ => return Error::invalid_argument_error(
             "Invalid `let*' definitions."
-        ).into_result()
+        ).into()
     }
 }
 
@@ -130,7 +130,7 @@ pub fn _let(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Special form let must have at least one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -183,8 +183,8 @@ mod tests {
             (Value::Boolean(false), "#f"),
             (interpreter.intern_symbol_value("symbol"), "'symbol"),
             (interpreter.intern_symbol_value("symbol"), "(quote symbol)"),
-            (interpreter.intern_string_value(String::from("string")), "\"string\""),
-            (interpreter.intern_keyword_value(String::from("keyword")), ":keyword"),
+            (interpreter.intern_string_value("string"), "\"string\""),
+            (interpreter.intern_keyword_value("keyword"), ":keyword"),
             (interpreter.make_cons_value(symbol, nil), "'(symbol)"),
         );
 

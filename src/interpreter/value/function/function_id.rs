@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::interpreter::value::Value;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -18,5 +20,11 @@ impl FunctionId {
 
     pub fn to_value(&self) -> Value {
         Value::Function(*self)
+    }
+}
+
+impl fmt::Display for FunctionId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.id)
     }
 }

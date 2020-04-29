@@ -11,7 +11,7 @@ pub fn read_as_object_id(
         Value::Object(object_id) => object_id,
         _ => return Error::invalid_argument_error(
             "Expected an object."
-        ).into_result()
+        ).into()
     };
 
     Ok(object_id)

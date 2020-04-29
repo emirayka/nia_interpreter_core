@@ -13,7 +13,7 @@ pub fn clear(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `bit:clear' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -26,7 +26,7 @@ pub fn clear(
     if index < 0 || index > 63 {
         return Error::invalid_argument_error(
             "Built-in function `bit:clear' takes value between [0; 64) as bit index."
-        ).into_result()
+        ).into()
     }
 
     let value = library::read_as_i64(

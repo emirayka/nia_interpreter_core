@@ -14,7 +14,7 @@ pub fn equal_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
         "Built-in function `string:equal?' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

@@ -9,7 +9,7 @@ pub fn check_value_is_cons(
     match value {
         Value::Cons(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected cons")
-            .into_result()
+            .into()
     }
 }
 

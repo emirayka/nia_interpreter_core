@@ -66,7 +66,7 @@ impl ObjectArena {
             Some(_) => Ok(()),
             _ => Error::failure(
                 format!("Cannot find an object with id: {}", object_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -97,7 +97,7 @@ impl ObjectArena {
             Some(object) => Ok(object.get_gc_items()),
             _ => Error::failure(
                 format!("Cannot find an object with id: {}", object_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 

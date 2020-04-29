@@ -7,7 +7,7 @@ pub fn read_as_positive_i64(interpreter: &Interpreter, value: Value) -> Result<i
         Value::Integer(int) if int > 0 => Ok(int),
         _ => Error::invalid_argument_error(
             "Expected positive int."
-        ).into_result()
+        ).into()
     }
 }
 

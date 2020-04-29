@@ -59,7 +59,7 @@ impl EnvironmentArena {
             Some(env) => Ok(env.get_parent()),
             _ => Error::failure(
                 format!("Cannot find an environment with id: {}", environment_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -90,7 +90,7 @@ impl EnvironmentArena {
             Some(_) => Ok(()),
             _ => Error::failure(
                 format!("Cannot find an environment with id: {}", environment_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -215,7 +215,7 @@ impl EnvironmentArena {
         } else {
             Error::generic_execution_error(
                 "Cannot find a variable to set."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -234,7 +234,7 @@ impl EnvironmentArena {
         } else {
             Error::generic_execution_error(
                 "Cannot find a function to set."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -285,7 +285,7 @@ impl EnvironmentArena {
             Some(env) => env,
             _ => return Error::failure(
                 format!("Cannot find an environment with id: {}", environment_id.get_id())
-            ).into_result()
+            ).into()
         };
 
         Ok(environment.get_gc_items())

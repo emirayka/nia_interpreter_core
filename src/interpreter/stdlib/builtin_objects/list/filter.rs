@@ -13,7 +13,7 @@ pub fn filter(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:filter?' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -45,7 +45,7 @@ pub fn filter(
             Value::Boolean(false) => {},
             _ => return Error::invalid_argument_error(
                 "Built-in function `filter' takes a function that returns a boolean value."
-            ).into_result()
+            ).into()
         }
     }
 

@@ -13,7 +13,7 @@ pub fn car(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `car' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -46,9 +46,9 @@ mod tests {
             ("(car (cons 1.1 1))", Value::Float(1.1)),
             ("(car (cons #t 1))", Value::Boolean(true)),
             ("(car (cons #f 1))", Value::Boolean(false)),
-            ("(car (cons \"string\" 1))", interpreter.intern_string_value(String::from("string"))),
+            ("(car (cons \"string\" 1))", interpreter.intern_string_value("string")),
             ("(car (cons 'symbol 1))", interpreter.intern_symbol_value("symbol")),
-            ("(car (cons :keyword 1))", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(car (cons :keyword 1))", interpreter.intern_keyword_value("keyword")),
             ("(car (cons {} 1))", interpreter.make_object_value()),
             ("(car (cons (cons 1 2) 1))", interpreter.make_cons_value(Value::Integer(1), Value::Integer(2))),
         );

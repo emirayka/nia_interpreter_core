@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
@@ -22,7 +24,7 @@ pub fn read_as_let_definitions(
                         if vector.len() != 2 {
                             return Error::generic_execution_error(
                                 "If let definition is a list, it must have 2 items exactly."
-                            ).into_result();
+                            ).into();
                         }
 
                         let car = vector.remove(0);
@@ -32,9 +34,10 @@ pub fn read_as_let_definitions(
                             car,
                         )?;
 
+                        let car_symbol_id = car.try_into()?;
                         library::check_if_symbol_assignable(
                             interpreter,
-                            car.as_symbol_id(),
+                            car_symbol_id,
                         )?;
                     },
                     Value::Symbol(symbol_id) => {
@@ -45,7 +48,7 @@ pub fn read_as_let_definitions(
                     },
                     _ => return Error::invalid_argument_error(
                         "Let definitions consist of assignable symbols or lists of structure `(symbol value)'."
-                    ).into_result()
+                    ).into()
                 }
             }
 
@@ -56,10 +59,10 @@ pub fn read_as_let_definitions(
                 Vec::new()
             } else {
                 return Error::invalid_argument_error("")
-                    .into_result();
+                    .into();
             }
         }
-        _ => return Error::invalid_argument_error("").into_result()
+        _ => return Error::invalid_argument_error("").into()
     };
 
     Ok(definitions)

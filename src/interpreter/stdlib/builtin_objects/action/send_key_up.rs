@@ -13,7 +13,7 @@ pub fn send_key_up(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `action:send-key-up' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -32,7 +32,7 @@ pub fn send_key_up(
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `action:send-key-up' takes only an integer or string."
-        ).into_result()
+        ).into()
     };
 
     let key_up_symbol_value = interpreter.intern_symbol_value("key-up");

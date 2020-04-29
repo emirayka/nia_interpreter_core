@@ -11,7 +11,7 @@ pub fn keyword(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `to:keyword' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -20,14 +20,14 @@ pub fn keyword(
         Value::String(string_id) => {
             let string = interpreter.get_string(string_id)?.get_string().clone();
 
-            let keyword = interpreter.intern_keyword_value(string);
+            let keyword = interpreter.intern_keyword_value(&string);
 
             Ok(keyword)
         },
         keyword @ Value::Keyword(_) => Ok(keyword),
         _ => Error::invalid_argument_error(
             "Only keywords or strings can be casted to keyword."
-        ).into_result()
+        ).into()
     }
 }
 

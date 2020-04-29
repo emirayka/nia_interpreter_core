@@ -13,7 +13,7 @@ pub fn equal_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `equal?' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

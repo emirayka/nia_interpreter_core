@@ -13,7 +13,7 @@ pub fn all_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:all?' takes two arguments exactly."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -43,7 +43,7 @@ pub fn all_question(
             },
             _ => return Error::invalid_argument_error(
                 "Built-in function `list:all?' takes a function that returns boolean value."
-            ).into_result()
+            ).into()
         }
     }
     

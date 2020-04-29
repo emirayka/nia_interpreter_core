@@ -11,7 +11,7 @@ pub fn read_as_function_id(
         Value::Function(function_id) => function_id,
         _ => return Error::invalid_argument_error(
             "Expected a function."
-        ).into_result()
+        ).into()
     };
 
     Ok(function_id)
@@ -37,6 +37,7 @@ mod tests {
 
         for code in code_vector {
             let result = interpreter.execute(code).unwrap();
+
             library::read_as_function_id(
                 &mut interpreter,
                 result
@@ -53,9 +54,9 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
-            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_string_value("test"),
             interpreter.intern_symbol_value("test"),
-            interpreter.intern_keyword_value(String::from("test")),
+            interpreter.intern_keyword_value("test"),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
         );

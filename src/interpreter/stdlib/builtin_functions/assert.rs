@@ -11,7 +11,7 @@ pub fn assert(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `assert' takes exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -23,12 +23,12 @@ pub fn assert(
         },
         Value::Boolean(false) => {
             Error::assertion_error("Assertion failed: ")
-                .into_result()
+                .into()
         },
         _ => {
             Error::invalid_argument_error(
                 "Built-in function `assert' takes exactly one boolean argument."
-            ).into_result()
+            ).into()
         }
     }
 }

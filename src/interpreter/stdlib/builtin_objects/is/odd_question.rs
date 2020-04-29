@@ -11,7 +11,7 @@ pub fn odd_question(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `is:odd?' one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

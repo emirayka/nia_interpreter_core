@@ -13,7 +13,7 @@ pub fn send_mouse_move_to(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `action:send-mouse-move-to' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

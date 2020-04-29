@@ -34,7 +34,7 @@ fn parse_key_id_from_vector(
         Ok(key_id) => key_id,
         Err(error) => {
             println!("Cannot parse key id, caused by:");
-            error.describe();
+            println!("{}", error);
             return Err(());
         }
     };
@@ -67,7 +67,7 @@ fn parse_button_id_from_vector(
         },
         Err(error) => {
             println!("Cannot parse button id, caused by:");
-            error.describe();
+            println!("{}", error);
             return Err(());
         }
     };
@@ -86,7 +86,7 @@ fn send_events(
         Ok(actions_value) => actions_value,
         Err(error) => {
             println!("Cannot parse event queue, caused by: ");
-            error.describe();
+            println!("{}", error);
             return Err(());
         }
     };
@@ -98,7 +98,7 @@ fn send_events(
         Ok(vector) => vector.into_iter().rev().collect::<Vec<Value>>(),
         Err(error) => {
             println!("Cannot parse event queue, caused by: ");
-            error.describe();
+            println!("{}", error);
             return Err(());
         }
     };
@@ -112,7 +112,7 @@ fn send_events(
         Ok(_) => {}
         Err(error) => {
             println!("Cannot clear event queue, caused by: ");
-            error.describe();
+            println!("{}", error);
             return Err(());
         }
     };
@@ -125,7 +125,7 @@ fn send_events(
             Ok(vector) => vector,
             Err(error) => {
                 println!("Cannot parse event, caused by: ");
-                error.describe();
+                println!("{}", error);
                 continue;
             }
         };
@@ -144,14 +144,14 @@ fn send_events(
                     Ok(symbol_name) => symbol_name.clone(),
                     Err(error) => {
                         println!("Cannot parse event name");
-                        error.describe();
+                        println!("{}", error);
                         continue;
                     }
                 }
             }
             Err(error) => {
                 println!("Cannot parse event, caused by: ");
-                error.describe();
+                println!("{}", error);
                 continue;
             }
         };
@@ -210,7 +210,7 @@ fn send_events(
                 Ok(x) => x,
                 Err(error) => {
                     println!("Cannot parse event, invalid value");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };
@@ -221,7 +221,7 @@ fn send_events(
                 Ok(x) => x,
                 Err(error) => {
                     println!("Cannot parse event, invalid value");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };
@@ -239,7 +239,7 @@ fn send_events(
                 Ok(x) => x,
                 Err(error) => {
                     println!("Cannot parse event, invalid value");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };
@@ -250,7 +250,7 @@ fn send_events(
                 Ok(x) => x,
                 Err(error) => {
                     println!("Cannot parse event, invalid value");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };
@@ -274,7 +274,7 @@ fn send_events(
                 Ok(string) => string.clone(),
                 Err(error) => {
                     println!("Cannot parse event cause:");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };
@@ -293,7 +293,7 @@ fn send_events(
                 Ok(string) => string.clone(),
                 Err(error) => {
                     println!("Cannot parse event cause:");
-                    error.describe();
+                    println!("{}", error);
                     continue;
                 }
             };

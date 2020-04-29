@@ -8,7 +8,7 @@ pub fn _continue(
     _environment_id: EnvironmentId,
     _values: Vec<Value>
 ) -> Result<Value, Error> {
-    Error::continue_error().into_result()
+    Error::continue_error().into()
 }
 
 #[cfg(test)]

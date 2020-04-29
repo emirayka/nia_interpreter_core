@@ -13,7 +13,7 @@ pub fn throw(
     if values.len() > 2 {
         return Error::invalid_argument_count_error(
             "Special form `throw' must be called with no more than two arguments"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -27,7 +27,7 @@ pub fn throw(
         interpreter.intern_symbol_value("generic-error")
     };
 
-    let symbol = library::read_as_symbol_id(
+    let symbol_id = library::read_as_symbol_id(
         interpreter,
         evaluated_first_argument
     )?;
@@ -39,7 +39,7 @@ pub fn throw(
             Value::String(string_id) => interpreter.get_string(string_id),
             _ => return Error::invalid_argument_error(
                 "The second argument of special form `throw' (if any) must be a string."
-            ).into_result()
+            ).into()
         };
 
         string
@@ -53,7 +53,7 @@ pub fn throw(
     };
 
     let symbol_name = interpreter.get_symbol_name(
-        symbol
+        symbol_id
     ).map_err(|err| Error::generic_execution_error_caused(
         "",
         err
@@ -62,7 +62,7 @@ pub fn throw(
     Error::generic_error(
         symbol_name.clone(),
         &message
-    ).into_result()
+    ).into()
 }
 
 #[cfg(test)]

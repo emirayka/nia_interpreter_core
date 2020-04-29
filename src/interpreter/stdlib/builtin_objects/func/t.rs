@@ -11,7 +11,7 @@ pub fn t(
     if values.len() != 0 {
         return Error::invalid_argument_count_error(
             "Built-in function `func:t' takes no arguments."
-        ).into_result();
+        ).into();
     }
 
     Ok(Value::Boolean(true))

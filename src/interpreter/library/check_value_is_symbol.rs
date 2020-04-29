@@ -9,7 +9,7 @@ pub fn check_value_is_symbol(
     match value {
         Value::Symbol(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected symbol")
-            .into_result()
+            .into()
     }
 }
 

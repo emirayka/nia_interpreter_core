@@ -8,7 +8,7 @@ pub fn _break(
     _environment_id: EnvironmentId,
     _values: Vec<Value>
 ) -> Result<Value, Error> {
-    Error::break_error().into_result()
+    Error::break_error().into()
 }
 
 #[cfg(test)]

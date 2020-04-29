@@ -27,7 +27,7 @@ pub fn get_last_item_from_root_list(
     if items.len() == 0 {
         return Error::generic_execution_error(
             "Cannot return item from empty list."
-        ).into_result();
+        ).into();
     }
 
     Ok(*items.last().unwrap())

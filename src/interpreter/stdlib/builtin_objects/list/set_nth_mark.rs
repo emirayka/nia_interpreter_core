@@ -13,7 +13,7 @@ pub fn set_nth_mark(
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:set-nth!' takes three arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

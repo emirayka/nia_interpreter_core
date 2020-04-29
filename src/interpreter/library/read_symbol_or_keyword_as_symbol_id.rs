@@ -19,7 +19,7 @@ pub fn read_symbol_or_keyword_as_symbol_id(
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `object:get' takes only symbols or keywords as its second argument."
-        ).into_result()
+        ).into()
     };
 
     Ok(symbol_id)
@@ -49,7 +49,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let expected = interpreter.intern("test");
-        let value = interpreter.intern_keyword_value(String::from("test"));
+        let value = interpreter.intern_keyword_value("test");
         let result = read_symbol_or_keyword_as_symbol_id(
             &mut interpreter,
             value
@@ -67,7 +67,7 @@ mod tests {
             Value::Float(1.1),
             Value::Boolean(true),
             Value::Boolean(false),
-            interpreter.intern_string_value(String::from("test")),
+            interpreter.intern_string_value("test"),
             interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
             interpreter.make_object_value(),
             interpreter.execute("#(+ %1 %2)").unwrap()

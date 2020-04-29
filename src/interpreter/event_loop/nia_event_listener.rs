@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::mpsc;
 use std::thread;
 use std::sync::mpsc::{TryRecvError, Sender};
+use std::convert::{TryFrom, TryInto};
 
 use nia_events::{KeyChordPart, EventListener};
 use nia_events::Event;
@@ -16,7 +17,6 @@ use nia_state_machine::StateMachineResult;
 use crate::interpreter::{Interpreter, Value, Action, Error};
 
 use crate::interpreter::library;
-use std::convert::TryFrom;
 
 fn read_keyboards(
     interpreter: &mut Interpreter
@@ -32,7 +32,7 @@ fn read_keyboards(
     )?;
 
     let registered_keyboards = interpreter.list_to_vec(
-        registered_keyboards.as_cons_id()
+        registered_keyboards.try_into()?
     )?;
 
     let mut keyboards = Vec::new();
@@ -43,8 +43,10 @@ fn read_keyboards(
             registered_keyboard,
         )?;
 
+        let registered_keyboard_cons_id = registered_keyboard.try_into()?;
+
         let registered_keyboard = interpreter.list_to_vec(
-            registered_keyboard.as_cons_id()
+            registered_keyboard_cons_id
         )?;
 
         let path = library::read_as_string(interpreter, registered_keyboard[0])?;
@@ -90,7 +92,8 @@ fn read_key_chords(
 ) -> Result<Vec<KeyChord>, Error> {
     library::check_value_is_cons(interpreter, key_chords_value)?;
 
-    let key_chords_values = interpreter.list_to_vec(key_chords_value.as_cons_id())?;
+    let key_chords_cons_id = key_chords_value.try_into()?;
+    let key_chords_values = interpreter.list_to_vec(key_chords_cons_id)?;
     let mut key_chords = Vec::new();
 
     for key_chord_value in key_chords_values {
@@ -108,7 +111,8 @@ fn read_mapping(
 ) -> Result<(Vec<KeyChord>, Value), Error> {
     library::check_value_is_cons(interpreter, mapping_value)?;
 
-    let values = interpreter.list_to_vec(mapping_value.as_cons_id())?;
+    let mapping_cons_id = mapping_value.try_into()?;
+    let values = interpreter.list_to_vec(mapping_cons_id)?;
     let key_chords = read_key_chords(interpreter, values[0])?;
     let function = values[1];
 

@@ -11,7 +11,7 @@ pub fn min(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Built-in function `math:min' takes one argument at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -42,7 +42,7 @@ pub fn min(
             },
             _ => return Error::invalid_argument_error(
                 "Built-in function `math:min' takes only integer or float arguments"
-            ).into_result()
+            ).into()
         }
     }
 

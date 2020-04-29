@@ -12,7 +12,7 @@ pub fn repeat(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:repeat' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -25,7 +25,7 @@ pub fn repeat(
     if count < 0 {
         return Error::invalid_argument_error(
             "The first argument of built-in functino `string:repeat' must be a positive number"
-        ).into_result();
+        ).into();
     }
 
     let string = library::read_as_string(

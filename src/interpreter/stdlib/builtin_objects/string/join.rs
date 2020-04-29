@@ -12,7 +12,7 @@ pub fn join(
     if values.len() < 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:join' takes two arguments at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -37,13 +37,13 @@ pub fn join(
                 } else {
                     return Error::invalid_argument_error(
                         "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
-                    ).into_result();
+                    ).into();
                 }
             },
             value @ Value::String(_) => vec!(value),
             _ => return Error::invalid_argument_error(
                 "If built-in function `string:join' was called with two arguments, the latter must be a cons or string."
-            ).into_result()
+            ).into()
         }
     } else {
         values

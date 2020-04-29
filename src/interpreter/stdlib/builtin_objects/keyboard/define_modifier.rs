@@ -15,7 +15,7 @@ pub fn define_modifier(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `keyboard:define-modifier' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

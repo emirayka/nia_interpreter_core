@@ -11,7 +11,7 @@ pub fn neq_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `neq?' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

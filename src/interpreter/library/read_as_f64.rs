@@ -7,7 +7,7 @@ pub fn read_as_f64(interpreter: &Interpreter, value: Value) -> Result<f64, Error
         Value::Float(float) => Ok(float),
         _ => Error::invalid_argument_error(
             "Expected int."
-        ).into_result()
+        ).into()
     }
 }
 

@@ -11,7 +11,7 @@ pub fn object_new(
     if values.len() > 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `object:new' must take zero or one arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -22,7 +22,7 @@ pub fn object_new(
             Value::Object(proto_id) => Some(proto_id),
             _ => return Error::invalid_argument_error(
                 "The first argument of `object:new' must be an object."
-            ).into_result()
+            ).into()
         }
     } else {
         None

@@ -11,7 +11,7 @@ pub fn ceil(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `math:ceil' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -21,7 +21,7 @@ pub fn ceil(
         Value::Float(float) => Ok(Value::Integer(float.ceil() as i64)),
         _ => return Error::invalid_argument_error(
             "Built-in function `math:ceil' must take only integer or float values."
-        ).into_result()
+        ).into()
     }
 }
 

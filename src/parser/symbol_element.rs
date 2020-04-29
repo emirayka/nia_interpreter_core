@@ -18,11 +18,7 @@ impl SymbolElement {
         }
     }
 
-    pub fn get_value(self) -> String {
-        self.value
-    }
-
-    pub fn get_value_ref(&self) -> &String {
+    pub fn get_value(&self) -> &String {
         &self.value
     }
 }

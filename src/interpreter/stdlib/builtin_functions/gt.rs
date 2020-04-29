@@ -11,7 +11,7 @@ pub fn gt(
     if values.len() < 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `>' takes two argument at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -43,7 +43,7 @@ pub fn gt(
             },
             _ => return Error::invalid_argument_error(
                 "Built-in function `>' takes only integer or float arguments"
-            ).into_result()
+            ).into()
         }
 
         previous = current;

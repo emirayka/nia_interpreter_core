@@ -47,7 +47,7 @@ pub fn pow(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `math:pow' must take exactly two argument"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -57,14 +57,14 @@ pub fn pow(
             Some(value) => Ok(value),
             None => Error::overflow_error(
                 &format!("Cannot compute pow of {} on {}", int1, int2)
-            ).into_result()
+            ).into()
         },
         (Value::Integer(int1), Value::Float(float2)) => Ok(Value::Float((int1 as f64).powf( float2))),
         (Value::Float(float1), Value::Integer(int2)) => Ok(Value::Float(float1.powf(int2 as f64))),
         (Value::Float(float1), Value::Float(float2)) => Ok(Value::Float(float1.powf(float2))),
         _ => return Error::invalid_argument_error(
             "Built-in function `math:pow' must take either integers or float."
-        ).into_result()
+        ).into()
     }
 }
 

@@ -14,7 +14,7 @@ pub fn apply(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `func:apply' takes two argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -45,7 +45,7 @@ pub fn apply(
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `func:apply' can invoke only built-in or interpreted functions."
-        ).into_result()
+        ).into()
     };
 
     Ok(result)

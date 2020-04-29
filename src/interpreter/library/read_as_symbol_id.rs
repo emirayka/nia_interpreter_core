@@ -11,7 +11,7 @@ pub fn read_as_symbol_id(
         Value::Symbol(symbol_id) => symbol_id,
         _ => return Error::invalid_argument_error(
             "Expected symbol."
-        ).into_result()
+        ).into()
     };
 
     Ok(symbol_id)

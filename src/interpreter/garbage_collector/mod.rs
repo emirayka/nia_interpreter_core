@@ -251,7 +251,7 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let string_id = interpreter.execute("\"string\"")
-            .unwrap().as_string_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_string(string_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -264,7 +264,7 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let keyword_id = interpreter.execute(":some-unused-keyword")
-            .unwrap().as_keyword_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_keyword(keyword_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -277,7 +277,7 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let symbol_id = interpreter.execute("'some-not-used-long-named-symbol")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_symbol(symbol_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -290,7 +290,7 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let cons_id = interpreter.execute("(cons 1 2)")
-            .unwrap().as_cons_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_car(cons_id).is_ok());
         assert!(interpreter.get_cdr(cons_id).is_ok());
@@ -305,7 +305,7 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let object_id = interpreter.execute("{}")
-            .unwrap().as_object_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_object_proto(object_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -343,7 +343,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
         let root_environment = interpreter.get_root_environment();
 
-        let function_id = interpreter.execute("(fn () 1)").unwrap().as_function_id();
+        let function_id = interpreter.execute("(fn () 1)").unwrap().try_into();
 
         assert!(interpreter.get_function(function_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -355,7 +355,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
         let root_environment = interpreter.get_root_environment();
 
-        let function_id = interpreter.execute("(function (macro () 1))").unwrap().as_function_id();
+        let function_id = interpreter.execute("(function (macro () 1))").unwrap().try_into();
 
         assert!(interpreter.get_function(function_id).is_ok());
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
@@ -368,12 +368,12 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let symbol_1 = interpreter.execute("'some-unused-symbol-1")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
         let symbol_2 = interpreter.execute("'some-unused-symbol-2")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let cons_id = interpreter.execute("(defv kekurus (cons 'some-unused-symbol-1 'some-unused-symbol-2)) kekurus")
-            .unwrap().as_cons_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_car(cons_id).is_ok());
         assert!(interpreter.get_cdr(cons_id).is_ok());
@@ -394,27 +394,27 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let item_key = interpreter.execute(":some-unused-keyword-1")
-            .unwrap().as_keyword_id();
+            .unwrap().try_into();
 
         let item_key_symbol = interpreter.execute("'some-unused-keyword-1")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let item_value = interpreter.execute(":some-unused-keyword-2")
             .unwrap();
 
         let object_id = interpreter.execute("(defv kekurus {:some-unused-keyword-1 :some-unused-keyword-2}) kekurus")
-            .unwrap().as_object_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_keyword(item_key).is_ok());
         assert!(interpreter.get_symbol(item_key_symbol).is_ok());
-        assert!(interpreter.get_keyword(item_value.as_keyword_id()).is_ok());
+        assert!(interpreter.get_keyword(item_value.try_into()).is_ok());
         assert!(interpreter.get_object_proto(object_id).is_ok());
 
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
         assert!(interpreter.get_keyword(item_key).is_err());
         assert!(interpreter.get_symbol(item_key_symbol).is_ok());
-        assert!(interpreter.get_keyword(item_value.as_keyword_id()).is_ok());
+        assert!(interpreter.get_keyword(item_value.try_into()).is_ok());
         assert!(interpreter.get_object_proto(object_id).is_ok());
     }
 
@@ -425,10 +425,10 @@ mod tests {
 
         let function_id = interpreter.execute(
             "(defv some-kekurus-variable (fn () 'some-unused-symbol)) some-kekurus-variable"
-        ).unwrap().as_function_id();
+        ).unwrap().try_into();
 
         let symbol_id = interpreter.execute("'some-unused-symbol")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
 
@@ -442,14 +442,14 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let symbol1 = interpreter.execute("'kekurus-1")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let symbol2 = interpreter.execute("'kekurus-1")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let function_id = interpreter.execute(
             "(defv kekurus (let ((kekurus-1 1) (kekurus-2 2)) (fn () (+ 1 2)))) kekurus"
-        ).unwrap().as_function_id();
+        ).unwrap().try_into();
 
         assert!(interpreter.get_function(function_id).is_ok());
         assert!(interpreter.get_symbol(symbol1).is_ok());
@@ -468,16 +468,16 @@ mod tests {
         let root_environment = interpreter.get_root_environment();
 
         let symbol1 = interpreter.execute("'kekurus-arg-1")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let symbol2 = interpreter.execute("'kekurus-arg-2")
-            .unwrap().as_symbol_id();
+            .unwrap().try_into();
 
         let function1 = interpreter.execute("(defv kekurus-1 (fn (#opt (a 'kekurus-arg-1)) 1)) kekurus-1")
-            .unwrap().as_function_id();
+            .unwrap().try_into();
 
         let function2 = interpreter.execute("(defv kekurus-2 (fn (#opt (a 'kekurus-arg-2)) 1)) kekurus-2")
-            .unwrap().as_function_id();
+            .unwrap().try_into();
 
         assert!(interpreter.get_function(function1).is_ok());
         assert!(interpreter.get_function(function2).is_ok());
@@ -535,14 +535,14 @@ mod tests {
         assert!(interpreter.get_symbol(pairs[5].0).is_ok());
         assert!(interpreter.get_symbol(pairs[6].0).is_ok());
 
-        assert!(interpreter.get_string(pairs[0].1.as_string_id()).is_ok());
-        assert!(interpreter.get_keyword(pairs[1].1.as_keyword_id()).is_ok());
-        assert!(interpreter.get_symbol(pairs[2].1.as_symbol_id()).is_ok());
-        assert!(interpreter.get_car(pairs[3].1.as_cons_id()).is_ok());
-        assert!(interpreter.get_cdr(pairs[3].1.as_cons_id()).is_ok());
-        assert!(interpreter.get_object_proto(pairs[4].1.as_object_id()).is_ok());
-        assert!(interpreter.get_function(pairs[5].1.as_function_id()).is_ok());
-        assert!(interpreter.get_function(pairs[6].1.as_function_id()).is_ok());
+        assert!(interpreter.get_string(pairs[0].1.try_into()).is_ok());
+        assert!(interpreter.get_keyword(pairs[1].1.try_into()).is_ok());
+        assert!(interpreter.get_symbol(pairs[2].1.try_into()).is_ok());
+        assert!(interpreter.get_car(pairs[3].1.try_into()).is_ok());
+        assert!(interpreter.get_cdr(pairs[3].1.try_into()).is_ok());
+        assert!(interpreter.get_object_proto(pairs[4].1.try_into()).is_ok());
+        assert!(interpreter.get_function(pairs[5].1.try_into()).is_ok());
+        assert!(interpreter.get_function(pairs[6].1.try_into()).is_ok());
 
         for symbol_id in symbols {
             assert!(interpreter.get_symbol(symbol_id).is_ok());

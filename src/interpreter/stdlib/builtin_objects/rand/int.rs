@@ -15,7 +15,7 @@ pub fn int(
     if values.len() > 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `rand:int' takes no more than two arguments."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -41,7 +41,7 @@ pub fn int(
     if min > max {
         return Error::invalid_argument_error(
             "Built-in function `rand:int' expects min <= max."
-        ).into_result()
+        ).into()
     }
 
     let mut rng = rand::thread_rng();

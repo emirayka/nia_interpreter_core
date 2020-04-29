@@ -13,7 +13,7 @@ pub fn quote(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Special form `quote' must be called with exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let first_argument = values.remove(0);
@@ -45,9 +45,9 @@ mod tests {
             ("(quote 1.1)", Value::Float(1.1)),
             ("(quote #t)", Value::Boolean(true)),
             ("(quote #f)", Value::Boolean(false)),
-            ("(quote :test)", interpreter.intern_keyword_value(String::from("test"))),
+            ("(quote :test)", interpreter.intern_keyword_value("test")),
             ("(quote cute-symbol)", interpreter.intern_symbol_value("cute-symbol")),
-            ("(quote \"test\")", interpreter.intern_string_value(String::from("test"))),
+            ("(quote \"test\")", interpreter.intern_string_value("test")),
             ("(quote (1 2))", cons),
         );
 
@@ -76,9 +76,9 @@ mod tests {
             ("'1.1", Value::Float(1.1)),
             ("'#t", Value::Boolean(true)),
             ("'#f", Value::Boolean(false)),
-            ("':test", interpreter.intern_keyword_value(String::from("test"))),
+            ("':test", interpreter.intern_keyword_value("test")),
             ("'cute-symbol", interpreter.intern_symbol_value("cute-symbol")),
-            ("'\"test\"", interpreter.intern_string_value(String::from("test"))),
+            ("'\"test\"", interpreter.intern_string_value("test")),
             ("'(1 2)", cons),
         );
 

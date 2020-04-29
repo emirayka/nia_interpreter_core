@@ -8,7 +8,7 @@ pub fn read_as_cons_id(interpreter: &Interpreter, value: Value) -> Result<ConsId
         Value::Cons(cons_id) => cons_id,
         _ => return Error::invalid_argument_error(
             "Expected cons cell."
-        ).into_result()
+        ).into()
     };
 
     Ok(cons_id)

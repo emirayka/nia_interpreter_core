@@ -30,7 +30,7 @@ pub fn execute_function(
         },
         _ => Error::invalid_argument_error(
             ""
-        ).into_result()
+        ).into()
     }
 }
 
@@ -63,7 +63,7 @@ mod tests {
         for spec in specs {
             let function_id = interpreter.execute(spec.0)
                 .unwrap()
-                .as_function_id();
+                .try_into();
 
             let arguments = execute_forms(&mut interpreter, spec.1);
             let expected = interpreter.execute(spec.2).unwrap();
@@ -96,7 +96,7 @@ mod tests {
         for spec in specs {
             let function_id = interpreter.execute(spec.0)
                 .unwrap()
-                .as_function_id();
+                .try_into();
 
             let arguments = execute_forms(&mut interpreter, spec.1);
             let environment_id = interpreter.get_root_environment();

@@ -25,7 +25,7 @@ pub fn iterate_through_list(
                 } else {
                     return Error::generic_execution_error(
                         "Invalid list"
-                    ).into_result()
+                    ).into()
                 }
             },
             Value::Cons(cons_id) => {
@@ -34,7 +34,7 @@ pub fn iterate_through_list(
             },
             _ => return Error::generic_execution_error(
                 "Invalid list"
-            ).into_result()
+            ).into()
         };
     }
 

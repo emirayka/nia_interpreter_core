@@ -13,7 +13,7 @@ pub fn register(
     if values.len() < 2 || values.len() > 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `keyboard:register' takes two or three arguments."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;

@@ -13,7 +13,7 @@ pub fn shift_right(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `bit:shift-right' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -26,7 +26,7 @@ pub fn shift_right(
     if shift < 0 {
         return Error::invalid_argument_error(
             "Built-in function `bit:shift-right' takes positive shift."
-        ).into_result()
+        ).into()
     }
 
     let value = library::read_as_i64(
@@ -38,7 +38,7 @@ pub fn shift_right(
         Some(result) => result,
         _ => return Error::overflow_error(
             "Overflow"
-        ).into_result()
+        ).into()
     };
 
     Ok(Value::Integer(result))

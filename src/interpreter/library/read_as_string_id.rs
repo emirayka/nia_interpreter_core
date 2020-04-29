@@ -11,7 +11,7 @@ pub fn read_as_string_id(
         Value::String(string_id) => string_id,
         _ => return Error::invalid_argument_error(
             "Expected string."
-        ).into_result()
+        ).into()
     };
 
     Ok(string_id)
@@ -27,7 +27,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let value = interpreter.intern_string_value(String::from("test"));
-        let expected = value.as_string_id();
+        let expected = value.try_into();
 
         let result = read_as_string_id(
             &mut interpreter,

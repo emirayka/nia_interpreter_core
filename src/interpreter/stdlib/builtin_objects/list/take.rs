@@ -13,7 +13,7 @@ pub fn take(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:take' takes two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -31,7 +31,7 @@ pub fn take(
     if values.len() < count {
         return Error::invalid_argument_count_error(
             "Built-in function `list:take' takes a list that has length greater than count."
-        ).into_result();
+        ).into();
     }
 
     values.drain(count..);

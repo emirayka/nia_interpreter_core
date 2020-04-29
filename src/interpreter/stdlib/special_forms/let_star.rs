@@ -12,7 +12,7 @@ pub fn let_star(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Special form `let*' must have at least one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -80,8 +80,8 @@ mod tests {
             ("(let* ((value #f)) value)", Value::Boolean(false)),
             ("(let* ((value 'symbol)) value)", interpreter.intern_symbol_value("symbol")),
             ("(let* ((value (quote symbol))) value)", interpreter.intern_symbol_value("symbol")),
-            ("(let* ((value \"string\")) value)", interpreter.intern_string_value(String::from("string"))),
-            ("(let* ((value :keyword)) value)", interpreter.intern_keyword_value(String::from("keyword"))),
+            ("(let* ((value \"string\")) value)", interpreter.intern_string_value("string")),
+            ("(let* ((value :keyword)) value)", interpreter.intern_keyword_value("keyword")),
             ("(let* ((value '(symbol))) value)", interpreter.make_cons_value(symbol, nil)),
         );
 

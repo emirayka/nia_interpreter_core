@@ -13,7 +13,7 @@ pub fn _match(
     if values.len() < 1 {
         return Error::invalid_argument_count_error(
             ""
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -73,7 +73,7 @@ pub fn _match(
         },
         _ => Error::generic_execution_error(
             ""
-        ).into_result()
+        ).into()
     }
 }
 

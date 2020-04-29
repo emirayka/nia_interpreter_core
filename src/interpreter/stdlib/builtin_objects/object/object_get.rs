@@ -13,7 +13,7 @@ pub fn object_get(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `object:get' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -46,7 +46,7 @@ pub fn object_get(
 
             return Error::generic_execution_error(
                 message
-            ).into_result()
+            ).into()
         }
     }
 }

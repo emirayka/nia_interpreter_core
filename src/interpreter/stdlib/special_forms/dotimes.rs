@@ -51,7 +51,7 @@ pub fn dotimes(
     if values.len() < 1 {
         return Error::invalid_argument_count_error(
             "Special form dotimes`' takes one argument at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -63,7 +63,7 @@ pub fn dotimes(
     if binding.len() != 2 {
         return Error::invalid_argument_error(
             "Special form `dotimes' takes 2 item list as its first argument."
-        ).into_result()
+        ).into()
     }
 
     let binding_symbol_id = library::read_as_symbol_id(
@@ -84,7 +84,7 @@ pub fn dotimes(
     if count < 0 {
         return Error::invalid_argument_error(
             "Special form `dotimes' takes positive count."
-        ).into_result()
+        ).into()
     }
 
     let dotimes_environment_id = make_dotimes_environment(

@@ -14,7 +14,7 @@ pub fn define_function(
     if values.len() < 1 || values.len() > 3 {
         return Error::invalid_argument_count_error(
             "Special form `define-function' must be used with one or two or three forms."
-        ).into_result();
+        ).into();
     }
 
     let first_argument = values.remove(0);
@@ -33,7 +33,7 @@ pub fn define_function(
         if !result {
             return Error::invalid_argument_error(
                 "Third argument of special form `define-function' must be a keyword `:const'."
-            ).into_result();
+            ).into();
         }
 
         result
@@ -45,7 +45,7 @@ pub fn define_function(
         Value::Symbol(symbol) => symbol,
         _ => return Error::invalid_argument_error(
             "First form of `define-function' must be a symbol."
-        ).into_result()
+        ).into()
     };
 
     library::check_if_symbol_assignable(interpreter, function_symbol_id)?;

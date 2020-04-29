@@ -13,7 +13,7 @@ pub fn remove(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:remove' takes exactly two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -31,7 +31,7 @@ pub fn remove(
     if values.len() < index {
         return Error::invalid_argument_error(
             "Built-in function `list:remove' takes a list that has enough items."
-        ).into_result();
+        ).into();
     }
 
     values.remove(index);

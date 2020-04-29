@@ -36,7 +36,7 @@ fn execute_part(
         Value::Boolean(false) => Ok(None),
         _ => Error::invalid_argument_error(
             "Predicate must evaluate to boolean value."
-        ).into_result()
+        ).into()
     }
 }
 
@@ -54,7 +54,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
                     result = Error::generic_execution_error_caused(
                         "Cannot execute special form `cond' clause.",
                         error
-                    ).into_result();
+                    ).into();
                     break;
                 },
                 _ => ()
@@ -62,7 +62,7 @@ pub fn cond(interpreter: &mut Interpreter, environment: EnvironmentId, values: V
         } else {
             result = Error::invalid_argument_error(
                 "Invalid usage of special form `cond'."
-            ).into_result();
+            ).into();
             break;
         }
     }

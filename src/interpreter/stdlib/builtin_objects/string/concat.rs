@@ -12,7 +12,7 @@ pub fn concat(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:concat' one argument at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -50,9 +50,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(
-            (r#"(string:concat "a")"#, interpreter.intern_string_value(String::from("a"))),
-            (r#"(string:concat "a" "b")"#, interpreter.intern_string_value(String::from("ab"))),
-            (r#"(string:concat "a" "b" "c")"#, interpreter.intern_string_value(String::from("abc"))),
+            (r#"(string:concat "a")"#, interpreter.intern_string_value("a")),
+            (r#"(string:concat "a" "b")"#, interpreter.intern_string_value("ab")),
+            (r#"(string:concat "a" "b" "c")"#, interpreter.intern_string_value("abc")),
         );
 
         assertion::assert_results_are_correct(

@@ -43,7 +43,7 @@ impl FunctionArena {
             Some(_) => Ok(()),
             _ => Error::failure(
                 format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -62,7 +62,7 @@ impl FunctionArena {
             Some(function) => Ok(function.get_gc_items()),
             _ => Error::failure(
                 format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 
@@ -71,7 +71,7 @@ impl FunctionArena {
             Some(function) => Ok(function.get_gc_environment()),
             _ => Error::failure(
                 format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 }

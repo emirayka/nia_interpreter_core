@@ -13,7 +13,7 @@ pub fn nth(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:nth' takes two arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -33,7 +33,7 @@ pub fn nth(
     } else {
         return Error::invalid_argument_error(
             "Built-in function `list:nth' takes a list that has enough items."
-        ).into_result();
+        ).into();
     }
 }
 

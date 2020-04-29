@@ -11,7 +11,7 @@ pub fn float(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `to:float' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -23,7 +23,7 @@ pub fn float(
         Value::Boolean(false) => Value::Float(0.0),
         _ => return Error::generic_execution_error(
             "Only integers, floats or booleans can be converted to float."
-        ).into_result()
+        ).into()
     };
 
     Ok(result)

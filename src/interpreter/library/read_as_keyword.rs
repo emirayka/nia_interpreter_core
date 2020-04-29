@@ -11,7 +11,7 @@ pub fn read_as_keyword(
         Value::Keyword(keyword_id) => interpreter.get_keyword(keyword_id)?,
         _ => return Error::invalid_argument_error(
             "Expected keyword."
-        ).into_result()
+        ).into()
     };
 
     Ok(keyword)

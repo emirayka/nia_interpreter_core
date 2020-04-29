@@ -57,14 +57,14 @@ pub fn function(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Special form `function' must be called with exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = match values.remove(0) {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
         _ => return Error::invalid_argument_error(
             ERROR_MESSAGE_INCORRECT_ARGUMENT
-        ).into_result()
+        ).into()
     }.map_err(|err| Error::generic_execution_error_caused(
         "Cannot execute function special form",
         err
@@ -73,7 +73,7 @@ pub fn function(
     if values.len() < 3 {
         return Error::invalid_argument_error(
             ERROR_MESSAGE_INCORRECT_ARGUMENT
-        ).into_result();
+        ).into();
     }
 
     let lambda_or_macro_symbol = values.remove(0);
@@ -106,12 +106,12 @@ pub fn function(
             } else {
                 Error::invalid_argument_error(
                     "The first element of the first argument must be a symbol `lambda' or `macro'"
-                ).into_result()
+                ).into()
             }
         },
         _ => Error::invalid_argument_error(
             "The first element of the first argument must be a symbol `lambda' or `macro'"
-        ).into_result()
+        ).into()
     }
 }
 

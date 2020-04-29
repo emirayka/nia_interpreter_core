@@ -12,7 +12,7 @@ pub fn trim_left(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:trim-left' takes only one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

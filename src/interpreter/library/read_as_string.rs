@@ -10,7 +10,7 @@ pub fn read_as_string(
         Value::String(string_id) => string_id,
         _ => return Error::invalid_argument_error(
             "Expected string."
-        ).into_result()
+        ).into()
     };
 
     let string = interpreter.get_string(string_id)

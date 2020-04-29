@@ -20,7 +20,7 @@ impl Context {
             Some(value) => Ok(*value),
             _ => Error::failure(
                 format!("Cannot find context value with id: {}", symbol_id.get_id())
-            ).into_result()
+            ).into()
         }
     }
 

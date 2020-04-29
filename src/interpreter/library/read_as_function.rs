@@ -19,7 +19,7 @@ pub fn read_as_function(
         Err(error) => return Error::generic_execution_error_caused(
             "",
             error
-        ).into_result()
+        ).into()
     };
 
     Ok(function)

@@ -12,7 +12,7 @@ pub fn contains(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:contains?' takes two strings exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

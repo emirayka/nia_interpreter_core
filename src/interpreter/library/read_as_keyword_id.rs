@@ -11,7 +11,7 @@ pub fn read_as_keyword_id(
         Value::Keyword(keyword_id) => keyword_id,
         _ => return Error::invalid_argument_error(
             "Expected keyword."
-        ).into_result()
+        ).into()
     };
 
     Ok(symbol_id)
@@ -26,7 +26,7 @@ mod tests {
     fn returns_correct_keyword_id() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern_keyword_value(String::from("test")).as_keyword_id();
+        let expected = interpreter.intern_keyword_value(String::from("test")).try_into();
         let value = Value::Keyword(expected);
 
         let result = read_as_keyword_id(

@@ -13,7 +13,7 @@ pub fn send_mouse_button_down(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `action:send-mouse-button-down' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -22,7 +22,7 @@ pub fn send_mouse_button_down(
         Value::Integer(key_code) => key_code,
         _ => return Error::invalid_argument_error(
             "Built-in function `action:send-mouse-button-down' takes only an integer."
-        ).into_result()
+        ).into()
     };
 
     let mouse_button_down_symbol_value = interpreter.intern_symbol_value("mouse-button-down");

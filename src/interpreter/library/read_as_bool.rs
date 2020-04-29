@@ -7,7 +7,7 @@ pub fn read_as_bool(interpreter: &Interpreter, value: Value) -> Result<bool, Err
         Value::Boolean(bool) => Ok(bool),
         _ => Error::invalid_argument_error(
             "Expected boolean."
-        ).into_result()
+        ).into()
     }
 }
 

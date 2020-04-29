@@ -13,7 +13,7 @@ pub fn lookup(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `lookup' must take exactly one string argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -29,7 +29,7 @@ pub fn lookup(
     ) {
         Ok(value) => Ok(value),
         _ => Error::generic_execution_error("")
-            .into_result()
+            .into()
     }
 }
 

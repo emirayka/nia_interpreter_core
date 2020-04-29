@@ -1,6 +1,20 @@
 use std::fmt;
 
-use crate::interpreter::value::Value;
+use crate::interpreter::value::{
+    ConsId,
+    Cons,
+    FunctionId,
+    Function,
+    KeywordId,
+    Keyword,
+    ObjectId,
+    Object,
+    StringId,
+    NiaString,
+    SymbolId,
+    Symbol,
+    Value
+};
 
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
@@ -261,18 +275,11 @@ impl fmt::Display for Error {
     }
 }
 
-macro_rules! make_impl_into_result {
-    ($into_type: ty) => {
-        impl Into<Result<$into_type, Error>> for Error {
-            fn into(self) -> Result<$into_type, Error> {
-                Err(self)
-            }
-        }
+impl<T> From<Error> for Result<T, Error> {
+    fn from(v: Error) -> Self {
+        Err(v)
     }
 }
-
-make_impl_into_result!(());
-make_impl_into_result!(Value);
 
 #[cfg(test)]
 mod tests {

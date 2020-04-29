@@ -9,7 +9,7 @@ pub fn check_value_is_string(
     match value {
         Value::String(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected string")
-            .into_result()
+            .into()
     }
 }
 

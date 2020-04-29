@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
@@ -14,7 +16,7 @@ fn set_definition(
     definition: (Value, FunctionArguments, Vec<Value>)
 ) -> Result<(), Error> {
     let function_symbol_value = definition.0;
-    let function_symbol_id = function_symbol_value.as_symbol_id();
+    let function_symbol_id = function_symbol_value.try_into()?;
 
     let arguments = definition.1;
     let code = definition.2;
@@ -61,7 +63,7 @@ pub fn flet(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Special form flet must have at least one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

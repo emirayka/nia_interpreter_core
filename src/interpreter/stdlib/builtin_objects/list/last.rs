@@ -13,7 +13,7 @@ pub fn last(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:last' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -28,7 +28,7 @@ pub fn last(
     } else {
         return Error::invalid_argument_error(
             "Built-in function `list:last' takes a list, that has one value at least."
-        ).into_result()
+        ).into()
     }
 
 }

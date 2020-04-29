@@ -12,7 +12,7 @@ pub fn set(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Special form `set!' must be used with exactly two arguments"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -21,7 +21,7 @@ pub fn set(
         Value::Symbol(symbol) => symbol,
         _ => return Error::invalid_argument_error(
             "The first argument of special form `set!' must be a symbol."
-        ).into_result()
+        ).into()
     };
 
     library::check_if_symbol_assignable(interpreter, variable_symbol_id)?;
@@ -56,7 +56,7 @@ pub fn set(
                     Error::generic_execution_error_caused(
                         message,
                         error
-                    ).into_result()
+                    ).into()
                 }
             }
         },
@@ -68,7 +68,7 @@ pub fn set(
 
             Error::generic_execution_error(
                 message
-            ).into_result()
+            ).into()
         }
     }
 }

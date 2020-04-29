@@ -13,7 +13,7 @@ pub fn none_question(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:none?' takes two arguments exactly."
-        ).into_result()
+        ).into()
     }
 
     let mut values = values;
@@ -47,7 +47,7 @@ pub fn none_question(
             },
             _ => return Error::invalid_argument_error(
                 "Built-in function `list:none?' takes a function that returns boolean value."
-            ).into_result()
+            ).into()
         }
     }
 

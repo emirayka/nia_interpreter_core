@@ -13,7 +13,7 @@ pub fn head(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `head' takes one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -28,7 +28,7 @@ pub fn head(
     } else {
         Error::invalid_argument_error(
         "Built-in function `head' takes one list with values."
-        ).into_result()
+        ).into()
     }
 }
 

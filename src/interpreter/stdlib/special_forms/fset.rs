@@ -12,7 +12,7 @@ pub fn fset(
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `fset!' must be used with exactly two arguments"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -21,7 +21,7 @@ pub fn fset(
         Value::Symbol(symbol) => symbol,
         _ => return Error::invalid_argument_error(
             "The first argument of built-in function `fset!' must be a symbol."
-        ).into_result()
+        ).into()
     };
 
     library::check_if_symbol_assignable(interpreter, function_symbol_id)?;
@@ -56,7 +56,7 @@ pub fn fset(
                     Error::generic_execution_error_caused(
                         message,
                         error
-                    ).into_result()
+                    ).into()
                 }
             }
         },
@@ -68,7 +68,7 @@ pub fn fset(
 
             Error::generic_execution_error(
                 message
-            ).into_result()
+            ).into()
         }
     }
 }

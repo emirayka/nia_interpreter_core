@@ -12,7 +12,7 @@ pub fn flet_star(
     if values.len() == 0 {
         return Error::invalid_argument_count_error(
             "Special form `flet*' must have at least one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

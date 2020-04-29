@@ -13,7 +13,7 @@ pub fn not(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `bit:not' takes two arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

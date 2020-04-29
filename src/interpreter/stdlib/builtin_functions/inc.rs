@@ -11,7 +11,7 @@ pub fn inc(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `inc' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -22,12 +22,12 @@ pub fn inc(
                 Some(value) => Ok(Value::Integer(value)),
                 _ => Error::overflow_error(
                     "Cannot increment maximal value."
-                ).into_result()
+                ).into()
             }
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `inc' takes one integer value."
-        ).into_result()
+        ).into()
     }
 }
 

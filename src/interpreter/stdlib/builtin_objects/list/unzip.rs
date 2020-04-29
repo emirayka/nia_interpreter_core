@@ -13,7 +13,7 @@ pub fn unzip(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:unzip' takes one argument exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -35,7 +35,7 @@ pub fn unzip(
         if zipped.len() != 2 {
             return Error::invalid_argument_error(
                 "Built-in function `list:unzip' takes list of two-value lists."
-            ).into_result();
+            ).into();
         }
 
         let first_value = zipped.remove(0);

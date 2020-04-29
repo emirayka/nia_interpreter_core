@@ -13,7 +13,7 @@ pub fn replace(
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `list:replace' takes exactly three arguments."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -35,7 +35,7 @@ pub fn replace(
     } else {
         return Error::invalid_argument_error(
             "Built-in function `list:replace' takes a list that has enough items."
-        ).into_result();
+        ).into();
     }
 
     // todo: probably change it because it's not optimal

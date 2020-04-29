@@ -11,12 +11,12 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
             } else {
                 return Error::invalid_argument_error(
                     "Expected list."
-                ).into_result()
+                ).into()
             }
         },
         _ => return Error::invalid_argument_error(
             "Expected list."
-        ).into_result()
+        ).into()
     };
 
     Ok(vector)

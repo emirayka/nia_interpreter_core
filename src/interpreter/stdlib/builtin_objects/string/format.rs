@@ -12,7 +12,7 @@ pub fn format(
     if values.len() < 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `string:format' takes at least one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -27,7 +27,7 @@ pub fn format(
     if strings.len() - 1 != values.len() {
         return Error::invalid_argument_count_error(
             "Invalid count of arguments were provided."
-        ).into_result();
+        ).into();
     }
 
     let mut result = String::new();

@@ -14,7 +14,7 @@ pub fn call(
     if values.len() < 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `func:call' takes one argument at least."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -42,7 +42,7 @@ pub fn call(
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `func:call' can invoke only built-in or interpreted functions."
-        ).into_result()
+        ).into()
     };
 
     Ok(result)

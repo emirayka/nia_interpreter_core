@@ -15,7 +15,7 @@ pub fn stop_listening(
     if values.len() != 0 {
         return Error::invalid_argument_count_error(
             "Built-in function `keyboard:start-listening' takes no arguments."
-        ).into_result();
+        ).into();
     }
 
     interpreter.stop_listening();

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::TryInto;
 
 use crate::interpreter::value::Value;
 use crate::interpreter::value::Function;
@@ -82,8 +83,8 @@ impl Interpreter {
         };
 
         // nil
-        let nil_value = interpreter.intern_nil_symbol_value();
-        let nil_symbol_id = nil_value.as_symbol_id();
+        let nil_symbol_id = interpreter.intern_nil();
+        let nil_value = nil_symbol_id.into();
 
         interpreter.define_variable(
             root_environment,
@@ -232,7 +233,8 @@ impl Interpreter {
     }
 
     pub fn intern_keyword_value(&mut self, keyword_name: &str) -> Value {
-        Value::From(self.intern_keyword(keyword_name))
+        self.intern_keyword(keyword_name)
+            .into()
     }
 
     pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
@@ -392,7 +394,7 @@ impl Interpreter {
             }
             _ => return Error::generic_execution_error(
                 "Cannot get car of not a cons value"
-            ).into_result()
+            ).into()
         }
     }
 
@@ -405,7 +407,7 @@ impl Interpreter {
             }
             _ => return Error::generic_execution_error(
                 "Cannot get cdr of not a cons value"
-            ).into_result()
+            ).into()
         }
     }
 
@@ -529,7 +531,7 @@ impl Interpreter {
             Some(function_id) => Ok(*function_id),
             _ => Error::failure(
                 format!("Cannot find internal function: {}", name)
-            ).into_result()
+            ).into()
         }
     }
 }
@@ -745,7 +747,7 @@ impl Interpreter {
             false => self.lookup_variable(environment_id, symbol_id),
             true => Error::generic_execution_error(
                 "Cannot evaluate special symbols."
-            ).into_result(),
+            ).into(),
         }
     }
 
@@ -761,12 +763,12 @@ impl Interpreter {
                 } else {
                     Error::generic_execution_error(
                         "Cannot extract arguments from not a list."
-                    ).into_result()
+                    ).into()
                 }
             }
             _ => Error::generic_execution_error(
                 "Cannot extract arguments from not a list."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -878,7 +880,7 @@ impl Interpreter {
             if values.len() % 2 != 0 {
                 return Error::generic_execution_error(
                     "Invalid usage of key arguments."
-                ).into_result();
+                ).into();
             }
 
             for key_argument in arguments.get_key_arguments() {
@@ -902,7 +904,7 @@ impl Interpreter {
                     self.intern(&keyword_name)
                 } else {
                     return Error::generic_execution_error("")
-                        .into_result();
+                        .into();
                 };
 
                 let value = values[current_argument + 1];
@@ -945,11 +947,11 @@ impl Interpreter {
         if values.len() > current_argument {
             return Error::generic_execution_error(
                 "Function was called with too many arguments."
-            ).into_result();
+            ).into();
         } else if values.len() < current_argument {
             return Error::generic_execution_error(
                 "Function was called with too little arguments."
-            ).into_result();
+            ).into();
         }
 
         Ok(())
@@ -1030,7 +1032,7 @@ impl Interpreter {
         if func.get_arguments().required_len() > evaluated_arguments.len() {
             return Error::generic_execution_error(
                 "Not enough arguments to call a function."
-            ).into_result();
+            ).into();
         }
 
         // 1) make new environment
@@ -1089,7 +1091,7 @@ impl Interpreter {
         if func.get_arguments().required_len() > arguments.len() {
             return Error::generic_execution_error(
                 "Not enough arguments to call a macro."
-            ).into_result();
+            ).into();
         }
 
         // 1) make new environment
@@ -1189,7 +1191,7 @@ impl Interpreter {
         if arguments.len() != 1 {
             return Error::generic_execution_error(
                 "Invalid argument count in keyword s-expression."
-            ).into_result();
+            ).into();
         }
 
         let argument = arguments.remove(0);
@@ -1208,7 +1210,7 @@ impl Interpreter {
             }
             _ => return Error::generic_execution_error(
                 "Cannot get an item of not an object."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -1232,7 +1234,7 @@ impl Interpreter {
                     Value::Function(function_id) => function_id,
                     _ => return Error::generic_execution_error(
                         "The result of evaluation of first item of an s-expression must be a function or keyword."
-                    ).into_result(),
+                    ).into(),
                 };
 
                 self.evaluate_s_expression_function_invocation(
@@ -1256,7 +1258,7 @@ impl Interpreter {
                     Value::Function(function_id) => function_id,
                     _ => return Error::generic_execution_error(
                         "."
-                    ).into_result(),
+                    ).into(),
                 };
 
                 self.evaluate_s_expression_function_invocation(
@@ -1272,7 +1274,7 @@ impl Interpreter {
             ),
             _ => return Error::generic_execution_error(
                 "The result of evaluation of first item of an s-expression must be a function or keyword."
-            ).into_result(),
+            ).into(),
         }
     }
 
@@ -1300,7 +1302,7 @@ impl Interpreter {
                 self.execute_value(root_environment_id, function_invocation_cons)
             },
             _ => Error::invalid_argument_error("")
-                .into_result()
+                .into()
         }
     }
 
@@ -1376,7 +1378,7 @@ mod tests {
         pub fn executes_string_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let expected = interpreter.intern_string_value(String::from("tas"));
+            let expected = interpreter.intern_string_value("tas");
             let result = interpreter.execute(r#""tas""#).unwrap();
 
             assertion::assert_deep_equal(
@@ -1436,8 +1438,9 @@ mod tests {
 
             for spec in specs {
                 let result = interpreter.execute(spec).unwrap();
-                let keyword_id = result.as_keyword_id();
-                let keyword = interpreter.get_keyword(keyword_id).unwrap();
+                let keyword_id = result.try_into()?;
+                let keyword = interpreter.get_keyword(keyword_id)
+                    .unwrap();
 
                 let keyword_name = keyword.get_name();
                 let expected = &spec[1..];
@@ -1700,7 +1703,7 @@ mod tests {
                     match evaluated_condition {
                         Ok(Value::Boolean(true)) => interpreter.evaluate_value(environment, then_clause),
                         Ok(Value::Boolean(false)) => interpreter.evaluate_value(environment, else_clause),
-                        _ => Error::generic_execution_error("").into_result()
+                        _ => Error::generic_execution_error("").into()
                     }
                 }
             ));

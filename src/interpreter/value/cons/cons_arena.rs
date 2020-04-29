@@ -62,7 +62,7 @@ impl ConsArena {
             None => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -72,7 +72,7 @@ impl ConsArena {
             None => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -82,7 +82,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -92,7 +92,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -102,7 +102,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -112,7 +112,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -126,7 +126,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 
@@ -140,7 +140,7 @@ impl ConsArena {
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
-            )).into_result()
+            )).into()
         }
     }
 }
@@ -153,7 +153,7 @@ impl ConsArena {
             Value::Cons(cons_id) => self.get_car(cons_id),
             _ => Error::generic_execution_error(
                 "Cannot get car of not a cons cell."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -164,7 +164,7 @@ impl ConsArena {
             Value::Cons(cons_id) => self.get_cdr(cons_id),
             _ => Error::generic_execution_error(
                 "Cannot get cdr of not a cons cell."
-            ).into_result()
+            ).into()
         }
     }
 }

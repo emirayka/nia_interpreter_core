@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
@@ -12,7 +14,8 @@ pub fn read_as_key_chord(
 ) -> Result<KeyChord, Error> {
     library::check_value_is_cons(interpreter, key_chord_value)?;
 
-    let key_chord_part_values = interpreter.list_to_vec(key_chord_value.as_cons_id())?;
+    let key_chord_cons_id = key_chord_value.try_into()?;
+    let key_chord_part_values = interpreter.list_to_vec(key_chord_cons_id)?;
     let mut key_chord_parts = Vec::new();
 
     for key_chord_part_value in key_chord_part_values {

@@ -42,7 +42,7 @@ pub fn _while(
     if values.len() < 1 {
         return Error::invalid_argument_count_error(
             "Special form `while' takes one argument at least."
-        ).into_result();
+        ).into();
     }
 
     let while_environment_id = make_while_environment(
@@ -67,7 +67,7 @@ pub fn _while(
             },
             _ => return Error::generic_execution_error(
                 "Special form while expects booleans only in condition."
-            ).into_result()
+            ).into()
         }
 
         match library::execute_forms(

@@ -7,7 +7,7 @@ pub fn read_as_i64(interpreter: &Interpreter, value: Value) -> Result<i64, Error
         Value::Integer(int) => Ok(int),
         _ => Error::invalid_argument_error(
             "Expected int."
-        ).into_result()
+        ).into()
     }
 }
 

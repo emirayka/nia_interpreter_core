@@ -12,7 +12,7 @@ pub fn object_set(
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
             "Built-in function `object:set!' takes three arguments exactly."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

@@ -13,7 +13,7 @@ pub fn object_get_proto(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `object:get-proto' must take only one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;

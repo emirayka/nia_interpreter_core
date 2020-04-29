@@ -11,7 +11,7 @@ pub fn abs(
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
             "Built-in function `math:abs' must take exactly one argument."
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -33,7 +33,7 @@ pub fn abs(
         },
         _ => return Error::invalid_argument_error(
             "Built-in function `math:abs' must take only integer or float values."
-        ).into_result()
+        ).into()
     }
 }
 

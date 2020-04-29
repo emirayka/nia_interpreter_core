@@ -27,12 +27,12 @@ fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Re
                     },
                     _ => return Error::invalid_argument_error(
                         "The first item of catch clauses must be a catch symbol."
-                    ).into_result(),
+                    ).into(),
                 }
             }
             _ => return Error::invalid_argument_error(
                 "The clauses of special form `try' must be lists."
-            ).into_result()
+            ).into()
         }
     }
 
@@ -54,7 +54,7 @@ pub fn _try(
     if values.len() < 2 {
         return Error::invalid_argument_count_error(
             "Special form `try' must take at least two arguments"
-        ).into_result();
+        ).into();
     }
 
     let mut values = values;
@@ -80,7 +80,7 @@ pub fn _try(
                     Value::Symbol(symbol) => symbol,
                     _ => return Error::invalid_argument_error(
                         "The first item of catch clause of the special form `try' must be a symbol."
-                    ).into_result(),
+                    ).into(),
                 };
 
                 let catch_symbol_name = interpreter.get_symbol_name(catch_symbol_id)
@@ -109,7 +109,7 @@ pub fn _try(
                             } else {
                                 return Error::generic_execution_error(
                                     ""
-                                ).into_result()
+                                ).into()
                             }
                         },
                         Value::Cons(cons_id) => {

@@ -1,4 +1,5 @@
 use crate::Value;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ConsId {
@@ -18,5 +19,11 @@ impl ConsId {
 
     pub fn to_value(self) -> Value {
         Value::Cons(self)
+    }
+}
+
+impl fmt::Display for ConsId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.id)
     }
 }
