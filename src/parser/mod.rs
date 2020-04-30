@@ -1,38 +1,14 @@
 mod lib;
 
-mod boolean_element;
-mod short_lambda_element;
-mod object_pattern_element;
-mod float_element;
-mod integer_element;
-mod string_element;
-mod keyword_element;
-mod s_expression_element;
-mod object_element;
-mod prefixed_element;
-mod symbol_element;
-mod delimited_symbols_element;
-
+mod elements;
 mod element;
-mod code;
 
+mod code;
 mod parse_error;
 
 pub use {
     parse_error::ParseError,
-    boolean_element::BooleanElement,
-    short_lambda_element::ShortLambdaElement,
-    object_pattern_element::ObjectPatternElement,
-    float_element::FloatElement,
-    integer_element::IntegerElement,
-    string_element::StringElement,
-    keyword_element::KeywordElement,
-    s_expression_element::SExpressionElement,
-    object_element::ObjectElement,
-    prefixed_element::PrefixedElement,
-    prefixed_element::Prefix,
-    symbol_element::SymbolElement,
-    delimited_symbols_element::DelimitedSymbolsElement,
+    elements::*,
     element::Element,
     code::Code,
     code::parse,
@@ -102,33 +78,33 @@ mod tests {
     fn parses_complex_s_expression_correctly() {
         assert_code_eq!(
             vec!(
-                Element::SExpression(s_expression_element::SExpressionElement::new(vec!(
-                    Element::Integer(integer_element::IntegerElement::new(1)),
-                    Element::Float(float_element::FloatElement::new(1.1)),
-                    Element::Boolean(boolean_element::BooleanElement::new(true)),
-                    Element::Boolean(boolean_element::BooleanElement::new(false)),
-                    Element::Keyword(keyword_element::KeywordElement::new(String::from("keyword"))),
-                    Element::String(string_element::StringElement::new(String::from("string"))),
-                    Element::Symbol(symbol_element::SymbolElement::new(String::from("symbol"))),
-                    Element::SExpression(s_expression_element::SExpressionElement::new(vec!(
-                        Element::Integer(integer_element::IntegerElement::new(1)),
-                        Element::Float(float_element::FloatElement::new(1.1)),
-                        Element::Boolean(boolean_element::BooleanElement::new(true)),
-                        Element::Boolean(boolean_element::BooleanElement::new(false)),
-                        Element::Keyword(keyword_element::KeywordElement::new(String::from("nested-keyword"))),
-                        Element::String(string_element::StringElement::new(String::from("nested-string"))),
-                        Element::Symbol(symbol_element::SymbolElement::new(String::from("nested-symbol"))),
+                Element::SExpression(SExpressionElement::new(vec!(
+                    Element::Integer(IntegerElement::new(1)),
+                    Element::Float(FloatElement::new(1.1)),
+                    Element::Boolean(BooleanElement::new(true)),
+                    Element::Boolean(BooleanElement::new(false)),
+                    Element::Keyword(KeywordElement::new(String::from("keyword"))),
+                    Element::String(StringElement::new(String::from("string"))),
+                    Element::Symbol(SymbolElement::new(String::from("symbol"))),
+                    Element::SExpression(SExpressionElement::new(vec!(
+                        Element::Integer(IntegerElement::new(1)),
+                        Element::Float(FloatElement::new(1.1)),
+                        Element::Boolean(BooleanElement::new(true)),
+                        Element::Boolean(BooleanElement::new(false)),
+                        Element::Keyword(KeywordElement::new(String::from("nested-keyword"))),
+                        Element::String(StringElement::new(String::from("nested-string"))),
+                        Element::Symbol(SymbolElement::new(String::from("nested-symbol"))),
                     ))),
-                    Element::Object(object_element::ObjectElement::new(vec!(
-                        (keyword_element::KeywordElement::new(String::from("a")), Element::Integer(integer_element::IntegerElement::new(1))),
-                        (keyword_element::KeywordElement::new(String::from("b")), Element::Float(float_element::FloatElement::new(1.1))),
-                        (keyword_element::KeywordElement::new(String::from("c")), Element::Boolean(boolean_element::BooleanElement::new(true))),
-                        (keyword_element::KeywordElement::new(String::from("d")), Element::Boolean(boolean_element::BooleanElement::new(false))),
-                        (keyword_element::KeywordElement::new(String::from("e")), Element::Keyword(keyword_element::KeywordElement::new(String::from("object-keyword")))),
-                        (keyword_element::KeywordElement::new(String::from("f")), Element::String(string_element::StringElement::new(String::from("object-string")))),
-                        (keyword_element::KeywordElement::new(String::from("g")), Element::Symbol(symbol_element::SymbolElement::new(String::from("object-symbol")))),
+                    Element::Object(ObjectElement::new(vec!(
+                        (KeywordElement::new(String::from("a")), Element::Integer(IntegerElement::new(1))),
+                        (KeywordElement::new(String::from("b")), Element::Float(FloatElement::new(1.1))),
+                        (KeywordElement::new(String::from("c")), Element::Boolean(BooleanElement::new(true))),
+                        (KeywordElement::new(String::from("d")), Element::Boolean(BooleanElement::new(false))),
+                        (KeywordElement::new(String::from("e")), Element::Keyword(KeywordElement::new(String::from("object-keyword")))),
+                        (KeywordElement::new(String::from("f")), Element::String(StringElement::new(String::from("object-string")))),
+                        (KeywordElement::new(String::from("g")), Element::Symbol(SymbolElement::new(String::from("object-symbol")))),
                     ))),
-                    Element::ObjectPattern(object_pattern_element::ObjectPatternElement::new(vec!()))
+                    Element::ObjectPattern(ObjectPatternElement::new(vec!()))
                 )))
             ),
             "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol) {:a 1 :b 1.1 :c #t :d #f :e :object-keyword :f \"object-string\" :g object-symbol} #{})"
@@ -137,11 +113,11 @@ mod tests {
 
     #[test]
     fn distinguishes_between_symbols_and_numbers() {
-        assert_code_eq!(vec!(Element::Float(float_element::FloatElement::new(1.1))), "1.1");
-        assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1.1t".to_string()))), "1.1t");
+        assert_code_eq!(vec!(Element::Float(FloatElement::new(1.1))), "1.1");
+        assert_code_eq!(vec!(Element::Symbol(SymbolElement::new("1.1t".to_string()))), "1.1t");
 
-        assert_code_eq!(vec!(Element::Integer(integer_element::IntegerElement::new(1))), "1");
-        assert_code_eq!(vec!(Element::Symbol(symbol_element::SymbolElement::new("1t".to_string()))), "1t");
+        assert_code_eq!(vec!(Element::Integer(IntegerElement::new(1))), "1");
+        assert_code_eq!(vec!(Element::Symbol(SymbolElement::new("1t".to_string()))), "1t");
     }
 
     #[test]
@@ -654,6 +630,29 @@ mod tests {
         assert_is_err(parse("{{}"));
         assert_is_err(parse("\"string"));
         assert_is_err(parse("{{\"string}}"));
+    }
+
+    #[test]
+    fn parses_comments_correctly() {
+        assert_code_eq!(
+            vec!(
+                Element::Integer(IntegerElement::new(2))
+            ),
+            ";arst\n2"
+        );
+        assert_code_eq!(
+            vec!(
+                Element::Integer(IntegerElement::new(1)),
+            ),
+            "1;arst"
+        );
+        assert_code_eq!(
+            vec!(
+                Element::Integer(IntegerElement::new(1)),
+                Element::Integer(IntegerElement::new(2))
+            ),
+            "1;arst\n2"
+        );
     }
 
     // todo: add tests when input is not complete

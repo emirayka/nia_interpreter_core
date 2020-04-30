@@ -10,31 +10,30 @@ use nom::{
 };
 
 use super::{
-    boolean_element,
-    short_lambda_element,
-    object_pattern_element,
-    float_element,
-    integer_element,
-    string_element,
-    keyword_element,
-    s_expression_element,
-    object_element,
-    prefixed_element,
-    delimited_symbols_element,
-    symbol_element,
-
-    boolean_element::BooleanElement,
-    short_lambda_element::ShortLambdaElement,
-    object_pattern_element::ObjectPatternElement,
-    float_element::FloatElement,
-    integer_element::IntegerElement,
-    string_element::StringElement,
-    keyword_element::KeywordElement,
-    s_expression_element::SExpressionElement,
-    object_element::ObjectElement,
-    prefixed_element::PrefixedElement,
-    delimited_symbols_element::DelimitedSymbolsElement,
-    symbol_element::SymbolElement,
+    elements::boolean_element,
+    elements::short_lambda_element,
+    elements::object_pattern_element,
+    elements::float_element,
+    elements::integer_element,
+    elements::string_element,
+    elements::keyword_element,
+    elements::s_expression_element,
+    elements::object_element,
+    elements::prefixed_element,
+    elements::symbol_element,
+    elements::delimited_symbols_element,
+    BooleanElement,
+    ShortLambdaElement,
+    ObjectPatternElement,
+    FloatElement,
+    IntegerElement,
+    StringElement,
+    KeywordElement,
+    SExpressionElement,
+    ObjectElement,
+    PrefixedElement,
+    DelimitedSymbolsElement,
+    SymbolElement,
 };
 
 use crate::parser::ParseError;
@@ -133,6 +132,7 @@ named!(parse_boolean_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -146,6 +146,7 @@ named!(parse_short_lambda_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -159,6 +160,7 @@ named!(parse_object_pattern_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -172,6 +174,7 @@ named!(parse_float_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -185,6 +188,7 @@ named!(parse_integer_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -198,6 +202,7 @@ named!(parse_string_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -211,6 +216,7 @@ named!(parse_keyword_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -225,6 +231,7 @@ named!(parse_s_expression_element(&str) -> Element, map_res!(
             complete!(peek!(tag!("("))) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -238,6 +245,7 @@ named!(parse_object_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -251,6 +259,7 @@ named!(parse_prefix_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -264,6 +273,7 @@ named!(parse_delimited_symbols_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),
@@ -277,6 +287,7 @@ named!(parse_symbol_element(&str) -> Element, map_res!(
             complete!(peek!(multispace1)) |
             complete!(peek!(tag!(")"))) |
             complete!(peek!(tag!("}"))) |
+            complete!(peek!(tag!(";"))) |
             end_of_input
         )
     ),

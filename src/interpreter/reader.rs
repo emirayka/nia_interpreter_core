@@ -13,52 +13,18 @@ use crate::parser::DelimitedSymbolsElement;
 use crate::parser::ShortLambdaElement;
 
 fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
-    let values = sexp_element.get_values();
+    let s_expressions = sexp_element.get_values();
+    let mut values = Vec::new();
 
-    if values.len() == 0 {
-        return Ok(interpreter.intern_nil_symbol_value());
+    for s_expression in s_expressions {
+        let element = read_element(interpreter, s_expression)?;
+
+        values.push(element);
     }
 
-    let nil = interpreter.intern_nil_symbol_value();
+    let list = interpreter.vec_to_list(values);
 
-    let root_cons = interpreter.make_cons(
-        nil,
-        nil
-    );
-
-    let len = values.len();
-    let mut current_cons_id = root_cons;
-
-    for (index, element) in values.into_iter().enumerate() {
-        let value = read_element(interpreter, element)?;
-
-        interpreter.set_car(current_cons_id, value)?;
-
-        if index == len - 1 {
-            break;
-        }
-
-        let nil = interpreter.intern_nil_symbol_value();
-
-        let next_cons_id = interpreter.make_cons(
-            nil,
-            nil
-        );
-
-        interpreter.set_cdr(current_cons_id, Value::Cons(next_cons_id))
-            .map_err(|err| Error::generic_execution_error_caused(
-                "",
-                err
-            ))?;
-
-        if let Ok(Value::Cons(next_cons)) = interpreter.get_cdr(current_cons_id) {
-            current_cons_id = next_cons;
-        } else {
-            unreachable!(); //todo: check
-        }
-    }
-
-    Ok(Value::Cons(root_cons))
+    Ok(list)
 }
 
 fn count_short_lambda_argument_count(
@@ -422,10 +388,9 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
     let mut result = Vec::new();
 
     for element in elements {
-        match read_element(interpreter, element) {
-            Ok(value) => result.push(value),
-            Err(error) => return Err(error)
-        }
+        let value = read_element(interpreter, element)?;
+
+        result.push(value);
     }
 
     Ok(result)

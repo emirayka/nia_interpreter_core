@@ -1307,8 +1307,6 @@ impl Interpreter {
     }
 
     pub fn execute(&mut self, code: &str) -> Result<Value, Error> {
-        println!("{}", code);
-        println!("{:?}", parse(code));
         // first step: parse code
         let code = parse(code)
             .map(|result| result.1)

@@ -6,7 +6,7 @@ use nom::{
 };
 
 use crate::parser::s_expression_element;
-use crate::parser::s_expression_element::SExpressionElement;
+use crate::parser::SExpressionElement;
 
 #[derive(Debug)]
 pub struct ShortLambdaElement {

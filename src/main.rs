@@ -20,7 +20,9 @@ pub use interpreter::*;
 // todo: threading
 // todo: implement constant checking, and move checking setting nil errors to interpreter itself
 
-fn main() {
-    let mut interpreter = Interpreter::new();
+fn main() -> std::io::Result<()> {
+    repl::run()?;
+
+    Ok(())
 }
 

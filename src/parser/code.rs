@@ -1,5 +1,7 @@
 use nom::{
     named,
+    alt,
+    tag,
     map_res,
     preceded,
     delimited,
@@ -12,6 +14,8 @@ use nom::{
 use crate::parser::element;
 use crate::parser::element::Element;
 use crate::parser::ParseError;
+
+use crate::parser::lib::parse_comment_character;
 
 #[derive(Debug)]
 pub struct Code {
@@ -30,14 +34,56 @@ impl Code {
     }
 }
 
-fn make_code(elements: Vec<Element>) -> Result<Code, ParseError>{
+fn make_none(_: Vec<char>) -> Result<Option<Element>, ParseError> {
+    Ok(None)
+}
+
+fn make_some(element: Element) -> Result<Option<Element>, ParseError> {
+    Ok(Some(element))
+}
+
+fn make_code(probably_elements: Vec<Option<Element>>) -> Result<Code, ParseError> {
+    let mut elements = Vec::new();
+
+    for element in probably_elements {
+        match element {
+            Some(element) => {
+                elements.push(element);
+            }
+            None => {}
+        }
+    }
     Ok(Code::new(elements))
 }
 
-named!(parse_elements(&str) -> Vec<Element>, many0!(
+named!(parse_comment_chars(&str) -> Vec<char>, many0!(
+    parse_comment_character
+));
+
+named!(parse_comment(&str) -> Vec<char>, preceded!(
+    tag!(";"),
+    parse_comment_chars
+));
+
+named!(parse_comment_element(&str) -> Option<Element>, map_res!(
+    parse_comment,
+    make_none
+));
+
+named!(parse_noncomment_element(&str) -> Option<Element>, map_res!(
+    element::parse,
+    make_some
+));
+
+named!(parse_element(&str) -> Option<Element>, alt!(
+    parse_comment_element |
+    parse_noncomment_element
+));
+
+named!(parse_elements(&str) -> Vec<Option<Element>>, many0!(
     preceded!(
         multispace0,
-        complete!(element::parse)
+        complete!(parse_element)
     )
 ));
 
@@ -56,11 +102,11 @@ pub fn parse(s: &str) -> Result<(&str, Code), ParseError> {
     match result {
         Ok((rest, parse_result)) => {
             if rest.len() != 0 {
-                return Err(ParseError::TrailingInput(String::from(rest)))
+                return Err(ParseError::TrailingInput(String::from(rest)));
             }
 
             Ok((rest, parse_result))
-        },
+        }
         Err(nom::Err::Error((s, kind))) => Err(ParseError::NomError((String::from(s), kind))),
         Err(nom::Err::Failure((s, kind))) => Err(ParseError::NomFailure((String::from(s), kind))),
         Err(nom::Err::Incomplete(_)) => Err(ParseError::NomIncomplete())
