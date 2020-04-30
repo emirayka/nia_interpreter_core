@@ -1,15 +1,16 @@
 use nom::{
-    bytes::complete::tag,
-    branch::alt,
-    sequence::pair,
-    combinator::{
-        recognize,
-        opt,
-        map_res
-    },
+    named,
+    alt,
+    tag,
+    recognize,
+    pair,
+    opt,
+    map_res
 };
 
-use crate::parser::{Element, parse_element};
+use crate::parser::element;
+use crate::parser::element::Element;
+use crate::parser::ParseError;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Prefix {
@@ -18,6 +19,39 @@ pub enum Prefix {
     Quote,
     SharpQuote,
     GraveAccent,
+}
+
+#[derive(Debug)]
+pub struct PrefixedElement {
+    value: Box<Element>,
+    prefix: Prefix
+}
+
+impl PrefixedElement {
+    pub fn new(prefix: Prefix, value: Element) -> PrefixedElement {
+        PrefixedElement {
+            value: Box::new(value),
+            prefix
+        }
+    }
+
+    pub fn get_prefix(&self) -> Prefix {
+        self.prefix
+    }
+
+    pub fn get_value(self) -> Element {
+        *self.value
+    }
+
+    pub fn get_value_ref(&self) -> &Element {
+        self.value.as_ref()
+    }
+}
+
+impl PartialEq for PrefixedElement {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
 }
 
 fn make_prefix(s: &str) -> Result<Prefix, String> {
@@ -38,60 +72,29 @@ fn make_prefix(s: &str) -> Result<Prefix, String> {
     Ok(prefix)
 }
 
-#[derive(Debug)]
-pub struct PrefixElement {
-    value: Box<Element>,
-    prefix: Prefix
+fn make_prefixed_element(pair: (Prefix, Element)) -> Result<PrefixedElement, ParseError> {
+    Ok(PrefixedElement::new(pair.0, pair.1))
 }
 
-impl PrefixElement {
-    pub fn new(prefix: Prefix, value: Element) -> PrefixElement {
-        PrefixElement {
-            value: Box::new(value),
-            prefix
-        }
-    }
+named!(parse_prefix(&str) -> Prefix, map_res!(
+    alt!(
+        tag!("`") |
+        tag!("'") |
+        recognize!(pair!(tag!(","), opt!(tag!("@")))) |
+        tag!("#'")
+    ),
+    make_prefix
+));
 
-    pub fn get_prefix(&self) -> Prefix {
-        self.prefix
-    }
+named!(parse_prefixed_element(&str) -> (Prefix, Element), pair!(
+    parse_prefix,
+    element::parse
+));
 
-    pub fn get_value(self) -> Element {
-        *self.value
-    }
-
-    pub fn get_value_ref(&self) -> &Element {
-        self.value.as_ref()
-    }
-}
-
-impl PartialEq for PrefixElement {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-    }
-}
-
-fn make_prefixed_element(pair: (Prefix, Element)) -> Result<PrefixElement, ()> {
-    Ok(PrefixElement::new(pair.0, pair.1))
-}
-
-pub fn parse_prefixed_element(s: &str) -> Result<(&str, PrefixElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_prefix = alt(
-        (
-            tag("`"),
-            tag("'"),
-            recognize(pair(tag(","), opt(tag("@")))),
-            tag("#'")
-        )
-    );
-
-    let parse_prefix = map_res(parse_prefix, make_prefix);
-
-    let parse_prefixed = pair(parse_prefix, parse_element);
-    let parse_prefixed_element = map_res(parse_prefixed, make_prefixed_element);
-
-    parse_prefixed_element(s)
-}
+named!(pub parse(&str) -> PrefixedElement, map_res!(
+    parse_prefixed_element,
+    make_prefixed_element
+));
 
 #[cfg(test)]
 mod tests {
@@ -103,14 +106,15 @@ mod tests {
     use crate::parser::string_element::StringElement;
     use crate::parser::s_expression_element::SExpressionElement;
 
+
     fn assert_prefixed_element_parsed_correctly(
         expected_prefix: Prefix,
         expected_element: Element,
         code: &str
     ) {
         assert_eq!(
-            Ok(("", PrefixElement::new(expected_prefix, expected_element))),
-            parse_prefixed_element(code)
+            Ok(("", PrefixedElement::new(expected_prefix, expected_element))),
+            parse(code)
         )
     }
 
@@ -121,14 +125,14 @@ mod tests {
         code: &str
     ) {
         assert_eq!(
-            Ok(("", PrefixElement::new(
+            Ok(("", PrefixedElement::new(
                 expected_prefix_1,
-                Element::Prefix(PrefixElement::new(
+                Element::Prefix(PrefixedElement::new(
                     expected_prefix_2,
                     expected_element
                 ))))
             ),
-            parse_prefixed_element(code)
+            parse(code)
         )
     }
 

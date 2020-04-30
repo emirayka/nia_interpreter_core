@@ -1,10 +1,23 @@
-use crate::parser::keyword_element::{KeywordElement, parse_keyword_element};
-use crate::parser::{Element, parse_element};
-use nom::sequence::{terminated, preceded, pair};
-use nom::bytes::complete::tag;
-use nom::character::complete::multispace0;
-use nom::multi::many0;
-use nom::combinator::map_res;
+use nom::{
+    named,
+    tag,
+    many0,
+    pair,
+    preceded,
+    terminated,
+    delimited,
+    separated_pair,
+    separated_list,
+    map_res,
+    character::complete::multispace0,
+    character::complete::multispace1,
+};
+
+use crate::parser::ParseError;
+use crate::parser::element;
+use crate::parser::element::Element;
+use crate::parser::keyword_element::KeywordElement;
+use crate::parser::keyword_element;
 
 #[derive(Debug)]
 pub struct ObjectElement {
@@ -54,42 +67,52 @@ impl PartialEq for ObjectElement {
     }
 }
 
-fn make_object_element(values: Vec<(KeywordElement, Element)>) -> Result<ObjectElement, String> {
+fn make_object_element(values: Vec<(KeywordElement, Element)>) -> Result<ObjectElement, ParseError> {
     Ok(ObjectElement::new(values))
 }
 
-pub fn parse_object_element(s: &str) -> Result<(&str, ObjectElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_pairs = many0(pair(
-        preceded(multispace0, parse_keyword_element),
-        preceded(multispace0, parse_element)
-    ));
+named!(parse_pair(&str) -> (KeywordElement, Element), separated_pair!(
+    keyword_element::parse,
+    multispace1,
+    element::parse
+));
 
-    let opening_brace = terminated(tag("{"), multispace0);
-    let closing_brace = preceded(multispace0, tag("}"));
+named!(parse_pairs(&str) -> Vec<(KeywordElement, Element)>, separated_list!(
+    multispace1,
+    parse_pair
+));
 
-    let parse_object = preceded(
-        opening_brace,
-        terminated(
-            parse_pairs,
-            closing_brace
-        )
-    );
+named!(parse_opening_brace(&str) -> &str, terminated!(
+    tag!("{"),
+    multispace0
+));
 
-    let parse_object_element = map_res(parse_object, make_object_element);
+named!(parse_closing_brace(&str) -> &str, preceded!(
+    multispace0,
+    tag!("}")
+));
 
-    parse_object_element(s)
-}
+named!(parse_object(&str) -> Vec<(KeywordElement, Element)>, delimited!(
+    parse_opening_brace,
+    parse_pairs,
+    parse_closing_brace
+));
+
+named!(pub parse(&str) -> ObjectElement, map_res!(
+    parse_object,
+    make_object_element
+));
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn assert_parsed_correctly(expr: &str) {
-        assert!(parse_object_element(expr).is_ok());
+        assert!(parse(expr).is_ok());
     }
 
     fn assert_failed_correctly(expr: &str) {
-        assert!(parse_object_element(expr).is_err());
+        assert!(parse(expr).is_err());
     }
 
     #[test]

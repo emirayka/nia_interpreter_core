@@ -2,6 +2,8 @@ extern crate either;
 extern crate dirs;
 extern crate rand;
 extern crate nom;
+extern crate nom_trace;
+
 extern crate nia_state_machine;
 extern crate nia_events;
 
@@ -18,9 +20,7 @@ pub use interpreter::*;
 // todo: threading
 // todo: implement constant checking, and move checking setting nil errors to interpreter itself
 
-fn main() -> Result<(), std::io::Error> {
-    repl::run()?;
-
-
-    Ok(())
+fn main() {
+    let mut interpreter = Interpreter::new();
 }
+

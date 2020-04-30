@@ -1,10 +1,15 @@
 use nom::{
-    bytes::complete::tag,
-    branch::alt,
-    combinator::{
-        map_res
-    },
+    named,
+    tag,
+    alt,
+    map_res,
+    peek,
+    terminated,
+    character::complete::multispace1,
+    combinator::all_consuming,
 };
+
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct BooleanElement {
@@ -29,23 +34,24 @@ impl PartialEq for BooleanElement {
     }
 }
 
-fn make_boolean_element(s: &str) -> Result<BooleanElement, String> {
-    if s == "#t" {
-        return Ok(BooleanElement::new(true));
-    } else if s == "#f" {
-        return Ok(BooleanElement::new(false));
-    } else {
-        unreachable!();
-    }
+fn make_boolean_true(s: &str) -> Result<BooleanElement, ParseError> {
+    Ok(BooleanElement::new(true))
 }
 
-pub fn parse_boolean_element(s: &str) -> Result<(&str, BooleanElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_boolean = alt((tag("#t"), tag("#f")));
-
-    let parse_element = map_res(parse_boolean, make_boolean_element);
-
-    parse_element(s)
+fn make_boolean_false(s: &str) -> Result<BooleanElement, ParseError> {
+    Ok(BooleanElement::new(false))
 }
+
+named!(parse_boolean_true_literal(&str) -> &str, tag!("#t"));
+named!(parse_boolean_false_literal(&str) -> &str, tag!("#f"));
+
+named!(parse_boolean_true(&str) -> BooleanElement, map_res!(tag!("#t"), make_boolean_true));
+named!(parse_boolean_false(&str) -> BooleanElement, map_res!(tag!("#f"), make_boolean_false));
+
+named!(
+    pub parse(&str) -> BooleanElement,
+    alt!(parse_boolean_true | parse_boolean_false)
+);
 
 #[cfg(test)]
 mod tests {
@@ -53,11 +59,21 @@ mod tests {
 
     #[test]
     fn parses_true_correctly() {
-        assert_eq!(Ok(("", BooleanElement{ value: true})), parse_boolean_element("#t"))
+        assert_eq!(Ok(("", BooleanElement { value: true })), parse("#t"))
     }
 
     #[test]
     fn parses_false_correctly() {
-        assert_eq!(Ok(("", BooleanElement{ value: false})), parse_boolean_element("#f"))
+        assert_eq!(Ok(("", BooleanElement { value: false })), parse("#f"))
+    }
+
+    #[test]
+    fn returns_correct_remaining_input() {
+        assert_eq!(Ok((" #f", BooleanElement { value: false })), parse("#f #f"))
+    }
+
+    #[test]
+    fn returns_correct_errors() {
+        assert!(parse("#kek").is_err());
     }
 }

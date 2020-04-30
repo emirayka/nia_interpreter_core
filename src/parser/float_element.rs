@@ -1,16 +1,17 @@
 use nom::{
+    named,
+    recognize,
+    tuple,
+    pair,
+    opt,
+    alt,
+    tag,
+    complete,
+    map_res,
     character::complete::digit1,
-    bytes::complete::tag,
-    branch::alt,
-    sequence::pair,
-    combinator::{
-        recognize,
-        opt,
-        map_res
-    },
 };
-use nom::sequence::tuple;
-use nom::combinator::complete;
+
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct FloatElement {
@@ -35,29 +36,29 @@ impl PartialEq for FloatElement {
     }
 }
 
-fn make_float_element(value: f64) -> Result<FloatElement, String> {
+fn make_float_element(value: f64) -> Result<FloatElement, ParseError> {
     Ok(FloatElement::new(value))
 }
 
-pub fn parse_float_element(s: &str) -> Result<(&str, FloatElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    // todo: rewrite it somehow
-    let parse_float = recognize(
-        tuple((
-                recognize(pair(opt(alt((tag("-"), tag("+")))),digit1)),
-                tag("."),
-                digit1,
-                opt(complete(pair(
-                    alt((tag("e"), tag("E"))),
-                    recognize(pair(opt(alt((tag("-"), tag("+")))),digit1)),
-                )))
-            ))
-    );
+named!(parse_sign(&str) -> &str, alt!(tag!("+") | tag!("-")));
+named!(parse_dot(&str) -> &str, tag!("."));
+named!(parse_exponent_character(&str) -> &str, alt!(tag!("e") | tag!("E")));
 
-    let parse_f64 = map_res(parse_float, |s: &str| s.parse::<f64>());
-    let parse_float_element = map_res(parse_f64, make_float_element);
+named!(parse_integer_part(&str) -> &str, recognize!(pair!(opt!(parse_sign), digit1)));
+named!(parse_exponent(&str) -> Option<(&str, &str)>, opt!(
+    complete!(pair!(parse_exponent_character, parse_integer_part))
+));
 
-    parse_float_element(s)
-}
+named!(parse_float(&str) -> &str, recognize!(complete!(tuple!(
+    parse_integer_part,
+    parse_dot,
+    digit1,
+    parse_exponent
+))));
+
+
+named!(parse_f64<&str, f64>, map_res!(parse_float, |s: &str| s.parse::<f64>()));
+named!(pub parse<&str, FloatElement>, map_res!(parse_f64, make_float_element));
 
 #[cfg(test)]
 mod tests {
@@ -67,7 +68,7 @@ mod tests {
 
     macro_rules! make_float_assertion {
         ($str:expr) => {
-            assert_eq!(Ok(("", FloatElement {value: f64::from_str($str).unwrap()})), parse_float_element($str));
+            assert_eq!(Ok(("", FloatElement {value: f64::from_str($str).unwrap()})), parse($str));
         }
     }
 

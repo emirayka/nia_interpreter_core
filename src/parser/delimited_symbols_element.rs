@@ -1,18 +1,15 @@
 use nom::{
-    bytes::complete::tag,
-    combinator::{
-        map_res
-    },
-    multi::{
-        many1
-    },
-    sequence::{
-        preceded,
-        pair
-    },
+    named,
+    map_res,
+    tag,
+    many1,
+    preceded,
+    pair,
+    complete,
 };
 
-use crate::parser::symbol_element::{parse_symbol_element, SymbolElement};
+use crate::parser::{symbol_element, ParseError};
+use crate::parser::symbol_element::SymbolElement;
 
 #[derive(Debug)]
 pub struct DelimitedSymbolsElement {
@@ -49,37 +46,43 @@ impl PartialEq for DelimitedSymbolsElement {
     }
 }
 
-fn make_delimited_symbols_element(pair: (SymbolElement, Vec<SymbolElement>)) -> Result<DelimitedSymbolsElement, String> {
-    let mut parts = pair.1;
-    parts.insert(0, pair.0);
+fn make_delimited_symbols_element(
+    pairs: (SymbolElement, Vec<SymbolElement>)
+) -> Result<DelimitedSymbolsElement, ParseError> {
+    let mut symbols = pairs.1;
 
-    Ok(DelimitedSymbolsElement::new(parts))
+    symbols.insert(0, pairs.0);
+
+    Ok(DelimitedSymbolsElement::new(symbols))
 }
 
-pub fn parse_delimited_symbols_element(
-    s: &str
-) -> Result<(&str, DelimitedSymbolsElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_part = preceded(
-        tag(":"),
-        parse_symbol_element
-    );
+named!(tt(&str) -> SymbolElement,
+    complete!(
+        preceded!(
+            tag!(":"),
+            symbol_element::parse
+        )
+    )
+);
 
-    let parse_delimited_symbols = pair(
-        parse_symbol_element,
-        many1(parse_part)
-    );
+named!(parse_rest_symbols(&str) -> Vec<SymbolElement>, many1!(tt));
 
-    let parse_delimited_symbols_element = map_res(
-        parse_delimited_symbols,
-        make_delimited_symbols_element
-    );
-
-    parse_delimited_symbols_element(s)
-}
+named!(pub parse(&str) -> DelimitedSymbolsElement, map_res!(
+    pair!(
+        symbol_element::parse,
+        parse_rest_symbols
+    ),
+    make_delimited_symbols_element
+));
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn testw() {
+        println!("{:?}", parse("a:barst:c"));
+    }
 
     macro_rules! assert_parsing_of_delimited_symbols_element {
         ($symbol_names:expr, $code:expr, $rest:expr) => {
@@ -90,7 +93,7 @@ mod tests {
                     .collect::<Vec<SymbolElement>>()
             )));
 
-            assert_eq!(expected, parse_delimited_symbols_element($code));
+            assert_eq!(expected, parse($code));
         };
         ($symbol_names:expr, $code:expr) => {
             assert_parsing_of_delimited_symbols_element!($symbol_names, $code, "");
@@ -118,8 +121,8 @@ mod tests {
 
     #[test]
     fn does_not_parse_just_a_symbol() {
-        let result = parse_delimited_symbols_element("object");
+        let result = parse("object");
 
-        assert_eq!(Err(nom::Err::Error(("", nom::error::ErrorKind::Tag))), result);
+        assert!(result.is_err());
     }
 }

@@ -1,22 +1,13 @@
 use nom::{
-    character::complete::{
-        none_of,
-    },
-    bytes::complete::{
-        tag,
-    },
-    sequence::{
-        delimited,
-    },
-    combinator::{
-        map_res
-    },
-    branch::alt,
-    multi::{
-        many0,
-    },
-    error::ErrorKind
+    named,
+    alt,
+    tag,
+    none_of,
+    map_res,
+    many0,
+    delimited
 };
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct StringElement {
@@ -41,34 +32,72 @@ impl PartialEq for StringElement {
     }
 }
 
-fn make_string_element(value: String) -> Result<StringElement, String> {
+fn make_slash_char(_: &str) -> Result<char, ParseError> {
+    Ok('\\')
+}
+
+fn make_quotation_char(_: &str) -> Result<char, ParseError> {
+    Ok('\"')
+}
+
+fn make_eol_char(_: &str) -> Result<char, ParseError> {
+    Ok('\n')
+}
+
+fn make_carriage_return_char(_: &str) -> Result<char, ParseError> {
+    Ok('\r')
+}
+
+fn collect_chars(chars: Vec<char>) -> Result<String, ParseError> {
+    Ok(chars.into_iter().collect::<String>())
+}
+
+fn make_string_element(value: String) -> Result<StringElement, ParseError> {
     Ok(StringElement {value})
 }
 
-pub fn parse_string_element(s: &str) -> Result<(&str, StringElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_escaped_character = alt((
-        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\\\"), |_| Ok('\\')),
-        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\\""), |_| Ok('\"')),
-        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\n"), |_| Ok('\n')),
-        map_res::<_, _, _, _, (char, ErrorKind), _, _>(tag("\\r"), |_| Ok('\r')),
-        ));
-    let parse_not_escaped_character = none_of::<_, _, (&str, ErrorKind)>(r#"\""#);
-    let parse_inner_character = alt((parse_escaped_character, parse_not_escaped_character));
-    let parse_inner_characters = map_res::<_, _, _, _, (&str, ErrorKind), _, _>(
-        many0(parse_inner_character),
-        |chars: Vec<char>| Ok(chars.iter().cloned().collect::<String>())
-    );
+named!(parse_escaped_slash(&str) -> char, map_res!(
+    tag!("\\\\"), make_slash_char
+));
 
-    let parse_string = delimited(
-        tag("\""),
-        parse_inner_characters,
-        tag("\"")
-    );
+named!(parse_escaped_quotation(&str) -> char, map_res!(
+    tag!("\\\""), make_quotation_char
+));
 
-    let parse_string_element = map_res(parse_string, make_string_element);
+named!(parse_escaped_eol(&str) -> char, map_res!(
+    tag!("\\n"), make_eol_char
+));
 
-    parse_string_element(s)
-}
+named!(parse_escaped_carriage_return(&str) -> char, map_res!(
+    tag!("\\r"), make_carriage_return_char
+));
+
+named!(parse_escaped_character(&str) -> char, alt!(
+    parse_escaped_slash |
+    parse_escaped_quotation |
+    parse_escaped_eol |
+    parse_escaped_carriage_return
+));
+
+named!(parse_not_escaped_character(&str) -> char, none_of!("\\\""));
+
+named!(parse_inner_character(&str) -> char, alt!(
+    parse_escaped_character |
+    parse_not_escaped_character
+));
+
+named!(parse_inner_characters(&str) -> String, map_res!(
+    many0!(parse_inner_character),
+    collect_chars
+));
+
+named!(parse_string(&str) -> String, delimited!(
+    tag!("\""),
+    parse_inner_characters,
+    tag!("\"")
+));
+
+named!(pub parse(&str) -> StringElement, map_res!(parse_string, make_string_element));
 
 #[cfg(test)]
 mod tests {
@@ -76,15 +105,15 @@ mod tests {
 
     #[test]
     fn works_on_simple_values() {
-        assert_eq!(Ok(("", StringElement{value: r"test".to_string()})), parse_string_element(r#""test""#));
+        assert_eq!(Ok(("", StringElement{value: r"test".to_string()})), parse(r#""test""#));
     }
 
     #[test]
     fn escape_behaves_correctly() {
-        assert_eq!(Ok(("", StringElement{value: "\\".to_string()})), parse_string_element(r#""\\""#));
-        assert_eq!(Ok(("", StringElement{value: "\"".to_string()})), parse_string_element(r#""\"""#));
-        assert_eq!(Ok(("", StringElement{value: "\n".to_string()})), parse_string_element(r#""\n""#));
-        assert_eq!(Ok(("", StringElement{value: "\r".to_string()})), parse_string_element(r#""\r""#));
-        assert_eq!(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse_string_element(r#""knock\"knockknock""#));
+        assert_eq!(Ok(("", StringElement{value: "\\".to_string()})), parse(r#""\\""#));
+        assert_eq!(Ok(("", StringElement{value: "\"".to_string()})), parse(r#""\"""#));
+        assert_eq!(Ok(("", StringElement{value: "\n".to_string()})), parse(r#""\n""#));
+        assert_eq!(Ok(("", StringElement{value: "\r".to_string()})), parse(r#""\r""#));
+        assert_eq!(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse(r#""knock\"knockknock""#));
     }
 }

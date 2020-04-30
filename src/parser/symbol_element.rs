@@ -1,10 +1,15 @@
 use nom::{
-    combinator::map_res,
-    multi::many1,
+    named,
+    alt,
+    tag,
+    map_res,
+    many1
 };
-use crate::parser::lib::parse_symbol_character;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+
+use crate::parser::lib::parse_symbol_character;
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct SymbolElement {
@@ -33,29 +38,35 @@ fn join(chars: Vec<char>) -> Result<String, String> {
     Ok(chars.iter().collect())
 }
 
-fn str_to_string(string: &str) -> Result<String, String> {
+fn str_to_string(string: &str) -> Result<String, ParseError> {
     Ok(String::from(string))
 }
 
-fn make_symbol_element(value: String) -> Result<SymbolElement, String> {
+fn make_symbol_element(value: String) -> Result<SymbolElement, ParseError> {
     Ok(SymbolElement::new(value))
 }
 
-pub fn parse_symbol_element(s: &str) -> Result<(&str, SymbolElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_special_symbols = alt((
-        tag("#opt"),
-        tag("#rest"),
-        tag("#keys"),
-    ));
+named!(parse_special_symbols(&str) -> String, map_res!(
+    alt!(
+        tag!("#opt") |
+        tag!("#rest") |
+        tag!("#keys")
+    ),
+    str_to_string
+));
 
-    let parse_symbol = alt((
-        map_res( many1(parse_symbol_character()), join),
-        map_res(parse_special_symbols, str_to_string)
-    ));
-    let parse_symbol_element = map_res(parse_symbol, make_symbol_element);
+named!(parse_ordinary_symbol(&str) -> String, map_res!(
+    many1!(parse_symbol_character),
+    join
+));
 
-    parse_symbol_element(s)
-}
+named!(pub parse(&str) -> SymbolElement, map_res!(
+    alt!(
+        parse_special_symbols |
+        parse_ordinary_symbol
+    ),
+    make_symbol_element
+));
 
 #[cfg(test)]
 mod tests {
@@ -63,13 +74,13 @@ mod tests {
 
     #[test]
     fn works_on_simple_value() {
-        assert_eq!(Ok(("", SymbolElement {value: "test".to_string()})), parse_symbol_element("test"));
+        assert_eq!(Ok(("", SymbolElement {value: "test".to_string()})), parse("test"));
     }
 
     #[test]
     fn able_to_parse_all_fine_symbols() {
         let example = "test1-_^v=+?<>./&*%$@!~";
-        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse_symbol_element(example));
+        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse(example));
     }
 
     #[test]
@@ -77,24 +88,24 @@ mod tests {
         let text = r##"test\"\,\`\ \(\)\:\\\{\}"##;
         let expected = r##"test",` ():\{}"##;
 
-        assert_eq!(Ok(("", SymbolElement {value: String::from(expected)})), parse_symbol_element(text));
+        assert_eq!(Ok(("", SymbolElement {value: String::from(expected)})), parse(text));
     }
 
     #[test]
     fn allows_numbers_not_at_the_first_position() {
-        assert_eq!(Ok(("", SymbolElement {value: String::from("test1")})), parse_symbol_element("test1"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("1test")})), parse_symbol_element("1test"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("test1")})), parse("test1"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("1test")})), parse("1test"));
     }
 
     #[test]
     fn parses_special_symbols() {
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#opt")})), parse_symbol_element("#opt"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#rest")})), parse_symbol_element("#rest"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#keys")})), parse_symbol_element("#keys"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("#opt")})), parse("#opt"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("#rest")})), parse("#rest"));
+        assert_eq!(Ok(("", SymbolElement {value: String::from("#keys")})), parse("#keys"));
     }
 
     #[test]
     fn does_not_parse_invalid_special_symbols() {
-        assert_eq!(Err(nom::Err::Error(("#tt", nom::error::ErrorKind::Tag))), parse_symbol_element("#tt"));
+        assert!(parse("#tt").is_err());
     }
 }

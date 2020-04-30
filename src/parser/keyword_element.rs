@@ -1,17 +1,13 @@
 use nom::{
-    bytes::complete::{
-        tag
-    },
-    sequence::{
-        preceded
-    },
-    combinator::{
-        map_res
-    },
-    multi::many1,
+    named,
+    preceded,
+    tag,
+    many1,
+    map_res,
 };
 
 use crate::parser::lib::parse_keyword_character;
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct KeywordElement {
@@ -36,22 +32,28 @@ impl PartialEq for KeywordElement {
     }
 }
 
-fn join(chars: Vec<char>) -> Result<String, String> {
+fn join(chars: Vec<char>) -> Result<String, ParseError> {
     Ok(chars.iter().collect())
 }
 
-fn make_keyword_element(value: String) -> Result<KeywordElement, String> {
+fn make_keyword_element(value: String) -> Result<KeywordElement, ParseError> {
     Ok(KeywordElement::new(value))
 }
 
-pub fn parse_keyword_element(s: &str) -> Result<(&str, KeywordElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_keyword = map_res(
-        preceded(tag(":"), many1(parse_keyword_character())),
-        join);
-    let parse_keyword_element = map_res(parse_keyword, make_keyword_element);
+named!(parse_colon(&str) -> &str, tag!(":"));
 
-    parse_keyword_element(s)
-}
+named!(parse_keyword(&str) -> String, map_res!(
+    preceded!(
+        parse_colon,
+        many1!(parse_keyword_character)
+    ),
+    join
+));
+
+named!(pub parse(&str) -> KeywordElement, map_res!(
+    parse_keyword,
+    make_keyword_element
+));
 
 #[cfg(test)]
 mod tests {
@@ -62,7 +64,7 @@ mod tests {
         ($code:expr, $rest:expr) => {
             assert_eq!(
                 Ok(($rest, KeywordElement {value: String::from(&$code[':'.len_utf8()..])})),
-                 parse_keyword_element($code)
+                 parse($code)
             );
         };
         ($code:expr) => {
@@ -73,7 +75,7 @@ mod tests {
     #[test]
     fn works_on_simple_value() {
         assert_keyword_parsing_is_ok!(":test");
-        assert_eq!(Err(nom::Err::Error(("test", ErrorKind::Tag))), parse_keyword_element("test"));
+        assert_eq!(Err(nom::Err::Error(("test", ErrorKind::Tag))), parse("test"));
     }
 
     #[test]
@@ -95,7 +97,7 @@ mod tests {
 
         assert_eq!(
             Ok(("", KeywordElement {value: String::from(expected)})),
-            parse_keyword_element(example)
+            parse(example)
         );
     }
 }

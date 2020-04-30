@@ -1,18 +1,18 @@
 use nom::{
-    character::complete::{
-        multispace0
-    },
-    bytes::complete::tag,
-    combinator::{
-        map_res
-    },
-    multi::{
-        many0
-    },
+    named,
+    many0,
+    character::complete::multispace0,
+    character::complete::multispace1,
+    tag,
+    preceded,
+    terminated,
+    delimited,
+    map_res,
 };
 
-use crate::parser::{Element, parse_element};
-use nom::sequence::{preceded, terminated};
+use crate::parser::element;
+use crate::parser::element::Element;
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct SExpressionElement {
@@ -53,28 +53,37 @@ impl PartialEq for SExpressionElement {
     }
 }
 
-fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement, String> {
+fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement, ParseError> {
     Ok(SExpressionElement::new(values))
 }
 
-pub fn parse_s_expression_element(s: &str) -> Result<(&str, SExpressionElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_expressions = many0(preceded(multispace0, parse_element));
+named!(parse_expressions(&str) -> Vec<Element>, many0!(
+    preceded!(
+        multispace0,
+        element::parse
+    )
+));
 
-    let opening_brace = terminated(tag("("), multispace0);
-    let closing_brace = preceded(multispace0, tag(")"));
+named!(parse_opening_brace(&str) -> &str, terminated!(
+    tag!("("),
+    multispace0
+));
 
-    let parse_s_expression = preceded(
-        opening_brace,
-        terminated(
-            parse_expressions,
-            closing_brace
-        )
-    );
+named!(parse_closing_brace(&str) -> &str, preceded!(
+    multispace0,
+    tag!(")")
+));
 
-    let parse_s_expression_element = map_res(parse_s_expression, make_s_expression_element);
+named!(parse_s_expression(&str) -> Vec<Element>, delimited!(
+    parse_opening_brace,
+    parse_expressions,
+    parse_closing_brace
+));
 
-    parse_s_expression_element(s)
-}
+named!(pub parse(&str) -> SExpressionElement, map_res!(
+    parse_s_expression,
+    make_s_expression_element
+));
 
 #[cfg(test)]
 mod tests {
@@ -87,7 +96,7 @@ mod tests {
     use crate::parser::symbol_element::SymbolElement;
 
     fn assert_s_expression_parsed_correctly(expected: Vec<Element>, code: &str) {
-        assert_eq!(expected, parse_s_expression_element(code).ok().unwrap().1.values);
+        assert_eq!(expected, parse(code).ok().unwrap().1.values);
     }
 
     #[test]

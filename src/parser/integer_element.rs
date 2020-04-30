@@ -1,15 +1,14 @@
 use nom::{
+    named,
+    alt,
+    tag,
+    recognize,
+    pair,
+    opt,
+    map_res,
     character::complete::digit1,
-    bytes::complete::tag,
-    branch::alt,
-    sequence::pair,
-    combinator::{
-        recognize,
-        opt,
-        map_res
-    },
-    error::ErrorKind
 };
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct IntegerElement {
@@ -34,47 +33,42 @@ impl PartialEq for IntegerElement {
     }
 }
 
-fn make_integer_element(value: i64) -> Result<IntegerElement, String> {
+fn make_integer_element(value: i64) -> Result<IntegerElement, ParseError> {
     Ok(IntegerElement::new(value))
 }
 
-pub fn parse_integer_element(s: &str) -> Result<(&str, IntegerElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_plus_sign = tag::<_, _, (&str, ErrorKind)>("+");
-    let parse_minus_sign = tag::<_, _, (&str, ErrorKind)>("-");
-    let parse_sign = alt((parse_plus_sign, parse_minus_sign));
+named!(parse_sign(&str) -> &str, alt!(tag!("+") | tag!("-")));
+named!(parse_integer(&str) -> &str, recognize!(pair!(opt!(parse_sign), digit1)));
 
-    let parse_integer = recognize(
-        pair(
-            opt(parse_sign),
-            digit1
-        )
-    );
-
-    let parse_i64 = map_res(parse_integer, |s: &str| s.parse::<i64>());
-    let parse_integer_element = map_res(parse_i64, make_integer_element);
-
-    parse_integer_element(s)
-}
-
-//named!(parse_i64<&str, i64>, map_res!(parse_integer, |s: &str| s.parse::<i64>()));
-//named!(parse_integer_element<&str, IntegerElement>, map_res!(parse_i64, make_integer_element));
+named!(parse_i64<&str, i64>, map_res!(parse_integer, |s: &str| s.parse::<i64>()));
+named!(pub parse<&str, IntegerElement>, map_res!(parse_i64, make_integer_element));
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn simple_value() {
-        assert_eq!(Ok(("", IntegerElement{value: 20})), parse_integer_element("20"));
+    fn parses_unsigned_value() {
+        assert_eq!(Ok(("", IntegerElement{value: 20})), parse("20"));
     }
 
     #[test]
-    fn signed_positive_value() {
-        assert_eq!(Ok(("", IntegerElement{value: 20})), parse_integer_element("+20"));
+    fn parses_signed_positive_value() {
+        assert_eq!(Ok(("", IntegerElement{value: 20})), parse("+20"));
     }
 
     #[test]
-    fn signed_negative_value() {
-        assert_eq!(Ok(("", IntegerElement{value: -20})), parse_integer_element("-20"));
+    fn parses_signed_negative_value() {
+        assert_eq!(Ok(("", IntegerElement{value: -20})), parse("-20"));
+    }
+
+    #[test]
+    fn returns_remaining_input() {
+        assert_eq!(Ok((" kek", IntegerElement{value: -20})), parse("-20 kek"));
+    }
+
+    #[test]
+    fn returns_error() {
+        assert!(parse("-").is_err());
     }
 }

@@ -21,7 +21,7 @@ use crate::interpreter::value::Keyword;
 use crate::interpreter::value::FunctionArguments;
 use crate::interpreter::context::Context;
 use crate::interpreter::library;
-use crate::parser::parse_code;
+use crate::parser::parse;
 
 use crate::interpreter::reader::read_elements;
 use crate::interpreter::stdlib::infect_stdlib;
@@ -1307,8 +1307,10 @@ impl Interpreter {
     }
 
     pub fn execute(&mut self, code: &str) -> Result<Value, Error> {
+        println!("{}", code);
+        println!("{:?}", parse(code));
         // first step: parse code
-        let code = parse_code(code)
+        let code = parse(code)
             .map(|result| result.1)
             .map_err(|err| Error::parse_error(
                 format!("Error while parsing code: {:?}", err)

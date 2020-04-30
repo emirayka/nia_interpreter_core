@@ -1,15 +1,16 @@
 use std::cmp::max;
 
 use crate::interpreter::value::Value;
-use crate::parser::s_expression_element::SExpressionElement;
-use crate::parser::prefix_element::{PrefixElement, Prefix};
-use crate::parser::Element;
 use crate::interpreter::interpreter::Interpreter;
-use crate::parser::object_element::ObjectElement;
-use crate::parser::delimited_symbols_element::DelimitedSymbolsElement;
-use crate::parser::short_lambda_element::ShortLambdaElement;
 use crate::interpreter::error::Error;
-use crate::parser::object_pattern_element::ObjectPatternElement;
+
+use crate::parser::SExpressionElement;
+use crate::parser::{PrefixedElement, Prefix};
+use crate::parser::Element;
+use crate::parser::ObjectPatternElement;
+use crate::parser::ObjectElement;
+use crate::parser::DelimitedSymbolsElement;
+use crate::parser::ShortLambdaElement;
 
 fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
     let values = sexp_element.get_values();
@@ -288,7 +289,7 @@ fn read_delimited_symbols_element(
     previous_cons
 }
 
-fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_quote_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
@@ -298,7 +299,7 @@ fn read_quote_prefix_element(interpreter: &mut Interpreter, element: Element) ->
     Ok(quoted_value)
 }
 
-fn read_sharp_quote_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_sharp_quote_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
@@ -310,7 +311,7 @@ fn read_sharp_quote_prefix_element(interpreter: &mut Interpreter, element: Eleme
     Ok(flooked_up_value)
 }
 
-fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_graveaccent_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let graveaccent = interpreter.intern_symbol_value("`");
@@ -329,7 +330,7 @@ fn read_graveaccent_prefix_element(interpreter: &mut Interpreter, element: Eleme
     Ok(Value::Cons(cons_id))
 }
 
-fn read_comma_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_comma_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let comma = interpreter.intern_symbol_value(",");
@@ -348,7 +349,7 @@ fn read_comma_prefix_element(interpreter: &mut Interpreter, element: Element) ->
     Ok(Value::Cons(cons_id))
 }
 
-fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_commadog_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let commadog = interpreter.intern_symbol_value(",@");
@@ -367,13 +368,13 @@ fn read_commadog_prefix_element(interpreter: &mut Interpreter, element: Element)
     Ok(Value::Cons(cons_id))
 }
 
-fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixElement) -> Result<Value, Error> {
+fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixedElement) -> Result<Value, Error> {
     match prefix_element.get_prefix() {
-        Prefix::Quote => read_quote_prefix_element(interpreter, prefix_element.get_value()),
-        Prefix::SharpQuote => read_sharp_quote_prefix_element(interpreter, prefix_element.get_value()),
-        Prefix::GraveAccent => read_graveaccent_prefix_element(interpreter, prefix_element.get_value()),
-        Prefix::Comma => read_comma_prefix_element(interpreter, prefix_element.get_value()),
-        Prefix::CommaDog => read_commadog_prefix_element(interpreter, prefix_element.get_value()),
+        Prefix::Quote => read_quote_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::SharpQuote => read_sharp_quote_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::GraveAccent => read_graveaccent_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::Comma => read_comma_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::CommaDog => read_commadog_prefixed_element(interpreter, prefix_element.get_value()),
     }
 }
 
@@ -433,7 +434,7 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::parse_code;
+    use crate::parser::parse;
     use crate::interpreter::library::assertion;
 
     macro_rules! assert_reading_result_equal {
@@ -441,7 +442,7 @@ mod tests {
             let mut interpreter = Interpreter::new();
             let expected = $expected;
 
-            if let Ok((_, program)) = parse_code($code) {
+            if let Ok((_, program)) = parse($code) {
                 let result = read_elements(&mut interpreter, program.get_elements()).unwrap();
 
                 let len = expected.len();
@@ -721,7 +722,7 @@ mod tests {
         code: &str,
         expected: Vec<(&str, Value)>
     ) {
-        if let Ok((_, code)) = parse_code(code) {
+        if let Ok((_, code)) = parse(code) {
             let result = read_elements(interpreter, code.get_elements())
                 .unwrap()
                 .remove(0);
@@ -848,7 +849,7 @@ mod tests {
     }
 
     fn assert_reading_deeply(interpreter: &mut Interpreter, expected: Value, code: &str) {
-        if let Ok((_, program)) = parse_code(code) {
+        if let Ok((_, program)) = parse(code) {
             let result = read_elements(
                 interpreter,
                 program.get_elements()
@@ -940,7 +941,7 @@ mod tests {
 
     macro_rules! assert_prefix_result_equal {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
-            if let Ok((_, program)) = parse_code($code) {
+            if let Ok((_, program)) = parse($code) {
                 let mut interpreter = Interpreter::new();
                 let expected = read_elements(&mut interpreter, program.get_elements()).unwrap()[0];
 

@@ -1,9 +1,16 @@
-use crate::parser::keyword_element::{KeywordElement, parse_keyword_element};
-use nom::sequence::{terminated, preceded};
-use nom::bytes::complete::tag;
-use nom::character::complete::multispace0;
-use nom::multi::many0;
-use nom::combinator::{map_res};
+use nom::{
+    named,
+    many0,
+    preceded,
+    terminated,
+    delimited,
+    tag,
+    map_res,
+    character::complete::multispace0,
+};
+
+use crate::parser::keyword_element;
+use crate::parser::keyword_element::KeywordElement;
 
 #[derive(Debug)]
 pub struct ObjectPatternElement {
@@ -59,26 +66,30 @@ fn make_object_pattern_element(values: Vec<KeywordElement>) -> Result<ObjectPatt
     Ok(object_element)
 }
 
-pub fn parse_object_pattern_element(s: &str) -> Result<(&str, ObjectPatternElement), nom::Err<(&str, nom::error::ErrorKind)>> {
-    let parse_pairs = many0(
-        preceded(multispace0, parse_keyword_element)
-    );
+named!(parse_pairs(&str) -> Vec<KeywordElement>, many0!(
+    preceded!(multispace0, keyword_element::parse)
+));
 
-    let opening_brace = terminated(tag("#{"), multispace0);
-    let closing_brace = preceded(multispace0, tag("}"));
+named!(opening_brace(&str) -> &str, terminated!(
+    tag!("#{"),
+    multispace0
+));
 
-    let parse_object = preceded(
-        opening_brace,
-        terminated(
-            parse_pairs,
-            closing_brace
-        )
-    );
+named!(closing_brace(&str) -> &str, preceded!(
+    multispace0,
+    tag!("}")
+));
 
-    let parse_object_element = map_res(parse_object, make_object_pattern_element);
+named!(parse_object_pattern(&str) -> Vec<KeywordElement>, delimited!(
+    opening_brace,
+    parse_pairs,
+    closing_brace
+));
 
-    parse_object_element(s)
-}
+named!(pub parse(&str) -> ObjectPatternElement, map_res!(
+    parse_object_pattern,
+    make_object_pattern_element
+));
 
 #[cfg(test)]
 mod tests {
@@ -86,12 +97,12 @@ mod tests {
 
     fn assert_parsed_correctly(code: &str) {
         //println!("{:?}", parse_object_element(code));
-        assert!(parse_object_pattern_element(code).is_ok());
+        assert!(parse(code).is_ok());
     }
 
     fn assert_failed_correctly(code: &str) {
         //println!("{:?}", parse_object_element(code));
-        assert!(parse_object_pattern_element(code).is_err());
+        assert!(parse(code).is_err());
     }
 
     #[test]
