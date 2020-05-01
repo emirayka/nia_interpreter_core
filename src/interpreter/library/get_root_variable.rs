@@ -12,7 +12,9 @@ pub fn get_root_variable(
     interpreter.lookup_variable(
         root_environment,
         symbol_name
-    )
+    )?.ok_or_else(|| Error::generic_execution_error(
+        "Cannot find variable."
+    ))
 }
 
 #[cfg(test)]
@@ -39,7 +41,7 @@ mod tests {
         let expected = interpreter.lookup_variable(
             root_environment_id,
             symbol
-        ).unwrap();
+        ).unwrap().unwrap();
 
         let result = get_root_variable(
             &mut interpreter,

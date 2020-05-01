@@ -26,9 +26,9 @@ pub fn lookup(
     match interpreter.lookup_variable(
         _environment,
         symbol_id
-    ) {
-        Ok(value) => Ok(value),
-        _ => Error::generic_execution_error("")
+    )? {
+        Some(value) => Ok(value),
+        _ => Error::generic_execution_error("Cannot find variable.")
             .into()
     }
 }

@@ -99,9 +99,17 @@ impl EnvironmentValueWrapper {
         Ok(self.value)
     }
 
-    // must be used by LexicalEnvironment only
-    pub fn to_value(&self) -> Value {
+    // must be used carefully
+    pub fn force_get_value(&self) -> Value {
         self.value
+    }
+
+    pub fn force_set_value(&mut self, value: Value) {
+        self.value = value;
+    }
+
+    pub fn force_set_flags(&mut self, flags: u8) {
+        self.flags = flags;
     }
 }
 

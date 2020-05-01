@@ -24,7 +24,9 @@ pub fn register(
     let keyboard_list = interpreter.lookup_variable(
         root_environment_id,
         symbol_id_registered_keyboards
-    )?;
+    )?.ok_or_else(|| Error::generic_execution_error(
+        "Cannot find registered_keyboards"
+    ))?;
 
     let path = values.remove(0);
     let name = values.remove(0);

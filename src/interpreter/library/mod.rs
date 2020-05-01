@@ -3,13 +3,11 @@ pub mod infect;
 pub mod testing_helpers;
 
 mod add_value_to_root_list;
-mod _break;
 mod check_if_symbol_is_assignable;
 mod check_value_is_list;
 mod check_value_is_string;
 mod check_value_is_symbol;
 mod check_value_is_cons;
-mod _continue;
 mod deep_equal;
 mod execute_forms;
 mod execute_function;
@@ -46,13 +44,11 @@ mod set_root_variable;
 mod value_to_string;
 
 pub use add_value_to_root_list::add_value_to_root_list;
-pub use _break::_break;
 pub use check_if_symbol_is_assignable::check_if_symbol_assignable;
 pub use check_value_is_list::check_value_is_list;
 pub use check_value_is_string::check_value_is_string;
 pub use check_value_is_symbol::check_value_is_symbol;
 pub use check_value_is_cons::check_value_is_cons;
-pub use _continue::_continue;
 pub use deep_equal::deep_equal;
 pub use execute_forms::execute_forms;
 pub use execute_function::execute_function;

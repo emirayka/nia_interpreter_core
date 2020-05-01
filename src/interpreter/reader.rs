@@ -1,10 +1,11 @@
 use std::cmp::max;
+use std::convert::TryInto;
 
 use crate::interpreter::value::Value;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
 
-use crate::parser::SExpressionElement;
+use crate::parser::{SExpressionElement, SymbolElement};
 use crate::parser::{PrefixedElement, Prefix};
 use crate::parser::Element;
 use crate::parser::ObjectPatternElement;
@@ -12,9 +13,16 @@ use crate::parser::ObjectElement;
 use crate::parser::DelimitedSymbolsElement;
 use crate::parser::ShortLambdaElement;
 
-fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
-    let s_expressions = sexp_element.get_values();
-    let mut values = Vec::new();
+use crate::interpreter::library;
+
+fn read_regular_s_expression(
+    interpreter: &mut Interpreter,
+    first_value: Element,
+    s_expressions: Vec<Element>,
+) -> Result<Value, Error> {
+    let mut values = vec!(
+        read_element(interpreter, first_value)?
+    );
 
     for s_expression in s_expressions {
         let element = read_element(interpreter, s_expression)?;
@@ -27,9 +35,93 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
     Ok(list)
 }
 
+fn read_object_method_invocation_s_expression(
+    interpreter: &mut Interpreter,
+    delimited_symbols_element: DelimitedSymbolsElement,
+    s_expressions: Vec<Element>,
+) -> Result<Value, Error> {
+    let mut s_expressions = s_expressions;
+
+    let object_method_invocation = read_delimited_symbols_element(
+        interpreter,
+        delimited_symbols_element,
+    );
+
+    let car = interpreter.get_car(
+        object_method_invocation.try_into()?
+    )?;
+
+    let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
+
+    let result = if library::deep_equal(interpreter, car, with_this_symbol_value)? {
+        let cdr = interpreter.get_cdr(
+            object_method_invocation.try_into()?
+        )?;
+        let cddr = interpreter.get_cdr(
+            cdr.try_into()?
+        )?;
+        let caddr = interpreter.get_car(
+            cddr.try_into()?
+        )?;
+
+        let cdddr = read_elements(interpreter, s_expressions)?;
+        let cdddr = interpreter.vec_to_list(cdddr);
+
+        let new_caddr = interpreter.make_cons_value(
+            caddr,
+            cdddr
+        );
+
+        interpreter.set_car(
+            cddr.try_into()?,
+            new_caddr,
+        )?;
+
+        object_method_invocation
+    } else {
+        let cdr = read_elements(interpreter, s_expressions)?;
+        let cdr = interpreter.vec_to_list(cdr);
+
+        interpreter.make_cons_value(
+            object_method_invocation,
+            cdr
+        )
+    };
+
+    Ok(result)
+}
+
+fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
+    if sexp_element.get_values_ref().len() == 0 {
+        return Ok(interpreter.intern_nil_symbol_value());
+    }
+
+    let mut s_expressions = sexp_element.get_values();
+    let first_element = s_expressions.remove(0);
+
+    if let Element::DelimitedSymbols(delimited_symbols_element) = first_element {
+        read_object_method_invocation_s_expression(
+            interpreter,
+            delimited_symbols_element,
+            s_expressions,
+        )
+    } else {
+        read_regular_s_expression(
+            interpreter,
+            first_element,
+            s_expressions,
+        )
+    }
+    // read_regular_s_expression(
+    //     interpreter,
+    //     first_element,
+    //     s_expressions,
+    // )
+}
+
 fn count_short_lambda_argument_count(
     _interpreter: &mut Interpreter,
-    short_lambda_element: &ShortLambdaElement
+    short_lambda_element: &ShortLambdaElement,
 ) -> u8 {
     let mut candidates = Vec::new();
 
@@ -53,23 +145,23 @@ fn count_short_lambda_argument_count(
                 match (&name['%'.len_utf8()..]).parse::<u8>() {
                     Ok(val) => {
                         count = max(count, val);
-                    },
+                    }
                     _ => {}
                 }
-            },
+            }
             Element::Prefix(prefix_element) => {
                 candidates.push(prefix_element.get_value_ref());
-            },
+            }
             Element::SExpression(s_expression_element) => {
                 for element in s_expression_element.get_values_ref() {
                     candidates.push(element);
                 }
-            },
+            }
             Element::Object(object_element) => {
                 for (_, element) in object_element.get_values_ref() {
                     candidates.push(element)
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -79,7 +171,7 @@ fn count_short_lambda_argument_count(
 
 fn make_short_lambda_argument_list(
     interpreter: &mut Interpreter,
-    count: u8
+    count: u8,
 ) -> Value {
     let mut last_cons = interpreter.intern_nil_symbol_value();
 
@@ -96,7 +188,7 @@ fn make_short_lambda_argument_list(
 
 fn read_short_lambda(
     interpreter: &mut Interpreter,
-    short_lambda_element: ShortLambdaElement
+    short_lambda_element: ShortLambdaElement,
 ) -> Result<Value, Error> {
     let function = interpreter.intern_symbol_value("function");
     let lambda = interpreter.intern_symbol_value("lambda");
@@ -105,7 +197,7 @@ fn read_short_lambda(
     let argument_count = count_short_lambda_argument_count(interpreter, &short_lambda_element);
     let code = read_s_expression(
         interpreter,
-        short_lambda_element.get_value()
+        short_lambda_element.get_value(),
     )?;
     let arguments = make_short_lambda_argument_list(interpreter, argument_count);
 
@@ -130,18 +222,18 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
 
         let value = read_element(
             interpreter,
-            element
+            element,
         )?;
         let keyword = interpreter.intern_keyword_value(name);
 
         last_cons = Value::Cons(interpreter.make_cons(
             value,
-            last_cons
+            last_cons,
         ));
 
         last_cons = Value::Cons(interpreter.make_cons(
             keyword,
-            last_cons
+            last_cons,
         ));
     }
 
@@ -149,19 +241,19 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
     let nil = interpreter.intern_nil_symbol_value();
     let car = Value::Cons(interpreter.make_cons(
         sym1,
-        nil
+        nil,
     ));
 
     let keyword = interpreter.intern_keyword_value("make");
 
     let car = Value::Cons(interpreter.make_cons(
         keyword,
-        car
+        car,
     ));
 
     let cons_id = interpreter.make_cons(
         car,
-        last_cons
+        last_cons,
     );
 
     Ok(Value::Cons(cons_id))
@@ -169,7 +261,7 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
 
 fn read_object_pattern(
     interpreter: &mut Interpreter,
-    object_pattern_element: ObjectPatternElement
+    object_pattern_element: ObjectPatternElement,
 ) -> Result<Value, Error> {
     let values = object_pattern_element.get_values();
 
@@ -183,22 +275,22 @@ fn read_object_pattern(
         let value = interpreter.intern_symbol_value(&name);
         let value_cell = interpreter.make_cons_value(
             value,
-            nil
+            nil,
         );
         let quoted_value = interpreter.make_cons_value(
             quote,
-            value_cell
+            value_cell,
         );
         let keyword = interpreter.intern_keyword_value(name);
 
         last_cons = Value::Cons(interpreter.make_cons(
             quoted_value,
-            last_cons
+            last_cons,
         ));
 
         last_cons = Value::Cons(interpreter.make_cons(
             keyword,
-            last_cons
+            last_cons,
         ));
     }
 
@@ -206,30 +298,28 @@ fn read_object_pattern(
     let nil = interpreter.intern_nil_symbol_value();
     let car = Value::Cons(interpreter.make_cons(
         sym1,
-        nil
+        nil,
     ));
 
     let keyword = interpreter.intern_keyword_value("make");
 
     let car = Value::Cons(interpreter.make_cons(
         keyword,
-        car
+        car,
     ));
 
     let cons_id = interpreter.make_cons(
         car,
-        last_cons
+        last_cons,
     );
 
     Ok(Value::Cons(cons_id))
 }
 
-fn read_delimited_symbols_element(
+fn expand_delimited_symbols(
     interpreter: &mut Interpreter,
-    delimited_symbols_element: DelimitedSymbolsElement
+    values: &[SymbolElement],
 ) -> Value {
-    let values = delimited_symbols_element.get_symbols();
-
     let object_symbol_name = values[0].get_value();
     let mut previous_cons = interpreter.intern_symbol_value(object_symbol_name);
 
@@ -239,20 +329,71 @@ fn read_delimited_symbols_element(
         let nil = interpreter.intern_nil_symbol_value();
         let current_cons = Value::Cons(interpreter.make_cons(
             previous_cons,
-            nil
+            nil,
         ));
 
         let keyword = interpreter.intern_keyword_value(symbol_name);
 
         let current_cons = Value::Cons(interpreter.make_cons(
             keyword,
-            current_cons
+            current_cons,
         ));
 
         previous_cons = current_cons;
     }
 
     previous_cons
+}
+
+fn read_delimited_symbols_element_as_this_invocation(
+    interpreter: &mut Interpreter,
+    values: &Vec<SymbolElement>,
+) -> Value {
+    expand_delimited_symbols(interpreter, values)
+}
+
+fn read_delimited_symbols_element_as_object_method_invocation(
+    interpreter: &mut Interpreter,
+    values: &Vec<SymbolElement>,
+) -> Value {
+    let value_of_this_object = expand_delimited_symbols(
+        interpreter,
+        &values[..(values.len() - 1)],
+    );
+
+    // construct this invocation
+    let this_symbol_value = interpreter.intern_symbol_value("this");
+    let this_object_property_keyword = interpreter.intern_keyword_value(
+        values.last()
+            .unwrap()
+            .get_value()
+    );
+
+    let this_invocation_value = interpreter.vec_to_list(
+        vec!(this_object_property_keyword, this_symbol_value)
+    );
+
+    // construct with-this invocation
+    let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
+
+    let result = interpreter.vec_to_list(
+        vec!(with_this_symbol_value, value_of_this_object, this_invocation_value)
+    );
+
+    result
+}
+
+fn read_delimited_symbols_element(
+    interpreter: &mut Interpreter,
+    delimited_symbols_element: DelimitedSymbolsElement,
+) -> Value {
+    let values = delimited_symbols_element.get_symbols();
+
+    if values[0].get_value() == "this" || values[0].get_value() == "super" {
+        read_delimited_symbols_element_as_this_invocation(interpreter, values)
+    } else {
+        read_delimited_symbols_element_as_object_method_invocation(interpreter, values)
+    }
 }
 
 fn read_quote_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
@@ -285,12 +426,12 @@ fn read_graveaccent_prefixed_element(interpreter: &mut Interpreter, element: Ele
     let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
-        nil
+        nil,
     ));
 
     let cons_id = interpreter.make_cons(
         graveaccent,
-        cdr
+        cdr,
     );
 
     Ok(Value::Cons(cons_id))
@@ -304,12 +445,12 @@ fn read_comma_prefixed_element(interpreter: &mut Interpreter, element: Element) 
     let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
-        nil
+        nil,
     ));
 
     let cons_id = interpreter.make_cons(
         comma,
-        cdr
+        cdr,
     );
 
     Ok(Value::Cons(cons_id))
@@ -323,12 +464,12 @@ fn read_commadog_prefixed_element(interpreter: &mut Interpreter, element: Elemen
     let nil = interpreter.intern_nil_symbol_value();
     let cdr = Value::Cons(interpreter.make_cons(
         value,
-        nil
+        nil,
     ));
 
     let cons_id = interpreter.make_cons(
         commadog,
-        cdr
+        cdr,
     );
 
     Ok(Value::Cons(cons_id))
@@ -356,7 +497,7 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
             let string = string_element.get_value();
 
             interpreter.intern_string_value(&string)
-        },
+        }
         Element::Symbol(symbol_element) => {
             let symbol_name = symbol_element.get_value();
             interpreter.intern_symbol_value(symbol_name)
@@ -365,7 +506,7 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
             let keyword_name = keyword_element.get_value();
 
             interpreter.intern_keyword_value(keyword_name)
-        },
+        }
         Element::SExpression(sexp_element) =>
             read_s_expression(interpreter, sexp_element)?,
         Element::Object(object_element) =>
@@ -378,7 +519,6 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
             read_prefix_element(interpreter, prefix_element)?,
         Element::ShortLambda(short_lambda_element) =>
             read_short_lambda(interpreter, short_lambda_element)?
-
     };
 
     Ok(value)
@@ -552,23 +692,23 @@ mod tests {
         assert_reading_deeply(&mut interpreter, expected, "()");
 
         let symbol = interpreter.intern_symbol_value("a");
-        let nil= interpreter.intern_nil_symbol_value();
+        let nil = interpreter.intern_nil_symbol_value();
         let expected = interpreter.make_cons_value(
             symbol,
-            nil
+            nil,
         );
         assert_reading_deeply(&mut interpreter, expected, "(a)");
 
         let symbol = interpreter.intern_symbol_value("b");
-        let nil= interpreter.intern_nil_symbol_value();
+        let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             symbol,
-            nil
+            nil,
         );
         let symbol = interpreter.intern_symbol_value("a");
         let expected = interpreter.make_cons_value(
             symbol,
-            cdr
+            cdr,
         );
         assert_reading_deeply(&mut interpreter, expected, "(a b)");
     }
@@ -586,8 +726,8 @@ mod tests {
             let function = interpreter.intern_symbol_value("function");
             let lambda = interpreter.intern_symbol_value("lambda");
 
-            let cdr= interpreter.make_cons_value(body, nil);
-            let cdr= interpreter.make_cons_value(arguments, cdr);
+            let cdr = interpreter.make_cons_value(body, nil);
+            let cdr = interpreter.make_cons_value(arguments, cdr);
             let car = interpreter.make_cons_value(lambda, cdr);
 
             let cdr = interpreter.make_cons_value(car, nil);
@@ -600,7 +740,7 @@ mod tests {
             interpreter: &mut Interpreter,
             arguments: Value,
             body: Value,
-            code: &str
+            code: &str,
         ) {
             let expected = make_short_lambda(interpreter, arguments, body);
 
@@ -685,7 +825,7 @@ mod tests {
     fn assert_object_has_items(
         interpreter: &mut Interpreter,
         code: &str,
-        expected: Vec<(&str, Value)>
+        expected: Vec<(&str, Value)>,
     ) {
         if let Ok((_, code)) = parse(code) {
             let result = read_elements(interpreter, code.get_elements())
@@ -694,7 +834,7 @@ mod tests {
 
             let result = interpreter.evaluate_value(
                 interpreter.get_root_environment(),
-                result
+                result,
             ).unwrap();
 
             match result {
@@ -705,16 +845,16 @@ mod tests {
                         let expected = value;
                         let result = interpreter.get_object_item(
                             object_id,
-                            symbol
+                            symbol,
                         ).unwrap().unwrap();
 
                         assertion::assert_deep_equal(
                             interpreter,
                             expected,
-                            result
+                            result,
                         );
                     }
-                },
+                }
                 _ => unreachable!()
             }
         } else {
@@ -733,14 +873,14 @@ mod tests {
             assert_object_has_items(
                 &mut interpreter,
                 "{}",
-                vec!()
+                vec!(),
             );
             assert_object_has_items(
                 &mut interpreter,
                 "{:a 1}",
                 vec!(
                     ("a", Value::Integer(1)),
-                )
+                ),
             );
             assert_object_has_items(
                 &mut interpreter,
@@ -748,7 +888,7 @@ mod tests {
                 vec!(
                     ("a", Value::Integer(1)),
                     ("b", Value::Integer(2))
-                )
+                ),
             );
         }
 
@@ -772,7 +912,7 @@ mod tests {
 //                    ("e", keyword_value),
                     ("f", symbol_value),
                     ("g", string_value),
-                )
+                ),
             );
         }
     }
@@ -791,7 +931,7 @@ mod tests {
             assert_object_has_items(
                 &mut interpreter,
                 "#{}",
-            vec!()
+                vec!(),
             );
 
             assert_object_has_items(
@@ -799,7 +939,7 @@ mod tests {
                 "#{:a}",
                 vec!(
                     ("a", a)
-                )
+                ),
             );
 
             assert_object_has_items(
@@ -817,91 +957,127 @@ mod tests {
         if let Ok((_, program)) = parse(code) {
             let result = read_elements(
                 interpreter,
-                program.get_elements()
+                program.get_elements(),
             ).unwrap().remove(0);
 
             assertion::assert_deep_equal(interpreter, expected, result);
         }
     }
 
-    #[test]
-    fn reads_delimited_symbols_element_correctly() {
-        let mut interpreter = Interpreter::new();
+    #[cfg(test)]
+    mod delimited_symbols_element {
+        use super::*;
 
-        let symbol = interpreter.intern_symbol_value("object");
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            symbol,
-            nil
-        );
+        #[test]
+        fn reads_delimited_symbols_element_with_this_correctly() {
+            let mut interpreter = Interpreter::new();
 
-        let keyword = interpreter.intern_keyword_value("value");
-        let expected = interpreter.make_cons_value(
-            keyword,
-            cdr
-        );
+            let nil_symbol_value = interpreter.intern_nil_symbol_value();
+            let this_symbol_value = interpreter.intern_symbol_value("this");
+            let value1_keyword_value = interpreter.intern_keyword_value("value1");
+            let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-        assert_reading_deeply(&mut interpreter, expected, "object:value");
+            let expected = interpreter.vec_to_list(
+                vec!(value1_keyword_value, this_symbol_value)
+            );
 
-        let symbol = interpreter.intern_symbol_value("object");
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            symbol,
-            nil
-        );
+            assert_reading_deeply(&mut interpreter, expected, "this:value1");
 
-        let keyword = interpreter.intern_keyword_value("value1");
-        let car = interpreter.make_cons_value(
-            keyword,
-            cdr
-        );
+            let expected = interpreter.vec_to_list(
+                vec!(value2_keyword_value, expected)
+            );
 
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            car,
-            nil
-        );
+            assert_reading_deeply(&mut interpreter, expected, "this:value1:value2");
 
-        let keyword = interpreter.intern_keyword_value("value2");
-        let expected = interpreter.make_cons_value(
-            keyword,
-            cdr
-        );
+            let expected = interpreter.make_cons_value(
+                expected,
+                nil_symbol_value,
+            );
+            assert_reading_deeply(&mut interpreter, expected, "(this:value1:value2)");
+        }
 
-        assert_reading_deeply(&mut interpreter, expected, "object:value1:value2");
 
-        let symbol = interpreter.intern_symbol_value("object");
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            symbol,
-            nil
-        );
+        #[test]
+        fn reads_delimited_symbols_element_with_super_correctly() {
+            let mut interpreter = Interpreter::new();
 
-        let keyword = interpreter.intern_keyword_value("value1");
-        let car = interpreter.make_cons_value(
-            keyword,
-            cdr
-        );
+            let nil_symbol_value = interpreter.intern_nil_symbol_value();
+            let super_symbol_value = interpreter.intern_symbol_value("super");
+            let value1_keyword_value = interpreter.intern_keyword_value("value1");
+            let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-        let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            car,
-            nil
-        );
+            let expected = interpreter.vec_to_list(
+                vec!(value1_keyword_value, super_symbol_value)
+            );
 
-        let keyword = interpreter.intern_keyword_value("value2");
-        let car = interpreter.make_cons_value(
-            keyword,
-            cdr
-        );
+            assert_reading_deeply(&mut interpreter, expected, "super:value1");
 
-        let nil = interpreter.intern_nil_symbol_value();
-        let expected = interpreter.make_cons_value(
-            car,
-            nil
-        );
+            let expected = interpreter.vec_to_list(
+                vec!(value2_keyword_value, expected)
+            );
 
-        assert_reading_deeply(&mut interpreter, expected, "(object:value1:value2)");
+            assert_reading_deeply(&mut interpreter, expected, "super:value1:value2");
+
+            let expected = interpreter.make_cons_value(
+                expected,
+                nil_symbol_value,
+            );
+            assert_reading_deeply(&mut interpreter, expected, "(super:value1:value2)");
+        }
+
+        #[test]
+        fn reads_delimited_symbols_element_object_method_invocation_correctly() {
+            let mut interpreter = Interpreter::new();
+
+            let nil_symbol_value = interpreter.intern_nil_symbol_value();
+            let this_symbol_value = interpreter.intern_symbol_value("this");
+            let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
+            let object_symbol_value = interpreter.intern_symbol_value("object");
+            let value1_keyword_value = interpreter.intern_keyword_value("value1");
+            let value2_keyword_value = interpreter.intern_keyword_value("value2");
+
+            let this_invocation = interpreter.vec_to_list(
+                vec!(value1_keyword_value, this_symbol_value)
+            );
+
+            let expected = interpreter.vec_to_list(
+                vec!(with_this_symbol_value, object_symbol_value, this_invocation)
+            );
+
+            assert_reading_deeply(&mut interpreter, expected, "object:value1");
+
+            let this_invocation = interpreter.vec_to_list(
+                vec!(value2_keyword_value, this_symbol_value)
+            );
+
+            let this_object_value = interpreter.vec_to_list(
+                vec!(value1_keyword_value, object_symbol_value)
+            );
+
+            let expected = interpreter.vec_to_list(
+                vec!(with_this_symbol_value, this_object_value, this_invocation)
+            );
+
+            assert_reading_deeply(&mut interpreter, expected, "object:value1:value2");
+
+            let item3 = interpreter.vec_to_list(
+                vec!(value2_keyword_value, this_symbol_value)
+            );
+
+            let item3 = interpreter.vec_to_list(
+                vec!(item3)
+            );
+
+            let item2 = interpreter.vec_to_list(
+                vec!(value1_keyword_value, object_symbol_value)
+            );
+
+            let expected = interpreter.vec_to_list(
+                vec!(with_this_symbol_value, item2, item3)
+            );
+
+            assert_reading_deeply(&mut interpreter, expected, "(object:value1:value2)");
+        }
     }
 
     macro_rules! assert_prefix_result_equal {
@@ -970,13 +1146,12 @@ mod tests {
             ("'#''(list)", "'(flookup (quote '(list)))"),
             ("'#'{}", "'(flookup (quote {}))"),
             ("'#'#()", "'(flookup (quote #()))"),
-
             ("#'flookup", "(flookup (quote flookup))")
         );
 
         assertion::assert_results_are_equal(
             &mut interpreter,
-            pairs
+            pairs,
         )
     }
 
@@ -987,44 +1162,44 @@ mod tests {
         let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             Value::Integer(4),
-                nil
+            nil,
         );
 
         let car = interpreter.make_cons_value(
             Value::Integer(3),
-            cdr
+            cdr,
         );
 
         let nil = interpreter.intern_nil_symbol_value();
         let cdr = interpreter.make_cons_value(
             Value::Boolean(false),
-            nil
+            nil,
         );
 
         let cdr = interpreter.make_cons_value(
             car,
-            cdr
+            cdr,
         );
 
         let cdr = interpreter.make_cons_value(
             Value::Boolean(true),
-            cdr
+            cdr,
         );
 
         let cdr = interpreter.make_cons_value(
             Value::Float(2.3),
-            cdr
+            cdr,
         );
 
         let cdr = interpreter.make_cons_value(
             Value::Integer(1),
-             cdr
+            cdr,
         );
 
         let symbol = interpreter.intern_symbol_value("a");
         let expected = interpreter.make_cons_value(
             symbol,
-            cdr
+            cdr,
         );
 
         assert_reading_deeply(&mut interpreter, expected, "(a 1 2.3 #t (3 4) #f)");

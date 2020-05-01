@@ -18,13 +18,18 @@ pub fn with_this(
 
     let mut values = values;
 
-    let object_id = library::read_try_into(
+    let first_value = values.remove(0);
+    let first_value_evaluated = interpreter.evaluate_value(
+        environment_id,
+        first_value
+    )?;
+
+    let object_id = library::read_as_object_id(
         interpreter,
-        values.remove(0),
+        first_value_evaluated,
     )?;
 
     let code = values;
-
     let previous_this = interpreter.get_this_object();
 
     interpreter.set_this_object(object_id);
@@ -44,7 +49,9 @@ pub fn with_this(
         }
     }
 
-    Ok(result?)
+    let result = result?;
+
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -53,7 +60,20 @@ mod tests {
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn sets_this_object() {
+    fn sets_this_object_correctly() {
+        let mut interpreter = Interpreter::new();
+
+        let specs = vec!(
+            ("(with-this {:a 1} (list this:a))", "'(1)"),
+            ("(with-this {:a 1 :b 2} (list this:a this:b))", "'(1 2)"),
+            ("(with-this {:f1 (fn () 1)} (this:f1))", "1"),
+            ("(with-this {:f1 (fn () 1) :f2 (fn () (+ (this:f1) (this:f1)))} (this:f2))", "2"),
+        );
+
+        assertion::assert_results_are_equal(
+            &mut interpreter,
+            specs
+        );
     }
 
     #[test]

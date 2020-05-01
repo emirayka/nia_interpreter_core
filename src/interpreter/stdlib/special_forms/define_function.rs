@@ -110,11 +110,11 @@ mod tests {
         ).unwrap());
 
         assert_eq!(
-            Value::Integer(2),
+            Ok(Some(Value::Integer(2))),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 name,
-            ).unwrap()
+            )
         );
     }
 
@@ -130,11 +130,11 @@ mod tests {
             name)
             .unwrap());
         assert_eq!(
-            interpreter.intern_nil_symbol_value(),
+            Ok(Some(interpreter.intern_nil_symbol_value())),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
                 name,
-            ).unwrap()
+            )
         );
     }
 

@@ -27,7 +27,7 @@ mod block;
 mod throw;
 mod _try;
 mod _while;
-// mod with_this;
+mod with_this;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, SpecialFormFunctionType)> = vec!(
@@ -54,7 +54,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("throw", throw::throw),
         ("try", _try::_try),
         ("while", _while::_while),
-        // ("with-this", with_this::with_this),
+        ("with-this", with_this::with_this),
     );
 
     for (name, func) in pairs {

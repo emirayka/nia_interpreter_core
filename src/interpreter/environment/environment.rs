@@ -48,13 +48,17 @@ fn set_value(
     symbol_id: SymbolId,
     value: Value,
 ) -> Result<(), Error> {
-    if has_value(map, symbol_id) {
-        map.get_mut(&symbol_id).unwrap().set_value(value)?;
-        Ok(())
-    } else {
-        Error::generic_execution_error(
-            "Cannot set value that does not exist."
-        ).into()
+    match map.get_mut(&symbol_id) {
+        Some(ref_mut) => {
+            ref_mut.set_value(value)?;
+
+            Ok(())
+        },
+        None => {
+            Error::generic_execution_error(
+                "Cannot set value that does not exist."
+            ).into()
+        }
     }
 }
 
@@ -163,13 +167,13 @@ impl LexicalEnvironment {
         let mut result = self.variables
             .values()
             .into_iter()
-            .map(|value| value.to_value())
+            .map(|value| value.force_get_value())
             .collect::<Vec<Value>>();
 
         result.extend(self.functions
             .values()
             .into_iter()
-            .map(|value| value.to_value()));
+            .map(|value| value.force_get_value()));
 
         result.extend(self.variables
             .keys()

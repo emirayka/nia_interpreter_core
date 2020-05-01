@@ -15,7 +15,9 @@ pub fn get_last_item_from_root_list(
     let root_variable = interpreter.lookup_variable(
         root_environment,
         symbol_name,
-    )?;
+    )?.ok_or_else(|| Error::generic_execution_error(
+        "Cannot find variable."
+    ))?;
 
     check_value_is_list(interpreter, root_variable)?;
 

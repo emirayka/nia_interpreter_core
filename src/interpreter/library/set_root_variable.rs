@@ -60,7 +60,7 @@ mod tests {
         let result = interpreter.lookup_variable(
             root_environment_id,
             symbol
-        ).unwrap();
+        ).unwrap().unwrap();
 
         assertion::assert_deep_equal(
             &mut interpreter,
@@ -86,7 +86,7 @@ mod tests {
         let result = interpreter.lookup_variable(
             root_environment_id,
             symbol
-        ).unwrap();
+        ).unwrap().unwrap();
 
         assertion::assert_deep_equal(
             &mut interpreter,

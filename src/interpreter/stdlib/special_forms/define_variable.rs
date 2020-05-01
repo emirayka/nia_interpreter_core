@@ -112,8 +112,9 @@ mod tests {
             interpreter.get_root_environment(),
             name,
         ).unwrap());
+
         assert_eq!(
-            Value::Integer(2),
+            Some(Value::Integer(2)),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
                 name,
@@ -132,12 +133,13 @@ mod tests {
             interpreter.get_root_environment(),
             name,
         ).unwrap());
+
         assert_eq!(
-            interpreter.intern_nil_symbol_value(),
+            Ok(Some(interpreter.intern_nil_symbol_value())),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
                 name,
-            ).unwrap());
+            ));
     }
 
 

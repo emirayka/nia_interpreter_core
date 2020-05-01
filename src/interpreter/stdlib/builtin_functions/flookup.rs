@@ -26,9 +26,9 @@ pub fn flookup(
     match interpreter.lookup_function(
         _environment,
         symbol_id
-    ) {
-        Ok(value) => Ok(value),
-        _ => return Error::generic_execution_error("")
+    )? {
+        Some(value) => Ok(value),
+        None => return Error::generic_execution_error("Cannot find function.")
             .into()
     }
 }
