@@ -50,7 +50,7 @@ pub fn value_to_string(
             Ok(result)
         },
         Value::Object(object_id) => {
-            let items = interpreter.get_items(object_id)?;
+            let items = interpreter.get_object_items(object_id)?;
 
             let mut result = String::new();
             result.push_str("{");
@@ -58,7 +58,7 @@ pub fn value_to_string(
             for (symbol_id, value) in items {
                 let mut name = String::from(":");
                 name.push_str(interpreter.get_symbol_name(*symbol_id)?);
-                let string = value_to_string(interpreter, *value)?;
+                let string = value_to_string(interpreter, value.force_get_value())?;
 
                 result.push_str(&name);
                 result.push_str(" ");

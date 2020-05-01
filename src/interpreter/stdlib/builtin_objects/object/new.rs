@@ -3,7 +3,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 
-pub fn object_new(
+pub fn new(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

@@ -4,7 +4,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::library;
 
-pub fn object_set(
+pub fn set(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

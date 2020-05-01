@@ -5,14 +5,14 @@ use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
-pub fn object_set_proto(
+pub fn freeze_mark(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `object:set-proto!' must take only one argument."
+            "Built-in function `object:freeze!' must take only one argument."
         ).into();
     }
 
@@ -25,7 +25,7 @@ pub fn object_set_proto(
     let proto_id = match values.remove(0) {
         Value::Object(object_id) => object_id,
         _ => return Error::invalid_argument_error(
-            "The first argument of built-in function `object:set-proto!' must be an object."
+            "The first argument of built-in function `object:freeze!' must be an object."
         ).into()
     };
 
@@ -44,41 +44,11 @@ mod tests {
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn sets_proto_correctly() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
-            ("(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2) obj-1:a)", Value::Integer(1))
-        );
-
-        assertion::assert_results_are_correct(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    fn returns_true_when_proto_is_set() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec!(
-            ("(let ((obj-1 {}) (obj-2 {:a 1})) (object:set-proto! obj-1 obj-2))", Value::Boolean(true))
-        );
-
-        assertion::assert_results_are_correct(
-            &mut interpreter,
-            pairs
-        );
-    }
-
-    #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn freezes_object() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto!))",
-            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1))",
-            "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1 obj-2 'sym2))"
+
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(
@@ -88,25 +58,34 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_when_first_argument_is_not_an_object() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(let ((obj-1 2) (obj-2 {})) (object:set-proto! obj-1 obj-2))"
+            "(object:freeze!)",
+            "(object:freeze! obj-1 'val)"
         );
 
-        assertion::assert_results_are_invalid_argument_errors(
+        assertion::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector
         );
     }
 
     #[test]
-    fn returns_invalid_argument_when_second_argument_is_not_an_object() {
+    fn returns_invalid_argument_when_not_an_object_were_provided() {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            "(let ((obj-1 {}) (obj-2 2)) (object:set-proto! obj-1 obj-2))"
+            "(object:freeze! 1)",
+            "(object:freeze! 1.1)",
+            "(object:freeze! #t)",
+            "(object:freeze! #f)",
+            "(object:freeze! \"string\")",
+            "(object:freeze! :keyword)",
+            "(object:freeze! 'symbol)",
+            "(object:freeze! '(list))",
+            "(object:freeze! #())",
         );
 
         assertion::assert_results_are_invalid_argument_errors(

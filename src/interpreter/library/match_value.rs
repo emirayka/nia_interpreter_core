@@ -65,8 +65,8 @@ pub fn match_value_recursive(
         Value::Object(binding_object_id) => {
             match value {
                 Value::Object(value_object_id) => {
-                    let binding_keys = interpreter.get_items(binding_object_id)?;
-                    let value_keys = interpreter.get_items(value_object_id)?;
+                    let binding_keys = interpreter.get_object_items(binding_object_id)?;
+                    let value_keys = interpreter.get_object_items(value_object_id)?;
 
                     let mut checkings = Vec::new();
 
@@ -85,8 +85,8 @@ pub fn match_value_recursive(
                         match_value_recursive(
                             interpreter,
                             environment_id,
-                            binding_value,
-                            value
+                            binding_value.get_value()?,
+                            value.get_value()?
                         )?;
                     }
 

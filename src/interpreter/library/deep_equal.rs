@@ -7,6 +7,7 @@ use crate::interpreter::value::{
 use crate::interpreter::error::Error;
 use crate::interpreter::value::Function;
 use crate::interpreter::value::Value;
+use crate::{Object, ObjectValueWrapper};
 
 fn deep_equal_option_values(
     interpreter: &Interpreter,
@@ -176,6 +177,58 @@ fn deep_equal_code(
     return Ok(true)
 }
 
+fn deep_equal_object_value_wrapper(
+    interpreter: &Interpreter,
+    object_value_wrapper_1: &ObjectValueWrapper,
+    object_value_wrapper_2: &ObjectValueWrapper
+) -> Result<bool, Error> {
+    if object_value_wrapper_1.get_flags() != object_value_wrapper_2.get_flags() {
+        return Ok(false);
+    }
+
+    return deep_equal(
+        interpreter,
+        object_value_wrapper_1.force_get_value(),
+        object_value_wrapper_2.force_get_value()
+    )
+}
+
+fn deep_equal_object(
+    interpreter: &Interpreter,
+    object1: &Object,
+    object2: &Object
+) -> Result<bool, Error> {
+    if object1.is_frozen() != object2.is_frozen() {
+        return Ok(false)
+    }
+
+    let object1_items = object1.get_items();
+    let object2_items = object2.get_items();
+
+    if object1_items.len() != object2_items.len() {
+        return Ok(false)
+    }
+
+    for (item_symbol, wrapper_1) in object1_items.iter() {
+        let result = match object2_items.get(item_symbol) {
+            Some(wrapper_2) => deep_equal_object_value_wrapper(
+                interpreter,
+                wrapper_1,
+                wrapper_2
+            ),
+            None => return Ok(false)
+        };
+
+        match result {
+            Ok(false) => return Ok(false),
+            Err(error) => return Err(error),
+            _ => {}
+        }
+    }
+
+    Ok(true)
+}
+
 fn deep_equal_function(
     interpreter: &Interpreter,
     function1: &Function,
@@ -245,8 +298,8 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
         (Integer(val1), Integer(val2)) => Ok(val1 == val2),
         (Float(val1), Float(val2)) => Ok(val1 == val2),
         (Boolean(val1), Boolean(val2)) => Ok(val1 == val2),
-        (Keyword(val1), Keyword(val2)) => Ok(val1 == val2),
-        (Symbol(val1), Symbol(val2)) => Ok(val1 == val2),
+        (Keyword(val1), Keyword(val2)) => Ok(val1 == val2), // works because keyword identifier equality implies keyword equality
+        (Symbol(val1), Symbol(val2)) => Ok(val1 == val2), // works because symbol identifier equality implies symbol equality
         (String(val1), String(val2)) => {
             let string1 = interpreter.get_string(val1)?;
             let string2 = interpreter.get_string(val2)?;
@@ -266,27 +319,14 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
             Ok(car_equals && cdr_equals)
         },
         (Object(object1_id), Object(object2_id)) => {
-            let object1_items = interpreter.get_items(object1_id)?;
-            let object2_items = interpreter.get_items(object2_id)?;
+            let object_1 = interpreter.get_object(object1_id)?;
+            let object_2 = interpreter.get_object(object2_id)?;
 
-            if object1_items.len() != object2_items.len() {
-                return Ok(false)
-            }
-
-            for (item_symbol, value1) in object1_items.iter() {
-                let result = match object2_items.get(item_symbol) {
-                    Some(value2) => deep_equal(interpreter, *value1, *value2),
-                    None => return Ok(false)
-                };
-
-                match result {
-                    Ok(false) => return Ok(false),
-                    Err(error) => return Err(error),
-                    _ => {}
-                }
-            }
-
-            Ok(true)
+            deep_equal_object(
+                interpreter,
+                object_1,
+                object_2
+            )
         }
         (Function(val1), Function(val2)) => {
             let function_1 = interpreter.get_function(val1)?;

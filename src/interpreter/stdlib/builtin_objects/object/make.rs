@@ -3,7 +3,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::interpreter::Interpreter;
 
-pub fn object_make(
+pub fn make(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

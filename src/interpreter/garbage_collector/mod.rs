@@ -10,6 +10,11 @@ use crate::interpreter::value::ConsId;
 use crate::interpreter::value::ObjectId;
 use crate::interpreter::value::FunctionId;
 
+pub trait GarbageCollectable {
+    fn get_gc_items(&self) -> Vec<Value>;
+    fn get_gc_environment(&self) -> Option<EnvironmentId>;
+}
+
 struct GarbageCollector {
     ignored_environment_ids: Vec<EnvironmentId>,
     candidate_environment_ids: Vec<EnvironmentId>,

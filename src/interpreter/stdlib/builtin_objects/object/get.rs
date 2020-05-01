@@ -5,7 +5,7 @@ use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
-pub fn object_get(
+pub fn get(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>

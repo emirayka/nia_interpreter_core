@@ -83,7 +83,7 @@ impl ObjectArena {
     pub fn get_item(&self, object_id: ObjectId, key: SymbolId) -> Result<Option<Value>, Error> {
         let object = self.get_object(object_id)?;
 
-        match object.get_item(key) {
+        match object.get_property(key)? {
             Some(value) => Ok(Some(value)),
             None => match object.get_prototype() {
                 Some(prototype_id) => self.get_item(prototype_id, key),
@@ -104,7 +104,7 @@ impl ObjectArena {
     pub fn set_item(&mut self, object_id: ObjectId, key: SymbolId, value: Value) -> Result<(), Error> {
         let object = self.get_object_mut(object_id)?;
 
-        object.set_item(key, value);
+        object.set_property(key, value);
 
         Ok(())
     }

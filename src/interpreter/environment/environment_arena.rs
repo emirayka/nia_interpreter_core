@@ -2,25 +2,9 @@ use std::collections::HashMap;
 
 use crate::interpreter::value::Value;
 use crate::interpreter::value::SymbolId;
-use crate::interpreter::environment::environment::LexicalEnvironment;
 use crate::interpreter::error::Error;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct EnvironmentId {
-    index: usize,
-}
-
-impl EnvironmentId {
-    pub fn new(index: usize) -> EnvironmentId {
-        EnvironmentId {
-            index,
-        }
-    }
-
-    pub fn get_id(&self) -> usize {
-        self.index
-    }
-}
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::environment::LexicalEnvironment;
 
 #[derive(Clone)]
 pub struct EnvironmentArena {

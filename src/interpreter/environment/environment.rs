@@ -3,99 +3,9 @@ use std::collections::HashMap;
 use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::environment::EnvironmentValueWrapper;
 use crate::interpreter::error::Error;
 
-pub const VALUE_WRAPPER_FLAG_SETTABLE: u8 = 0x1;
-pub const VALUE_WRAPPER_FLAG_GETTABLE: u8 = 0x2;
-pub const VALUE_WRAPPER_FLAG_CONFIGURABLE: u8 = 0x4;
-
-pub const VALUE_WRAPPER_FLAG_DEFAULT: u8 =
-    VALUE_WRAPPER_FLAG_SETTABLE | VALUE_WRAPPER_FLAG_GETTABLE | VALUE_WRAPPER_FLAG_CONFIGURABLE;
-
-pub const VALUE_WRAPPER_FLAG_CONST: u8 =
-    VALUE_WRAPPER_FLAG_GETTABLE;
-
-#[derive(Copy, Clone, Debug)]
-pub struct EnvironmentValueWrapper {
-    value: Value,
-    flags: u8,
-}
-
-impl EnvironmentValueWrapper {
-    pub fn with_flags(value: Value, flags: u8) -> EnvironmentValueWrapper {
-        EnvironmentValueWrapper {
-            value,
-            flags,
-        }
-    }
-
-    pub fn is_settable(&self) -> bool {
-        self.flags & VALUE_WRAPPER_FLAG_SETTABLE != 0
-    }
-
-    pub fn is_gettable(&self) -> bool {
-        self.flags & VALUE_WRAPPER_FLAG_GETTABLE != 0
-    }
-
-    pub fn is_configurable(&self) -> bool {
-        self.flags & VALUE_WRAPPER_FLAG_GETTABLE != 0
-    }
-
-    pub fn check_is_gettable(&self) -> Result<(), Error> {
-        if self.is_gettable() {
-            Ok(())
-        } else {
-            Error::generic_execution_error(
-                "Cannot intern not internable item."
-            ).into()
-        }
-    }
-
-    pub fn check_is_settable(&self) -> Result<(), Error> {
-        if self.is_settable() {
-            Ok(())
-        } else {
-            Error::generic_execution_error(
-                "Cannot change const item."
-            ).into()
-        }
-    }
-
-    pub fn check_is_configurable(&self) -> Result<(), Error> {
-        if self.is_configurable() {
-            Ok(())
-        } else {
-            Error::generic_execution_error(
-                "Cannot configure not configurable item."
-            ).into()
-        }
-    }
-
-    pub fn set_flags(&mut self, flags: u8) -> Result<(), Error> {
-        self.check_is_configurable()?;
-        self.flags = flags;
-
-        Ok(())
-    }
-
-    pub fn set_value(&mut self, value: Value) -> Result<(), Error> {
-        self.check_is_settable()?;
-        self.value = value;
-
-        Ok(())
-    }
-
-    pub fn get_value(&self) -> Result<Value, Error>{
-        self.check_is_gettable()?;
-
-        Ok(self.value)
-    }
-
-    // must be used by LexicalEnvironment only
-    pub fn to_value(&self) -> Value {
-        self.value
-    }
-}
 
 #[derive(Clone)]
 pub struct LexicalEnvironment {
@@ -121,11 +31,10 @@ fn has_value(map: &HashMap<SymbolId, EnvironmentValueWrapper>, symbol_id: Symbol
 fn define_value(
     map: &mut HashMap<SymbolId, EnvironmentValueWrapper>,
     symbol_id: SymbolId,
-    value: Value,
-    flags: u8
+    environment_value_wrapper: EnvironmentValueWrapper,
 ) -> Result<(), Error> {
     if !has_value(map, symbol_id) {
-        map.insert(symbol_id, EnvironmentValueWrapper::with_flags(value, flags));
+        map.insert(symbol_id, environment_value_wrapper);
         Ok(())
     } else {
         Error::generic_execution_error(
@@ -144,7 +53,7 @@ fn set_value(
         Ok(())
     } else {
         Error::generic_execution_error(
-            "Cannot set value that does not exist"
+            "Cannot set value that does not exist."
         ).into()
     }
 }
@@ -188,8 +97,7 @@ impl LexicalEnvironment {
         define_value(
             &mut self.variables,
             symbol_id,
-            value,
-            VALUE_WRAPPER_FLAG_DEFAULT
+            EnvironmentValueWrapper::new(value)
         ).map_err(|err| Error::generic_execution_error_caused(
             "Cannot define variable.",
             err,
@@ -200,8 +108,7 @@ impl LexicalEnvironment {
         define_value(
             &mut self.variables,
             symbol_id,
-            value,
-            VALUE_WRAPPER_FLAG_CONST
+        EnvironmentValueWrapper::new_const(value)
         ).map_err(|err| Error::generic_execution_error_caused(
             "Cannot define variable.",
             err,
@@ -212,8 +119,7 @@ impl LexicalEnvironment {
         define_value(
             &mut self.functions,
             symbol_id,
-            value,
-            VALUE_WRAPPER_FLAG_DEFAULT
+            EnvironmentValueWrapper::new(value)
         ).map_err(|err| Error::generic_execution_error_caused(
             "Cannot define function.",
             err,
@@ -224,8 +130,7 @@ impl LexicalEnvironment {
         define_value(
             &mut self.functions,
             symbol_id,
-            value,
-            VALUE_WRAPPER_FLAG_CONST
+        EnvironmentValueWrapper::new_const(value)
         ).map_err(|err| Error::generic_execution_error_caused(
             "Cannot define function.",
             err,
@@ -301,7 +206,7 @@ mod tests {
     }
 
     #[test]
-    fn makes_updates_bindings() {
+    fn able_to_change_bindings() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
@@ -338,13 +243,37 @@ mod tests {
 
     #[test]
     fn able_to_make_parent_relationship() {
-        let mut env2 = LexicalEnvironment::new();
-        let id1 = EnvironmentId::new(1);
+        let mut env = LexicalEnvironment::new();
+        let id = EnvironmentId::new(1);
 
-        assert_eq!(None, env2.get_parent());
+        assert_eq!(None, env.get_parent());
 
-        env2.set_parent(id1);
+        env.set_parent(id);
 
-        assert_eq!(Some(id1), env2.get_parent());
+        assert_eq!(Some(id), env.get_parent());
+    }
+
+    #[test]
+    fn able_to_define_constant_variables() {
+        let mut env = LexicalEnvironment::new();
+        let symbol = SymbolId::new(0);
+        let value = Value::Integer(1);
+
+        env.define_const_variable(symbol, value);
+
+        assert_eq!(Some(value), env.lookup_variable(symbol).unwrap());
+        assert!(env.set_variable(symbol, Value::Integer(2)).is_err());
+    }
+
+    #[test]
+    fn able_to_define_constant_functions() {
+        let mut env = LexicalEnvironment::new();
+        let symbol = SymbolId::new(0);
+        let value = Value::Integer(1);
+
+        env.define_const_function(symbol, value);
+
+        assert_eq!(Some(value), env.lookup_function(symbol).unwrap());
+        assert!(env.set_function(symbol, Value::Integer(2)).is_err());
     }
 }

@@ -26,6 +26,7 @@ use crate::parser::parse;
 use crate::interpreter::reader::read_elements;
 use crate::interpreter::stdlib::infect_stdlib;
 use crate::interpreter::garbage_collector::collect_garbage;
+use crate::{ObjectValueWrapper, Object};
 
 #[derive(Clone)]
 pub struct Interpreter {
@@ -497,7 +498,13 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn get_items(&self, object_id: ObjectId) -> Result<&HashMap<SymbolId, Value>, Error> {
+    pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, Error> {
+        let object = self.object_arena.get_object(object_id)?;
+
+        Ok(object)
+    }
+
+    pub fn get_object_items(&self, object_id: ObjectId) -> Result<&HashMap<SymbolId, ObjectValueWrapper>, Error> {
         let object = self.object_arena.get_object(object_id)?;
 
         Ok(object.get_items())
