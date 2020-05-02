@@ -46,8 +46,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-            // ("(let ((obj {:prop 1})) (object:is-configurable? obj :prop))", "#t"),
-            ("(let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:is-configurable? obj :prop))", "#f"),
+            ("(let ((obj {:prop 1})) (object:is-configurable? obj :prop))", "#t"),
+            ("(let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:is-configurable? obj :prop))", "#f")
+            ,
         );
 
         assertion::assert_results_are_equal(

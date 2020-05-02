@@ -34,7 +34,7 @@ pub fn set_configurable_mark(
 
     let object = interpreter.get_object_mut(object_id)?;
 
-    object.set_property_configurable(property_symbol_id, flag_value);
+    object.set_property_configurable(property_symbol_id, flag_value)?;
 
     Ok(Value::Boolean(true))
 }
@@ -53,6 +53,7 @@ mod tests {
         let code_vector = vec!(
             ("(let ((obj {:prop 1})) (object:is-configurable? obj :prop))", "#t"),
             ("(let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:is-configurable? obj :prop))", "#f"),
+            ("(try (let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:set-configurable! obj :prop #t) #f) (catch 'generic-execution-error #t))", "#t"), // todo: probably change error symbol here
         );
 
         assertion::assert_results_are_equal(

@@ -34,7 +34,7 @@ pub fn set_enumerable_mark(
 
     let object = interpreter.get_object_mut(object_id)?;
 
-    object.set_property_enumerable(property_symbol_id, flag_value);
+    object.set_property_enumerable(property_symbol_id, flag_value)?;
 
     Ok(Value::Boolean(true))
 }
@@ -53,6 +53,7 @@ mod tests {
         let code_vector = vec!(
             ("(let ((obj {:prop 1})) (object:is-enumerable? obj :prop))", "#t"),
             ("(let ((obj {:prop 1})) (object:set-enumerable! obj :prop #f) (object:is-enumerable? obj :prop))", "#f"),
+            // todo: when iterators would be implemented, add test here
         );
 
         assertion::assert_results_are_equal(

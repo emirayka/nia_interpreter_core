@@ -41,7 +41,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
+            // todo: probably change generic execution error to another error symbol
+            ("(let ((a {})) (object:freeze! a) (object:is-frozen? a))", "#t"),
             ("(try (let ((a {})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-proto! a {})) (catch 'generic-execution-error #t))", "#t"),
             ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
             ("(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property a :kek)) (catch 'generic-execution-error #t))", "#t"),
             ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-internable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
