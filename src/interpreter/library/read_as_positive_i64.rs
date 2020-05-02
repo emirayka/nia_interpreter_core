@@ -14,6 +14,8 @@ pub fn read_as_positive_i64(interpreter: &Interpreter, value: Value) -> Result<i
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -34,7 +36,7 @@ mod tests {
                 spec.0
             ).unwrap();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, result);
         }
     }
 

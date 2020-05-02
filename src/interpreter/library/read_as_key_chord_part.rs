@@ -32,6 +32,7 @@ pub fn read_as_key_chord_part(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     fn assert_returns_correct_key_chord_part(s: &str, key_chord_part: KeyChordPart) {
         let mut interpreter = Interpreter::new();
@@ -44,7 +45,7 @@ mod tests {
             list
         ).unwrap();
 
-        assert_eq!(expected, result)
+        nia_assert_equal(expected, result)
     }
 
     #[test]

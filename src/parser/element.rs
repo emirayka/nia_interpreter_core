@@ -77,6 +77,8 @@ impl PartialEq for Element {
     }
 }
 
+impl Eq for Element {}
+
 fn make_boolean_element(el: BooleanElement) -> Result<Element, ParseError> {
     Ok(Element::Boolean(el))
 }

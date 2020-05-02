@@ -46,6 +46,8 @@ impl PartialEq for DelimitedSymbolsElement {
     }
 }
 
+impl Eq for DelimitedSymbolsElement {}
+
 fn make_delimited_symbols_element(
     pairs: (SymbolElement, Vec<SymbolElement>)
 ) -> Result<DelimitedSymbolsElement, ParseError> {
@@ -78,6 +80,7 @@ named!(pub parse(&str) -> DelimitedSymbolsElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn testw() {
@@ -93,7 +96,7 @@ mod tests {
                     .collect::<Vec<SymbolElement>>()
             )));
 
-            assert_eq!(expected, parse($code));
+            nia_assert_equal(expected, parse($code));
         };
         ($symbol_names:expr, $code:expr) => {
             assert_parsing_of_delimited_symbols_element!($symbol_names, $code, "");
@@ -123,6 +126,6 @@ mod tests {
     fn does_not_parse_just_a_symbol() {
         let result = parse("object");
 
-        assert!(result.is_err());
+        nia_assert(result.is_err());
     }
 }

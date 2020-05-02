@@ -14,6 +14,8 @@ pub fn _break(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::error::ErrorKind;
 
     #[test]
@@ -26,6 +28,6 @@ mod tests {
             vec!()
         ).err().unwrap();
 
-        assert_eq!(ErrorKind::Break, err.get_error_kind())
+        nia_assert_equal(ErrorKind::Break, err.get_error_kind())
     }
 }

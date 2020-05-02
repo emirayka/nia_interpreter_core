@@ -37,6 +37,7 @@ pub fn execute_function(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use std::convert::TryInto;
 
@@ -113,7 +114,7 @@ mod tests {
                 arguments
             );
 
-            assert!(result.is_err())
+            nia_assert(result.is_err())
         }
     }
 }

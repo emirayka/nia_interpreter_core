@@ -36,6 +36,7 @@ pub fn read_as_key_chord(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use nia_events::{KeyChordPart, KeyId, KeyboardId};
 
@@ -53,7 +54,7 @@ mod tests {
             list
         ).unwrap();
 
-        assert_eq!(expected, result);
+        nia_assert_equal(expected, result);
     }
 
     #[test]

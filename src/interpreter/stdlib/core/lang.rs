@@ -83,7 +83,7 @@ mod defc {
                 ("(defc a 1) a", "1"),
                 ("(defc b) b", "nil"),
                 // todo: probably change error symbol to smth like "setting-constant-error"
-                ("(try (progn (defc c 2) (set! c 3) c) (catch generic-execution-error #t))", "#t"),
+                ("(try (progn (defc c 2) (set! c 3) c) (catch 'generic-execution-error #t))", "#t"),
             );
 
             assertion::assert_results_are_equal(

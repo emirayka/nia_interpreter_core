@@ -32,7 +32,7 @@ pub fn make(
 
             let symbol_id = interpreter.intern(&keyword_name);
 
-            interpreter.set_object_item(
+            interpreter.set_object_property(
                 object_id,
                 symbol_id,
                 value
@@ -53,6 +53,8 @@ pub fn make(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     macro_rules! assert_object_has_values {
@@ -69,7 +71,7 @@ mod tests {
             for (key, value) in expected {
                 let symbol_id = interpreter.intern(key);
 
-                assert_eq!(value, interpreter.get_object_item(object_id, symbol_id).unwrap().unwrap());
+                nia_assert_equal(value, interpreter.get_object_property(object_id, symbol_id).unwrap().unwrap());
             }
         }
     }

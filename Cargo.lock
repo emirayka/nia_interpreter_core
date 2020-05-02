@@ -185,6 +185,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "float-cmp"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "499a1bfa03d254b047e7e5c1fc8dd23a8cf6b344a8eb7e622ae4bc76bfac8e68"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "gcc"
 version = "0.3.55"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -278,6 +287,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3728d817d99e5ac407411fa471ff9800a778d88a24685968b36824eaf4bee400"
 
 [[package]]
+name = "nia_basic_assertions"
+version = "0.1.0"
+dependencies = [
+ "float-cmp",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "nia_events"
 version = "0.1.0"
 dependencies = [
@@ -295,10 +312,10 @@ version = "0.1.0"
 dependencies = [
  "dirs",
  "either",
+ "nia_basic_assertions",
  "nia_events",
  "nia_state_machine",
  "nom",
- "nom-trace",
  "pretty_assertions",
  "rand",
  "rustyline",
@@ -366,12 +383,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "nom-trace"
-version = "0.2.1"
+name = "num-traits"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5670812706767ed69c4a4b8f520e8743b3aeee70d9f22adf63d0194a386c12f2"
+checksum = "c62be47e61d1842b9170f0fdeec8eba98e60e90e5446449a0545e5152acd7096"
 dependencies = [
- "nom",
+ "autocfg",
 ]
 
 [[package]]

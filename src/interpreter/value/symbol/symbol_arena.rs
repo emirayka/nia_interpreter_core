@@ -120,6 +120,7 @@ impl SymbolArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod intern {
@@ -132,8 +133,8 @@ mod tests {
             let sym1 = arena.intern("test");
             let sym2 = arena.intern("test");
 
-            assert_eq!(SymbolId::new(0), sym1);
-            assert_eq!(SymbolId::new(0), sym2);
+            nia_assert_equal(SymbolId::new(0), sym1);
+            nia_assert_equal(SymbolId::new(0), sym2);
         }
     }
 
@@ -149,13 +150,13 @@ mod tests {
             let sym1 = arena.gensym("test");
             let sym2 = arena.gensym("test");
 
-            assert_ne!(sym, sym1);
-            assert_ne!(sym, sym2);
-            assert_ne!(sym1, sym2);
+            nia_assert_nequal(sym, sym1);
+            nia_assert_nequal(sym, sym2);
+            nia_assert_nequal(sym1, sym2);
 
-            assert_eq!(SymbolId::new(0), sym);
-            assert_eq!(SymbolId::new(1), sym1);
-            assert_eq!(SymbolId::new(2), sym2);
+            nia_assert_equal(SymbolId::new(0), sym);
+            nia_assert_equal(SymbolId::new(1), sym1);
+            nia_assert_equal(SymbolId::new(2), sym2);
         }
     }
 
@@ -170,12 +171,12 @@ mod tests {
             let name = "symbol";
             let symbol_id = symbol_arena.intern(name);
 
-            assert!(symbol_arena.get_symbol(symbol_id).is_ok());
-            assert!(symbol_arena.free_symbol(symbol_id).is_ok());
-            assert!(symbol_arena.get_symbol(symbol_id).is_err());
+            nia_assert(symbol_arena.get_symbol(symbol_id).is_ok());
+            nia_assert(symbol_arena.free_symbol(symbol_id).is_ok());
+            nia_assert(symbol_arena.get_symbol(symbol_id).is_err());
 
-            assert!(!symbol_arena.arena.contains_key(&symbol_id));
-            assert!(!symbol_arena.mapping.contains_key(name));
+            nia_assert(!symbol_arena.arena.contains_key(&symbol_id));
+            nia_assert(!symbol_arena.mapping.contains_key(name));
         }
 
         #[test]
@@ -184,7 +185,7 @@ mod tests {
 
             let symbol_id = SymbolId::new(23234234);
 
-            assert!(symbol_arena.free_symbol(symbol_id).is_err());
+            nia_assert(symbol_arena.free_symbol(symbol_id).is_err());
         }
 
         #[test]
@@ -194,8 +195,8 @@ mod tests {
             let name = "symbol";
             let symbol_id = symbol_arena.intern(name);
 
-            assert!(symbol_arena.free_symbol(symbol_id).is_ok());
-            assert!(symbol_arena.free_symbol(symbol_id).is_err());
+            nia_assert(symbol_arena.free_symbol(symbol_id).is_ok());
+            nia_assert(symbol_arena.free_symbol(symbol_id).is_err());
         }
     }
 

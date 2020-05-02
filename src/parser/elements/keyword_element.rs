@@ -32,6 +32,8 @@ impl PartialEq for KeywordElement {
     }
 }
 
+impl Eq for KeywordElement {}
+
 fn join(chars: Vec<char>) -> Result<String, ParseError> {
     Ok(chars.iter().collect())
 }
@@ -58,11 +60,13 @@ named!(pub parse(&str) -> KeywordElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use nom::error::ErrorKind;
 
     macro_rules! assert_keyword_parsing_is_ok {
         ($code:expr, $rest:expr) => {
-            assert_eq!(
+            nia_assert_equal(
                 Ok(($rest, KeywordElement {value: String::from(&$code[':'.len_utf8()..])})),
                  parse($code)
             );
@@ -75,7 +79,7 @@ mod tests {
     #[test]
     fn works_on_simple_value() {
         assert_keyword_parsing_is_ok!(":test");
-        assert_eq!(Err(nom::Err::Error(("test", ErrorKind::Tag))), parse("test"));
+        nia_assert_equal(Err(nom::Err::Error(("test", ErrorKind::Tag))), parse("test"));
     }
 
     #[test]
@@ -95,7 +99,7 @@ mod tests {
         let example = r##":::test1\"\,\`\ \(\)\\\{\}"##;
         let expected = r##"::test1",` ()\{}"##;
 
-        assert_eq!(
+        nia_assert_equal(
             Ok(("", KeywordElement {value: String::from(expected)})),
             parse(example)
         );

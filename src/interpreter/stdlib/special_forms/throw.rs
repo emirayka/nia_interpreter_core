@@ -68,6 +68,8 @@ pub fn throw(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -75,11 +77,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw)");
-        assertion::assert_is_error(&result);
+        nia_assert_is_err(&result);
 
         let error = result.err().unwrap();
 
-        assert_eq!(
+        nia_assert_equal(
             "generic-error",
             error.get_symbol_name()
         );
@@ -104,11 +106,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw 'cute-error-symbol)");
-        assertion::assert_is_error(&result);
+        nia_assert_is_err(&result);
 
         let error = result.err().unwrap();
 
-        assert_eq!(
+        nia_assert_equal(
             "cute-error-symbol",
             error.get_symbol_name()
         );
@@ -119,11 +121,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result= interpreter.execute("(throw 'cute-error-symbol \"Cute error message\")");
-        assertion::assert_is_error(&result);
+        nia_assert_is_err(&result);
 
         let error = result.err().unwrap();
 
-        assert_eq!(
+        nia_assert_equal(
             "Cute error message",
             error.get_message()
         );

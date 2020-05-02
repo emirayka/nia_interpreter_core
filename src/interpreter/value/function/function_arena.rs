@@ -79,6 +79,8 @@ impl FunctionArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::interpreter::Interpreter;
     use crate::interpreter::environment::EnvironmentId;
     use crate::interpreter::value::Value;
@@ -103,9 +105,9 @@ mod tests {
             let function = Function::Builtin(BuiltinFunction::new(test_func));
             let function_id = function_arena.register_function(function);
 
-            assert!(function_arena.get_function(function_id).is_ok());
-            assert!(function_arena.free_function(function_id).is_ok());
-            assert!(function_arena.get_function(function_id).is_err());
+            nia_assert(function_arena.get_function(function_id).is_ok());
+            nia_assert(function_arena.free_function(function_id).is_ok());
+            nia_assert(function_arena.get_function(function_id).is_err());
         }
 
         #[test]
@@ -114,7 +116,7 @@ mod tests {
 
             let function_id = FunctionId::new(234234);
 
-            assert!(function_arena.free_function(function_id).is_err());
+            nia_assert(function_arena.free_function(function_id).is_err());
         }
 
         #[test]
@@ -124,8 +126,8 @@ mod tests {
             let function = Function::Builtin(BuiltinFunction::new(test_func));
             let function_id = function_arena.register_function(function);
 
-            assert!(function_arena.free_function(function_id).is_ok());
-            assert!(function_arena.free_function(function_id).is_err());
+            nia_assert(function_arena.free_function(function_id).is_ok());
+            nia_assert(function_arena.free_function(function_id).is_err());
         }
     }
 }

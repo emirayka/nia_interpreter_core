@@ -33,6 +33,8 @@ pub fn set_car_mark(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

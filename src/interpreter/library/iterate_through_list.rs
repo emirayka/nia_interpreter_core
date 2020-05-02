@@ -41,8 +41,11 @@ pub fn iterate_through_list(
     Ok(())
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library;
 
     #[test]
@@ -68,7 +71,7 @@ mod tests {
 
         iterate_through_list(&mut interpreter, list, closure).unwrap();
 
-        assert_eq!(10, result);
+        nia_assert_equal(10, result);
     }
 
     #[test]
@@ -94,6 +97,6 @@ mod tests {
 
         iterate_through_list(&mut interpreter, list, closure).unwrap();
 
-        assert_eq!(3, result);
+        nia_assert_equal(3, result);
     }
 }

@@ -35,6 +35,8 @@ pub fn gensym(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -45,10 +47,10 @@ mod tests {
         let gensym2 = interpreter.execute(r#"(gensym)"#).unwrap();
         let gensym3 = interpreter.execute(r#"(gensym)"#).unwrap();
 
-        assert_ne!(gensym1, gensym2);
-        assert_ne!(gensym1, gensym3);
+        nia_assert_nequal(gensym1, gensym2);
+        nia_assert_nequal(gensym1, gensym3);
 
-        assert_ne!(gensym2, gensym3);
+        nia_assert_nequal(gensym2, gensym3);
     }
 
     #[test]
@@ -60,14 +62,14 @@ mod tests {
         let gensym2 = interpreter.execute(r#"(gensym "test")"#).unwrap();
         let gensym3 = interpreter.execute(r#"(gensym "test")"#).unwrap();
 
-        assert_ne!(interned, gensym1);
-        assert_ne!(interned, gensym2);
-        assert_ne!(interned, gensym3);
+        nia_assert_nequal(interned, gensym1);
+        nia_assert_nequal(interned, gensym2);
+        nia_assert_nequal(interned, gensym3);
 
-        assert_ne!(gensym1, gensym2);
-        assert_ne!(gensym1, gensym3);
+        nia_assert_nequal(gensym1, gensym2);
+        nia_assert_nequal(gensym1, gensym3);
 
-        assert_ne!(gensym2, gensym3);
+        nia_assert_nequal(gensym2, gensym3);
     }
 
     #[test]

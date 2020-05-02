@@ -20,6 +20,7 @@ pub fn read_as_keyword_id(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use std::convert::TryInto;
 
@@ -40,7 +41,7 @@ mod tests {
             value
         ).unwrap();
 
-        assert_eq!(expected, result);
+        nia_assert_equal(expected, result);
     }
 
     #[test]

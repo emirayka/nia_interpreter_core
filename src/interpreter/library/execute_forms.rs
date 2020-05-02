@@ -24,6 +24,8 @@ pub fn execute_forms(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -50,7 +52,7 @@ mod tests {
             &forms
         );
 
-        assert_eq!(Value::Integer(10), result.unwrap());
+        nia_assert_equal(Value::Integer(10), result.unwrap());
     }
 
     #[test]
@@ -69,6 +71,6 @@ mod tests {
             &forms
         );
 
-        assertion::assert_is_error(&result);
+        nia_assert_is_err(&result);
     }
 }

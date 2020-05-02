@@ -29,7 +29,7 @@ pub fn new(
     };
 
     match proto_id {
-        Some(proto_id) => interpreter.set_object_proto(object_id, proto_id)
+        Some(proto_id) => interpreter.set_object_prototype(object_id, proto_id)
             .map_err(|err| Error::generic_execution_error_caused(
                 "",
                 err
@@ -43,6 +43,8 @@ pub fn new(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

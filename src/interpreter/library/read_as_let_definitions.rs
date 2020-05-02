@@ -71,6 +71,8 @@ pub fn read_as_let_definitions(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -171,7 +173,7 @@ mod tests {
                 value,
             );
 
-            assertion::assert_is_error(&result);
+            nia_assert_is_err(&result);
         }
 
     }

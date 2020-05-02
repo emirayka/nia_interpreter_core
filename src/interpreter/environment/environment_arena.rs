@@ -279,6 +279,7 @@ impl EnvironmentArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod free_environment {
@@ -307,15 +308,15 @@ mod tests {
 
             let parent_id = arena.alloc();
 
-            assert!(!arena.has_variable(parent_id, key).unwrap());
+            nia_assert(!arena.has_variable(parent_id, key).unwrap());
             arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
-            assert!(arena.has_variable(parent_id, key).unwrap());
-            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
+            nia_assert(arena.has_variable(parent_id, key).unwrap());
+            nia_assert_equal(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
 
-            assert!(!arena.has_function(parent_id, key).unwrap());
+            nia_assert(!arena.has_function(parent_id, key).unwrap());
             arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
-            assert!(arena.has_function(parent_id, key).unwrap());
-            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
+            nia_assert(arena.has_function(parent_id, key).unwrap());
+            nia_assert_equal(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
         }
 
         #[test]
@@ -326,7 +327,7 @@ mod tests {
             let key = SymbolId::new(0);
 
             arena.define_variable(env_id, key, Value::Integer(1)).unwrap();
-            assert!(arena.define_variable(env_id, key, Value::Integer(1)).is_err());
+            nia_assert(arena.define_variable(env_id, key, Value::Integer(1)).is_err());
         }
 
         #[test]
@@ -337,7 +338,7 @@ mod tests {
             let key = SymbolId::new(0);
 
             arena.define_function(env_id, key, Value::Integer(1)).unwrap();
-            assert!(arena.define_function(env_id, key, Value::Integer(1)).is_err());
+            nia_assert(arena.define_function(env_id, key, Value::Integer(1)).is_err());
         }
     }
 
@@ -354,14 +355,14 @@ mod tests {
             let parent_id = arena.alloc();
 
             arena.define_variable(parent_id, key, Value::Integer(1)).unwrap();
-            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
+            nia_assert_equal(Ok(Some(Value::Integer(1))), arena.lookup_variable(parent_id, key));
             arena.set_variable(parent_id, key, Value::Integer(2)).unwrap();
-            assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_variable(parent_id, key));
+            nia_assert_equal(Ok(Some(Value::Integer(2))), arena.lookup_variable(parent_id, key));
 
             arena.define_function(parent_id, key, Value::Integer(1)).unwrap();
-            assert_eq!(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
+            nia_assert_equal(Ok(Some(Value::Integer(1))), arena.lookup_function(parent_id, key));
             arena.set_function(parent_id, key, Value::Integer(2)).unwrap();
-            assert_eq!(Ok(Some(Value::Integer(2))), arena.lookup_function(parent_id, key));
+            nia_assert_equal(Ok(Some(Value::Integer(2))), arena.lookup_function(parent_id, key));
         }
 
         #[test]
@@ -377,11 +378,11 @@ mod tests {
 
             arena.define_variable(parent_id, key, parent_value).unwrap();
             arena.set_variable(child_id, key, child_value).unwrap();
-            assert_eq!(Ok(Some(child_value)), arena.lookup_variable(parent_id, key));
+            nia_assert_equal(Ok(Some(child_value)), arena.lookup_variable(parent_id, key));
 
             arena.define_function(parent_id, key, parent_value).unwrap();
             arena.set_function(child_id, key, child_value).unwrap();
-            assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id,key));
+            nia_assert_equal(Ok(Some(child_value)), arena.lookup_function(child_id,key));
         }
 
         #[test]
@@ -391,7 +392,7 @@ mod tests {
             let env_id = arena.alloc();
             let key = SymbolId::new(0);
 
-            assert!(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
+            nia_assert(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
         }
 
         #[test]
@@ -401,7 +402,7 @@ mod tests {
             let env_id = arena.alloc();
             let key = SymbolId::new(0);
 
-            assert!(arena.set_function(env_id, key, Value::Integer(2)).is_err());
+            nia_assert(arena.set_function(env_id, key, Value::Integer(2)).is_err());
         }
     }
 
@@ -427,19 +428,19 @@ mod tests {
             arena.define_variable(parent_id, parent_key, parent_value).unwrap();
             arena.define_variable(child_id, child_key, child_value).unwrap();
 
-            assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(parent_id, parent_key));
-            assert_eq!(Ok(Some(parent_value)), arena.lookup_variable(child_id, parent_key));
-            assert_eq!(Ok(None), arena.lookup_variable(parent_id, child_key));
-            assert_eq!(Ok(Some(child_value)), arena.lookup_variable(child_id, child_key));
+            nia_assert_equal(Ok(Some(parent_value)), arena.lookup_variable(parent_id, parent_key));
+            nia_assert_equal(Ok(Some(parent_value)), arena.lookup_variable(child_id, parent_key));
+            nia_assert_equal(Ok(None), arena.lookup_variable(parent_id, child_key));
+            nia_assert_equal(Ok(Some(child_value)), arena.lookup_variable(child_id, child_key));
 
             // function
             arena.define_function(parent_id, parent_key, parent_value).unwrap();
             arena.define_function(child_id, child_key, child_value).unwrap();
 
-            assert_eq!(Ok(Some(parent_value)), arena.lookup_function(parent_id, parent_key));
-            assert_eq!(Ok(Some(parent_value)), arena.lookup_function(child_id, parent_key));
-            assert_eq!(Ok(None), arena.lookup_function(parent_id, child_key));
-            assert_eq!(Ok(Some(child_value)), arena.lookup_function(child_id, child_key));
+            nia_assert_equal(Ok(Some(parent_value)), arena.lookup_function(parent_id, parent_key));
+            nia_assert_equal(Ok(Some(parent_value)), arena.lookup_function(child_id, parent_key));
+            nia_assert_equal(Ok(None), arena.lookup_function(parent_id, child_key));
+            nia_assert_equal(Ok(Some(child_value)), arena.lookup_function(child_id, child_key));
         }
     }
 
@@ -458,7 +459,7 @@ mod tests {
 
             arena.define_variable(child_id, variable_name, Value::Integer(1)).unwrap();
 
-            assert_eq!(
+            nia_assert_equal(
                 Ok(Some(child_id)),
                 arena.lookup_environment_by_variable(
                     child_id,
@@ -478,7 +479,7 @@ mod tests {
 
             arena.define_variable(parent_id, variable_name, Value::Integer(1)).unwrap();
 
-            assert_eq!(
+            nia_assert_equal(
                 Ok(Some(parent_id)),
                 arena.lookup_environment_by_variable(
                     child_id,
@@ -499,7 +500,7 @@ mod tests {
 
             arena.define_variable(parent_id, variable_name, Value::Integer(1)).unwrap();
 
-            assert_eq!(
+            nia_assert_equal(
                 Ok(Some(parent_id)),
                 arena.lookup_environment_by_variable(
                     child_child_id,
@@ -518,7 +519,7 @@ mod tests {
 
             let variable_name = SymbolId::new(0);
 
-            assert_eq!(
+            nia_assert_equal(
                 Ok(None),
                 arena.lookup_environment_by_variable(
                     child_child_id,

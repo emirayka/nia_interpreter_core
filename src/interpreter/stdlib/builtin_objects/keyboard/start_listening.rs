@@ -26,6 +26,7 @@ pub fn start_listening(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     // #[test]
     // fn simple_test() {

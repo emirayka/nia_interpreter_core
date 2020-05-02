@@ -94,6 +94,8 @@ pub fn define_function(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
@@ -104,12 +106,12 @@ mod tests {
         interpreter.execute("(define-function test 2)").unwrap();
         let name = interpreter.intern("test");
 
-        assert!(interpreter.has_function(
+        nia_assert(interpreter.has_function(
             interpreter.get_root_environment(),
             name,
         ).unwrap());
 
-        assert_eq!(
+        nia_assert_equal(
             Ok(Some(Value::Integer(2))),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
@@ -125,11 +127,11 @@ mod tests {
         interpreter.execute("(define-function test)").unwrap();
         let name = interpreter.intern("test");
 
-        assert!(interpreter.has_function(
+        nia_assert(interpreter.has_function(
             interpreter.get_root_environment(),
             name)
             .unwrap());
-        assert_eq!(
+        nia_assert_equal(
             Ok(Some(interpreter.intern_nil_symbol_value())),
             interpreter.lookup_function(
                 interpreter.get_root_environment(),
@@ -145,7 +147,7 @@ mod tests {
         interpreter.execute("(define-function test (function (lambda (a b) b)))").unwrap();
         let result = interpreter.execute("(test 2 3)");
 
-        assert_eq!(Value::Integer(3), result.unwrap());
+        nia_assert_equal(Value::Integer(3), result.unwrap());
     }
 
     #[test]
@@ -155,10 +157,10 @@ mod tests {
         interpreter.execute("(define-function test (function (lambda (a b) b)) :const)").unwrap();
 
         let result = interpreter.execute("(test 2 3)");
-        assert_eq!(Value::Integer(3), result.unwrap());
+        nia_assert_equal(Value::Integer(3), result.unwrap());
 
         let result = interpreter.execute("(fset! test 2)");
-        assertion::assert_is_err(result)
+        nia_assert_is_err(&result)
     }
 
     #[test]
@@ -168,7 +170,7 @@ mod tests {
         interpreter.execute("(define-function test (function (lambda (a) (function (lambda () a)))))").unwrap();
         interpreter.execute("(define-function test2 (test 2))").unwrap();
 
-        assert_eq!(Value::Integer(2), interpreter.execute("(test2)").unwrap());
+        nia_assert_equal(Value::Integer(2), interpreter.execute("(test2)").unwrap());
     }
 
     #[test]

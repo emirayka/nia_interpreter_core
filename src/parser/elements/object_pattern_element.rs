@@ -60,6 +60,8 @@ impl PartialEq for ObjectPatternElement {
     }
 }
 
+impl Eq for ObjectPatternElement {}
+
 fn make_object_pattern_element(values: Vec<KeywordElement>) -> Result<ObjectPatternElement, String> {
     let object_element = ObjectPatternElement::new(values);
 
@@ -94,15 +96,16 @@ named!(pub parse(&str) -> ObjectPatternElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     fn assert_parsed_correctly(code: &str) {
         //println!("{:?}", parse_object_element(code));
-        assert!(parse(code).is_ok());
+        nia_assert(parse(code).is_ok());
     }
 
     fn assert_failed_correctly(code: &str) {
         //println!("{:?}", parse_object_element(code));
-        assert!(parse(code).is_err());
+        nia_assert(parse(code).is_err());
     }
 
     #[test]

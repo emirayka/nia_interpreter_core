@@ -13,6 +13,7 @@ mod event_loop;
 
 pub use interpreter::Interpreter;
 pub use event_loop::*;
+pub use environment::*;
 pub use value::*;
 pub use error::*;
 

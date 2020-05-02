@@ -34,6 +34,8 @@ impl PartialEq for BooleanElement {
     }
 }
 
+impl Eq for BooleanElement {}
+
 fn make_boolean_true(s: &str) -> Result<BooleanElement, ParseError> {
     Ok(BooleanElement::new(true))
 }
@@ -56,24 +58,25 @@ named!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn parses_true_correctly() {
-        assert_eq!(Ok(("", BooleanElement { value: true })), parse("#t"))
+        nia_assert_equal(Ok(("", BooleanElement { value: true })), parse("#t"))
     }
 
     #[test]
     fn parses_false_correctly() {
-        assert_eq!(Ok(("", BooleanElement { value: false })), parse("#f"))
+        nia_assert_equal(Ok(("", BooleanElement { value: false })), parse("#f"))
     }
 
     #[test]
     fn returns_correct_remaining_input() {
-        assert_eq!(Ok((" #f", BooleanElement { value: false })), parse("#f #f"))
+        nia_assert_equal(Ok((" #f", BooleanElement { value: false })), parse("#f #f"))
     }
 
     #[test]
     fn returns_correct_errors() {
-        assert!(parse("#kek").is_err());
+        nia_assert(parse("#kek").is_err());
     }
 }

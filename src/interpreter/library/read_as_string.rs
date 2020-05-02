@@ -25,6 +25,8 @@ pub fn read_as_string(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -37,7 +39,7 @@ mod tests {
             value
         );
 
-        assert_eq!("test", result.unwrap());
+        nia_assert_equal("test", result.unwrap());
     }
 
     #[test]

@@ -24,7 +24,7 @@ pub fn infect_object_builtin_function(
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    interpreter.set_object_item(
+    interpreter.set_object_property(
         object_id,
         name,
         function_value
@@ -82,6 +82,7 @@ pub fn infect_special_form(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod infect_special_form {
@@ -99,7 +100,7 @@ mod tests {
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
             let name = interpreter.intern("test");
-            assert!(interpreter.has_function(interpreter.get_root_environment(), name).unwrap());
+            nia_assert(interpreter.has_function(interpreter.get_root_environment(), name).unwrap());
         }
 
         #[test]
@@ -108,7 +109,7 @@ mod tests {
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
-            assert!(infect_special_form(&mut interpreter, "test", test).is_err());
+            nia_assert(infect_special_form(&mut interpreter, "test", test).is_err());
         }
     }
 }

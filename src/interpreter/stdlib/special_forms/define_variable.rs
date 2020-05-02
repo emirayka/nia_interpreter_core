@@ -98,6 +98,8 @@ pub fn define_variable(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_special_symbols, for_constants};
 
@@ -108,12 +110,12 @@ mod tests {
         interpreter.execute("(define-variable test 2)").unwrap();
         let name = interpreter.intern("test");
 
-        assert!(interpreter.has_variable(
+        nia_assert(interpreter.has_variable(
             interpreter.get_root_environment(),
             name,
         ).unwrap());
 
-        assert_eq!(
+        nia_assert_equal(
             Some(Value::Integer(2)),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
@@ -129,12 +131,12 @@ mod tests {
         interpreter.execute("(define-variable test)").unwrap();
         let name = interpreter.intern("test");
 
-        assert!(interpreter.has_variable(
+        nia_assert(interpreter.has_variable(
             interpreter.get_root_environment(),
             name,
         ).unwrap());
 
-        assert_eq!(
+        nia_assert_equal(
             Ok(Some(interpreter.intern_nil_symbol_value())),
             interpreter.lookup_variable(
                 interpreter.get_root_environment(),
@@ -150,10 +152,10 @@ mod tests {
         interpreter.execute("(define-variable test 3 :const)").unwrap();
 
         let result = interpreter.execute("test");
-        assert_eq!(Value::Integer(3), result.unwrap());
+        nia_assert_equal(Value::Integer(3), result.unwrap());
 
         let result = interpreter.execute("(set! test 2)");
-        assertion::assert_is_err(result)
+        nia_assert_is_err(&result)
     }
 
     #[test]

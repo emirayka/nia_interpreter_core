@@ -202,8 +202,8 @@ fn deep_equal_object(
         return Ok(false)
     }
 
-    let object1_items = object1.get_items();
-    let object2_items = object2.get_items();
+    let object1_items = object1.get_properties();
+    let object2_items = object2.get_properties();
 
     if object1_items.len() != object2_items.len() {
         return Ok(false)
@@ -347,6 +347,7 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     fn assert_values_are_deeply_equal(interpreter: &mut Interpreter, pairs: Vec<(&str, &str)>) {
         for pair in pairs {

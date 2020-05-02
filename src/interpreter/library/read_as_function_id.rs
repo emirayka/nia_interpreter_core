@@ -20,6 +20,7 @@ pub fn read_as_function_id(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use crate::interpreter::library;
     use crate::interpreter::library::assertion;

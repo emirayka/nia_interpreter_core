@@ -53,6 +53,8 @@ impl Context {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[allow(non_snake_case)]
@@ -69,7 +71,7 @@ mod tests {
             context.set_value(SymbolId::new(0), expected).unwrap();
             let result = context.get_value(SymbolId::new(0));
 
-            assert_eq!(expected, result.unwrap());
+            nia_assert_equal(expected, result.unwrap());
         }
 
         #[test]
@@ -78,7 +80,7 @@ mod tests {
 
             let result = context.get_value(SymbolId::new(0));
 
-            assertion::assert_is_error(&result);
+            nia_assert_is_err(&result);
         }
     }
 }

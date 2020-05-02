@@ -12,7 +12,7 @@ use crate::parser::element;
 use crate::parser::element::Element;
 use crate::parser::ParseError;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Prefix {
     CommaDog,
     Comma,
@@ -50,9 +50,12 @@ impl PrefixedElement {
 
 impl PartialEq for PrefixedElement {
     fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
+        self.value == other.value &&
+            self.prefix == other.prefix
     }
 }
+
+impl Eq for PrefixedElement {}
 
 fn make_prefix(s: &str) -> Result<Prefix, String> {
     let prefix = if s == ",@" {
@@ -99,6 +102,8 @@ named!(pub parse(&str) -> PrefixedElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::parser::symbol_element::SymbolElement;
     use crate::parser::integer_element::IntegerElement;
     use crate::parser::float_element::FloatElement;
@@ -112,7 +117,7 @@ mod tests {
         expected_element: Element,
         code: &str
     ) {
-        assert_eq!(
+        nia_assert_equal(
             Ok(("", PrefixedElement::new(expected_prefix, expected_element))),
             parse(code)
         )
@@ -124,7 +129,7 @@ mod tests {
         expected_element: Element,
         code: &str
     ) {
-        assert_eq!(
+        nia_assert_equal(
             Ok(("", PrefixedElement::new(
                 expected_prefix_1,
                 Element::Prefix(PrefixedElement::new(
@@ -267,7 +272,7 @@ mod tests {
                 assert_prefix_prefix_works(
                     prefix_1.0,
                     prefix_2.0,
-                    &format!("{}{}", prefix_1.1, prefix_1.1)
+                    &format!("{}{}", prefix_1.1, prefix_2.1)
                 );
             }
         }

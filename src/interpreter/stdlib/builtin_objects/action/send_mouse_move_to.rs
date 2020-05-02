@@ -47,6 +47,8 @@ pub fn send_mouse_move_to(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

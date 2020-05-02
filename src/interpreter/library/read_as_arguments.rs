@@ -257,6 +257,7 @@ pub fn read_as_arguments(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use crate::interpreter::library::assertion;
 
@@ -421,7 +422,7 @@ mod tests {
                 value
             ).unwrap();
 
-            assert_eq!(expected, result)
+            nia_assert_equal(expected, result)
         }
     }
 
@@ -451,7 +452,7 @@ mod tests {
                 value
             );
 
-            assertion::assert_is_err(result);
+            nia_assert_is_err(&result);
         }
     }
 }

@@ -22,14 +22,14 @@ pub fn get(
         values.remove(0)
     )?;
 
-    let symbol_id = library::read_symbol_or_keyword_as_symbol_id(
+    let symbol_id = library::read_keyword_or_symbol_as_symbol_id(
         interpreter,
         values.remove(0)
     )?;
 
     library::check_if_symbol_assignable(interpreter, symbol_id)?;
 
-    let value = interpreter.get_object_item(object_id, symbol_id)
+    let value = interpreter.get_object_property(object_id, symbol_id)
         .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
@@ -54,6 +54,8 @@ pub fn get(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::for_special_symbols;
 

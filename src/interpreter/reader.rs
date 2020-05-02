@@ -539,6 +539,8 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::parser::parse;
     use crate::interpreter::library::assertion;
 
@@ -552,7 +554,7 @@ mod tests {
 
                 let len = expected.len();
 
-                assert_eq!(len, result.len());
+                nia_assert_equal(len, result.len());
 
                 for i in 0..len {
                     let expected = expected[i];
@@ -843,7 +845,7 @@ mod tests {
                         let symbol = interpreter.intern(name);
 
                         let expected = value;
-                        let result = interpreter.get_object_item(
+                        let result = interpreter.get_object_property(
                             object_id,
                             symbol,
                         ).unwrap().unwrap();

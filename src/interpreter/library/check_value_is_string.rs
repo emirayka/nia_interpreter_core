@@ -16,6 +16,8 @@ pub fn check_value_is_string(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::value::StringId;
 
@@ -28,7 +30,7 @@ mod tests {
             Value::String(StringId::new(0))
         ).unwrap();
 
-        assert_eq!((), result);
+        nia_assert_equal((), result);
     }
 
     #[test]

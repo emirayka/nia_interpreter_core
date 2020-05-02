@@ -76,6 +76,8 @@ pub fn fset(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::value::Function;
     use crate::interpreter::value::InterpretedFunction;
@@ -132,7 +134,7 @@ mod tests {
 
         let result = interpreter.execute("(b)").unwrap();
 
-        assert_eq!(Value::Integer(2), result);
+        nia_assert_equal(Value::Integer(2), result);
     }
 
     #[test]

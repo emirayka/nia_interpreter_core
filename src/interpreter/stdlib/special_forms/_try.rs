@@ -5,7 +5,7 @@ use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::ConsId;
 use crate::interpreter::library;
 
-fn parse_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<ConsId>, Error> {
+fn read_catch_clauses(interpreter: &mut Interpreter, clauses: Vec<Value>) -> Result<Vec<ConsId>, Error> {
     let mut catch_clauses = Vec::new();
 
     for clause in clauses {
@@ -62,7 +62,7 @@ pub fn _try(
     let try_code = values.remove(0);
     let clauses = values;
 
-    let catch_clauses = parse_catch_clauses(interpreter, clauses)?;
+    let catch_clauses = read_catch_clauses(interpreter, clauses)?;
     let try_result = interpreter.execute_value(environment_id, try_code);
 
     match try_result {
@@ -75,6 +75,11 @@ pub fn _try(
                     .map_err(|_| Error::invalid_argument_error(
                         "The catch clauses of special form `try' must have two items at least."
                     ))?;
+
+                let catch_value = interpreter.evaluate_value(
+                    environment_id,
+                    catch_value
+                )?;
 
                 let catch_symbol_id = match catch_value {
                     Value::Symbol(symbol) => symbol,
@@ -137,6 +142,8 @@ pub fn _try(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -144,8 +151,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!(
-            ("(try (progn 1) (catch cute-error))", Value::Integer(1)),
-            ("(try (progn 1 2) (catch cute-error))", Value::Integer(2)),
+            ("(try (progn 1) (catch 'cute-error))", Value::Integer(1)),
+            ("(try (progn 1 2) (catch 'cute-error))", Value::Integer(2)),
         );
 
         assertion::assert_results_are_correct(
@@ -159,8 +166,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!(
-            ("(try (progn 1 (throw 'cute-error)) (catch cute-error 1))", Value::Integer(1)),
-            ("(try (progn 1 (throw 'cute-error)) (catch cute-error 1 2))", Value::Integer(2)),
+            ("(try (progn 1 (throw 'cute-error)) (catch 'cute-error 1))", Value::Integer(1)),
+            ("(try (progn 1 (throw 'cute-error)) (catch 'cute-error 1 2))", Value::Integer(2)),
         );
     }
 
@@ -168,11 +175,11 @@ mod tests {
     fn if_error_cannot_be_catch_then_it_returns_it() {
         let mut interpreter = Interpreter::new();
 
-        let error = interpreter.execute("(try (progn 1 (throw 'not-a-cute-error)) (catch cute-error 1))")
+        let error = interpreter.execute("(try (progn 1 (throw 'not-a-cute-error)) (catch 'cute-error 1))")
             .err()
             .unwrap();
 
-        assert_eq!(
+        nia_assert_equal(
             "not-a-cute-error",
             error.get_symbol_name()
         );
@@ -182,11 +189,11 @@ mod tests {
     fn returns_error_when_catch_clause_thrown_an_error() {
         let mut interpreter = Interpreter::new();
 
-        let error = interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch cute-error (throw 'not-a-cute-error)))")
+        let error = interpreter.execute("(try (progn 1 (throw 'cute-error)) (catch 'cute-error (throw 'not-a-cute-error)))")
             .err()
             .unwrap();
 
-        assert_eq!(
+        nia_assert_equal(
             "not-a-cute-error",
             error.get_symbol_name()
         );

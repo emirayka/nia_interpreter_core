@@ -17,8 +17,10 @@ pub fn is_truthy(
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn returns_true_when_value_is_truthy() {
@@ -43,7 +45,7 @@ mod tests {
             let value = interpreter.execute(code).unwrap();
             let result = is_truthy(&mut interpreter, value).unwrap();
 
-            assert_eq!(expected, result)
+            nia_assert_equal(expected, result)
         }
     }
 
@@ -61,7 +63,7 @@ mod tests {
             let value = interpreter.execute(code).unwrap();
             let result = is_truthy(&mut interpreter, value).unwrap();
 
-            assert_eq!(expected, result)
+            nia_assert_equal(expected, result)
         }
     }
 }

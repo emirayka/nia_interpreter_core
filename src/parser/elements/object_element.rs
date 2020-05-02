@@ -67,6 +67,8 @@ impl PartialEq for ObjectElement {
     }
 }
 
+impl Eq for ObjectElement {}
+
 fn make_object_element(values: Vec<(KeywordElement, Element)>) -> Result<ObjectElement, ParseError> {
     Ok(ObjectElement::new(values))
 }
@@ -106,13 +108,14 @@ named!(pub parse(&str) -> ObjectElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     fn assert_parsed_correctly(expr: &str) {
-        assert!(parse(expr).is_ok());
+        nia_assert(parse(expr).is_ok());
     }
 
     fn assert_failed_correctly(expr: &str) {
-        assert!(parse(expr).is_err());
+        nia_assert(parse(expr).is_err());
     }
 
     #[test]

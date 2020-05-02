@@ -20,6 +20,8 @@ pub fn read_as_string_id(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use std::convert::TryInto;
     use crate::interpreter::library::assertion;
 
@@ -35,7 +37,7 @@ mod tests {
             value
         );
 
-        assert_eq!(expected, result.unwrap());
+        nia_assert_equal(expected, result.unwrap());
     }
 
     #[test]

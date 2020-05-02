@@ -14,6 +14,8 @@ pub fn read_as_bool(interpreter: &Interpreter, value: Value) -> Result<bool, Err
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -31,7 +33,7 @@ mod tests {
                 value
             ).unwrap();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, result);
         }
     }
 

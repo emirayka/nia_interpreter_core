@@ -141,6 +141,8 @@ pub fn match_value(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion::assert_deep_equal;
 
     fn assert_matches_correctly(interpreter: &mut Interpreter, specs: Vec<(&str, &str, &str, &str)>) {
@@ -183,7 +185,7 @@ mod tests {
                 value
             );
 
-            assert!(environment_id.is_err());
+            nia_assert(environment_id.is_err());
         }
     }
 

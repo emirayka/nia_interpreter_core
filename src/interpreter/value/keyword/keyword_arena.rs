@@ -76,6 +76,7 @@ impl KeywordArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod free_keyword {
@@ -88,12 +89,12 @@ mod tests {
             let expected = "keyword";
             let keyword_id = keyword_arena.intern_keyword(expected);
 
-            assert!(keyword_arena.get_keyword(keyword_id).is_ok());
-            assert!(keyword_arena.free_keyword(keyword_id).is_ok());
-            assert!(keyword_arena.get_keyword(keyword_id).is_err());
+            nia_assert(keyword_arena.get_keyword(keyword_id).is_ok());
+            nia_assert(keyword_arena.free_keyword(keyword_id).is_ok());
+            nia_assert(keyword_arena.get_keyword(keyword_id).is_err());
 
-            assert!(!keyword_arena.arena.contains_key(&keyword_id));
-            assert!(!keyword_arena.mapping.contains_key(expected));
+            nia_assert(!keyword_arena.arena.contains_key(&keyword_id));
+            nia_assert(!keyword_arena.mapping.contains_key(expected));
         }
 
         #[test]
@@ -102,7 +103,7 @@ mod tests {
 
             let keyword_id = KeywordId::new(23444);
 
-            assert!(keyword_arena.free_keyword(keyword_id).is_err());
+            nia_assert(keyword_arena.free_keyword(keyword_id).is_err());
         }
 
         #[test]
@@ -112,8 +113,8 @@ mod tests {
             let expected = "";
             let keyword_id = keyword_arena.intern_keyword(expected);
 
-            assert!(keyword_arena.free_keyword(keyword_id).is_ok());
-            assert!(keyword_arena.free_keyword(keyword_id).is_err());
+            nia_assert(keyword_arena.free_keyword(keyword_id).is_ok());
+            nia_assert(keyword_arena.free_keyword(keyword_id).is_err());
         }
     }
 }

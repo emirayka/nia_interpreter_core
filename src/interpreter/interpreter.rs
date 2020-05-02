@@ -517,39 +517,70 @@ impl Interpreter {
         self.object_arena.make_child(prototype_id)
     }
 
-    pub fn get_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId) -> Result<Option<Value>, Error> {
-        self.object_arena
-            .get_item(object_id, key_symbol_id)
-    }
-
-    pub fn set_object_item(&mut self, object_id: ObjectId, key_symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-        self.object_arena
-            .set_item(object_id, key_symbol_id, value)
-    }
-
-    pub fn get_object_proto(&self, object_id: ObjectId) -> Result<Option<ObjectId>, Error> {
-        let object = self.object_arena.get_object(object_id)?;
-
-        Ok(object.get_prototype())
-    }
-
-    pub fn set_object_proto(&mut self, object_id: ObjectId, proto_id: ObjectId) -> Result<(), Error> {
-        let object = self.object_arena.get_object_mut(object_id)?;
-        object.set_prototype(proto_id);
-
-        Ok(())
-    }
-
     pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, Error> {
         let object = self.object_arena.get_object(object_id)?;
 
         Ok(object)
     }
 
+    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, Error> {
+        let object = self.object_arena.get_object_mut(object_id)?;
+
+        Ok(object)
+    }
+
+    pub fn object_has_property(
+        &mut self,
+        object_id: ObjectId,
+        key_symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
+        self.object_arena
+            .has_property(object_id, key_symbol_id)
+    }
+
+    pub fn get_object_property(
+        &mut self,
+        object_id: ObjectId,
+        key_symbol_id: SymbolId,
+    ) -> Result<Option<Value>, Error> {
+        self.object_arena
+            .get_property_value(object_id, key_symbol_id)
+    }
+
+    pub fn set_object_property(
+        &mut self,
+        object_id: ObjectId,
+        key_symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
+        self.object_arena
+            .set_property(object_id, key_symbol_id, value)
+    }
+
+    pub fn get_object_prototype(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Option<ObjectId>, Error> {
+        let object = self.object_arena.get_object(object_id)?;
+
+        Ok(object.get_prototype())
+    }
+
+    pub fn set_object_prototype(
+        &mut self,
+        object_id: ObjectId,
+        proto_id: ObjectId,
+    ) -> Result<(), Error> {
+        let object = self.object_arena.get_object_mut(object_id)?;
+        object.set_prototype(proto_id);
+
+        Ok(())
+    }
+
     pub fn get_object_items(&self, object_id: ObjectId) -> Result<&HashMap<SymbolId, ObjectValueWrapper>, Error> {
         let object = self.object_arena.get_object(object_id)?;
 
-        Ok(object.get_items())
+        Ok(object.get_properties())
     }
 }
 
@@ -1269,7 +1300,7 @@ impl Interpreter {
 
         match evaluated_argument {
             Value::Object(object_id) => {
-                self.object_arena.get_item(object_id, symbol_id)?
+                self.object_arena.get_property_value(object_id, symbol_id)?
                     .ok_or_else(|| Error::generic_execution_error(
                         "Object have not an item to yield."
                     ))
@@ -1412,6 +1443,8 @@ impl Interpreter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::testing_helpers::make_value_pairs_evaluated_ifbsyko;
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::assertion::assert_deep_equal;
@@ -1425,7 +1458,7 @@ mod tests {
                 let mut interpreter = Interpreter::new();
                 let result = interpreter.execute($code);
 
-                assert_eq!($expected, result.unwrap())
+                nia_assert_equal($expected, result.unwrap())
             }
         }
 
@@ -1472,7 +1505,7 @@ mod tests {
 
             let result = interpreter.execute("test");
 
-            assert_eq!(Value::Integer(1), result.unwrap());
+            nia_assert_equal(Value::Integer(1), result.unwrap());
         }
 
         #[test]
@@ -1493,7 +1526,7 @@ mod tests {
                 ).unwrap();
 
                 let result = interpreter.execute(special_symbol_name);
-                assertion::assert_is_error(&result);
+                nia_assert_is_err(&result);
             }
         }
 
@@ -1517,7 +1550,7 @@ mod tests {
                 let keyword_name = keyword.get_name();
                 let expected = &spec[1..];
 
-                assert_eq!(expected, keyword_name);
+                nia_assert_equal(expected, keyword_name);
             }
         }
 
@@ -1527,7 +1560,7 @@ mod tests {
 
             let result = interpreter.execute("(:a {:a 1})");
 
-            assert_eq!(Value::Integer(1), result.unwrap());
+            nia_assert_equal(Value::Integer(1), result.unwrap());
         }
 
         #[test]
@@ -1550,7 +1583,7 @@ mod tests {
                 };
 
                 let expected = pair.1;
-                let result = interpreter.get_object_item(object_id, key).unwrap().unwrap();
+                let result = interpreter.get_object_property(object_id, key).unwrap().unwrap();
 
                 assertion::assert_deep_equal(
                     &mut interpreter,
@@ -1707,16 +1740,16 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             let result = interpreter.execute("(+ 1 2)");
-            assert_eq!(Value::Integer(3), result.unwrap());
+            nia_assert_equal(Value::Integer(3), result.unwrap());
 
             let result = interpreter.execute("(+ 1 2.2)");
-            assert_eq!(Value::Float(3.2), result.unwrap());
+            nia_assert_equal(Value::Float(3.2), result.unwrap());
 
             let result = interpreter.execute("(+ 1.1 2.4)");
-            assert_eq!(Value::Float(3.5), result.unwrap());
+            nia_assert_equal(Value::Float(3.5), result.unwrap());
 
             let result = interpreter.execute("(+ (+ (+ 1 2) 3) 4)");
-            assert_eq!(Value::Integer(10), result.unwrap());
+            nia_assert_equal(Value::Integer(10), result.unwrap());
         }
 
         #[test]
@@ -1768,7 +1801,7 @@ mod tests {
             ).unwrap();
 
             let result = interpreter.execute("(test 3 2)");
-            assert_eq!(Value::Integer(5), result.unwrap());
+            nia_assert_equal(Value::Integer(5), result.unwrap());
         }
 
         #[test]

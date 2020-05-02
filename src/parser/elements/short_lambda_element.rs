@@ -35,6 +35,8 @@ impl PartialEq for ShortLambdaElement {
     }
 }
 
+impl Eq for ShortLambdaElement {}
+
 
 fn make_short_lambda_element(s_expression: SExpressionElement) -> Result<ShortLambdaElement, String> {
     Ok(ShortLambdaElement::new(s_expression))
@@ -53,11 +55,13 @@ named!(pub parse(&str) -> ShortLambdaElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::parser::integer_element::IntegerElement;
     use crate::parser::element::Element;
 
     fn assert_short_lambda_element_parsed_correctly(expected: ShortLambdaElement, code: &str) {
-        assert_eq!(Ok(("", expected)), parse(code))
+        nia_assert_equal(Ok(("", expected)), parse(code))
     }
 
     #[test]

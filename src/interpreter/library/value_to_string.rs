@@ -91,6 +91,7 @@ pub fn value_to_string(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn returns_string_representation_of_values() {
@@ -117,7 +118,7 @@ mod tests {
             let value = interpreter.execute(code).unwrap();
             let result = value_to_string(&mut interpreter, value).unwrap();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, &result);
         }
     }
 }

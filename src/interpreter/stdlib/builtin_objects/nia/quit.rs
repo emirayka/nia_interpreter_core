@@ -16,4 +16,5 @@ pub fn quit(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 }

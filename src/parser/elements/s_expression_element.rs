@@ -53,6 +53,8 @@ impl PartialEq for SExpressionElement {
     }
 }
 
+impl Eq for SExpressionElement {}
+
 fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement, ParseError> {
     Ok(SExpressionElement::new(values))
 }
@@ -88,6 +90,8 @@ named!(pub parse(&str) -> SExpressionElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::parser::integer_element::IntegerElement;
     use crate::parser::float_element::FloatElement;
     use crate::parser::string_element::StringElement;
@@ -96,7 +100,7 @@ mod tests {
     use crate::parser::symbol_element::SymbolElement;
 
     fn assert_s_expression_parsed_correctly(expected: Vec<Element>, code: &str) {
-        assert_eq!(expected, parse(code).ok().unwrap().1.values);
+        nia_assert_equal(expected, parse(code).ok().unwrap().1.values);
     }
 
     #[test]

@@ -5,7 +5,7 @@ use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
-pub fn object_get_proto(
+pub fn get_proto(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>
@@ -22,7 +22,7 @@ pub fn object_get_proto(
         values.remove(0)
     )?;
 
-    let proto_id = interpreter.get_object_proto(object_id)
+    let proto_id = interpreter.get_object_prototype(object_id)
         .map_err(|err| Error::generic_execution_error_caused(
             "",
             err
@@ -37,6 +37,8 @@ pub fn object_get_proto(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

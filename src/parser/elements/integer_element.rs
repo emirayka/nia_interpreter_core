@@ -33,6 +33,8 @@ impl PartialEq for IntegerElement {
     }
 }
 
+impl Eq for IntegerElement {}
+
 fn make_integer_element(value: i64) -> Result<IntegerElement, ParseError> {
     Ok(IntegerElement::new(value))
 }
@@ -46,29 +48,30 @@ named!(pub parse<&str, IntegerElement>, map_res!(parse_i64, make_integer_element
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn parses_unsigned_value() {
-        assert_eq!(Ok(("", IntegerElement{value: 20})), parse("20"));
+        nia_assert_equal(Ok(("", IntegerElement{value: 20})), parse("20"));
     }
 
     #[test]
     fn parses_signed_positive_value() {
-        assert_eq!(Ok(("", IntegerElement{value: 20})), parse("+20"));
+        nia_assert_equal(Ok(("", IntegerElement{value: 20})), parse("+20"));
     }
 
     #[test]
     fn parses_signed_negative_value() {
-        assert_eq!(Ok(("", IntegerElement{value: -20})), parse("-20"));
+        nia_assert_equal(Ok(("", IntegerElement{value: -20})), parse("-20"));
     }
 
     #[test]
     fn returns_remaining_input() {
-        assert_eq!(Ok((" kek", IntegerElement{value: -20})), parse("-20 kek"));
+        nia_assert_equal(Ok((" kek", IntegerElement{value: -20})), parse("-20 kek"));
     }
 
     #[test]
     fn returns_error() {
-        assert!(parse("-").is_err());
+        nia_assert(parse("-").is_err());
     }
 }

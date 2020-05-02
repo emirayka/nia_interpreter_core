@@ -34,6 +34,8 @@ impl PartialEq for SymbolElement {
     }
 }
 
+impl Eq for SymbolElement {}
+
 fn join(chars: Vec<char>) -> Result<String, String> {
     Ok(chars.iter().collect())
 }
@@ -71,16 +73,17 @@ named!(pub parse(&str) -> SymbolElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn works_on_simple_value() {
-        assert_eq!(Ok(("", SymbolElement {value: "test".to_string()})), parse("test"));
+        nia_assert_equal(Ok(("", SymbolElement {value: "test".to_string()})), parse("test"));
     }
 
     #[test]
     fn able_to_parse_all_fine_symbols() {
         let example = "test1-_^v=+?<>./&*%$@!~";
-        assert_eq!(Ok(("", SymbolElement {value: String::from(example)})), parse(example));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from(example)})), parse(example));
     }
 
     #[test]
@@ -88,24 +91,24 @@ mod tests {
         let text = r##"test\"\,\`\ \(\)\:\\\{\}"##;
         let expected = r##"test",` ():\{}"##;
 
-        assert_eq!(Ok(("", SymbolElement {value: String::from(expected)})), parse(text));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from(expected)})), parse(text));
     }
 
     #[test]
     fn allows_numbers_not_at_the_first_position() {
-        assert_eq!(Ok(("", SymbolElement {value: String::from("test1")})), parse("test1"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("1test")})), parse("1test"));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from("test1")})), parse("test1"));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from("1test")})), parse("1test"));
     }
 
     #[test]
     fn parses_special_symbols() {
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#opt")})), parse("#opt"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#rest")})), parse("#rest"));
-        assert_eq!(Ok(("", SymbolElement {value: String::from("#keys")})), parse("#keys"));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#opt")})), parse("#opt"));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#rest")})), parse("#rest"));
+        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#keys")})), parse("#keys"));
     }
 
     #[test]
     fn does_not_parse_invalid_special_symbols() {
-        assert!(parse("#tt").is_err());
+        nia_assert(parse("#tt").is_err());
     }
 }

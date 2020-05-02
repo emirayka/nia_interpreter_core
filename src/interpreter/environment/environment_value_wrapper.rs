@@ -116,6 +116,7 @@ impl EnvironmentValueWrapper {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod get_value {
@@ -127,7 +128,7 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT
             );
 
-            assert_eq!(Ok(Value::Integer(1)), value_wrapper.get_value());
+            nia_assert_equal(Ok(Value::Integer(1)), value_wrapper.get_value());
         }
 
         #[test]
@@ -137,7 +138,7 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT ^ ENVIRONMENT_VALUE_WRAPPER_FLAG_INTERNABLE
             );
 
-            assert!(value_wrapper.get_value().is_err())
+            nia_assert(value_wrapper.get_value().is_err())
         }
     }
 
@@ -152,8 +153,8 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT
             );
 
-            assert!(value_wrapper.set_value(Value::Integer(2)).is_ok());
-            assert_eq!(Ok(Value::Integer(2)), value_wrapper.get_value());
+            nia_assert(value_wrapper.set_value(Value::Integer(2)).is_ok());
+            nia_assert_equal(Ok(Value::Integer(2)), value_wrapper.get_value());
         }
 
         #[test]
@@ -163,7 +164,7 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT ^ ENVIRONMENT_VALUE_WRAPPER_FLAG_WRITABLE
             );
 
-            assert!(value_wrapper.set_value(Value::Integer(2)).is_err())
+            nia_assert(value_wrapper.set_value(Value::Integer(2)).is_err())
         }
     }
 
@@ -178,8 +179,8 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT
             );
 
-            assert!(value_wrapper.set_flags(0).is_ok());
-            assert_eq!(0, value_wrapper.get_flags());
+            nia_assert(value_wrapper.set_flags(0).is_ok());
+            nia_assert_equal(0, value_wrapper.get_flags());
         }
 
         #[test]
@@ -189,7 +190,7 @@ mod tests {
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT ^ ENVIRONMENT_VALUE_WRAPPER_FLAG_CONFIGURABLE
             );
 
-            assert!(value_wrapper.set_flags(ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT).is_err())
+            nia_assert(value_wrapper.set_flags(ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT).is_err())
         }
     }
 

@@ -25,6 +25,8 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

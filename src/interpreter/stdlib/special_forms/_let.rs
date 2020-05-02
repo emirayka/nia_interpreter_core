@@ -166,6 +166,8 @@ pub fn _let(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 
@@ -206,7 +208,7 @@ mod tests {
     fn sets_symbol_without_value_to_nil() {
         let mut interpreter = Interpreter::new();
 
-        assert_eq!(
+        nia_assert_equal(
             interpreter.intern_nil_symbol_value(),
             interpreter.execute("(let (nil-symbol) nil-symbol)").unwrap()
         );
@@ -372,7 +374,7 @@ mod tests {
 
         let result = interpreter.execute("(let ((sym-1 1) (sym-2 sym-1)) sym-2)");
 
-        assert!(result.is_err())
+        nia_assert(result.is_err())
     }
 
     #[test]
@@ -381,6 +383,6 @@ mod tests {
 
         let result = interpreter.execute("(let ((sym-1 1) (sym-1 2)) sym-1)");
 
-        assert!(result.is_err())
+        nia_assert(result.is_err())
     }
 }

@@ -10,9 +10,9 @@ pub fn freeze_mark(
     _environment: EnvironmentId,
     values: Vec<Value>
 ) -> Result<Value, Error> {
-    if values.len() != 2 {
+    if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `object:freeze!' must take only one argument."
+            "Built-in function `object:freeze!' takes one argument exactly."
         ).into();
     }
 
@@ -22,18 +22,9 @@ pub fn freeze_mark(
         values.remove(0)
     )?;
 
-    let proto_id = match values.remove(0) {
-        Value::Object(object_id) => object_id,
-        _ => return Error::invalid_argument_error(
-            "The first argument of built-in function `object:freeze!' must be an object."
-        ).into()
-    };
+    let mut object = interpreter.get_object_mut(object_id)?;
 
-    interpreter.set_object_proto(object_id, proto_id)
-        .map_err(|err| Error::generic_execution_error_caused(
-            "",
-            err
-        ))?;
+    object.freeze();
 
     Ok(Value::Boolean(true))
 }
@@ -41,6 +32,8 @@ pub fn freeze_mark(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -48,10 +41,16 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!(
-
+            ("(try (let ((a {})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property a :kek)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-internable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-writable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-enumerable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
+            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-configurable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
         );
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        assertion::assert_results_are_equal(
             &mut interpreter,
             code_vector
         );
@@ -63,7 +62,7 @@ mod tests {
 
         let code_vector = vec!(
             "(object:freeze!)",
-            "(object:freeze! obj-1 'val)"
+            "(object:freeze! {} 'val)"
         );
 
         assertion::assert_results_are_invalid_argument_count_errors(

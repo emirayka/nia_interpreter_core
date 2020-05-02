@@ -51,6 +51,7 @@ impl PartialEq for Cons {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[allow(non_snake_case)]
     #[cfg(test)]
@@ -83,8 +84,8 @@ mod tests {
             l.set_car(Value::Integer(1));
             l.set_cdr(Value::Integer(2));
 
-            assert_eq!(Value::Integer(1), l.get_car());
-            assert_eq!(Value::Integer(2), l.get_cdr());
+            nia_assert_equal(Value::Integer(1), l.get_car());
+            nia_assert_equal(Value::Integer(2), l.get_cdr());
         }
     }
 }

@@ -207,6 +207,8 @@ impl ConsArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::value::{SymbolId};
 
     fn new_symbol(name: &str) -> SymbolId {
@@ -231,9 +233,9 @@ mod tests {
 
             let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
 
-            assert!(cons_arena.get_cons(cons_id).is_ok());
-            assert!(cons_arena.free_cons(cons_id).is_ok());
-            assert!(cons_arena.get_cons(cons_id).is_err());
+            nia_assert(cons_arena.get_cons(cons_id).is_ok());
+            nia_assert(cons_arena.free_cons(cons_id).is_ok());
+            nia_assert(cons_arena.get_cons(cons_id).is_err());
         }
 
         #[test]
@@ -242,7 +244,7 @@ mod tests {
 
             let cons_id = ConsId::new(342343);
 
-            assert!(cons_arena.free_cons(cons_id).is_err());
+            nia_assert(cons_arena.free_cons(cons_id).is_err());
         }
 
         #[test]
@@ -251,8 +253,8 @@ mod tests {
 
             let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
 
-            assert!(cons_arena.free_cons(cons_id).is_ok());
-            assert!(cons_arena.free_cons(cons_id).is_err());
+            nia_assert(cons_arena.free_cons(cons_id).is_ok());
+            nia_assert(cons_arena.free_cons(cons_id).is_err());
         }
     }
 
@@ -284,7 +286,7 @@ mod tests {
 
             let result_vector = cons_arena.list_to_vec(cons).unwrap();
 
-            assert_eq!(
+            nia_assert_equal(
                 vec!(
                     Value::Integer(1),
                     Value::Integer(2),
@@ -328,7 +330,7 @@ mod tests {
 
                 let result = cons_arena.list_to_vec(incorrect_cons).unwrap();
 
-                assert_eq!(&incorrect_cdr, result.last().unwrap());
+                nia_assert_equal(&incorrect_cdr, result.last().unwrap());
             }
         }
     }
@@ -341,7 +343,7 @@ mod tests {
             ($expected:expr, $vector:expr) => {
                 let mut cons_arena = ConsArena::new();
 
-                assert_eq!($expected, cons_arena.vec_to_list(nil(), $vector));
+                nia_assert_equal($expected, cons_arena.vec_to_list(nil(), $vector));
             }
         }
 

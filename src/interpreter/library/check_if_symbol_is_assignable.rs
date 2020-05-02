@@ -21,6 +21,8 @@ pub fn check_if_symbol_assignable(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
     use crate::interpreter::library::assertion;
 
@@ -31,7 +33,7 @@ mod tests {
 
         let result = check_if_symbol_assignable(&mut interpreter, symbol_id);
 
-        assert!(result.is_ok());
+        nia_assert(result.is_ok());
     }
 
     #[test]

@@ -38,6 +38,7 @@ pub fn add_value_to_root_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use crate::interpreter::library::assertion;
 

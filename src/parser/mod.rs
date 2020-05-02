@@ -17,13 +17,14 @@ pub use {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     fn assert_is_ok<T, E>(result: Result<T, E>) {
-        assert!(result.is_ok());
+        nia_assert(result.is_ok());
     }
 
     fn assert_is_err<T, E>(result: Result<T, E>) {
-        assert!(result.is_err());
+        nia_assert(result.is_err());
     }
 
     macro_rules! assert_code_eq {
@@ -32,18 +33,18 @@ mod tests {
                 let expected = $expected;
                 let parsed = parse($code);
 
-                assert!(parsed.is_ok());
+                nia_assert(parsed.is_ok());
                 let parsed = match parsed {
                     Ok((_, code)) => code,
                     _ => unreachable!()
                 };
 
                 let elements = parsed.get_elements();
-                assert_eq!(expected.len(), elements.len());
+                nia_assert_equal(expected.len(), elements.len());
                 let len = expected.len();
 
                 for i in 0..len {
-                    assert_eq!(&expected[i], &elements[i]);
+                    nia_assert_equal(&expected[i], &elements[i]);
                 }
             };
         }

@@ -284,6 +284,8 @@ impl<T> From<Error> for Result<T, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::interpreter::Interpreter;
 
     #[test]
@@ -300,7 +302,7 @@ mod tests {
             cause_error
         );
 
-        assert!(
+        nia_assert(
             match error.get_total_cause().get_error_kind() {
                 ErrorKind::InvalidArgumentCount => true,
                 _ => false

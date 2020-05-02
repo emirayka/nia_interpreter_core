@@ -14,8 +14,5 @@ dirs = "2.0.2"
 rustyline = "6.1.1"
 nia_state_machine = { path = "../nia_state_machine" }
 nia_events = { path = "../nia_events" }
-nom-trace = "0.2.1"
-
-[dev-dependencies]
+nia_basic_assertions = { path = "../nia_basic_assertions" }
 pretty_assertions = "0.6.1"
-

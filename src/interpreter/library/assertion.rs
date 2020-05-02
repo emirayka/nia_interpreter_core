@@ -1,29 +1,13 @@
+use nia_basic_assertions::*;
+
 use crate::interpreter::value::Value;
 use crate::interpreter::error::*;
 use crate::interpreter::interpreter::Interpreter;
 
 use crate::interpreter::library;
 
-pub fn assert_is_ok<V, E>(something: Result<V, E>) {
-    assert!(
-        match something {
-            Ok(_) => true,
-            Err(_) => false
-        }
-    );
-}
-
-pub fn assert_is_err<V, E>(something: Result<V, E>) {
-    assert!(
-        match something {
-            Ok(_) => false,
-            Err(_) => true
-        }
-    );
-}
-
 pub fn assert_deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) {
-    assert!(
+    nia_assert(
         library::deep_equal(
             interpreter,
             value1,
@@ -36,7 +20,7 @@ pub fn assert_vectors_deep_equal(interpreter: &mut Interpreter, values1: Vec<Val
     let mut values1 = values1;
     let mut values2 = values2;
 
-    assert_eq!(values1.len(), values2.len());
+    nia_assert_equal(values1.len(), values2.len());
 
     while values1.len() > 0 {
         let value1 = values1.remove(0);
@@ -46,18 +30,14 @@ pub fn assert_vectors_deep_equal(interpreter: &mut Interpreter, values1: Vec<Val
     }
 }
 
-pub fn assert_is_error<V, E>(error: &Result<V, E>) {
-    assert!(error.is_err());
-}
-
 macro_rules! make_assertion_function {
     ($name:ident, $error_kind:pat) => {
         pub fn $name<T>(error: &Result<T, Error>) {
-            assert!(error.is_err());
+            nia_assert(error.is_err());
 
             let error = error.as_ref().err().unwrap().get_total_cause();
 
-            assert!(
+            nia_assert(
                 match error.get_error_kind() {
                     $error_kind => true,
                     _ => false
@@ -93,7 +73,7 @@ make_assertion_function!(
 );
 
 pub fn assert_is_function(param: Value) {
-    assert!(
+    nia_assert(
         match param {
             Value::Function(_) => true,
             _ => false
@@ -102,7 +82,7 @@ pub fn assert_is_function(param: Value) {
 }
 
 pub fn assert_is_object(param: Value) {
-    assert!(
+    nia_assert(
         match param {
             Value::Object(_) => true,
             _ => false
@@ -111,7 +91,7 @@ pub fn assert_is_object(param: Value) {
 }
 
 pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
-    assert!(
+    nia_assert(
         match param {
             Value::Symbol(symbol_id) => {
                 interpreter.symbol_is_nil(symbol_id).unwrap()
@@ -169,9 +149,9 @@ pub fn assert_results_are_errors(
         let total_cause = error.get_total_cause();
 
         if total_cause.get_error_kind() == error_kind {
-            assert_eq!(symbol_name, total_cause.get_symbol_name());
+            nia_assert_equal(symbol_name, total_cause.get_symbol_name());
         } else if total_cause.get_error_kind() == ErrorKind::GenericError {
-            assert_eq!(symbol_name, total_cause.get_symbol_name());
+            nia_assert_equal(symbol_name, total_cause.get_symbol_name());
         } else {
             panic!();
         }
@@ -196,7 +176,7 @@ pub fn assert_results_are_just_errors(
     for code in code_vector {
         let result = interpreter.execute(code);
 
-        assert_is_error(&result);
+        nia_assert_is_err(&result);
     }
 }
 

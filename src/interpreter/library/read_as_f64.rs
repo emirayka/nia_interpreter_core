@@ -14,10 +14,12 @@ pub fn read_as_f64(interpreter: &Interpreter, value: Value) -> Result<f64, Error
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
-    fn returns_correct_int() {
+    fn returns_correct_float() {
         let mut interpreter = Interpreter::new();
 
         let value = Value::Float(3.0);
@@ -26,7 +28,7 @@ mod tests {
             value
         );
 
-        assert_eq!(3.0, result.unwrap());
+        nia_assert_fequal(3.0, result.unwrap());
     }
 
     #[test]

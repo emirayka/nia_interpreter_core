@@ -51,6 +51,7 @@ pub fn remove_last_item_from_root_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use crate::interpreter::library::assertion;
     use std::panic::resume_unwind;
@@ -139,7 +140,7 @@ mod tests {
             EMPTY_LIST_VARIABLE_SYMBOL_NAME,
         );
 
-        assertion::assert_is_error(&result);
+        nia_assert_is_err(&result);
     }
 
     #[test]
@@ -178,7 +179,7 @@ mod tests {
                 EMPTY_LIST_VARIABLE_SYMBOL_NAME
             );
 
-            assertion::assert_is_error(&result);
+            nia_assert_is_err(&result);
         }
     }
 }

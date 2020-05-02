@@ -76,6 +76,7 @@ impl StringArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[cfg(test)]
     mod make_string {
@@ -90,7 +91,7 @@ mod tests {
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, result);
         }
 
         #[test]
@@ -103,7 +104,7 @@ mod tests {
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, result);
         }
     }
 
@@ -120,7 +121,7 @@ mod tests {
 
             let result = string_arena.get_string(string_id).unwrap().get_string();
 
-            assert_eq!(expected, result);
+            nia_assert_equal(expected, result);
         }
     }
 
@@ -135,12 +136,12 @@ mod tests {
             let string = "string";
             let string_id = string_arena.intern_string(string);
 
-            assert!(string_arena.get_string(string_id).is_ok());
-            assert!(string_arena.free_string(string_id).is_ok());
-            assert!(string_arena.get_string(string_id).is_err());
+            nia_assert(string_arena.get_string(string_id).is_ok());
+            nia_assert(string_arena.free_string(string_id).is_ok());
+            nia_assert(string_arena.get_string(string_id).is_err());
 
-            assert!(!string_arena.arena.contains_key(&string_id));
-            assert!(!string_arena.mapping.contains_key(string));
+            nia_assert(!string_arena.arena.contains_key(&string_id));
+            nia_assert(!string_arena.mapping.contains_key(string));
         }
 
         #[test]
@@ -149,7 +150,7 @@ mod tests {
 
             let string_id = StringId::new(9994);
 
-            assert!(string_arena.free_string(string_id).is_err());
+            nia_assert(string_arena.free_string(string_id).is_err());
         }
 
         #[test]
@@ -159,7 +160,7 @@ mod tests {
             let string_id = string_arena.intern_string("string");
 
             string_arena.free_string(string_id).unwrap();
-            assert!(string_arena.free_string(string_id).is_err());
+            nia_assert(string_arena.free_string(string_id).is_err());
         }
     }
 }

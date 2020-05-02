@@ -43,6 +43,8 @@ pub fn send_mouse_button_up(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]

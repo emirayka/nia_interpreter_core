@@ -76,6 +76,8 @@ pub fn read_as_flet_definitions(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -219,7 +221,7 @@ mod tests {
                 value,
             ).unwrap();
 
-            assert_eq!(expected.len(), result.len());
+            nia_assert_equal(expected.len(), result.len());
 
             for (a, b) in expected.into_iter().zip(result.into_iter()) {
                 assertion::assert_deep_equal(
@@ -228,7 +230,7 @@ mod tests {
                     b.0
                 );
 
-                assert_eq!(a.1, b.1);
+                nia_assert_equal(a.1, b.1);
 
                 assertion::assert_vectors_deep_equal(
                     &mut interpreter,
@@ -260,7 +262,7 @@ mod tests {
                 value,
             );
 
-            assertion::assert_is_error(&result);
+            nia_assert_is_err(&result);
         }
     }
 }

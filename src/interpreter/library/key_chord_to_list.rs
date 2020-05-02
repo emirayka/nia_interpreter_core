@@ -23,6 +23,8 @@ pub fn key_chord_to_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     use nia_events::{KeyChordPart, KeyId, KeyboardId};

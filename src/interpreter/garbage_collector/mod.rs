@@ -231,6 +231,7 @@ pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: Environmen
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use std::convert::TryInto;
 
@@ -263,9 +264,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_string(string_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_string(string_id).is_err());
+        nia_assert(interpreter.get_string(string_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_string(string_id).is_err());
     }
 
     #[test]
@@ -278,9 +279,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_keyword(keyword_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_keyword(keyword_id).is_err());
+        nia_assert(interpreter.get_keyword(keyword_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_keyword(keyword_id).is_err());
     }
 
     #[test]
@@ -293,9 +294,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_symbol(symbol_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_symbol(symbol_id).is_err());
+        nia_assert(interpreter.get_symbol(symbol_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_id).is_err());
     }
 
     #[test]
@@ -308,11 +309,11 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_car(cons_id).is_ok());
-        assert!(interpreter.get_cdr(cons_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_car(cons_id).is_err());
-        assert!(interpreter.get_cdr(cons_id).is_err());
+        nia_assert(interpreter.get_car(cons_id).is_ok());
+        nia_assert(interpreter.get_cdr(cons_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_car(cons_id).is_err());
+        nia_assert(interpreter.get_cdr(cons_id).is_err());
     }
 
     #[test]
@@ -325,9 +326,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_object_proto(object_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_object_proto(object_id).is_err());
+        nia_assert(interpreter.get_object_prototype(object_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_object_prototype(object_id).is_err());
     }
 
     #[test]
@@ -338,9 +339,9 @@ mod tests {
         let function = Function::Builtin(BuiltinFunction::new(builtin_test_function));
         let function_id = interpreter.register_function(function);
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_function(function_id).is_err());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
@@ -351,9 +352,9 @@ mod tests {
         let function = Function::SpecialForm(SpecialFormFunction::new(test_special_form));
         let function_id = interpreter.register_function(function);
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_function(function_id).is_err());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
@@ -366,9 +367,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_function(function_id).is_err());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
@@ -381,9 +382,9 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
-        assert!(interpreter.get_function(function_id).is_err());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_err());
     }
 
     #[test]
@@ -405,17 +406,17 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_car(cons_id).is_ok());
-        assert!(interpreter.get_cdr(cons_id).is_ok());
-        assert!(interpreter.get_symbol(symbol_1).is_ok());
-        assert!(interpreter.get_symbol(symbol_2).is_ok());
+        nia_assert(interpreter.get_car(cons_id).is_ok());
+        nia_assert(interpreter.get_cdr(cons_id).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_car(cons_id).is_ok());
-        assert!(interpreter.get_cdr(cons_id).is_ok());
-        assert!(interpreter.get_symbol(symbol_1).is_ok());
-        assert!(interpreter.get_symbol(symbol_2).is_ok());
+        nia_assert(interpreter.get_car(cons_id).is_ok());
+        nia_assert(interpreter.get_cdr(cons_id).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_2).is_ok());
     }
 
     #[test]
@@ -443,17 +444,17 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_keyword(item_key).is_ok());
-        assert!(interpreter.get_symbol(item_key_symbol).is_ok());
-        assert!(interpreter.get_keyword(item_value).is_ok());
-        assert!(interpreter.get_object_proto(object_id).is_ok());
+        nia_assert(interpreter.get_keyword(item_key).is_ok());
+        nia_assert(interpreter.get_symbol(item_key_symbol).is_ok());
+        nia_assert(interpreter.get_keyword(item_value).is_ok());
+        nia_assert(interpreter.get_object_prototype(object_id).is_ok());
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_keyword(item_key).is_err());
-        assert!(interpreter.get_symbol(item_key_symbol).is_ok());
-        assert!(interpreter.get_keyword(item_value).is_ok());
-        assert!(interpreter.get_object_proto(object_id).is_ok());
+        nia_assert(interpreter.get_keyword(item_key).is_err());
+        nia_assert(interpreter.get_symbol(item_key_symbol).is_ok());
+        nia_assert(interpreter.get_keyword(item_value).is_ok());
+        nia_assert(interpreter.get_object_prototype(object_id).is_ok());
     }
 
     #[test]
@@ -472,10 +473,10 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(interpreter.get_symbol(symbol_id).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(interpreter.get_symbol(symbol_id).is_ok());
     }
 
     #[test]
@@ -499,15 +500,15 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(interpreter.get_symbol(symbol1).is_ok());
-        assert!(interpreter.get_symbol(symbol2).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(interpreter.get_symbol(symbol1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_function(function_id).is_ok());
-        assert!(interpreter.get_symbol(symbol1).is_ok());
-        assert!(interpreter.get_symbol(symbol2).is_ok());
+        nia_assert(interpreter.get_function(function_id).is_ok());
+        nia_assert(interpreter.get_symbol(symbol1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol2).is_ok());
     }
 
     #[test]
@@ -535,17 +536,17 @@ mod tests {
             .try_into()
             .unwrap();
 
-        assert!(interpreter.get_function(function1).is_ok());
-        assert!(interpreter.get_function(function2).is_ok());
-        assert!(interpreter.get_symbol(symbol1).is_ok());
-        assert!(interpreter.get_symbol(symbol2).is_ok());
+        nia_assert(interpreter.get_function(function1).is_ok());
+        nia_assert(interpreter.get_function(function2).is_ok());
+        nia_assert(interpreter.get_symbol(symbol1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol2).is_ok());
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_function(function1).is_ok());
-        assert!(interpreter.get_function(function2).is_ok());
-        assert!(interpreter.get_symbol(symbol1).is_ok());
-        assert!(interpreter.get_symbol(symbol2).is_ok());
+        nia_assert(interpreter.get_function(function1).is_ok());
+        nia_assert(interpreter.get_function(function2).is_ok());
+        nia_assert(interpreter.get_symbol(symbol1).is_ok());
+        nia_assert(interpreter.get_symbol(symbol2).is_ok());
     }
 
     #[test]
@@ -581,28 +582,28 @@ mod tests {
             interpreter.set_context_value(pair.0, pair.1).unwrap();
         }
 
-        assert!(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
 
-        assert!(interpreter.get_symbol(pairs[0].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[1].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[2].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[3].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[4].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[5].0).is_ok());
-        assert!(interpreter.get_symbol(pairs[6].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[0].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[1].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[2].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[3].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[4].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[5].0).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[6].0).is_ok());
 
         // todo: rewrite that
-        assert!(interpreter.get_string(pairs[0].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_keyword(pairs[1].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_symbol(pairs[2].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_car(pairs[3].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_cdr(pairs[3].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_object_proto(pairs[4].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_function(pairs[5].1.try_into().unwrap()).is_ok());
-        assert!(interpreter.get_function(pairs[6].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_string(pairs[0].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_keyword(pairs[1].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_symbol(pairs[2].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_car(pairs[3].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_cdr(pairs[3].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_object_prototype(pairs[4].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_function(pairs[5].1.try_into().unwrap()).is_ok());
+        nia_assert(interpreter.get_function(pairs[6].1.try_into().unwrap()).is_ok());
 
         for symbol_id in symbols {
-            assert!(interpreter.get_symbol(symbol_id).is_ok());
+            nia_assert(interpreter.get_symbol(symbol_id).is_ok());
         }
     }
 }

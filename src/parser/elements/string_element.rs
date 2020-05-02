@@ -32,6 +32,8 @@ impl PartialEq for StringElement {
     }
 }
 
+impl Eq for StringElement {}
+
 fn make_slash_char(_: &str) -> Result<char, ParseError> {
     Ok('\\')
 }
@@ -102,18 +104,19 @@ named!(pub parse(&str) -> StringElement, map_res!(parse_string, make_string_elem
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn works_on_simple_values() {
-        assert_eq!(Ok(("", StringElement{value: r"test".to_string()})), parse(r#""test""#));
+        nia_assert_equal(Ok(("", StringElement{value: r"test".to_string()})), parse(r#""test""#));
     }
 
     #[test]
     fn escape_behaves_correctly() {
-        assert_eq!(Ok(("", StringElement{value: "\\".to_string()})), parse(r#""\\""#));
-        assert_eq!(Ok(("", StringElement{value: "\"".to_string()})), parse(r#""\"""#));
-        assert_eq!(Ok(("", StringElement{value: "\n".to_string()})), parse(r#""\n""#));
-        assert_eq!(Ok(("", StringElement{value: "\r".to_string()})), parse(r#""\r""#));
-        assert_eq!(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse(r#""knock\"knockknock""#));
+        nia_assert_equal(Ok(("", StringElement{value: "\\".to_string()})), parse(r#""\\""#));
+        nia_assert_equal(Ok(("", StringElement{value: "\"".to_string()})), parse(r#""\"""#));
+        nia_assert_equal(Ok(("", StringElement{value: "\n".to_string()})), parse(r#""\n""#));
+        nia_assert_equal(Ok(("", StringElement{value: "\r".to_string()})), parse(r#""\r""#));
+        nia_assert_equal(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse(r#""knock\"knockknock""#));
     }
 }

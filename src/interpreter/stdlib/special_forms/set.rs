@@ -76,6 +76,8 @@ pub fn set(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::library::testing_helpers::{for_constants, for_special_symbols};
 

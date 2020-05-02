@@ -20,6 +20,8 @@ pub fn read_as_keyword(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
 
     #[test]
@@ -34,7 +36,7 @@ mod tests {
             keyword
         ).unwrap().get_name();
 
-        assert_eq!(expected, result);
+        nia_assert_equal(expected, result);
     }
 
     #[test]

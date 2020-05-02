@@ -24,6 +24,8 @@ pub fn check_value_is_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
+
     use crate::interpreter::library::assertion;
     use crate::interpreter::value::ConsId;
 
@@ -42,7 +44,7 @@ mod tests {
                 list_value
             ).unwrap();
 
-            assert_eq!((), result);
+            nia_assert_equal((), result);
         }
     }
 

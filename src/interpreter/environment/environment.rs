@@ -192,21 +192,22 @@ impl LexicalEnvironment {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     #[test]
     fn makes_new_bindings() {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
-        assert!(!env.has_variable(key));
+        nia_assert(!env.has_variable(key));
         env.define_variable(key, Value::Integer(1)).unwrap();
-        assert!(env.has_variable(key));
-        assert_eq!(Some(Value::Integer(1)), env.lookup_variable(key).unwrap());
+        nia_assert(env.has_variable(key));
+        nia_assert_equal(Some(Value::Integer(1)), env.lookup_variable(key).unwrap());
 
-        assert!(!env.has_function(key));
+        nia_assert(!env.has_function(key));
         env.define_function(key, Value::Integer(1)).unwrap();
-        assert!(env.has_function(key));
-        assert_eq!(Some(Value::Integer(1)), env.lookup_function(key).unwrap());
+        nia_assert(env.has_function(key));
+        nia_assert_equal(Some(Value::Integer(1)), env.lookup_function(key).unwrap());
     }
 
     #[test]
@@ -220,8 +221,8 @@ mod tests {
         env.set_variable(key, Value::Integer(2)).unwrap();
         env.set_function(key, Value::Integer(2)).unwrap();
 
-        assert_eq!(Some(Value::Integer(2)), env.lookup_variable(key).unwrap());
-        assert_eq!(Some(Value::Integer(2)), env.lookup_function(key).unwrap());
+        nia_assert_equal(Some(Value::Integer(2)), env.lookup_variable(key).unwrap());
+        nia_assert_equal(Some(Value::Integer(2)), env.lookup_function(key).unwrap());
     }
 
     #[test]
@@ -229,8 +230,8 @@ mod tests {
         let mut env = LexicalEnvironment::new();
         let key = SymbolId::new(0);
 
-        assert!(env.set_variable(key, Value::Integer(2)).is_err());
-        assert!(env.set_function(key, Value::Integer(2)).is_err());
+        nia_assert(env.set_variable(key, Value::Integer(2)).is_err());
+        nia_assert(env.set_function(key, Value::Integer(2)).is_err());
     }
 
     #[test]
@@ -239,10 +240,10 @@ mod tests {
         let key = SymbolId::new(0);
 
         env.define_variable(key, Value::Integer(1)).unwrap();
-        assert!(env.define_variable(key, Value::Integer(1)).is_err());
+        nia_assert(env.define_variable(key, Value::Integer(1)).is_err());
 
         env.define_function(key, Value::Integer(1)).unwrap();
-        assert!(env.define_function(key, Value::Integer(1)).is_err());
+        nia_assert(env.define_function(key, Value::Integer(1)).is_err());
     }
 
     #[test]
@@ -250,11 +251,11 @@ mod tests {
         let mut env = LexicalEnvironment::new();
         let id = EnvironmentId::new(1);
 
-        assert_eq!(None, env.get_parent());
+        nia_assert_equal(None, env.get_parent());
 
         env.set_parent(id);
 
-        assert_eq!(Some(id), env.get_parent());
+        nia_assert_equal(Some(id), env.get_parent());
     }
 
     #[test]
@@ -265,8 +266,8 @@ mod tests {
 
         env.define_const_variable(symbol, value);
 
-        assert_eq!(Some(value), env.lookup_variable(symbol).unwrap());
-        assert!(env.set_variable(symbol, Value::Integer(2)).is_err());
+        nia_assert_equal(Some(value), env.lookup_variable(symbol).unwrap());
+        nia_assert(env.set_variable(symbol, Value::Integer(2)).is_err());
     }
 
     #[test]
@@ -277,7 +278,7 @@ mod tests {
 
         env.define_const_function(symbol, value);
 
-        assert_eq!(Some(value), env.lookup_function(symbol).unwrap());
-        assert!(env.set_function(symbol, Value::Integer(2)).is_err());
+        nia_assert_equal(Some(value), env.lookup_function(symbol).unwrap());
+        nia_assert(env.set_function(symbol, Value::Integer(2)).is_err());
     }
 }

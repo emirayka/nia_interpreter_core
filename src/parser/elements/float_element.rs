@@ -36,6 +36,8 @@ impl PartialEq for FloatElement {
     }
 }
 
+impl Eq for FloatElement {}
+
 fn make_float_element(value: f64) -> Result<FloatElement, ParseError> {
     Ok(FloatElement::new(value))
 }
@@ -63,12 +65,13 @@ named!(pub parse<&str, FloatElement>, map_res!(parse_f64, make_float_element));
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nia_basic_assertions::*;
 
     use std::str::FromStr;
 
     macro_rules! make_float_assertion {
         ($str:expr) => {
-            assert_eq!(Ok(("", FloatElement {value: f64::from_str($str).unwrap()})), parse($str));
+            nia_assert_equal(Ok(("", FloatElement {value: f64::from_str($str).unwrap()})), parse($str));
         }
     }
 
