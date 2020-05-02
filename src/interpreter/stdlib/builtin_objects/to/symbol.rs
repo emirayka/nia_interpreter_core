@@ -18,9 +18,15 @@ pub fn symbol(
 
     match values.remove(0) {
         Value::String(string_id) => {
-            let string = interpreter.get_string(string_id)?.get_string().clone();
+            let symbol_name = interpreter.get_string(string_id)?.get_string().clone();
 
-            let symbol = interpreter.intern_symbol_value(&string);
+            if symbol_name.starts_with("#") {
+                return Error::invalid_argument_error(
+                    "Cannot convert to special symbols."
+                ).into()
+            }
+
+            let symbol = interpreter.intern_symbol_value(&symbol_name);
 
             Ok(symbol)
         },
@@ -57,7 +63,24 @@ mod tests {
     }
 
     #[test]
-    fn returns_generic_execution_error_when_invalid_conversion() {
+    fn returns_invalid_argument_error_when_attempts_to_convert_to_special_symbols() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            "(to:symbol \"#opt\")",
+            "(to:symbol \"#rest\")",
+            "(to:symbol \"#keys\")",
+            "(to:symbol \"#another-special-symbol\")",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_invalid_conversion() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!(

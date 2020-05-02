@@ -23,6 +23,12 @@ pub fn intern(
         values.remove(0)
     )?.clone();
 
+    if symbol_name.starts_with("#") {
+        return Error::invalid_argument_error(
+            "Cannot intern special symbols."
+        ).into()
+    }
+
     Ok(interpreter.intern_symbol_value(&symbol_name))
 }
 
@@ -43,6 +49,23 @@ mod tests {
         );
 
         assertion::assert_results_are_correct(
+            &mut interpreter,
+            pairs
+        );
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_attempts_to_intern_special_symbols() {
+        let mut interpreter = Interpreter::new();
+
+        let pairs = vec!(
+            "(intern \"#opt\")",
+            "(intern \"#rest\")",
+            "(intern \"#keys\")",
+            "(intern \"#another-special-symbol\")",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             pairs
         );

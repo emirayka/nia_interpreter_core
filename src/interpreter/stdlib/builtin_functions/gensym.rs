@@ -18,7 +18,7 @@ pub fn gensym(
 
     let mut values = values;
 
-    let name = if values.len() == 0 {
+    let symbol_name = if values.len() == 0 {
         String::from("G")
     } else {
         let string = library::read_as_string(
@@ -29,7 +29,13 @@ pub fn gensym(
         string.clone()
     };
 
-    Ok(Value::Symbol(interpreter.gensym(&name)))
+    if symbol_name.starts_with("#") {
+        return Error::invalid_argument_error(
+            "Cannot intern special symbols."
+        ).into()
+    }
+
+    Ok(Value::Symbol(interpreter.gensym(&symbol_name)))
 }
 
 #[cfg(test)]
@@ -70,6 +76,23 @@ mod tests {
         nia_assert_nequal(gensym1, gensym3);
 
         nia_assert_nequal(gensym2, gensym3);
+    }
+
+    #[test]
+    fn returns_invalid_argument_error_when_attempts_to_gensym_special_symbols() {
+        let mut interpreter = Interpreter::new();
+
+        let code_vector = vec!(
+            "(gensym \"#opt\")",
+            "(gensym \"#rest\")",
+            "(gensym \"#keys\")",
+            "(gensym \"#another-special-symbol\")",
+        );
+
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector
+        );
     }
 
     #[test]
