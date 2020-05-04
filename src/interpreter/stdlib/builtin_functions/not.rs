@@ -1,19 +1,20 @@
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
-use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
 pub fn not(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `not' takes exactly one argument."
-        ).into();
+            "Built-in function `not' takes exactly one argument.",
+        )
+        .into();
     }
 
     let mut values = values;
@@ -28,17 +29,19 @@ pub fn not(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn works_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             ("(not #f)", "#t"),
-
             ("(not 1)", "#f"),
             ("(not 1.1)", "#f"),
             ("(not #t)", "#f"),
@@ -48,27 +51,17 @@ mod tests {
             ("(not '(1 2))", "#f"),
             ("(not {})", "#f"),
             ("(not #())", "#f"),
-        );
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
     fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            "(not)",
-            "(not 1 2)",
-            "(not 1 2 3)",
-        );
+        let code_vector = vec!["(not)", "(not 1 2)", "(not 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 }

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::StringId;
-use crate::interpreter::value::NiaString;
 use crate::interpreter::error::Error;
+use crate::interpreter::value::NiaString;
+use crate::interpreter::value::StringId;
 
 #[derive(Clone)]
 pub struct StringArena {
@@ -16,7 +16,7 @@ impl StringArena {
         StringArena {
             arena: HashMap::new(),
             mapping: HashMap::new(),
-            next_id: 0
+            next_id: 0,
         }
     }
 
@@ -40,21 +40,22 @@ impl StringArena {
     }
 
     pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
-        self.arena
-            .get(&string_id)
-            .ok_or(Error::failure(
-                format!("Cannot find a string with id: {}", string_id.get_id())
-            ))
+        self.arena.get(&string_id).ok_or(Error::failure(format!(
+            "Cannot find a string with id: {}",
+            string_id.get_id()
+        )))
     }
 
     pub fn free_string(&mut self, string_id: StringId) -> Result<(), Error> {
         let string = match self.arena.remove(&string_id) {
-            Some(hia_string) => {
-                hia_string
+            Some(hia_string) => hia_string,
+            _ => {
+                return Error::failure(format!(
+                    "Cannot find a string with id: {}",
+                    string_id.get_id()
+                ))
+                .into()
             }
-            _ => return Error::failure(
-                format!("Cannot find a string with id: {}", string_id.get_id())
-            ).into()
         };
 
         self.mapping.remove(string.get_string());
@@ -76,6 +77,8 @@ impl StringArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[cfg(test)]

@@ -1,14 +1,5 @@
-use nom::{
-    named,
-    alt,
-    tag,
-    recognize,
-    pair,
-    opt,
-    map_res,
-    character::complete::digit1,
-};
 use crate::parser::ParseError;
+use nom::{alt, character::complete::digit1, map_res, named, opt, pair, recognize, tag};
 
 #[derive(Debug)]
 pub struct IntegerElement {
@@ -17,9 +8,7 @@ pub struct IntegerElement {
 
 impl IntegerElement {
     pub fn new(value: i64) -> IntegerElement {
-        IntegerElement {
-            value
-        }
+        IntegerElement { value }
     }
 
     pub fn get_value(&self) -> i64 {
@@ -48,26 +37,31 @@ named!(pub parse<&str, IntegerElement>, map_res!(parse_i64, make_integer_element
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]
     fn parses_unsigned_value() {
-        nia_assert_equal(Ok(("", IntegerElement{value: 20})), parse("20"));
+        nia_assert_equal(Ok(("", IntegerElement { value: 20 })), parse("20"));
     }
 
     #[test]
     fn parses_signed_positive_value() {
-        nia_assert_equal(Ok(("", IntegerElement{value: 20})), parse("+20"));
+        nia_assert_equal(Ok(("", IntegerElement { value: 20 })), parse("+20"));
     }
 
     #[test]
     fn parses_signed_negative_value() {
-        nia_assert_equal(Ok(("", IntegerElement{value: -20})), parse("-20"));
+        nia_assert_equal(Ok(("", IntegerElement { value: -20 })), parse("-20"));
     }
 
     #[test]
     fn returns_remaining_input() {
-        nia_assert_equal(Ok((" kek", IntegerElement{value: -20})), parse("-20 kek"));
+        nia_assert_equal(
+            Ok((" kek", IntegerElement { value: -20 })),
+            parse("-20 kek"),
+        );
     }
 
     #[test]

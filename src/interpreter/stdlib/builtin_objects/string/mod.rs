@@ -30,7 +30,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let string_object_id = interpreter.make_object();
     let string_symbol_id = interpreter.intern("string");
 
-    let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
+    let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("compare", compare::compare),
         ("concat", concat::concat),
         ("contains?", contains::contains),
@@ -51,21 +51,16 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("trim-left", trim_left::trim_left),
         ("trim-right", trim_right::trim_right),
         ("upper", upper::upper),
-    );
+    ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
-            interpreter,
-            string_object_id,
-            name,
-            func
-        )?;
+        infect_object_builtin_function(interpreter, string_object_id, name, func)?;
     }
 
     interpreter.define_variable(
-        interpreter.get_root_environment(),
+        interpreter.get_root_environment_id(),
         string_symbol_id,
-        Value::Object(string_object_id)
+        Value::Object(string_object_id),
     )?;
 
     Ok(())

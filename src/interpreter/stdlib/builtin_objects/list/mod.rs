@@ -7,12 +7,12 @@ use crate::interpreter::value::BuiltinFunctionType;
 
 mod all_question;
 mod any_question;
-mod append;
 mod aperture;
+mod append;
 mod contains_question;
 mod filter;
-mod foldl;
 mod fold;
+mod foldl;
 mod head;
 mod init;
 mod join;
@@ -36,7 +36,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let list_object_id = interpreter.make_object();
     let list_symbol_id = interpreter.intern("list");
 
-    let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
+    let pairs: Vec<(&str, BuiltinFunctionType)> = vec![
         ("all?", all_question::all_question),
         ("any?", any_question::any_question),
         ("append", append::append),
@@ -62,22 +62,17 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("take", take::take),
         ("take-while", take_while::take_while),
         ("unzip", unzip::unzip),
-        ("zip", zip::zip)
-    );
+        ("zip", zip::zip),
+    ];
 
     for (name, func) in pairs {
-        infect_object_builtin_function(
-            interpreter,
-            list_object_id,
-            name,
-            func
-        )?;
+        infect_object_builtin_function(interpreter, list_object_id, name, func)?;
     }
 
     interpreter.define_variable(
-        interpreter.get_root_environment(),
+        interpreter.get_root_environment_id(),
         list_symbol_id,
-        Value::Object(list_object_id)
+        Value::Object(list_object_id),
     )?;
 
     Ok(())

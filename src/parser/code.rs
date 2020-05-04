@@ -1,14 +1,6 @@
 use nom::{
-    named,
-    alt,
-    tag,
-    map_res,
-    preceded,
-    delimited,
-    complete,
-    many0,
-    character::complete::multispace1,
-    character::complete::multispace0,
+    alt, character::complete::multispace0, character::complete::multispace1, complete, delimited,
+    many0, map_res, named, preceded, tag,
 };
 
 use crate::parser::element;
@@ -19,14 +11,12 @@ use crate::parser::lib::parse_comment_character;
 
 #[derive(Debug)]
 pub struct Code {
-    elements: Vec<Element>
+    elements: Vec<Element>,
 }
 
 impl Code {
     pub fn new(elements: Vec<Element>) -> Code {
-        Code {
-            elements
-        }
+        Code { elements }
     }
 
     pub fn get_elements(self) -> Vec<Element> {
@@ -96,7 +86,7 @@ named!(parse_code(&str) -> Code, map_res!(
     make_code
 ));
 
-pub fn parse(s: &str) -> Result<(&str, Code), ParseError> {
+pub fn parse(s: &str) -> Result<Code, ParseError> {
     let result = parse_code(s);
 
     match result {
@@ -105,10 +95,10 @@ pub fn parse(s: &str) -> Result<(&str, Code), ParseError> {
                 return Err(ParseError::TrailingInput(String::from(rest)));
             }
 
-            Ok((rest, parse_result))
+            Ok(parse_result)
         }
         Err(nom::Err::Error((s, kind))) => Err(ParseError::NomError((String::from(s), kind))),
         Err(nom::Err::Failure((s, kind))) => Err(ParseError::NomFailure((String::from(s), kind))),
-        Err(nom::Err::Incomplete(_)) => Err(ParseError::NomIncomplete())
+        Err(nom::Err::Incomplete(_)) => Err(ParseError::NomIncomplete()),
     }
 }

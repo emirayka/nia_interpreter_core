@@ -5,9 +5,7 @@ pub struct EnvironmentId {
 
 impl EnvironmentId {
     pub fn new(index: usize) -> EnvironmentId {
-        EnvironmentId {
-            index,
-        }
+        EnvironmentId { index }
     }
 
     pub fn get_id(&self) -> usize {

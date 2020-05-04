@@ -1,8 +1,10 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::BuiltinFunctionType;
 use crate::interpreter::library::infect::infect_builtin_function;
+use crate::interpreter::value::BuiltinFunctionType;
 
+mod _println;
+mod _type;
 mod assert;
 mod car;
 mod cdr;
@@ -12,11 +14,11 @@ mod div;
 mod eq_question;
 mod equal_question;
 mod eval;
-mod inc;
 mod flookup;
 mod ge;
 mod gensym;
 mod gt;
+mod inc;
 mod intern;
 mod le;
 mod list;
@@ -32,10 +34,9 @@ mod set_cdr_mark;
 mod string;
 mod sub;
 mod sum;
-mod _type;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let pairs: Vec<(&str, BuiltinFunctionType)> = vec!(
+    let pairs: Vec<(&str, BuiltinFunctionType)> = vec![
         ("assert", assert::assert),
         ("car", car::car),
         ("cdr", cdr::cdr),
@@ -44,18 +45,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("cons", cons::cons),
         ("list", list::list),
         ("string", string::string),
-
         ("flookup", flookup::flookup),
         ("gensym", gensym::gensym),
         ("intern", intern::intern),
         ("lookup", lookup::lookup),
-
         ("/", div::div),
         ("*", mul::mul),
         ("%", rem::rem),
         ("-", sub::sub),
         ("+", sum::sum),
-
         ("not", not::not),
         ("eq?", eq_question::eq_question),
         ("equal?", equal_question::equal_question),
@@ -69,12 +67,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("<=", le::le),
         (">", gt::gt),
         (">=", ge::ge),
-
         ("dec", dec::dec),
         ("inc", inc::inc),
         ("eval", eval::eval),
         ("type", _type::_type),
-    );
+        ("println", _println::_println),
+    ];
 
     for (name, func) in pairs {
         infect_builtin_function(interpreter, name, func)?;

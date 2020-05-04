@@ -1,7 +1,7 @@
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
-use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 use crate::{ObjectId, SymbolId};
@@ -16,35 +16,22 @@ fn extract_property_descriptor_items(
     let mut object = interpreter.get_object_mut(object_id)?;
 
     if !object.has_property(property_symbol_id) {
-        return Error::generic_execution_error(
-            "Object has not property to yield."
-        ).into();
+        return Error::generic_execution_error("Object has not property to yield.").into();
     }
 
-    let value = object.get_property_value(property_symbol_id)?
-        .ok_or_else(|| Error::generic_execution_error(
-            "Object has not property to yield."
-        ))?;
+    let value = object
+        .get_property_value(property_symbol_id)?
+        .ok_or_else(|| Error::generic_execution_error("Object has not property to yield."))?;
 
-    let internable = object.is_property_internable(property_symbol_id)?
-        .into();
+    let internable = object.is_property_internable(property_symbol_id)?.into();
 
-    let writable = object.is_property_writable(property_symbol_id)?
-        .into();
+    let writable = object.is_property_writable(property_symbol_id)?.into();
 
-    let enumerable = object.is_property_enumerable(property_symbol_id)?
-        .into();
+    let enumerable = object.is_property_enumerable(property_symbol_id)?.into();
 
-    let configurable = object.is_property_configurable(property_symbol_id)?
-        .into();
+    let configurable = object.is_property_configurable(property_symbol_id)?.into();
 
-    Ok((name,
-        value,
-        internable,
-        writable,
-        enumerable,
-        configurable
-    ))
+    Ok((name, value, internable, writable, enumerable, configurable))
 }
 
 fn construct_property_descriptor(
@@ -59,14 +46,8 @@ fn construct_property_descriptor(
     let enumerable_symbol_id = interpreter.intern("enumerable");
     let configurable_symbol_id = interpreter.intern("configurable");
 
-    let (
-        name,
-        value,
-        internable,
-        writable,
-        enumerable,
-        configurable
-    ) = extract_property_descriptor_items(interpreter, object_id, property_symbol_id)?;
+    let (name, value, internable, writable, enumerable, configurable) =
+        extract_property_descriptor_items(interpreter, object_id, property_symbol_id)?;
 
     let property_descriptor_object_id = interpreter.make_object();
     let object = interpreter.get_object_mut(property_descriptor_object_id)?;
@@ -88,27 +69,20 @@ pub fn get_property_descriptor(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `object:get-property-descriptor' takes two arguments exactly."
-        ).into();
+            "Built-in function `object:get-property-descriptor' takes two arguments exactly.",
+        )
+        .into();
     }
 
     let mut values = values;
 
-    let object_id = library::read_as_object_id(
-        interpreter,
-        values.remove(0),
-    )?;
+    let object_id = library::read_as_object_id(values.remove(0))?;
 
-    let property_symbol_id = library::read_string_keyword_or_symbol_as_symbol_id(
-        interpreter,
-        values.remove(0),
-    )?;
+    let property_symbol_id =
+        library::read_string_keyword_or_symbol_as_symbol_id(interpreter, values.remove(0))?;
 
-    let property_descriptor_object_id = construct_property_descriptor(
-        interpreter,
-        object_id,
-        property_symbol_id
-    )?;
+    let property_descriptor_object_id =
+        construct_property_descriptor(interpreter, object_id, property_symbol_id)?;
 
     Ok(property_descriptor_object_id)
 }
@@ -116,9 +90,12 @@ pub fn get_property_descriptor(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_property_descriptor() {
@@ -133,33 +110,27 @@ mod tests {
             ("(let ((obj {:e 5})) (object:set-configurable! obj :e #t) (object:get-property-descriptor obj :e))", "{:name 'e :value 5 :internable #t :writable #t :enumerable #t :configurable #t}"),
         );
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            code_vector,
-        );
+        assertion::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             "(object:get-property-descriptor)",
             "(object:get-property-descriptor {:prop 1})",
-            "(object:get-property-descriptor {:prop 1} :prop 2)"
-        );
+            "(object:get-property-descriptor {:prop 1} :prop 2)",
+        ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector,
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_when_not_an_object_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             "(object:get-property-descriptor 1 :prop)",
             "(object:get-property-descriptor 1.1 :prop)",
             "(object:get-property-descriptor #t :prop)",
@@ -169,7 +140,6 @@ mod tests {
             "(object:get-property-descriptor 'symbol :prop)",
             "(object:get-property-descriptor '(list) :prop)",
             "(object:get-property-descriptor #() :prop)",
-
             "(object:get-property-descriptor {} 1)",
             "(object:get-property-descriptor {} 1.1)",
             "(object:get-property-descriptor {} #t)",
@@ -177,11 +147,8 @@ mod tests {
             "(object:get-property-descriptor {} '(list))",
             "(object:get-property-descriptor {} {})",
             "(object:get-property-descriptor {} #())",
-        );
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector,
-        );
+        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
     }
 }

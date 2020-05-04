@@ -1,22 +1,18 @@
 mod lib;
 
-mod elements;
 mod element;
+mod elements;
 
 mod code;
 mod parse_error;
 
-pub use {
-    parse_error::ParseError,
-    elements::*,
-    element::Element,
-    code::Code,
-    code::parse,
-};
+pub use {code::parse, code::Code, element::Element, elements::*, parse_error::ParseError};
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     fn assert_is_ok<T, E>(result: Result<T, E>) {
@@ -28,26 +24,24 @@ mod tests {
     }
 
     macro_rules! assert_code_eq {
-        ($expected:expr, $code:expr) => {
-            {
-                let expected = $expected;
-                let parsed = parse($code);
+        ($expected:expr, $code:expr) => {{
+            let expected = $expected;
+            let parsed = parse($code);
 
-                nia_assert(parsed.is_ok());
-                let parsed = match parsed {
-                    Ok((_, code)) => code,
-                    _ => unreachable!()
-                };
-
-                let elements = parsed.get_elements();
-                nia_assert_equal(expected.len(), elements.len());
-                let len = expected.len();
-
-                for i in 0..len {
-                    nia_assert_equal(&expected[i], &elements[i]);
-                }
+            nia_assert(parsed.is_ok());
+            let parsed = match parsed {
+                Ok(code) => code,
+                _ => unreachable!(),
             };
-        }
+
+            let elements = parsed.get_elements();
+            nia_assert_equal(expected.len(), elements.len());
+            let len = expected.len();
+
+            for i in 0..len {
+                nia_assert_equal(&expected[i], &elements[i]);
+            }
+        };};
     }
 
     #[test]
@@ -115,10 +109,16 @@ mod tests {
     #[test]
     fn distinguishes_between_symbols_and_numbers() {
         assert_code_eq!(vec!(Element::Float(FloatElement::new(1.1))), "1.1");
-        assert_code_eq!(vec!(Element::Symbol(SymbolElement::new("1.1t".to_string()))), "1.1t");
+        assert_code_eq!(
+            vec!(Element::Symbol(SymbolElement::new("1.1t".to_string()))),
+            "1.1t"
+        );
 
         assert_code_eq!(vec!(Element::Integer(IntegerElement::new(1))), "1");
-        assert_code_eq!(vec!(Element::Symbol(SymbolElement::new("1t".to_string()))), "1t");
+        assert_code_eq!(
+            vec!(Element::Symbol(SymbolElement::new("1t".to_string()))),
+            "1t"
+        );
     }
 
     #[test]
@@ -207,7 +207,7 @@ mod tests {
 
         assert_is_ok(parse("1.1 :t"));
         assert_is_ok(parse("1.1:t")); // because, "1:t" is neither a valid symbol nor keyword, but it's a valid delimited symbol expression
-        // todo: maybe change that
+                                      // todo: maybe change that
 
         assert_is_ok(parse("1.1 t"));
         assert_is_ok(parse("1.1t")); // because, "1t" is a valid symbol
@@ -635,18 +635,8 @@ mod tests {
 
     #[test]
     fn parses_comments_correctly() {
-        assert_code_eq!(
-            vec!(
-                Element::Integer(IntegerElement::new(2))
-            ),
-            ";arst\n2"
-        );
-        assert_code_eq!(
-            vec!(
-                Element::Integer(IntegerElement::new(1)),
-            ),
-            "1;arst"
-        );
+        assert_code_eq!(vec!(Element::Integer(IntegerElement::new(2))), ";arst\n2");
+        assert_code_eq!(vec!(Element::Integer(IntegerElement::new(1)),), "1;arst");
         assert_code_eq!(
             vec!(
                 Element::Integer(IntegerElement::new(1)),

@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::SymbolId;
-use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::environment::EnvironmentValueWrapper;
 use crate::interpreter::error::Error;
-
+use crate::interpreter::value::SymbolId;
+use crate::interpreter::value::Value;
 
 #[derive(Clone)]
 pub struct LexicalEnvironment {
@@ -37,9 +36,7 @@ fn define_value(
         map.insert(symbol_id, environment_value_wrapper);
         Ok(())
     } else {
-        Error::generic_execution_error(
-            "Cannot define already defined value."
-        ).into()
+        Error::generic_execution_error("Cannot define already defined value.").into()
     }
 }
 
@@ -53,22 +50,18 @@ fn set_value(
             ref_mut.set_value(value)?;
 
             Ok(())
-        },
-        None => {
-            Error::generic_execution_error(
-                "Cannot set value that does not exist."
-            ).into()
         }
+        None => Error::generic_execution_error("Cannot set value that does not exist.").into(),
     }
 }
 
 fn lookup_value(
     map: &HashMap<SymbolId, EnvironmentValueWrapper>,
-    symbol_id: SymbolId
+    symbol_id: SymbolId,
 ) -> Result<Option<Value>, Error> {
     match map.get(&symbol_id) {
         Some(value) => Ok(Some(value.get_value()?)),
-        _ => Ok(None)
+        _ => Ok(None),
     }
 }
 
@@ -101,89 +94,84 @@ impl LexicalEnvironment {
         define_value(
             &mut self.variables,
             symbol_id,
-            EnvironmentValueWrapper::new(value)
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot define variable.",
-            err,
-        ))
+            EnvironmentValueWrapper::new(value),
+        )
+        .map_err(|err| Error::generic_execution_error_caused("Cannot define variable.", err))
     }
 
-    pub fn define_const_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn define_const_variable(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         define_value(
             &mut self.variables,
             symbol_id,
-        EnvironmentValueWrapper::new_const(value)
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot define variable.",
-            err,
-        ))
+            EnvironmentValueWrapper::new_const(value),
+        )
+        .map_err(|err| Error::generic_execution_error_caused("Cannot define variable.", err))
     }
 
     pub fn define_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
         define_value(
             &mut self.functions,
             symbol_id,
-            EnvironmentValueWrapper::new(value)
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot define function.",
-            err,
-        ))
+            EnvironmentValueWrapper::new(value),
+        )
+        .map_err(|err| Error::generic_execution_error_caused("Cannot define function.", err))
     }
 
-    pub fn define_const_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn define_const_function(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         define_value(
             &mut self.functions,
             symbol_id,
-        EnvironmentValueWrapper::new_const(value)
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot define function.",
-            err,
-        ))
+            EnvironmentValueWrapper::new_const(value),
+        )
+        .map_err(|err| Error::generic_execution_error_caused("Cannot define function.", err))
     }
 
     pub fn set_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-        set_value(
-            &mut self.variables,
-            symbol_id,
-            value
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot set variable.",
-            err
-        ))
+        set_value(&mut self.variables, symbol_id, value)
+            .map_err(|err| Error::generic_execution_error_caused("Cannot set variable.", err))
     }
 
     pub fn set_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-        set_value(
-            &mut self.functions,
-            symbol_id,
-            value
-        ).map_err(|err| Error::generic_execution_error_caused(
-            "Cannot set function.",
-            err
-        ))
+        set_value(&mut self.functions, symbol_id, value)
+            .map_err(|err| Error::generic_execution_error_caused("Cannot set function.", err))
     }
 
     pub fn get_gc_items(&self) -> Vec<Value> {
-        let mut result = self.variables
+        let mut result = self
+            .variables
             .values()
             .into_iter()
             .map(|value| value.force_get_value())
             .collect::<Vec<Value>>();
 
-        result.extend(self.functions
-            .values()
-            .into_iter()
-            .map(|value| value.force_get_value()));
+        result.extend(
+            self.functions
+                .values()
+                .into_iter()
+                .map(|value| value.force_get_value()),
+        );
 
-        result.extend(self.variables
-            .keys()
-            .into_iter()
-            .map(|symbol_id| Value::Symbol(*symbol_id)));
+        result.extend(
+            self.variables
+                .keys()
+                .into_iter()
+                .map(|symbol_id| Value::Symbol(*symbol_id)),
+        );
 
-        result.extend(self.functions
-            .keys()
-            .into_iter()
-            .map(|symbol_id| Value::Symbol(*symbol_id)));
+        result.extend(
+            self.functions
+                .keys()
+                .into_iter()
+                .map(|symbol_id| Value::Symbol(*symbol_id)),
+        );
 
         result
     }
@@ -192,6 +180,8 @@ impl LexicalEnvironment {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]

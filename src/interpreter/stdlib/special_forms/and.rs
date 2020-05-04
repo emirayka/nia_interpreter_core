@@ -1,14 +1,14 @@
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
-use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
 pub fn and(
     interpreter: &mut Interpreter,
     environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     let values = values;
     let mut last_result = Value::Boolean(true);
@@ -17,7 +17,7 @@ pub fn and(
         let result = interpreter.execute_value(environment, value)?;
 
         if library::is_falsy(interpreter, result)? {
-            return Ok(result)
+            return Ok(result);
         }
 
         last_result = result;
@@ -29,19 +29,20 @@ pub fn and(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn works_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             ("(and)", "#t"),
-
             ("(and (logic:and #t #t) (logic:and #t #t))", "#t"),
-
             ("(and 1)", "1"),
             ("(and 1.1)", "1.1"),
             ("(and #t)", "#t"),
@@ -52,7 +53,6 @@ mod tests {
             ("(and '(1 2))", "'(1 2)"),
             ("(and {})", "{}"),
             ("(and #())", "#()"),
-
             ("(and #t 1)", "1"),
             ("(and #t 1.1)", "1.1"),
             ("(and #t #t)", "#t"),
@@ -63,7 +63,6 @@ mod tests {
             ("(and #t '(1 2))", "'(1 2)"),
             ("(and #t {})", "{}"),
             ("(and #t #())", "#()"),
-
             ("(and #f 1)", "#f"),
             ("(and #f 1.1)", "#f"),
             ("(and #f #t)", "#f"),
@@ -74,11 +73,8 @@ mod tests {
             ("(and #f '(1 2))", "#f"),
             ("(and #f {})", "#f"),
             ("(and #f #())", "#f"),
-        );
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 }

@@ -17,7 +17,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let math_symbol_id = interpreter.intern("math");
     let math_object_id = interpreter.make_object();
 
-    let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
+    let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("abs", abs::abs),
         ("ceil", ceil::ceil),
         ("floor", floor::floor),
@@ -25,21 +25,16 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("min", min::min),
         ("pow", pow::pow),
         ("round", round::round),
-    );
+    ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
-            interpreter,
-            math_object_id,
-            name,
-            func
-        )?;
+        infect_object_builtin_function(interpreter, math_object_id, name, func)?;
     }
 
     interpreter.define_variable(
-        interpreter.get_root_environment(),
+        interpreter.get_root_environment_id(),
         math_symbol_id,
-        Value::Object(math_object_id)
+        Value::Object(math_object_id),
     )?;
 
     Ok(())

@@ -1,26 +1,24 @@
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library;
+use crate::interpreter::value::Value;
 
 pub fn join(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() < 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `string:join' takes two arguments at least."
-        ).into();
+            "Built-in function `string:join' takes two arguments at least.",
+        )
+        .into();
     }
 
     let mut values = values;
 
-    let joiner = library::read_as_string(
-        interpreter,
-        values.remove(0)
-    )?;
+    let joiner = library::read_as_string(interpreter, values.remove(0))?;
 
     let values = if values.len() == 1 {
         match values.remove(0) {
@@ -68,62 +66,52 @@ pub fn join(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_correct_join_result() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             (r#"(string:join "" "b")"#, r#""b""#),
             (r#"(string:join "" "b" "c")"#, r#""bc""#),
             (r#"(string:join "" "b" "c" "d")"#, r#""bcd""#),
-
             (r#"(string:join "" '())"#, r#""""#),
             (r#"(string:join "|" '())"#, r#""""#),
             (r#"(string:join "||" '())"#, r#""""#),
-
             (r#"(string:join "|" "b")"#, r#""b""#),
             (r#"(string:join "|" "b" "c")"#, r#""b|c""#),
             (r#"(string:join "|" "b" "c" "d")"#, r#""b|c|d""#),
-
             (r#"(string:join "|" '("b"))"#, r#""b""#),
             (r#"(string:join "|" '("b" "c"))"#, r#""b|c""#),
             (r#"(string:join "|" '("b" "c" "d"))"#, r#""b|c|d""#),
-
             (r#"(string:join "||" "b")"#, r#""b""#),
             (r#"(string:join "||" "b" "c")"#, r#""b||c""#),
             (r#"(string:join "||" "b" "c" "d")"#, r#""b||c||d""#),
-        );
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
     fn returns_invalid_argument_count_when_was_called_with_invalid_amount_of_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            r#"(string:join)"#,
-            r#"(string:join "|")"#
-        );
+        let code_vector = vec![r#"(string:join)"#, r#"(string:join "|")"#];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_when_was_called_with_not_strings() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             r#"(string:join "|" 1)"#,
             r#"(string:join "|" 1.1)"#,
             r#"(string:join "|" #t)"#,
@@ -133,7 +121,6 @@ mod tests {
             r#"(string:join "|" {:object-key 'value})"#,
             r#"(string:join "|" (cons 1 2))"#,
             r#"(string:join "|" #(+ %1 %2))"#,
-
             r#"(string:join "|" '(1))"#,
             r#"(string:join "|" '(1.1))"#,
             r#"(string:join "|" '(#t))"#,
@@ -143,12 +130,8 @@ mod tests {
             r#"(string:join "|" '({:object-key 'value}))"#,
             r#"(string:join "|" (list (cons 1 2)))"#,
             r#"(string:join "|" (list #(+ %1 %2)))"#,
-        );
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
     }
 }
-

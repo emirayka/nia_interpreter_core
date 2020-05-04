@@ -1,14 +1,5 @@
 use nom::{
-    named,
-    recognize,
-    tuple,
-    pair,
-    opt,
-    alt,
-    tag,
-    complete,
-    map_res,
-    character::complete::digit1,
+    alt, character::complete::digit1, complete, map_res, named, opt, pair, recognize, tag, tuple,
 };
 
 use crate::parser::ParseError;
@@ -20,9 +11,7 @@ pub struct FloatElement {
 
 impl FloatElement {
     pub fn new(value: f64) -> FloatElement {
-        FloatElement {
-            value
-        }
+        FloatElement { value }
     }
 
     pub fn get_value(&self) -> f64 {
@@ -58,21 +47,30 @@ named!(parse_float(&str) -> &str, recognize!(complete!(tuple!(
     parse_exponent
 ))));
 
-
 named!(parse_f64<&str, f64>, map_res!(parse_float, |s: &str| s.parse::<f64>()));
 named!(pub parse<&str, FloatElement>, map_res!(parse_f64, make_float_element));
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     use std::str::FromStr;
 
     macro_rules! make_float_assertion {
         ($str:expr) => {
-            nia_assert_equal(Ok(("", FloatElement {value: f64::from_str($str).unwrap()})), parse($str));
-        }
+            nia_assert_equal(
+                Ok((
+                    "",
+                    FloatElement {
+                        value: f64::from_str($str).unwrap(),
+                    },
+                )),
+                parse($str),
+            );
+        };
     }
 
     macro_rules! make_failed_float_test {
@@ -82,7 +80,7 @@ mod tests {
             fn $name() {
                 make_float_assertion!($str);
             }
-        }
+        };
     }
 
     #[test]

@@ -1,22 +1,19 @@
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library;
+use crate::interpreter::value::Value;
 
 pub fn string(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     let values = values;
     let mut result = String::new();
 
     for value in values {
-        let string = library::value_to_string(
-            interpreter,
-            value
-        )?;
+        let string = library::value_to_string(interpreter, value)?;
 
         result.push_str(&string);
     }
@@ -27,21 +24,22 @@ pub fn string(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_string() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             (r#"(string)"#, r#""""#),
-
             (r#"(string "a")"#, r#""a""#),
             (r#"(string "a" "b")"#, r#""ab""#),
             (r#"(string "a" "b" "c")"#, r#""abc""#),
-
             (r#"(string "a" 1)"#, r#""a1""#),
             (r#"(string "a" 1.1)"#, r#""a1.1""#),
             (r#"(string "a" #f)"#, r#""a#f""#),
@@ -53,11 +51,8 @@ mod tests {
             (r#"(string "a" {})"#, r#""a{}""#),
             (r#"(string "a" {:a 1})"#, r#""a{:a 1}""#),
             (r#"(string "a" #())"#, r#""a<function>""#),
-        );
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 }

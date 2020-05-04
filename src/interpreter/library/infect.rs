@@ -1,22 +1,16 @@
-use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::{
-    BuiltinFunctionType,
-    BuiltinFunction
-};
 use crate::interpreter::error::Error;
-use crate::interpreter::value::Value;
+use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Function;
-use crate::interpreter::value::{
-    SpecialFormFunctionType,
-    SpecialFormFunction
-};
 use crate::interpreter::value::ObjectId;
+use crate::interpreter::value::Value;
+use crate::interpreter::value::{BuiltinFunction, BuiltinFunctionType};
+use crate::interpreter::value::{SpecialFormFunction, SpecialFormFunctionType};
 
 pub fn infect_object_builtin_function(
     interpreter: &mut Interpreter,
     object_id: ObjectId,
     item_name: &str,
-    func: BuiltinFunctionType
+    func: BuiltinFunctionType,
 ) -> Result<(), Error> {
     let name = interpreter.intern(item_name);
 
@@ -24,11 +18,7 @@ pub fn infect_object_builtin_function(
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    interpreter.set_object_property(
-        object_id,
-        name,
-        function_value
-    )?;
+    interpreter.set_object_property(object_id, name, function_value)?;
 
     Ok(())
 }
@@ -36,7 +26,7 @@ pub fn infect_object_builtin_function(
 pub fn infect_builtin_function(
     interpreter: &mut Interpreter,
     name: &str,
-    func: BuiltinFunctionType
+    func: BuiltinFunctionType,
 ) -> Result<(), Error> {
     let name = interpreter.intern(name);
 
@@ -44,22 +34,19 @@ pub fn infect_builtin_function(
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        name,
-        function_value
-    );
+    let result =
+        interpreter.define_function(interpreter.get_root_environment_id(), name, function_value);
 
     match result {
         Ok(()) => Ok(()),
-        Err(error) => Err(error)
+        Err(error) => Err(error),
     }
 }
 
 pub fn infect_special_form(
     interpreter: &mut Interpreter,
     name: &str,
-    func: SpecialFormFunctionType
+    func: SpecialFormFunctionType,
 ) -> Result<(), Error> {
     let name = interpreter.intern(name);
 
@@ -67,21 +54,20 @@ pub fn infect_special_form(
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    let result = interpreter.define_function(
-        interpreter.get_root_environment(),
-        name,
-        function_value
-    );
+    let result =
+        interpreter.define_function(interpreter.get_root_environment_id(), name, function_value);
 
     match result {
         Ok(()) => Ok(()),
-        Err(error) => Err(error)
+        Err(error) => Err(error),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[cfg(test)]
@@ -89,18 +75,27 @@ mod tests {
         use super::*;
         use crate::interpreter::environment::EnvironmentId;
 
-        fn test(interpreter: &mut Interpreter, _environment: EnvironmentId, _values: Vec<Value>) -> Result<Value, Error>{
+        fn test(
+            interpreter: &mut Interpreter,
+            _environment: EnvironmentId,
+            _values: Vec<Value>,
+        ) -> Result<Value, Error> {
             Ok(interpreter.intern_nil_symbol_value())
         }
 
         #[test]
         fn sets_function() {
             let mut interpreter = Interpreter::raw();
+            let root_environment_id = interpreter.get_root_environment_id();
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
-            let name = interpreter.intern("test");
-            nia_assert(interpreter.has_function(interpreter.get_root_environment(), name).unwrap());
+            let function_symbol_id = interpreter.intern("test");
+            nia_assert(
+                interpreter
+                    .has_function(root_environment_id, function_symbol_id)
+                    .unwrap(),
+            );
         }
 
         #[test]

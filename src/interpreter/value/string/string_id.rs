@@ -2,14 +2,12 @@ use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct StringId {
-    id: usize
+    id: usize,
 }
 
 impl StringId {
     pub fn new(id: usize) -> StringId {
-        StringId {
-            id
-        }
+        StringId { id }
     }
 
     pub fn get_id(&self) -> usize {

@@ -1,18 +1,19 @@
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library;
+use crate::interpreter::value::Value;
 
 pub fn lower(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `string:lower' takes only one argument."
-        ).into();
+            "Built-in function `string:lower' takes only one argument.",
+        )
+        .into();
     }
 
     let mut values = values;
@@ -27,51 +28,43 @@ pub fn lower(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_correct_lowercase_string() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             (r#"(string:lower "abc")"#, r#""abc""#),
-
             (r#"(string:lower "Abc")"#, r#""abc""#),
             (r#"(string:lower "aBc")"#, r#""abc""#),
             (r#"(string:lower "abC")"#, r#""abc""#),
-
             (r#"(string:lower "猫A钥")"#, r#""猫a钥""#),
             (r#"(string:lower "ὈΔΥΣΣΕΎΣ")"#, r#""ὀδυσσεύς""#),
-        );
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
     fn returns_invalid_argument_count_error_when_was_called_with_invalid_count_of_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            r#"(string:lower)"#,
-            r#"(string:lower "a" "b")"#
-        );
+        let code_vector = vec![r#"(string:lower)"#, r#"(string:lower "a" "b")"#];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_error_when_was_called_with_invalid_arguments() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             r#"(string:lower 1)"#,
             r#"(string:lower 1.1)"#,
             r#"(string:lower #t)"#,
@@ -81,12 +74,8 @@ mod tests {
             r#"(string:lower {:object-key 'value})"#,
             r#"(string:lower (cons 1 2))"#,
             r#"(string:lower #(+ %1 %2))"#,
-        );
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
     }
 }
-

@@ -9,17 +9,11 @@ pub struct FunctionId {
 
 impl FunctionId {
     pub fn new(id: usize) -> FunctionId {
-        FunctionId {
-            id
-        }
+        FunctionId { id }
     }
 
     pub fn get_id(&self) -> usize {
         self.id
-    }
-
-    pub fn to_value(&self) -> Value {
-        Value::Function(*self)
     }
 }
 

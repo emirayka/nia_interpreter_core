@@ -11,23 +11,16 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let nia_symbol_id = interpreter.intern("nia");
     let nia_object_id = interpreter.make_object();
 
-    let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
-        ("quit", quit::quit),
-    );
+    let bindings: Vec<(&str, BuiltinFunctionType)> = vec![("quit", quit::quit)];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
-            interpreter,
-            nia_object_id,
-            name,
-            func
-        )?;
+        infect_object_builtin_function(interpreter, nia_object_id, name, func)?;
     }
 
     interpreter.define_variable(
-        interpreter.get_root_environment(),
+        interpreter.get_root_environment_id(),
         nia_symbol_id,
-        Value::Object(nia_object_id)
+        Value::Object(nia_object_id),
     )?;
 
     Ok(())

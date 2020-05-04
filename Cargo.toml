@@ -15,4 +15,7 @@ rustyline = "6.1.1"
 nia_state_machine = { path = "../nia_state_machine" }
 nia_events = { path = "../nia_events" }
 nia_basic_assertions = { path = "../nia_basic_assertions" }
-pretty_assertions = "0.6.1"
+
+[dev-dependencies]
+tempfile = "3.1.0"
+handlebars = "3.0.1"

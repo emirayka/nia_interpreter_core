@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::SymbolId;
-use crate::interpreter::value::Symbol;
 use crate::interpreter::error::Error;
+use crate::interpreter::value::Symbol;
+use crate::interpreter::value::SymbolId;
 
 #[derive(Clone)]
 pub struct SymbolArena {
@@ -33,18 +33,16 @@ impl SymbolArena {
 
     fn ensure_symbol_internable(&mut self, symbol_name: &str) {
         match self.mapping.get_mut(symbol_name) {
-            Some(vector) => {
-                match vector.get(0) {
-                    Some(_) => (),
-                    None => {
-                        let symbol = Symbol::from(symbol_name);
-                        let symbol_id = SymbolId::new(self.next_id);
+            Some(vector) => match vector.get(0) {
+                Some(_) => (),
+                None => {
+                    let symbol = Symbol::from(symbol_name);
+                    let symbol_id = SymbolId::new(self.next_id);
 
-                        self.next_id += 1;
+                    self.next_id += 1;
 
-                        vector.push(symbol_id);
-                        self.arena.insert(symbol_id, symbol);
-                    }
+                    vector.push(symbol_id);
+                    self.arena.insert(symbol_id, symbol);
                 }
             },
             None => {
@@ -55,11 +53,10 @@ impl SymbolArena {
     }
 
     pub fn get_symbol(&self, symbol_id: SymbolId) -> Result<&Symbol, Error> {
-        self.arena
-            .get(&symbol_id)
-            .ok_or(Error::failure(
-                format!("Cannot find a symbol with id: {}", symbol_id.get_id())
-            ))
+        self.arena.get(&symbol_id).ok_or(Error::failure(format!(
+            "Cannot find a symbol with id: {}",
+            symbol_id.get_id()
+        )))
     }
 
     pub fn intern(&mut self, symbol_name: &str) -> SymbolId {
@@ -68,7 +65,7 @@ impl SymbolArena {
 
         match self.mapping.get(symbol_name) {
             Some(symbols) => symbols[0],
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -88,17 +85,21 @@ impl SymbolArena {
                 self.arena.insert(symbol_id, symbol);
 
                 symbols[counter]
-            },
-            _ => unreachable!()
+            }
+            _ => unreachable!(),
         }
     }
 
     pub fn free_symbol(&mut self, symbol_id: SymbolId) -> Result<(), Error> {
         let symbol = match self.arena.remove(&symbol_id) {
             Some(symbol) => symbol,
-            _ => return Error::failure(
-                format!("Cannot find a symbol with id: {}", symbol_id.get_id())
-            ).into()
+            _ => {
+                return Error::failure(format!(
+                    "Cannot find a symbol with id: {}",
+                    symbol_id.get_id()
+                ))
+                .into()
+            }
         };
 
         self.mapping.remove(symbol.get_name());
@@ -120,6 +121,8 @@ impl SymbolArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[cfg(test)]
@@ -199,5 +202,4 @@ mod tests {
             nia_assert(symbol_arena.free_symbol(symbol_id).is_err());
         }
     }
-
 }

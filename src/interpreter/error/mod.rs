@@ -1,19 +1,8 @@
 use std::fmt;
 
 use crate::interpreter::value::{
-    ConsId,
-    Cons,
-    FunctionId,
-    Function,
-    KeywordId,
-    Keyword,
-    ObjectId,
-    Object,
-    StringId,
-    NiaString,
-    SymbolId,
-    Symbol,
-    Value
+    Cons, ConsId, Function, FunctionId, Keyword, KeywordId, NiaString, Object, ObjectId, StringId,
+    Symbol, SymbolId, Value,
 };
 
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
@@ -76,7 +65,7 @@ impl Error {
     pub fn get_total_cause(&self) -> &Error {
         match &self.caused_by {
             Some(b) => b.get_total_cause(),
-            None => self
+            None => self,
         }
     }
 
@@ -86,15 +75,20 @@ impl Error {
 }
 
 impl Error {
-    pub fn from(caused_by: Option<Error>, kind: ErrorKind, message: &str, symbol_name: String) -> Error {
+    pub fn from(
+        caused_by: Option<Error>,
+        kind: ErrorKind,
+        message: &str,
+        symbol_name: String,
+    ) -> Error {
         Error {
             error_kind: kind,
             message: String::from(message),
             caused_by: match caused_by {
                 Some(error) => Some(Box::new(error)),
-                None => None
+                None => None,
             },
-            symbol_name
+            symbol_name,
         }
     }
 
@@ -112,17 +106,12 @@ impl Error {
             None,
             ErrorKind::ParseError,
             message,
-            String::from(SYMBOL_NAME_PARSE_ERROR)
+            String::from(SYMBOL_NAME_PARSE_ERROR),
         )
     }
 
     pub fn generic_error(symbol_name: String, message: &str) -> Error {
-        Error::from(
-            None,
-            ErrorKind::GenericError,
-            message,
-            symbol_name
-        )
+        Error::from(None, ErrorKind::GenericError, message, symbol_name)
     }
 
     pub fn generic_execution_error(message: &str) -> Error {
@@ -130,7 +119,7 @@ impl Error {
             None,
             ErrorKind::GenericExecution,
             message,
-            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
+            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR),
         )
     }
     pub fn generic_execution_error_caused(message: &str, cause: Error) -> Error {
@@ -138,7 +127,7 @@ impl Error {
             Some(cause),
             ErrorKind::GenericExecution,
             message,
-            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR)
+            String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR),
         )
     }
 
@@ -147,7 +136,7 @@ impl Error {
             None,
             ErrorKind::Overflow,
             message,
-        String::from(SYMBOL_NAME_OVERFLOW_ERROR)
+            String::from(SYMBOL_NAME_OVERFLOW_ERROR),
         )
     }
 
@@ -156,7 +145,7 @@ impl Error {
             Some(cause),
             ErrorKind::Overflow,
             message,
-            String::from(SYMBOL_NAME_OVERFLOW_ERROR)
+            String::from(SYMBOL_NAME_OVERFLOW_ERROR),
         )
     }
 
@@ -165,7 +154,7 @@ impl Error {
             None,
             ErrorKind::ZeroDivision,
             message,
-            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR)
+            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR),
         )
     }
 
@@ -174,7 +163,7 @@ impl Error {
             Some(cause),
             ErrorKind::ZeroDivision,
             message,
-            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR)
+            String::from(SYMBOL_NAME_ZERO_DIVISION_ERROR),
         )
     }
 
@@ -183,7 +172,7 @@ impl Error {
             None,
             ErrorKind::InvalidCons,
             message,
-            String::from(SYMBOL_NAME_INVALID_CONS_ERROR)
+            String::from(SYMBOL_NAME_INVALID_CONS_ERROR),
         )
     }
 
@@ -192,7 +181,7 @@ impl Error {
             Some(cause),
             ErrorKind::InvalidCons,
             message,
-            String::from(SYMBOL_NAME_INVALID_CONS_ERROR)
+            String::from(SYMBOL_NAME_INVALID_CONS_ERROR),
         )
     }
 
@@ -201,7 +190,7 @@ impl Error {
             None,
             ErrorKind::InvalidArgument,
             message,
-            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR)
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR),
         )
     }
     pub fn invalid_argument_error_caused(message: &str, cause: Error) -> Error {
@@ -209,7 +198,7 @@ impl Error {
             Some(cause),
             ErrorKind::InvalidArgument,
             message,
-            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR)
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR),
         )
     }
 
@@ -218,7 +207,7 @@ impl Error {
             None,
             ErrorKind::InvalidArgumentCount,
             message,
-        String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR),
         )
     }
 
@@ -227,7 +216,7 @@ impl Error {
             Some(cause),
             ErrorKind::InvalidArgumentCount,
             message,
-            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR)
+            String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR),
         )
     }
 
@@ -236,7 +225,7 @@ impl Error {
             None,
             ErrorKind::Assertion,
             message,
-            String::from(SYMBOL_NAME_ASSERTION_ERROR)
+            String::from(SYMBOL_NAME_ASSERTION_ERROR),
         )
     }
 
@@ -245,7 +234,7 @@ impl Error {
             None,
             ErrorKind::Break,
             "",
-            String::from(SYMBOL_NAME_BREAK_ERROR)
+            String::from(SYMBOL_NAME_BREAK_ERROR),
         )
     }
 
@@ -254,7 +243,7 @@ impl Error {
             None,
             ErrorKind::Continue,
             "",
-            String::from(SYMBOL_NAME_CONTINUE_ERROR)
+            String::from(SYMBOL_NAME_CONTINUE_ERROR),
         )
     }
 }
@@ -284,6 +273,8 @@ impl<T> From<Error> for Result<T, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     use crate::interpreter::interpreter::Interpreter;
@@ -293,20 +284,12 @@ mod tests {
         let interpreter = Interpreter::new();
 
         let cause_cause_error = Error::invalid_argument_count_error("r");
-        let cause_error = Error::invalid_argument_count_error_caused(
-            "r",
-            cause_cause_error
-        );
-        let error = Error::generic_execution_error_caused(
-            "r",
-            cause_error
-        );
+        let cause_error = Error::invalid_argument_count_error_caused("r", cause_cause_error);
+        let error = Error::generic_execution_error_caused("r", cause_error);
 
-        nia_assert(
-            match error.get_total_cause().get_error_kind() {
-                ErrorKind::InvalidArgumentCount => true,
-                _ => false
-            }
-        );
+        nia_assert(match error.get_total_cause().get_error_kind() {
+            ErrorKind::InvalidArgumentCount => true,
+            _ => false,
+        });
     }
 }

@@ -1,11 +1,6 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::{
-    Object,
-    SymbolId,
-    ObjectId,
-    Value,
-};
+use crate::interpreter::value::{Object, ObjectId, SymbolId, Value};
 
 use crate::interpreter::error::Error;
 
@@ -39,7 +34,8 @@ impl ObjectArena {
         let id = self.next_id;
         let object_id = ObjectId::new(id);
 
-        self.arena.insert(object_id, Object::new_child(prototype_id));
+        self.arena
+            .insert(object_id, Object::new_child(prototype_id));
         self.next_id += 1;
 
         object_id
@@ -53,34 +49,32 @@ impl ObjectArena {
         if self.arena.contains_key(&object_id) {
             Ok(())
         } else {
-            Error::failure(
-                format!("Cannot find an object with id: {}", object_id)
-            ).into()
+            Error::failure(format!("Cannot find an object with id: {}", object_id)).into()
         }
     }
 
     pub fn get_object(&self, object_id: ObjectId) -> Result<&Object, Error> {
-        self.arena
-            .get(&object_id)
-            .ok_or(Error::failure(
-                format!("Cannot find an object with id: {}", object_id.get_id())
-            ))
+        self.arena.get(&object_id).ok_or(Error::failure(format!(
+            "Cannot find an object with id: {}",
+            object_id.get_id()
+        )))
     }
 
     pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, Error> {
-        self.arena
-            .get_mut(&object_id)
-            .ok_or(Error::failure(
-                format!("Cannot find an object with id: {}", object_id.get_id())
-            ))
+        self.arena.get_mut(&object_id).ok_or(Error::failure(format!(
+            "Cannot find an object with id: {}",
+            object_id.get_id()
+        )))
     }
 
     pub fn free_object(&mut self, object_id: ObjectId) -> Result<(), Error> {
         match self.arena.remove(&object_id) {
             Some(_) => Ok(()),
-            _ => Error::failure(
-                format!("Cannot find an object with id: {}", object_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot find an object with id: {}",
+                object_id.get_id()
+            ))
+            .into(),
         }
     }
 
@@ -102,10 +96,7 @@ impl ObjectArena {
         object.set_prototype(prototype_id)
     }
 
-    pub fn clear_prototype(
-        &mut self,
-        object_id: ObjectId,
-    ) -> Result<(), Error> {
+    pub fn clear_prototype(&mut self, object_id: ObjectId) -> Result<(), Error> {
         let object = self.get_object_mut(object_id)?;
 
         object.clear_prototype()
@@ -132,8 +123,8 @@ impl ObjectArena {
             Some(value) => Ok(Some(value)),
             None => match object.get_prototype() {
                 Some(prototype_id) => self.get_property_value(prototype_id, property_symbol_id),
-                None => Ok(None)
-            }
+                None => Ok(None),
+            },
         }
     }
 
@@ -162,19 +153,13 @@ impl ObjectArena {
         Ok(())
     }
 
-    pub fn is_frozen(
-        &self,
-        object_id: ObjectId,
-    ) -> Result<bool, Error> {
+    pub fn is_frozen(&self, object_id: ObjectId) -> Result<bool, Error> {
         let object = self.get_object(object_id)?;
 
         Ok(object.is_frozen())
     }
 
-    pub fn freeze(
-        &mut self,
-        object_id: ObjectId,
-    ) -> Result<(), Error> {
+    pub fn freeze(&mut self, object_id: ObjectId) -> Result<(), Error> {
         let object = self.get_object_mut(object_id)?;
 
         object.freeze()?;
@@ -323,9 +308,11 @@ impl ObjectArena {
     pub fn get_gc_items(&self, object_id: ObjectId) -> Result<Vec<Value>, Error> {
         match self.arena.get(&object_id) {
             Some(object) => Ok(object.get_gc_items()),
-            _ => Error::failure(
-                format!("Cannot find an object with id: {}", object_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot find an object with id: {}",
+                object_id.get_id()
+            ))
+            .into(),
         }
     }
 }
@@ -333,12 +320,15 @@ impl ObjectArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     fn make_nonexistent_object_id() -> ObjectId {
         ObjectId::new(std::usize::MAX)
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod make__make_child__free_object {
         use super::*;
@@ -349,7 +339,7 @@ mod tests {
 
             let object_id = object_arena.make();
 
-            nia_assert_is_ok( &object_arena.get_object(object_id));
+            nia_assert_is_ok(&object_arena.get_object(object_id));
         }
 
         #[test]
@@ -359,8 +349,8 @@ mod tests {
             let parent_id = object_arena.make();
             let child_id = object_arena.make_child(parent_id);
 
-            nia_assert_is_ok( &object_arena.get_object(parent_id));
-            nia_assert_is_ok( &object_arena.get_object(child_id));
+            nia_assert_is_ok(&object_arena.get_object(parent_id));
+            nia_assert_is_ok(&object_arena.get_object(child_id));
             nia_assert_equal(Ok(Some(parent_id)), object_arena.get_prototype(child_id));
         }
 
@@ -370,7 +360,7 @@ mod tests {
 
             let object_id = object_arena.make();
 
-            nia_assert_is_ok( &object_arena.get_object(object_id));
+            nia_assert_is_ok(&object_arena.get_object(object_id));
             nia_assert_is_ok(&object_arena.free_object(object_id));
             nia_assert_is_err(&object_arena.get_object(object_id));
         }
@@ -563,9 +553,7 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(
-                &arena.set_property(object_id, property_symbol_id, value)
-            );
+            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
             nia_assert_equal(
                 Ok(Some(value)),
@@ -601,11 +589,7 @@ mod tests {
             let prototype_value = Value::Integer(1);
             let value = Value::Integer(2);
 
-            nia_assert_is_ok(&arena.set_property(
-                child_id,
-                property_symbol_id,
-                value,
-            ));
+            nia_assert_is_ok(&arena.set_property(child_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.set_property(
                 prototype_id,
                 property_symbol_id,
@@ -656,15 +640,9 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_err(
-                &arena.get_property_value(object_id, property_symbol_id)
-            );
-            nia_assert_is_err(
-                &arena.delete_property(object_id, property_symbol_id)
-            );
-            nia_assert_is_err(
-                &arena.has_property(object_id, property_symbol_id)
-            );
+            nia_assert_is_err(&arena.get_property_value(object_id, property_symbol_id));
+            nia_assert_is_err(&arena.delete_property(object_id, property_symbol_id));
+            nia_assert_is_err(&arena.has_property(object_id, property_symbol_id));
         }
 
         #[test]
@@ -678,10 +656,7 @@ mod tests {
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_equal(
-                Ok(false),
-                arena.has_property(object_id, property_symbol_id)
-            );
+            nia_assert_equal(Ok(false), arena.has_property(object_id, property_symbol_id));
         }
 
         #[test]
@@ -698,16 +673,17 @@ mod tests {
 
             nia_assert_equal(
                 Ok(Some(value)),
-                arena.get_property_value(object_id, property_symbol_id)
+                arena.get_property_value(object_id, property_symbol_id),
             );
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, new_value));
             nia_assert_equal(
                 Ok(Some(value)),
-                arena.get_property_value(object_id, property_symbol_id)
+                arena.get_property_value(object_id, property_symbol_id),
             );
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_flags__get_property_flags {
         use super::*;
@@ -724,9 +700,22 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT), arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_equal(Ok(()), arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE), arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
+            nia_assert_equal(
+                Ok(()),
+                arena.set_property_flags(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+                ),
+            );
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -740,7 +729,11 @@ mod tests {
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
 
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
         }
 
@@ -755,9 +748,19 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT), arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT), arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -769,7 +772,11 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
         }
 
@@ -782,19 +789,34 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_ok(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_ok(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
 
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE), arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT));
-            nia_assert_equal(Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
+            ));
+            nia_assert_equal(
+                Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),
+                arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_flag__get_property_flag {
         use super::*;
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
         use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_property_flags() {
@@ -806,9 +828,31 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(true), arena.get_property_flag(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE));
-            nia_assert_equal(Ok(()), arena.set_property_flag(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE, false));
-            nia_assert_equal(Ok(false), arena.get_property_flag(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE));
+            nia_assert_equal(
+                Ok(true),
+                arena.get_property_flag(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
+            );
+            nia_assert_equal(
+                Ok(()),
+                arena.set_property_flag(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                    false,
+                ),
+            );
+            nia_assert_equal(
+                Ok(false),
+                arena.get_property_flag(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
+            );
         }
 
         #[test]
@@ -822,7 +866,11 @@ mod tests {
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
 
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
         }
 
@@ -837,9 +885,27 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(true), arena.get_property_flag(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
-            nia_assert_equal(Ok(true), arena.get_property_flag(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE));
+            nia_assert_equal(
+                Ok(true),
+                arena.get_property_flag(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
+            );
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
+            nia_assert_equal(
+                Ok(true),
+                arena.get_property_flag(
+                    object_id,
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
+            );
         }
 
         #[test]
@@ -851,7 +917,11 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
         }
 
@@ -864,17 +934,22 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_flags(object_id, property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE));
+            nia_assert_is_err(&arena.set_property_flags(
+                object_id,
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_internable__is_property_internable {
         use super::*;
 
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
         use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_internable_flag() {
@@ -886,9 +961,15 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(true), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
             nia_assert_is_ok(&arena.set_property_internable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(false), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -917,9 +998,15 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(true), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -928,7 +1015,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.is_property_internable(object_id, property_symbol_id));
             nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
@@ -944,20 +1030,31 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_ok(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
 
-            nia_assert_equal(Ok(true), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_internable(object_id, property_symbol_id),
+            );
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_writable__is_property_writable {
         use super::*;
 
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
         use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_writable_flag() {
@@ -969,9 +1066,15 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(true), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
             nia_assert_is_ok(&arena.set_property_writable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(false), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1000,9 +1103,15 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(true), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1027,20 +1136,31 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_ok(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
 
-            nia_assert_equal(Ok(true), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_writable(object_id, property_symbol_id),
+            );
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_enumerable__is_property_enumerable {
         use super::*;
 
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
         use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_enumerable_flag() {
@@ -1052,9 +1172,15 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(true), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
             nia_assert_is_ok(&arena.set_property_enumerable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(false), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1083,9 +1209,15 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(true), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1110,20 +1242,31 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_ok(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
 
-            nia_assert_equal(Ok(true), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_enumerable(object_id, property_symbol_id),
+            );
         }
     }
 
+    #[allow(non_snake_case)]
     #[cfg(test)]
     mod set_property_configurable__is_property_configurable {
         use super::*;
 
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
         use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_configurable_flag() {
@@ -1135,9 +1278,19 @@ mod tests {
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
 
-            nia_assert_equal(Ok(true), arena.is_property_configurable(object_id, property_symbol_id));
-            nia_assert_is_ok(&arena.set_property_configurable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(false), arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1151,7 +1304,11 @@ mod tests {
             nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
 
             nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
         }
 
@@ -1166,9 +1323,19 @@ mod tests {
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_equal(Ok(true), arena.is_property_configurable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_configurable(object_id, property_symbol_id, false));
-            nia_assert_equal(Ok(true), arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_equal(
+                Ok(true),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1180,7 +1347,11 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
         }
 
@@ -1193,11 +1364,25 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_ok(&arena.set_property_configurable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
 
-            nia_assert_equal(Ok(false), arena.is_property_configurable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_configurable(object_id, property_symbol_id, true));
-            nia_assert_equal(Ok(false), arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_configurable(
+                object_id,
+                property_symbol_id,
+                true,
+            ));
+            nia_assert_equal(
+                Ok(false),
+                arena.is_property_configurable(object_id, property_symbol_id),
+            );
         }
     }
 }

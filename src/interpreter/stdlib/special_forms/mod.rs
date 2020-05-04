@@ -1,36 +1,38 @@
-use crate::interpreter::value::SpecialFormFunctionType;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::value::SpecialFormFunctionType;
 
 use crate::interpreter::library::infect::infect_special_form;
 
+mod _let;
+mod _match;
+mod _try;
+mod _while;
 mod and;
+mod block;
 mod cond;
-mod quote;
-mod define_variable;
 mod define_function;
+mod define_variable;
 mod dolist;
 mod dotimes;
-mod function;
-mod set;
-mod fset;
-mod _let;
-mod let_star;
+mod export;
 mod flet;
 mod flet_star;
-mod _match;
+mod fset;
+mod function;
+mod import;
+mod let_star;
 mod mlet;
 mod mlet_star;
 mod or;
 mod progn;
-mod block;
+mod quote;
+mod set;
 mod throw;
-mod _try;
-mod _while;
 mod with_this;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let pairs: Vec<(&str, SpecialFormFunctionType)> = vec!(
+    let pairs: Vec<(&str, SpecialFormFunctionType)> = vec![
         ("and", and::and),
         ("cond", cond::cond),
         ("quote", quote::quote),
@@ -38,8 +40,10 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("define-function", define_function::define_function),
         ("dolist", dolist::dolist),
         ("dotimes", dotimes::dotimes),
+        ("export", export::export),
         ("function", function::function),
-        ("fset!", fset:: fset),
+        ("fset!", fset::fset),
+        ("import", import::import),
         ("let", _let::_let),
         ("let*", let_star::let_star),
         ("flet", flet::flet),
@@ -55,14 +59,10 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("try", _try::_try),
         ("while", _while::_while),
         ("with-this", with_this::with_this),
-    );
+    ];
 
     for (name, func) in pairs {
-        infect_special_form(
-            interpreter,
-            name,
-            func
-        )?;
+        infect_special_form(interpreter, name, func)?;
     }
 
     Ok(())

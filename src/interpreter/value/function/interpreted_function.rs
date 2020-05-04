@@ -1,5 +1,5 @@
-use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::value::Value;
 use crate::interpreter::FunctionArguments;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -10,11 +10,15 @@ pub struct InterpretedFunction {
 }
 
 impl InterpretedFunction {
-    pub fn new(environment: EnvironmentId, arguments: FunctionArguments, code: Vec<Value>) -> InterpretedFunction {
+    pub fn new(
+        environment: EnvironmentId,
+        arguments: FunctionArguments,
+        code: Vec<Value>,
+    ) -> InterpretedFunction {
         InterpretedFunction {
             environment,
             arguments,
-            code
+            code,
         }
     }
 

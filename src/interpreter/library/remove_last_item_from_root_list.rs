@@ -1,6 +1,6 @@
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::value::Value;
 
 use super::check_value_is_list;
 use super::get_root_variable;
@@ -10,40 +10,26 @@ pub fn remove_last_item_from_root_list(
     interpreter: &mut Interpreter,
     name: &str,
 ) -> Result<(), Error> {
-    let root_environment = interpreter.get_root_environment();
+    let root_environment = interpreter.get_root_environment_id();
     let symbol_name = interpreter.intern(name);
 
-    let root_variable = interpreter.lookup_variable(
-        root_environment,
-        symbol_name,
-    )?.ok_or_else(|| Error::generic_execution_error(
-        "Cannot find variable."
-    ))?;
+    let root_variable = interpreter
+        .lookup_variable(root_environment, symbol_name)?
+        .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))?;
 
     check_value_is_list(interpreter, root_variable)?;
 
-    let mut items = read_as_vector(
-        interpreter,
-        root_variable,
-    )?;
+    let mut items = read_as_vector(interpreter, root_variable)?;
 
     if items.len() == 0 {
-        return Error::generic_execution_error(
-            "Cannot remove item from empty list."
-        ).into();
+        return Error::generic_execution_error("Cannot remove item from empty list.").into();
     }
 
     items.remove(items.len() - 1);
 
-    let list = interpreter.vec_to_list(
-        items
-    );
+    let list = interpreter.vec_to_list(items);
 
-    interpreter.set_variable(
-        root_environment,
-        symbol_name,
-        list,
-    )?;
+    interpreter.set_variable(root_environment, symbol_name, list)?;
 
     Ok(())
 }
@@ -51,9 +37,12 @@ pub fn remove_last_item_from_root_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
     use std::panic::resume_unwind;
 
     const EMPTY_LIST_VARIABLE_SYMBOL_NAME: &'static str = "test-list-symbol";
@@ -61,15 +50,13 @@ mod tests {
     fn setup(items: Vec<Value>) -> Interpreter {
         let mut interpreter = Interpreter::new();
 
-        let root_environment_id = interpreter.get_root_environment();
+        let root_environment_id = interpreter.get_root_environment_id();
         let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
         let list = interpreter.vec_to_list(items);
 
-        interpreter.define_variable(
-            root_environment_id,
-            symbol,
-            list,
-        ).unwrap();
+        interpreter
+            .define_variable(root_environment_id, symbol, list)
+            .unwrap();
 
         interpreter
     }
@@ -77,57 +64,26 @@ mod tests {
     fn assert_works_for_list(expected: Vec<Value>, vector: Vec<Value>) {
         let mut interpreter = setup(vector);
 
-        remove_last_item_from_root_list(
-            &mut interpreter,
-            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
-        ).unwrap();
+        remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME).unwrap();
 
-        let result = get_root_variable(
-            &mut interpreter,
-            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
-        ).unwrap();
+        let result = get_root_variable(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME).unwrap();
 
-        let result = read_as_vector(
-            &mut interpreter,
-            result,
-        ).unwrap();
+        let result = read_as_vector(&mut interpreter, result).unwrap();
 
-        assertion::assert_vectors_deep_equal(
-            &mut interpreter,
-            expected,
-            result,
-        )
+        assertion::assert_vectors_deep_equal(&mut interpreter, expected, result)
     }
 
     #[test]
     fn removes_last_item_from_list() {
-        assert_works_for_list(
-            vec![
-            ],
-            vec![
-                Value::Integer(1),
-            ]
-        );
+        assert_works_for_list(vec![], vec![Value::Integer(1)]);
 
         assert_works_for_list(
-            vec![
-                Value::Integer(1),
-            ],
-            vec![
-                Value::Integer(1),
-                Value::Integer(2),
-            ]
+            vec![Value::Integer(1)],
+            vec![Value::Integer(1), Value::Integer(2)],
         );
         assert_works_for_list(
-            vec![
-                Value::Integer(1),
-                Value::Integer(2),
-            ],
-            vec![
-                Value::Integer(1),
-                Value::Integer(2),
-                Value::Integer(3),
-            ]
+            vec![Value::Integer(1), Value::Integer(2)],
+            vec![Value::Integer(1), Value::Integer(2), Value::Integer(3)],
         );
     }
 
@@ -135,10 +91,8 @@ mod tests {
     fn returns_generic_execution_error_if_list_is_empty() {
         let mut interpreter = setup(vec![]);
 
-        let result = remove_last_item_from_root_list(
-            &mut interpreter,
-            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
-        );
+        let result =
+            remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
         nia_assert_is_err(&result);
     }
@@ -158,26 +112,20 @@ mod tests {
             interpreter.make_object_value(),
         ];
 
-        let root_environment_id = interpreter.get_root_environment();
+        let root_environment_id = interpreter.get_root_environment_id();
         let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
-        interpreter.define_variable(
-            root_environment_id,
-            symbol,
-            Value::Integer(0)
-        ).unwrap();
+        interpreter
+            .define_variable(root_environment_id, symbol, Value::Integer(0))
+            .unwrap();
 
         for spec in specs {
-            interpreter.set_variable(
-                root_environment_id,
-                symbol,
-                spec
-            ).unwrap();
+            interpreter
+                .set_variable(root_environment_id, symbol, spec)
+                .unwrap();
 
-            let result = remove_last_item_from_root_list(
-                &mut interpreter,
-                EMPTY_LIST_VARIABLE_SYMBOL_NAME
-            );
+            let result =
+                remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
             nia_assert_is_err(&result);
         }

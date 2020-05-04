@@ -3,15 +3,12 @@ use crate::interpreter::value::Value;
 #[derive(Debug, Clone)]
 pub struct Cons {
     car: Value,
-    cdr: Value
+    cdr: Value,
 }
 
 impl Cons {
     pub fn new(car: Value, cdr: Value) -> Cons {
-        Cons {
-            car,
-            cdr
-        }
+        Cons { car, cdr }
     }
 }
 
@@ -43,14 +40,15 @@ impl Cons {
 
 impl PartialEq for Cons {
     fn eq(&self, other: &Self) -> bool {
-        self.car == other.car &&
-            self.cdr == other.cdr
+        self.car == other.car && self.cdr == other.cdr
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[allow(non_snake_case)]
@@ -58,7 +56,8 @@ mod tests {
     mod set_car__set_cdr {
         use super::*;
         use crate::interpreter::interpreter::Interpreter;
-        use crate::interpreter::library::assertion;
+        #[allow(unused_imports)]
+        use crate::utils::assertion;
 
         #[test]
         fn works_correctly() {
@@ -71,14 +70,8 @@ mod tests {
 
             assertion::assert_vectors_deep_equal(
                 &mut interpreter,
-                vec!(
-                    string1,
-                    string2,
-                ),
-                vec!(
-                    l.get_car(),
-                    l.get_cdr()
-                )
+                vec![string1, string2],
+                vec![l.get_car(), l.get_cdr()],
             );
 
             l.set_car(Value::Integer(1));

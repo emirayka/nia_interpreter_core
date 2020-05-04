@@ -1,12 +1,5 @@
-use crate::interpreter::value::{
-    SymbolId,
-    StringId,
-    KeywordId,
-    ConsId,
-    ObjectId,
-    FunctionId,
-};
 use crate::interpreter::error::Error;
+use crate::interpreter::value::{ConsId, FunctionId, KeywordId, ObjectId, StringId, SymbolId};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Value {
@@ -51,7 +44,7 @@ impl PartialEq for Value {
             (Cons(val1), Cons(val2)) => val1 == val2,
             (Object(val1), Object(val2)) => val1 == val2,
             (Function(val1), Function(val2)) => val1 == val2,
-            _ => false
+            _ => false,
         }
     }
 }
@@ -65,7 +58,13 @@ macro_rules! make_value_from_implementation {
                 $value_variant(v)
             }
         }
-    }
+
+        impl From<&$from_type_name> for Value {
+            fn from(v: &$from_type_name) -> Self {
+                $value_variant(*v)
+            }
+        }
+    };
 }
 
 make_value_from_implementation!(i64, Value::Integer);
@@ -96,13 +95,14 @@ macro_rules! make_try_from_value_implementation {
             fn try_from(value: Value) -> Result<Self, Self::Error> {
                 match value {
                     $value_variant(v) => Ok(v),
-                    v => Error::failure(
-                        format!("Invalid conversion from {} to {}.", v, $type_name)
-                    ).into()
+                    v => {
+                        Error::failure(format!("Invalid conversion from {} to {}.", v, $type_name))
+                            .into()
+                    }
                 }
             }
         }
-    }
+    };
 }
 
 make_try_from_value_implementation!(i64, Value::Integer, "Value::Integer");

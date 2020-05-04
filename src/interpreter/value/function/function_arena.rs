@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::FunctionId;
-use crate::interpreter::value::Function;
-use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
 use crate::interpreter::environment::EnvironmentId;
-
+use crate::interpreter::error::Error;
+use crate::interpreter::value::Function;
+use crate::interpreter::value::FunctionId;
+use crate::interpreter::value::Value;
 
 #[derive(Clone)]
 pub struct FunctionArena {
@@ -31,19 +30,20 @@ impl FunctionArena {
     }
 
     pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
-        self.arena
-            .get(&function_id)
-            .ok_or(Error::failure(
-                format!("Cannot get a function with id: {}", function_id.get_id())
-            ))
+        self.arena.get(&function_id).ok_or(Error::failure(format!(
+            "Cannot get a function with id: {}",
+            function_id.get_id()
+        )))
     }
 
     pub fn free_function(&mut self, function_id: FunctionId) -> Result<(), Error> {
         match self.arena.remove(&function_id) {
             Some(_) => Ok(()),
-            _ => Error::failure(
-                format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot get a function with id: {}",
+                function_id.get_id()
+            ))
+            .into(),
         }
     }
 
@@ -60,18 +60,25 @@ impl FunctionArena {
     pub fn get_gc_items(&self, function_id: FunctionId) -> Result<Option<Vec<Value>>, Error> {
         match self.arena.get(&function_id) {
             Some(function) => Ok(function.get_gc_items()),
-            _ => Error::failure(
-                format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot get a function with id: {}",
+                function_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn get_gc_environment(&self, function_id: FunctionId) -> Result<Option<EnvironmentId>, Error> {
+    pub fn get_gc_environment(
+        &self,
+        function_id: FunctionId,
+    ) -> Result<Option<EnvironmentId>, Error> {
         match self.arena.get(&function_id) {
             Some(function) => Ok(function.get_gc_environment()),
-            _ => Error::failure(
-                format!("Cannot get a function with id: {}", function_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot get a function with id: {}",
+                function_id.get_id()
+            ))
+            .into(),
         }
     }
 }
@@ -79,16 +86,18 @@ impl FunctionArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::interpreter::Interpreter;
     use crate::interpreter::environment::EnvironmentId;
+    use crate::interpreter::interpreter::Interpreter;
     use crate::interpreter::value::Value;
 
     fn test_func(
         _interpreter: &mut Interpreter,
         _environment_id: EnvironmentId,
-        _values: Vec<Value>
+        _values: Vec<Value>,
     ) -> Result<Value, Error> {
         Ok(Value::Integer(1))
     }
@@ -131,4 +140,3 @@ mod tests {
         }
     }
 }
-

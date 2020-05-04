@@ -1,13 +1,11 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NiaString {
-    string: String
+    string: String,
 }
 
 impl NiaString {
     pub fn new(string: String) -> NiaString {
-        NiaString {
-            string
-        }
+        NiaString { string }
     }
 
     pub fn get_string(&self) -> &String {

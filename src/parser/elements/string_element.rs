@@ -1,13 +1,5 @@
-use nom::{
-    named,
-    alt,
-    tag,
-    none_of,
-    map_res,
-    many0,
-    delimited
-};
 use crate::parser::ParseError;
+use nom::{alt, delimited, many0, map_res, named, none_of, tag};
 
 #[derive(Debug)]
 pub struct StringElement {
@@ -16,9 +8,7 @@ pub struct StringElement {
 
 impl StringElement {
     pub fn new(value: String) -> StringElement {
-        StringElement {
-            value
-        }
+        StringElement { value }
     }
 
     pub fn get_value(&self) -> &String {
@@ -55,7 +45,7 @@ fn collect_chars(chars: Vec<char>) -> Result<String, ParseError> {
 }
 
 fn make_string_element(value: String) -> Result<StringElement, ParseError> {
-    Ok(StringElement {value})
+    Ok(StringElement { value })
 }
 
 named!(parse_escaped_slash(&str) -> char, map_res!(
@@ -104,19 +94,69 @@ named!(pub parse(&str) -> StringElement, map_res!(parse_string, make_string_elem
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]
     fn works_on_simple_values() {
-        nia_assert_equal(Ok(("", StringElement{value: r"test".to_string()})), parse(r#""test""#));
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: r"test".to_string(),
+                },
+            )),
+            parse(r#""test""#),
+        );
     }
 
     #[test]
     fn escape_behaves_correctly() {
-        nia_assert_equal(Ok(("", StringElement{value: "\\".to_string()})), parse(r#""\\""#));
-        nia_assert_equal(Ok(("", StringElement{value: "\"".to_string()})), parse(r#""\"""#));
-        nia_assert_equal(Ok(("", StringElement{value: "\n".to_string()})), parse(r#""\n""#));
-        nia_assert_equal(Ok(("", StringElement{value: "\r".to_string()})), parse(r#""\r""#));
-        nia_assert_equal(Ok(("", StringElement{value: "knock\"knockknock".to_string()})), parse(r#""knock\"knockknock""#));
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: "\\".to_string(),
+                },
+            )),
+            parse(r#""\\""#),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: "\"".to_string(),
+                },
+            )),
+            parse(r#""\"""#),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: "\n".to_string(),
+                },
+            )),
+            parse(r#""\n""#),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: "\r".to_string(),
+                },
+            )),
+            parse(r#""\r""#),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                StringElement {
+                    value: "knock\"knockknock".to_string(),
+                },
+            )),
+            parse(r#""knock\"knockknock""#),
+        );
     }
 }

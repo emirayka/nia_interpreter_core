@@ -1,15 +1,7 @@
-use nom::{
-    named,
-    map_res,
-    tag,
-    many1,
-    preceded,
-    pair,
-    complete,
-};
+use nom::{complete, many1, map_res, named, pair, preceded, tag};
 
-use crate::parser::{symbol_element, ParseError};
 use crate::parser::symbol_element::SymbolElement;
+use crate::parser::{symbol_element, ParseError};
 
 #[derive(Debug)]
 pub struct DelimitedSymbolsElement {
@@ -18,9 +10,7 @@ pub struct DelimitedSymbolsElement {
 
 impl DelimitedSymbolsElement {
     pub fn new(values: Vec<SymbolElement>) -> DelimitedSymbolsElement {
-        DelimitedSymbolsElement {
-            values
-        }
+        DelimitedSymbolsElement { values }
     }
 
     pub fn get_symbols(&self) -> &Vec<SymbolElement> {
@@ -38,7 +28,7 @@ impl PartialEq for DelimitedSymbolsElement {
 
         for i in 0..len {
             if self.values[i] != other.values[i] {
-                return false
+                return false;
             }
         }
 
@@ -49,7 +39,7 @@ impl PartialEq for DelimitedSymbolsElement {
 impl Eq for DelimitedSymbolsElement {}
 
 fn make_delimited_symbols_element(
-    pairs: (SymbolElement, Vec<SymbolElement>)
+    pairs: (SymbolElement, Vec<SymbolElement>),
 ) -> Result<DelimitedSymbolsElement, ParseError> {
     let mut symbols = pairs.1;
 
@@ -80,6 +70,8 @@ named!(pub parse(&str) -> DelimitedSymbolsElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]
@@ -89,12 +81,15 @@ mod tests {
 
     macro_rules! assert_parsing_of_delimited_symbols_element {
         ($symbol_names:expr, $code:expr, $rest:expr) => {
-            let expected = Ok(($rest, DelimitedSymbolsElement::new(
-                $symbol_names
-                    .into_iter()
-                    .map(|name| SymbolElement::new(String::from(name)))
-                    .collect::<Vec<SymbolElement>>()
-            )));
+            let expected = Ok((
+                $rest,
+                DelimitedSymbolsElement::new(
+                    $symbol_names
+                        .into_iter()
+                        .map(|name| SymbolElement::new(String::from(name)))
+                        .collect::<Vec<SymbolElement>>(),
+                ),
+            ));
 
             nia_assert_equal(expected, parse($code));
         };
@@ -105,19 +100,9 @@ mod tests {
 
     #[test]
     fn parses_several_delimited_symbols() {
+        assert_parsing_of_delimited_symbols_element!(vec!("object", "value1",), "object:value1");
         assert_parsing_of_delimited_symbols_element!(
-            vec!(
-                "object",
-                "value1",
-            ),
-            "object:value1"
-        );
-        assert_parsing_of_delimited_symbols_element!(
-            vec!(
-                "object",
-                "value1",
-                "value2",
-            ),
+            vec!("object", "value1", "value2",),
             "object:value1:value2"
         );
     }

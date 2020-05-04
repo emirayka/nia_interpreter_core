@@ -1,11 +1,8 @@
-use crate::interpreter::value::{
-    BuiltinFunction,
-    InterpretedFunction,
-    MacroFunction,
-    SpecialFormFunction,
-};
-use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::value::Value;
+use crate::interpreter::value::{
+    BuiltinFunction, InterpretedFunction, MacroFunction, SpecialFormFunction,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Function {
@@ -27,10 +24,14 @@ impl Function {
 
     pub fn get_gc_environment(&self) -> Option<EnvironmentId> {
         match self {
-            Function::Interpreted(interpreted_function) => interpreted_function.get_gc_environment(),
+            Function::Interpreted(interpreted_function) => {
+                interpreted_function.get_gc_environment()
+            }
             Function::Builtin(builtin_function) => builtin_function.get_gc_environment(),
             Function::Macro(macro_function) => macro_function.get_gc_environment(),
-            Function::SpecialForm(special_form_function) => special_form_function.get_gc_environment(),
+            Function::SpecialForm(special_form_function) => {
+                special_form_function.get_gc_environment()
+            }
         }
     }
 }

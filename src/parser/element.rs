@@ -1,43 +1,17 @@
-use nom::{
-    named,
-    map_res,
-    alt,
-    terminated,
-    complete,
-    peek,
-    tag,
-    character::complete::multispace1,
-};
+use nom::{alt, character::complete::multispace1, complete, map_res, named, peek, tag, terminated};
 
 use super::{
-    elements::boolean_element,
-    elements::short_lambda_element,
-    elements::object_pattern_element,
-    elements::float_element,
-    elements::integer_element,
-    elements::string_element,
-    elements::keyword_element,
-    elements::s_expression_element,
-    elements::object_element,
-    elements::prefixed_element,
-    elements::symbol_element,
-    elements::delimited_symbols_element,
-    BooleanElement,
-    ShortLambdaElement,
-    ObjectPatternElement,
-    FloatElement,
-    IntegerElement,
-    StringElement,
-    KeywordElement,
-    SExpressionElement,
-    ObjectElement,
-    PrefixedElement,
-    DelimitedSymbolsElement,
-    SymbolElement,
+    elements::boolean_element, elements::delimited_symbols_element, elements::float_element,
+    elements::integer_element, elements::keyword_element, elements::object_element,
+    elements::object_pattern_element, elements::prefixed_element, elements::s_expression_element,
+    elements::short_lambda_element, elements::string_element, elements::symbol_element,
+    BooleanElement, DelimitedSymbolsElement, FloatElement, IntegerElement, KeywordElement,
+    ObjectElement, ObjectPatternElement, PrefixedElement, SExpressionElement, ShortLambdaElement,
+    StringElement, SymbolElement,
 };
 
-use crate::parser::ParseError;
 use crate::parser::lib::end_of_input;
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub enum Element {
@@ -72,7 +46,7 @@ impl PartialEq for Element {
             (Prefix(val1), Prefix(val2)) => val1 == val2,
             (DelimitedSymbols(val1), DelimitedSymbols(val2)) => val1 == val2,
             (Symbol(val1), Symbol(val2)) => val1 == val2,
-            _ => false
+            _ => false,
         }
     }
 }

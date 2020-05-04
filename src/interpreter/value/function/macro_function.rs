@@ -1,6 +1,6 @@
-use crate::interpreter::value::Value;
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::value::FunctionArguments;
+use crate::interpreter::value::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MacroFunction {
@@ -10,11 +10,15 @@ pub struct MacroFunction {
 }
 
 impl MacroFunction {
-    pub fn new(environment: EnvironmentId, arguments: FunctionArguments, code: Vec<Value>) -> MacroFunction {
+    pub fn new(
+        environment: EnvironmentId,
+        arguments: FunctionArguments,
+        code: Vec<Value>,
+    ) -> MacroFunction {
         MacroFunction {
             environment,
             arguments,
-            code
+            code,
         }
     }
 

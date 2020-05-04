@@ -1,23 +1,13 @@
 use nom::{
-    named,
-    tag,
-    many0,
-    pair,
-    preceded,
-    terminated,
-    delimited,
-    separated_pair,
-    separated_list,
-    map_res,
-    character::complete::multispace0,
-    character::complete::multispace1,
+    character::complete::multispace0, character::complete::multispace1, delimited, many0, map_res,
+    named, pair, preceded, separated_list, separated_pair, tag, terminated,
 };
 
-use crate::parser::ParseError;
 use crate::parser::element;
 use crate::parser::element::Element;
-use crate::parser::keyword_element::KeywordElement;
 use crate::parser::keyword_element;
+use crate::parser::keyword_element::KeywordElement;
+use crate::parser::ParseError;
 
 #[derive(Debug)]
 pub struct ObjectElement {
@@ -26,9 +16,7 @@ pub struct ObjectElement {
 
 impl ObjectElement {
     pub fn new(values: Vec<(KeywordElement, Element)>) -> ObjectElement {
-        ObjectElement {
-            values
-        }
+        ObjectElement { values }
     }
 
     pub fn get_values(self) -> Vec<(KeywordElement, Element)> {
@@ -69,7 +57,9 @@ impl PartialEq for ObjectElement {
 
 impl Eq for ObjectElement {}
 
-fn make_object_element(values: Vec<(KeywordElement, Element)>) -> Result<ObjectElement, ParseError> {
+fn make_object_element(
+    values: Vec<(KeywordElement, Element)>,
+) -> Result<ObjectElement, ParseError> {
     Ok(ObjectElement::new(values))
 }
 
@@ -108,6 +98,8 @@ named!(pub parse(&str) -> ObjectElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     fn assert_parsed_correctly(expr: &str) {
@@ -130,32 +122,28 @@ mod tests {
 
     #[test]
     fn spaces_are_processed_correctly() {
-        let specs = vec!(
+        let specs = vec![
             "{:a test}",
             "{ :a test}",
             "{:a test }",
             "{ :a test }",
-
             "{:a\ttest}",
             "{\t:a\ttest}",
             "{:a\ttest\t}",
             "{\t:a\ttest\t}",
-
             "{:a\rtest}",
             "{\r:a\rtest}",
             "{:a\rtest\r}",
             "{\r:a\rtest\r}",
-
             "{:a\ntest}",
             "{\n:a\ntest}",
             "{:a\ntest\n}",
             "{\n:a\ntest\n}",
-
             "{:a\r\ntest}",
             "{\r\n:a\r\ntest}",
             "{:a\r\ntest\r\n}",
             "{\r\n:a\r\ntest\r\n}",
-        );
+        ];
 
         for spec in specs {
             assert_parsed_correctly(spec);

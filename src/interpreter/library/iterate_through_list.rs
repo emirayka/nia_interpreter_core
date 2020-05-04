@@ -1,12 +1,12 @@
+use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::ConsId;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
 
 pub fn iterate_through_list(
     interpreter: &mut Interpreter,
     cons_id: ConsId,
-    mut closure: impl FnMut(&mut Interpreter, Value) -> Result<bool, Error>
+    mut closure: impl FnMut(&mut Interpreter, Value) -> Result<bool, Error>,
 ) -> Result<(), Error> {
     let mut car = interpreter.get_car(cons_id)?;
     let mut cdr = interpreter.get_cdr(cons_id)?;
@@ -23,18 +23,14 @@ pub fn iterate_through_list(
                 if interpreter.symbol_is_nil(symbol_id)? {
                     break;
                 } else {
-                    return Error::generic_execution_error(
-                        "Invalid list"
-                    ).into()
+                    return Error::generic_execution_error("Invalid list").into();
                 }
-            },
+            }
             Value::Cons(cons_id) => {
                 car = interpreter.get_car(cons_id)?;
                 cdr = interpreter.get_cdr(cons_id)?;
-            },
-            _ => return Error::generic_execution_error(
-                "Invalid list"
-            ).into()
+            }
+            _ => return Error::generic_execution_error("Invalid list").into(),
         };
     }
 
@@ -44,6 +40,8 @@ pub fn iterate_through_list(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     use crate::interpreter::library;
@@ -63,11 +61,10 @@ mod tests {
         };
 
         let mut interpreter = Interpreter::new();
-        let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = library::read_as_cons_id(
-            &interpreter,
-            value
-        ).unwrap();
+        let value = interpreter
+            .execute_in_main_environment("(list 1 2 3 4)")
+            .unwrap();
+        let list = library::read_as_cons_id(value).unwrap();
 
         iterate_through_list(&mut interpreter, list, closure).unwrap();
 
@@ -89,11 +86,10 @@ mod tests {
         };
 
         let mut interpreter = Interpreter::new();
-        let value = interpreter.execute("(list 1 2 3 4)").unwrap();
-        let list = library::read_as_cons_id(
-            &interpreter,
-            value
-        ).unwrap();
+        let value = interpreter
+            .execute_in_main_environment("(list 1 2 3 4)")
+            .unwrap();
+        let list = library::read_as_cons_id(value).unwrap();
 
         iterate_through_list(&mut interpreter, list, closure).unwrap();
 

@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use crate::interpreter::value::KeywordId;
-use crate::interpreter::value::Keyword;
 use crate::interpreter::error::Error;
-
+use crate::interpreter::value::Keyword;
+use crate::interpreter::value::KeywordId;
 
 #[derive(Clone)]
 pub struct KeywordArena {
@@ -17,7 +16,7 @@ impl KeywordArena {
         KeywordArena {
             arena: HashMap::new(),
             mapping: HashMap::new(),
-            next_id: 0
+            next_id: 0,
         }
     }
 
@@ -33,11 +32,10 @@ impl KeywordArena {
     }
 
     pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
-        self.arena
-            .get(&keyword_id)
-            .ok_or(Error::failure(
-                format!("Cannot find a keyword with id: {}", keyword_id.get_id())
-            ))
+        self.arena.get(&keyword_id).ok_or(Error::failure(format!(
+            "Cannot find a keyword with id: {}",
+            keyword_id.get_id()
+        )))
     }
 
     pub fn intern_keyword(&mut self, keyword_name: &str) -> KeywordId {
@@ -51,9 +49,13 @@ impl KeywordArena {
     pub fn free_keyword(&mut self, keyword_id: KeywordId) -> Result<(), Error> {
         let keyword = match self.arena.remove(&keyword_id) {
             Some(keyword) => keyword,
-            _ => return Error::failure(
-                format!("Cannot find a keyword with id: {}", keyword_id.get_id())
-            ).into()
+            _ => {
+                return Error::failure(format!(
+                    "Cannot find a keyword with id: {}",
+                    keyword_id.get_id()
+                ))
+                .into()
+            }
         };
 
         self.arena.remove(&keyword_id);
@@ -76,6 +78,8 @@ impl KeywordArena {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[cfg(test)]

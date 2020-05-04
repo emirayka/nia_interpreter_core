@@ -1,12 +1,6 @@
 use nom::{
-    named,
-    tag,
-    alt,
-    map_res,
-    peek,
+    alt, character::complete::multispace1, combinator::all_consuming, map_res, named, peek, tag,
     terminated,
-    character::complete::multispace1,
-    combinator::all_consuming,
 };
 
 use crate::parser::ParseError;
@@ -18,9 +12,7 @@ pub struct BooleanElement {
 
 impl BooleanElement {
     pub fn new(value: bool) -> BooleanElement {
-        BooleanElement {
-            value
-        }
+        BooleanElement { value }
     }
 
     pub fn get_value(&self) -> bool {
@@ -58,6 +50,8 @@ named!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]

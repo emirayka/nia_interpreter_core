@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use crate::interpreter::error::Error;
 use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Context {
@@ -11,16 +11,18 @@ pub struct Context {
 impl Context {
     pub fn new() -> Context {
         Context {
-            values: HashMap::new()
+            values: HashMap::new(),
         }
     }
 
     pub fn get_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
         match self.values.get(&symbol_id) {
             Some(value) => Ok(*value),
-            _ => Error::failure(
-                format!("Cannot find context value with id: {}", symbol_id.get_id())
-            ).into()
+            _ => Error::failure(format!(
+                "Cannot find context value with id: {}",
+                symbol_id.get_id()
+            ))
+            .into(),
         }
     }
 
@@ -38,10 +40,11 @@ impl Context {
     }
 
     pub fn get_gc_items(&self) -> Vec<Value> {
-        let mut result: Vec<Value> = self.values
+        let mut result: Vec<Value> = self
+            .values
             .keys()
             .into_iter()
-            .map(|symbol_id| symbol_id.to_value())
+            .map(|symbol_id| symbol_id.into())
             .collect();
 
         result.extend(self.values.values().into_iter());
@@ -53,9 +56,12 @@ impl Context {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[allow(non_snake_case)]
     #[cfg(test)]

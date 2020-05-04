@@ -1,30 +1,29 @@
-use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
+use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Function;
+use crate::interpreter::value::Value;
 
-pub fn value_to_string(
-    interpreter: &Interpreter,
-    value: Value
-) -> Result<String, Error> {
+pub fn value_to_string(interpreter: &Interpreter, value: Value) -> Result<String, Error> {
     match value {
         Value::Integer(int) => Ok(int.to_string()),
         Value::Float(float) => Ok(float.to_string()),
-        Value::Boolean(boolean) => if boolean {
-            Ok(String::from("#t"))
-        } else {
-            Ok(String::from("#f"))
-        },
+        Value::Boolean(boolean) => {
+            if boolean {
+                Ok(String::from("#t"))
+            } else {
+                Ok(String::from("#f"))
+            }
+        }
         Value::String(string_id) => {
             let string = interpreter.get_string(string_id)?;
 
             Ok(String::from(string.get_string()))
-        },
+        }
         Value::Symbol(symbol_id) => {
             let string = interpreter.get_symbol_name(symbol_id)?;
 
             Ok(String::from(string))
-        },
+        }
         Value::Keyword(keyword_id) => {
             let keyword = interpreter.get_keyword(keyword_id)?;
 
@@ -32,7 +31,7 @@ pub fn value_to_string(
             string.push_str(keyword.get_name());
 
             Ok(string)
-        },
+        }
         Value::Cons(cons_id) => {
             let values = interpreter.list_to_vec(cons_id)?;
 
@@ -48,7 +47,7 @@ pub fn value_to_string(
 
             result.push_str(")");
             Ok(result)
-        },
+        }
         Value::Object(object_id) => {
             let items = interpreter.get_object_items(object_id)?;
 
@@ -72,7 +71,7 @@ pub fn value_to_string(
             result.push_str("}");
 
             Ok(result)
-        },
+        }
         Value::Function(function_id) => {
             let function = interpreter.get_function(function_id)?;
 
@@ -91,31 +90,33 @@ pub fn value_to_string(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]
     fn returns_string_representation_of_values() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            ("1",                       "1"),
-            ("1.1",                     "1.1"),
-            ("#t",                      "#t"),
-            ("#f",                      "#f"),
-            (r#""string""#,             "string"),
-            ("'symbol",                 "symbol"),
-            (":keyword",                ":keyword"),
-            ("'(a b c)",                "(a b c)"),
-            ("{}",                      "{}"),
-            ("{:key 'value}",           "{:key value}"),
-            ("#(+ %1 %2)",              "<function>"),
-            ("(flookup 'flookup)",      "<builtin-function>"),
+        let pairs = vec![
+            ("1", "1"),
+            ("1.1", "1.1"),
+            ("#t", "#t"),
+            ("#f", "#f"),
+            (r#""string""#, "string"),
+            ("'symbol", "symbol"),
+            (":keyword", ":keyword"),
+            ("'(a b c)", "(a b c)"),
+            ("{}", "{}"),
+            ("{:key 'value}", "{:key value}"),
+            ("#(+ %1 %2)", "<function>"),
+            ("(flookup 'flookup)", "<builtin-function>"),
             ("(function (macro () 1))", "<macro>"),
-            ("(flookup 'cond)",         "<special-form>"),
-        );
+            ("(flookup 'cond)", "<special-form>"),
+        ];
 
         for (code, expected) in pairs {
-            let value = interpreter.execute(code).unwrap();
+            let value = interpreter.execute_in_main_environment(code).unwrap();
             let result = value_to_string(&mut interpreter, value).unwrap();
 
             nia_assert_equal(expected, &result);

@@ -1,12 +1,5 @@
 use nom::{
-    named,
-    many0,
-    preceded,
-    terminated,
-    delimited,
-    tag,
-    map_res,
-    character::complete::multispace0,
+    character::complete::multispace0, delimited, many0, map_res, named, preceded, tag, terminated,
 };
 
 use crate::parser::keyword_element;
@@ -19,9 +12,7 @@ pub struct ObjectPatternElement {
 
 impl ObjectPatternElement {
     pub fn new(values: Vec<KeywordElement>) -> ObjectPatternElement {
-        ObjectPatternElement {
-            values
-        }
+        ObjectPatternElement { values }
     }
 
     pub fn get_values(self) -> Vec<KeywordElement> {
@@ -62,7 +53,9 @@ impl PartialEq for ObjectPatternElement {
 
 impl Eq for ObjectPatternElement {}
 
-fn make_object_pattern_element(values: Vec<KeywordElement>) -> Result<ObjectPatternElement, String> {
+fn make_object_pattern_element(
+    values: Vec<KeywordElement>,
+) -> Result<ObjectPatternElement, String> {
     let object_element = ObjectPatternElement::new(values);
 
     Ok(object_element)
@@ -96,6 +89,8 @@ named!(pub parse(&str) -> ObjectPatternElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     fn assert_parsed_correctly(code: &str) {
@@ -118,32 +113,28 @@ mod tests {
 
     #[test]
     fn parses_spaces_are_processed_correctly() {
-        let specs = vec!(
+        let specs = vec![
             "#{:a :test}",
             "#{ :a :test}",
             "#{:a :test }",
             "#{ :a :test }",
-
             "#{:a\t:test}",
             "#{\t:a :test}",
             "#{:a\t:test\t}",
             "#{\t:a :test\t}",
-
             "#{:a\n:test}",
             "#{\n:a\n:test}",
             "#{:a\n:test\n}",
             "#{\n:a\n:test\n}",
-
             "#{:a\r:test}",
             "#{\r:a\r:test}",
             "#{:a\r:test\r}",
             "#{\r:a\r:test\r}",
-
             "#{:a\r\n:test}",
             "#{\r\n:a\r\n:test}",
             "#{:a\r\n:test\r\n}",
             "#{\r\n:a\r\n:test\r\n}",
-        );
+        ];
 
         for spec in specs {
             assert_parsed_correctly(spec);

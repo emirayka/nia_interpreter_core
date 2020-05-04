@@ -1,9 +1,4 @@
-use nom::{
-    named,
-    preceded,
-    tag,
-    map_res,
-};
+use nom::{map_res, named, preceded, tag};
 
 use crate::parser::s_expression_element;
 use crate::parser::SExpressionElement;
@@ -15,9 +10,7 @@ pub struct ShortLambdaElement {
 
 impl ShortLambdaElement {
     pub fn new(s_expression: SExpressionElement) -> ShortLambdaElement {
-        ShortLambdaElement {
-            s_expression,
-        }
+        ShortLambdaElement { s_expression }
     }
 
     pub fn get_value(self) -> SExpressionElement {
@@ -31,14 +24,15 @@ impl ShortLambdaElement {
 
 impl PartialEq for ShortLambdaElement {
     fn eq(&self, other: &Self) -> bool {
-        return self.s_expression == other.s_expression
+        return self.s_expression == other.s_expression;
     }
 }
 
 impl Eq for ShortLambdaElement {}
 
-
-fn make_short_lambda_element(s_expression: SExpressionElement) -> Result<ShortLambdaElement, String> {
+fn make_short_lambda_element(
+    s_expression: SExpressionElement,
+) -> Result<ShortLambdaElement, String> {
     Ok(ShortLambdaElement::new(s_expression))
 }
 
@@ -55,10 +49,12 @@ named!(pub parse(&str) -> ShortLambdaElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::parser::integer_element::IntegerElement;
     use crate::parser::element::Element;
+    use crate::parser::integer_element::IntegerElement;
 
     fn assert_short_lambda_element_parsed_correctly(expected: ShortLambdaElement, code: &str) {
         nia_assert_equal(Ok(("", expected)), parse(code))
@@ -67,10 +63,10 @@ mod tests {
     #[test]
     fn works_correctly() {
         assert_short_lambda_element_parsed_correctly(
-            ShortLambdaElement::new(SExpressionElement::new(vec!(
-                Element::Integer(IntegerElement::new(3))
-            ))),
-            "#(3)"
+            ShortLambdaElement::new(SExpressionElement::new(vec![Element::Integer(
+                IntegerElement::new(3),
+            )])),
+            "#(3)",
         )
     }
 }

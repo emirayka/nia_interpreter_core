@@ -1,14 +1,15 @@
-use crate::interpreter::value::Value;
+use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::value::Value;
 
-use crate::interpreter::value::StringId;
-use crate::interpreter::value::KeywordId;
-use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::ConsId;
-use crate::interpreter::value::ObjectId;
 use crate::interpreter::value::FunctionId;
+use crate::interpreter::value::KeywordId;
+use crate::interpreter::value::ObjectId;
+use crate::interpreter::value::StringId;
+use crate::interpreter::value::SymbolId;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub trait GarbageCollectable {
     fn get_gc_items(&self) -> Vec<Value>;
@@ -40,12 +41,16 @@ impl GarbageCollector {
         let candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
 
         let candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
-        let candidate_keyword_ids = interpreter.get_keyword_arena().get_all_keyword_identifiers();
+        let candidate_keyword_ids = interpreter
+            .get_keyword_arena()
+            .get_all_keyword_identifiers();
         let mut candidate_symbol_ids = interpreter.get_symbol_arena().get_all_symbol_identifiers();
 
         let candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
         let candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
-        let mut candidate_function_ids = interpreter.get_function_arena().get_all_function_identifiers();
+        let mut candidate_function_ids = interpreter
+            .get_function_arena()
+            .get_all_function_identifiers();
 
         // remove which should be persisted
         for symbol_id in interpreter.get_ignored_symbols() {
@@ -57,7 +62,7 @@ impl GarbageCollector {
         }
 
         // iteration base
-        let environment_ids = vec!(environment_id);
+        let environment_ids = vec![environment_id];
 
         let items = Vec::new();
 
@@ -89,7 +94,11 @@ impl GarbageCollector {
         self.candidate_symbol_ids.retain(|id| *id != symbol_id);
     }
 
-    fn retain_cons_id(&mut self, interpreter: &mut Interpreter, cons_id: ConsId) -> Result<(), Error> {
+    fn retain_cons_id(
+        &mut self,
+        interpreter: &mut Interpreter,
+        cons_id: ConsId,
+    ) -> Result<(), Error> {
         self.candidate_cons_ids.retain(|id| *id != cons_id);
 
         self.items.push(interpreter.get_car(cons_id)?);
@@ -98,7 +107,11 @@ impl GarbageCollector {
         Ok(())
     }
 
-    fn retain_object_id(&mut self, interpreter: &mut Interpreter, object_id: ObjectId) -> Result<(), Error> {
+    fn retain_object_id(
+        &mut self,
+        interpreter: &mut Interpreter,
+        object_id: ObjectId,
+    ) -> Result<(), Error> {
         self.candidate_object_ids.retain(|id| *id != object_id);
 
         let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
@@ -108,7 +121,11 @@ impl GarbageCollector {
         Ok(())
     }
 
-    fn retain_function_id(&mut self, interpreter: &mut Interpreter, function_id: FunctionId) -> Result<(), Error> {
+    fn retain_function_id(
+        &mut self,
+        interpreter: &mut Interpreter,
+        function_id: FunctionId,
+    ) -> Result<(), Error> {
         self.candidate_function_ids.retain(|id| *id != function_id);
 
         match interpreter.get_function_arena().get_gc_items(function_id)? {
@@ -116,7 +133,10 @@ impl GarbageCollector {
             _ => {}
         }
 
-        match interpreter.get_function_arena().get_gc_environment(function_id)? {
+        match interpreter
+            .get_function_arena()
+            .get_gc_environment(function_id)?
+        {
             Some(gc_environment_id) => {
                 if !self.ignored_environment_ids.contains(&gc_environment_id) {
                     self.environment_ids.push(gc_environment_id)
@@ -172,10 +192,14 @@ impl GarbageCollector {
         while !self.environment_ids.is_empty() {
             let environment_id = self.environment_ids.remove(0);
 
-            self.candidate_environment_ids.retain(|id| *id != environment_id);
+            self.candidate_environment_ids
+                .retain(|id| *id != environment_id);
             self.ignored_environment_ids.push(environment_id);
 
-            match interpreter.get_environment_arena().get_parent(environment_id)? {
+            match interpreter
+                .get_environment_arena()
+                .get_parent(environment_id)?
+            {
                 Some(parent_id) => {
                     if !self.ignored_environment_ids.contains(&parent_id) {
                         self.environment_ids.push(parent_id)
@@ -183,7 +207,8 @@ impl GarbageCollector {
                 }
                 _ => {}
             }
-            let mut items_to_persist = interpreter.get_environment_arena()
+            let mut items_to_persist = interpreter
+                .get_environment_arena()
                 .get_environment_gc_items(environment_id)?;
 
             self.items.append(&mut items_to_persist);
@@ -220,10 +245,22 @@ impl GarbageCollector {
     }
 }
 
-pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> Result<(), Error> {
+pub fn collect_garbage(
+    interpreter: &mut Interpreter,
+    environment_id: EnvironmentId,
+) -> Result<(), Error> {
     let gc = GarbageCollector::new(interpreter, environment_id);
 
+    let before = SystemTime::now().duration_since(UNIX_EPOCH).expect("");
     gc.collect(interpreter)?;
+    let after = SystemTime::now().duration_since(UNIX_EPOCH).expect("");
+    let diff = after - before;
+
+    println!(
+        "Collected garbage in {}.{} ms.",
+        diff.as_millis(),
+        diff.as_micros() % 1000
+    );
 
     Ok(())
 }
@@ -231,12 +268,14 @@ pub fn collect_garbage(interpreter: &mut Interpreter, environment_id: Environmen
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     use std::convert::TryInto;
 
-    use crate::interpreter::value::{Function, BuiltinFunction, SpecialFormFunction};
     use crate::interpreter::environment::EnvironmentId;
+    use crate::interpreter::value::{BuiltinFunction, Function, SpecialFormFunction};
 
     fn builtin_test_function(
         _interpreter: &mut Interpreter,
@@ -257,9 +296,10 @@ mod tests {
     #[test]
     fn collects_strings() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let string_id = interpreter.execute("\"string\"")
+        let string_id = interpreter
+            .execute_in_main_environment("\"string\"")
             .unwrap()
             .try_into()
             .unwrap();
@@ -272,9 +312,10 @@ mod tests {
     #[test]
     fn collects_keywords() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let keyword_id = interpreter.execute(":some-unused-keyword")
+        let keyword_id = interpreter
+            .execute_in_main_environment(":some-unused-keyword")
             .unwrap()
             .try_into()
             .unwrap();
@@ -287,9 +328,10 @@ mod tests {
     #[test]
     fn collects_symbols() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let symbol_id = interpreter.execute("'some-not-used-long-named-symbol")
+        let symbol_id = interpreter
+            .execute_in_main_environment("'some-not-used-long-named-symbol")
             .unwrap()
             .try_into()
             .unwrap();
@@ -302,9 +344,10 @@ mod tests {
     #[test]
     fn collects_cons_cells() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let cons_id = interpreter.execute("(cons 1 2)")
+        let cons_id = interpreter
+            .execute_in_main_environment("(cons 1 2)")
             .unwrap()
             .try_into()
             .unwrap();
@@ -319,9 +362,10 @@ mod tests {
     #[test]
     fn collects_objects() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let object_id = interpreter.execute("{}")
+        let object_id = interpreter
+            .execute_in_main_environment("{}")
             .unwrap()
             .try_into()
             .unwrap();
@@ -334,7 +378,7 @@ mod tests {
     #[test]
     fn collects_builtin_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
         let function = Function::Builtin(BuiltinFunction::new(builtin_test_function));
         let function_id = interpreter.register_function(function);
@@ -347,7 +391,7 @@ mod tests {
     #[test]
     fn collects_special_forms() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
         let function = Function::SpecialForm(SpecialFormFunction::new(test_special_form));
         let function_id = interpreter.register_function(function);
@@ -360,9 +404,10 @@ mod tests {
     #[test]
     fn collects_interpreted_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let function_id = interpreter.execute("(fn () 1)")
+        let function_id = interpreter
+            .execute_in_main_environment("(fn () 1)")
             .unwrap()
             .try_into()
             .unwrap();
@@ -375,9 +420,10 @@ mod tests {
     #[test]
     fn collects_macro_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let function_id = interpreter.execute("(function (macro () 1))")
+        let function_id = interpreter
+            .execute_in_main_environment("(function (macro () 1))")
             .unwrap()
             .try_into()
             .unwrap();
@@ -390,18 +436,23 @@ mod tests {
     #[test]
     fn respects_cons_content() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let symbol_1 = interpreter.execute("'some-unused-symbol-1")
+        let symbol_1 = interpreter
+            .execute_in_main_environment("'some-unused-symbol-1")
             .unwrap()
             .try_into()
             .unwrap();
-        let symbol_2 = interpreter.execute("'some-unused-symbol-2")
+        let symbol_2 = interpreter
+            .execute_in_main_environment("'some-unused-symbol-2")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let cons_id = interpreter.execute("(defv kekurus (cons 'some-unused-symbol-1 'some-unused-symbol-2)) kekurus")
+        let cons_id = interpreter
+            .execute_in_main_environment(
+                "(defv kekurus (cons 'some-unused-symbol-1 'some-unused-symbol-2)) kekurus",
+            )
             .unwrap()
             .try_into()
             .unwrap();
@@ -422,24 +473,30 @@ mod tests {
     #[test]
     fn respects_object_contents() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let item_key = interpreter.execute(":some-unused-keyword-1")
+        let item_key = interpreter
+            .execute_in_main_environment(":some-unused-keyword-1")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let item_key_symbol = interpreter.execute("'some-unused-keyword-1")
+        let item_key_symbol = interpreter
+            .execute_in_main_environment("'some-unused-keyword-1")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let item_value = interpreter.execute(":some-unused-keyword-2")
+        let item_value = interpreter
+            .execute_in_main_environment(":some-unused-keyword-2")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let object_id = interpreter.execute("(defv kekurus {:some-unused-keyword-1 :some-unused-keyword-2}) kekurus")
+        let object_id = interpreter
+            .execute_in_main_environment(
+                "(defv kekurus {:some-unused-keyword-1 :some-unused-keyword-2}) kekurus",
+            )
             .unwrap()
             .try_into()
             .unwrap();
@@ -460,15 +517,18 @@ mod tests {
     #[test]
     fn respects_function_code() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let function_id = interpreter.execute(
-            "(defv some-kekurus-variable (fn () 'some-unused-symbol)) some-kekurus-variable"
-        ).unwrap()
+        let function_id = interpreter
+            .execute_in_main_environment(
+                "(defv some-kekurus-variable (fn () 'some-unused-symbol)) some-kekurus-variable",
+            )
+            .unwrap()
             .try_into()
             .unwrap();
 
-        let symbol_id = interpreter.execute("'some-unused-symbol")
+        let symbol_id = interpreter
+            .execute_in_main_environment("'some-unused-symbol")
             .unwrap()
             .try_into()
             .unwrap();
@@ -482,21 +542,25 @@ mod tests {
     #[test]
     fn respects_function_environment() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let symbol1 = interpreter.execute("'kekurus-1")
+        let symbol1 = interpreter
+            .execute_in_main_environment("'kekurus-1")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let symbol2 = interpreter.execute("'kekurus-1")
+        let symbol2 = interpreter
+            .execute_in_main_environment("'kekurus-1")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let function_id = interpreter.execute(
-            "(defv kekurus (let ((kekurus-1 1) (kekurus-2 2)) (fn () (+ 1 2)))) kekurus"
-        ).unwrap()
+        let function_id = interpreter
+            .execute_in_main_environment(
+                "(defv kekurus (let ((kekurus-1 1) (kekurus-2 2)) (fn () (+ 1 2)))) kekurus",
+            )
+            .unwrap()
             .try_into()
             .unwrap();
 
@@ -514,24 +578,32 @@ mod tests {
     #[test]
     fn respects_function_arguments() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let symbol1 = interpreter.execute("'kekurus-arg-1")
+        let symbol1 = interpreter
+            .execute_in_main_environment("'kekurus-arg-1")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let symbol2 = interpreter.execute("'kekurus-arg-2")
+        let symbol2 = interpreter
+            .execute_in_main_environment("'kekurus-arg-2")
             .unwrap()
             .try_into()
             .unwrap();
 
-        let function1 = interpreter.execute("(defv kekurus-1 (fn (#opt (a 'kekurus-arg-1)) 1)) kekurus-1")
+        let function1 = interpreter
+            .execute_in_main_environment(
+                "(defv kekurus-1 (fn (#opt (a 'kekurus-arg-1)) 1)) kekurus-1",
+            )
             .unwrap()
             .try_into()
             .unwrap();
 
-        let function2 = interpreter.execute("(defv kekurus-2 (fn (#opt (a 'kekurus-arg-2)) 1)) kekurus-2")
+        let function2 = interpreter
+            .execute_in_main_environment(
+                "(defv kekurus-2 (fn (#opt (a 'kekurus-arg-2)) 1)) kekurus-2",
+            )
             .unwrap()
             .try_into()
             .unwrap();
@@ -552,28 +624,28 @@ mod tests {
     #[test]
     fn respects_context_values() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_root_environment();
+        let root_environment = interpreter.get_main_environment_id();
 
-        let symbols = vec!(
+        let symbols = vec![
             interpreter.intern("kekurus-closure-parameter"),
             interpreter.intern("kekurus-arg-1"),
             interpreter.intern("kekurus-arg-2"),
             interpreter.intern("kekurus-opt-default-parameter"),
             interpreter.intern("kekurus-key-default-parameter"),
-        );
+        ];
 
         let pairs = vec!(
-            (interpreter.intern("kekurus-1"), interpreter.execute("\"kekurus-string\"").unwrap()),
-            (interpreter.intern("kekurus-2"), interpreter.execute(":kekurus-keyword").unwrap()),
-            (interpreter.intern("kekurus-3"), interpreter.execute("'kekurus-symbol").unwrap()),
-            (interpreter.intern("kekurus-4"), interpreter.execute("(cons 1 2)").unwrap()),
-            (interpreter.intern("kekurus-5"), interpreter.execute("{:a 1}").unwrap()),
+            (interpreter.intern("kekurus-1"), interpreter.execute_in_main_environment("\"kekurus-string\"").unwrap()),
+            (interpreter.intern("kekurus-2"), interpreter.execute_in_main_environment(":kekurus-keyword").unwrap()),
+            (interpreter.intern("kekurus-3"), interpreter.execute_in_main_environment("'kekurus-symbol").unwrap()),
+            (interpreter.intern("kekurus-4"), interpreter.execute_in_main_environment("(cons 1 2)").unwrap()),
+            (interpreter.intern("kekurus-5"), interpreter.execute_in_main_environment("{:a 1}").unwrap()),
             (interpreter.intern("kekurus-6"),
-             interpreter.execute(
+             interpreter.execute_in_main_environment(
                  "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #opt (kekurus-arg-2 'kekurus-opt-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
              ).unwrap()),
             (interpreter.intern("kekurus-7"),
-             interpreter.execute(
+             interpreter.execute_in_main_environment(
                  "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #keys (kekurus-arg-2 'kekurus-key-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
              ).unwrap()),
         );
@@ -593,14 +665,38 @@ mod tests {
         nia_assert(interpreter.get_symbol(pairs[6].0).is_ok());
 
         // todo: rewrite that
-        nia_assert(interpreter.get_string(pairs[0].1.try_into().unwrap()).is_ok());
-        nia_assert(interpreter.get_keyword(pairs[1].1.try_into().unwrap()).is_ok());
-        nia_assert(interpreter.get_symbol(pairs[2].1.try_into().unwrap()).is_ok());
+        nia_assert(
+            interpreter
+                .get_string(pairs[0].1.try_into().unwrap())
+                .is_ok(),
+        );
+        nia_assert(
+            interpreter
+                .get_keyword(pairs[1].1.try_into().unwrap())
+                .is_ok(),
+        );
+        nia_assert(
+            interpreter
+                .get_symbol(pairs[2].1.try_into().unwrap())
+                .is_ok(),
+        );
         nia_assert(interpreter.get_car(pairs[3].1.try_into().unwrap()).is_ok());
         nia_assert(interpreter.get_cdr(pairs[3].1.try_into().unwrap()).is_ok());
-        nia_assert(interpreter.get_object_prototype(pairs[4].1.try_into().unwrap()).is_ok());
-        nia_assert(interpreter.get_function(pairs[5].1.try_into().unwrap()).is_ok());
-        nia_assert(interpreter.get_function(pairs[6].1.try_into().unwrap()).is_ok());
+        nia_assert(
+            interpreter
+                .get_object_prototype(pairs[4].1.try_into().unwrap())
+                .is_ok(),
+        );
+        nia_assert(
+            interpreter
+                .get_function(pairs[5].1.try_into().unwrap())
+                .is_ok(),
+        );
+        nia_assert(
+            interpreter
+                .get_function(pairs[6].1.try_into().unwrap())
+                .is_ok(),
+        );
 
         for symbol_id in symbols {
             nia_assert(interpreter.get_symbol(symbol_id).is_ok());

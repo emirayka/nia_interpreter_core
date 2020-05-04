@@ -1,34 +1,30 @@
 use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::library;
+use crate::interpreter::value::Value;
 
 pub fn split(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `string:split' takes only one argument."
-        ).into();
+            "Built-in function `string:split' takes only one argument.",
+        )
+        .into();
     }
 
     let mut values = values;
 
     let splitted = {
-        let separator = library::read_as_string(
-            interpreter,
-            values.remove(0)
-        )?;
+        let separator = library::read_as_string(interpreter, values.remove(0))?;
 
-        let string = library::read_as_string(
-            interpreter,
-            values.remove(0)
-        )?;
+        let string = library::read_as_string(interpreter, values.remove(0))?;
 
-        string.split(separator)
+        string
+            .split(separator)
             .map(|s| String::from(s))
             .collect::<Vec<String>>()
     };
@@ -47,61 +43,80 @@ pub fn split(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_list_of_splitted_strings() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            (r#"(string:split "" "")"#,            r#"'("" "")"#),
-            (r#"(string:split "" "a")"#,           r#"'("" "a" "")"#),
-            (r#"(string:split "" "a|b")"#,         r#"'("" "a" "|" "b" "")"#),
-            (r#"(string:split "" "a|b|c")"#,       r#"'("" "a" "|" "b" "|" "c" "")"#),
+        let pairs = vec![
+            (r#"(string:split "" "")"#, r#"'("" "")"#),
+            (r#"(string:split "" "a")"#, r#"'("" "a" "")"#),
+            (r#"(string:split "" "a|b")"#, r#"'("" "a" "|" "b" "")"#),
+            (
+                r#"(string:split "" "a|b|c")"#,
+                r#"'("" "a" "|" "b" "|" "c" "")"#,
+            ),
+            (r#"(string:split "|" "")"#, r#"'("")"#),
+            (r#"(string:split "|" "a")"#, r#"'("a")"#),
+            (r#"(string:split "|" "a|b")"#, r#"'("a" "b")"#),
+            (r#"(string:split "|" "a|b|c")"#, r#"'("a" "b" "c")"#),
+            (
+                r#"(string:split "猫" "猫a钥b匙c月")"#,
+                r#"'("" "a钥b匙c月")"#,
+            ),
+            (
+                r#"(string:split "a" "猫a钥b匙c月")"#,
+                r#"'("猫" "钥b匙c月")"#,
+            ),
+            (
+                r#"(string:split "钥" "猫a钥b匙c月")"#,
+                r#"'("猫a" "b匙c月")"#,
+            ),
+            (
+                r#"(string:split "b" "猫a钥b匙c月")"#,
+                r#"'("猫a钥" "匙c月")"#,
+            ),
+            (
+                r#"(string:split "匙" "猫a钥b匙c月")"#,
+                r#"'("猫a钥b" "c月")"#,
+            ),
+            (
+                r#"(string:split "c" "猫a钥b匙c月")"#,
+                r#"'("猫a钥b匙" "月")"#,
+            ),
+            (
+                r#"(string:split "月" "猫a钥b匙c月")"#,
+                r#"'("猫a钥b匙c" "")"#,
+            ),
+        ];
 
-            (r#"(string:split "|" "")"#,           r#"'("")"#),
-            (r#"(string:split "|" "a")"#,          r#"'("a")"#),
-            (r#"(string:split "|" "a|b")"#,        r#"'("a" "b")"#),
-            (r#"(string:split "|" "a|b|c")"#,      r#"'("a" "b" "c")"#),
-
-            (r#"(string:split "猫" "猫a钥b匙c月")"#, r#"'("" "a钥b匙c月")"#),
-            (r#"(string:split "a" "猫a钥b匙c月")"#,  r#"'("猫" "钥b匙c月")"#),
-            (r#"(string:split "钥" "猫a钥b匙c月")"#, r#"'("猫a" "b匙c月")"#),
-            (r#"(string:split "b" "猫a钥b匙c月")"#,  r#"'("猫a钥" "匙c月")"#),
-            (r#"(string:split "匙" "猫a钥b匙c月")"#, r#"'("猫a钥b" "c月")"#),
-            (r#"(string:split "c" "猫a钥b匙c月")"#,  r#"'("猫a钥b匙" "月")"#),
-            (r#"(string:split "月" "猫a钥b匙c月")"#, r#"'("猫a钥b匙c" "")"#),
-        );
-
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs
-        );
+        assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
     fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             r#"(string:split)"#,
             r#"(string:split "a")"#,
-            r#"(string:split "a" "b" "c")"#
-        );
+            r#"(string:split "a" "b" "c")"#,
+        ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_when_was_called_with_not_strings() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             r#"(string:split "a" 1)"#,
             r#"(string:split "a" 1.1)"#,
             r#"(string:split "a" #t)"#,
@@ -111,7 +126,6 @@ mod tests {
             r#"(string:split "a" {:object-key 'value})"#,
             r#"(string:split "a" (cons 1 2))"#,
             r#"(string:split "a" #(+ %1 %2))"#,
-
             r#"(string:split 1 "b")"#,
             r#"(string:split 1.1 "b")"#,
             r#"(string:split #t "b")"#,
@@ -121,12 +135,8 @@ mod tests {
             r#"(string:split {:object-key 'value} "b")"#,
             r#"(string:split (cons 1 2) "b")"#,
             r#"(string:split #(+ %1 %2) "b")"#,
-        );
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
     }
 }
-

@@ -1,12 +1,4 @@
-use nom::{
-    named,
-    alt,
-    tag,
-    recognize,
-    pair,
-    opt,
-    map_res
-};
+use nom::{alt, map_res, named, opt, pair, recognize, tag};
 
 use crate::parser::element;
 use crate::parser::element::Element;
@@ -24,14 +16,14 @@ pub enum Prefix {
 #[derive(Debug)]
 pub struct PrefixedElement {
     value: Box<Element>,
-    prefix: Prefix
+    prefix: Prefix,
 }
 
 impl PrefixedElement {
     pub fn new(prefix: Prefix, value: Element) -> PrefixedElement {
         PrefixedElement {
             value: Box::new(value),
-            prefix
+            prefix,
         }
     }
 
@@ -50,8 +42,7 @@ impl PrefixedElement {
 
 impl PartialEq for PrefixedElement {
     fn eq(&self, other: &Self) -> bool {
-        self.value == other.value &&
-            self.prefix == other.prefix
+        self.value == other.value && self.prefix == other.prefix
     }
 }
 
@@ -102,24 +93,25 @@ named!(pub parse(&str) -> PrefixedElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::parser::symbol_element::SymbolElement;
-    use crate::parser::integer_element::IntegerElement;
-    use crate::parser::float_element::FloatElement;
     use crate::parser::boolean_element::BooleanElement;
-    use crate::parser::string_element::StringElement;
+    use crate::parser::float_element::FloatElement;
+    use crate::parser::integer_element::IntegerElement;
     use crate::parser::s_expression_element::SExpressionElement;
-
+    use crate::parser::string_element::StringElement;
+    use crate::parser::symbol_element::SymbolElement;
 
     fn assert_prefixed_element_parsed_correctly(
         expected_prefix: Prefix,
         expected_element: Element,
-        code: &str
+        code: &str,
     ) {
         nia_assert_equal(
             Ok(("", PrefixedElement::new(expected_prefix, expected_element))),
-            parse(code)
+            parse(code),
         )
     }
 
@@ -127,17 +119,17 @@ mod tests {
         expected_prefix_1: Prefix,
         expected_prefix_2: Prefix,
         expected_element: Element,
-        code: &str
+        code: &str,
     ) {
         nia_assert_equal(
-            Ok(("", PrefixedElement::new(
-                expected_prefix_1,
-                Element::Prefix(PrefixedElement::new(
-                    expected_prefix_2,
-                    expected_element
-                ))))
-            ),
-            parse(code)
+            Ok((
+                "",
+                PrefixedElement::new(
+                    expected_prefix_1,
+                    Element::Prefix(PrefixedElement::new(expected_prefix_2, expected_element)),
+                ),
+            )),
+            parse(code),
         )
     }
 
@@ -145,106 +137,106 @@ mod tests {
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Symbol(SymbolElement::new(String::from("a"))),
-            &format!("{}{}", expected_prefix_code, "a")
+            &format!("{}{}", expected_prefix_code, "a"),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Integer(IntegerElement::new(1)),
-            &format!("{}{}", expected_prefix_code, "1")
+            &format!("{}{}", expected_prefix_code, "1"),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Float(FloatElement::new(1.0)),
-            &format!("{}{}", expected_prefix_code, "1.0")
+            &format!("{}{}", expected_prefix_code, "1.0"),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Boolean(BooleanElement::new(true)),
-            &format!("{}{}", expected_prefix_code, "#t")
+            &format!("{}{}", expected_prefix_code, "#t"),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Boolean(BooleanElement::new(false)),
-            &format!("{}{}", expected_prefix_code, "#f")
+            &format!("{}{}", expected_prefix_code, "#f"),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::String(StringElement::new(String::from("tt"))),
-            &format!("{}{}", expected_prefix_code, "\"tt\"")
+            &format!("{}{}", expected_prefix_code, "\"tt\""),
         );
 
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
-            Element::SExpression(SExpressionElement::new(vec!(
+            Element::SExpression(SExpressionElement::new(vec![
                 Element::Symbol(SymbolElement::new(String::from("b"))),
                 Element::Integer(IntegerElement::new(1)),
                 Element::Integer(IntegerElement::new(2)),
-            ))),
-            &format!("{}{}", expected_prefix_code, "(b 1 2)")
+            ])),
+            &format!("{}{}", expected_prefix_code, "(b 1 2)"),
         );
     }
 
     fn assert_prefix_prefix_works(
         expected_prefix_1: Prefix,
         expected_prefix_2: Prefix,
-        expected_prefix_code: &str
+        expected_prefix_code: &str,
     ) {
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::Symbol(SymbolElement::new(String::from("a"))),
-            &format!("{}{}", expected_prefix_code, "a")
+            &format!("{}{}", expected_prefix_code, "a"),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::Integer(IntegerElement::new(1)),
-            &format!("{}{}", expected_prefix_code, "1")
+            &format!("{}{}", expected_prefix_code, "1"),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::Float(FloatElement::new(1.0)),
-            &format!("{}{}", expected_prefix_code, "1.0")
+            &format!("{}{}", expected_prefix_code, "1.0"),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::Boolean(BooleanElement::new(true)),
-            &format!("{}{}", expected_prefix_code, "#t")
+            &format!("{}{}", expected_prefix_code, "#t"),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::Boolean(BooleanElement::new(false)),
-            &format!("{}{}", expected_prefix_code, "#f")
+            &format!("{}{}", expected_prefix_code, "#f"),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
             Element::String(StringElement::new(String::from("tt"))),
-            &format!("{}{}", expected_prefix_code, "\"tt\"")
+            &format!("{}{}", expected_prefix_code, "\"tt\""),
         );
 
         assert_prefixed_element_parsed_correctly_2(
             expected_prefix_1,
             expected_prefix_2,
-            Element::SExpression(SExpressionElement::new(vec!(
+            Element::SExpression(SExpressionElement::new(vec![
                 Element::Symbol(SymbolElement::new(String::from("b"))),
                 Element::Integer(IntegerElement::new(1)),
                 Element::Integer(IntegerElement::new(2)),
-            ))),
-            &format!("{}{}", expected_prefix_code, "(b 1 2)")
+            ])),
+            &format!("{}{}", expected_prefix_code, "(b 1 2)"),
         );
     }
 
@@ -259,20 +251,20 @@ mod tests {
 
     #[test]
     fn already_prefixed_prefixed_values() {
-        let prefixes = vec!(
+        let prefixes = vec![
             (Prefix::Quote, "'"),
             (Prefix::SharpQuote, "#'"),
             (Prefix::Comma, ","),
             (Prefix::CommaDog, ",@"),
             (Prefix::GraveAccent, "`"),
-        );
+        ];
 
         for prefix_1 in &prefixes {
             for prefix_2 in &prefixes {
                 assert_prefix_prefix_works(
                     prefix_1.0,
                     prefix_2.0,
-                    &format!("{}{}", prefix_1.1, prefix_2.1)
+                    &format!("{}{}", prefix_1.1, prefix_2.1),
                 );
             }
         }

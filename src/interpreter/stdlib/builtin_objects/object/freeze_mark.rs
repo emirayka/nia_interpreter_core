@@ -1,30 +1,28 @@
+use crate::interpreter::environment::EnvironmentId;
+use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::interpreter::error::Error;
-use crate::interpreter::environment::EnvironmentId;
 
 use crate::interpreter::library;
 
 pub fn freeze_mark(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
-    values: Vec<Value>
+    values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `object:freeze!' takes one argument exactly."
-        ).into();
+            "Built-in function `object:freeze!' takes one argument exactly.",
+        )
+        .into();
     }
 
     let mut values = values;
-    let object_id = library::read_as_object_id(
-        interpreter,
-        values.remove(0)
-    )?;
+    let object_id = library::read_as_object_id(values.remove(0))?;
 
     let mut object = interpreter.get_object_mut(object_id)?;
 
-    object.freeze();
+    object.freeze()?;
 
     Ok(Value::Boolean(true))
 }
@@ -32,9 +30,12 @@ pub fn freeze_mark(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn freezes_object() {
@@ -53,32 +54,23 @@ mod tests {
             ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-configurable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
         );
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            "(object:freeze!)",
-            "(object:freeze! {} 'val)"
-        );
+        let code_vector = vec!["(object:freeze!)", "(object:freeze! {} 'val)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
     }
 
     #[test]
     fn returns_invalid_argument_when_not_an_object_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             "(object:freeze! 1)",
             "(object:freeze! 1.1)",
             "(object:freeze! #t)",
@@ -88,11 +80,8 @@ mod tests {
             "(object:freeze! 'symbol)",
             "(object:freeze! '(list))",
             "(object:freeze! #())",
-        );
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(
-            &mut interpreter,
-            code_vector
-        );
+        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
     }
 }

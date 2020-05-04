@@ -1,21 +1,21 @@
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Symbol {
     name: String,
-    gensym_id: usize
+    gensym_id: usize,
 }
 
 impl Symbol {
     pub fn new(name: String, counter: usize) -> Symbol {
         Symbol {
             name,
-            gensym_id: counter
+            gensym_id: counter,
         }
     }
 
     pub fn from(name: &str) -> Symbol {
         Symbol {
             name: String::from(name),
-            gensym_id: 0
+            gensym_id: 0,
         }
     }
 

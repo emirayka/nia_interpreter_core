@@ -8,11 +8,7 @@ pub struct OptionalArgument {
 }
 
 impl OptionalArgument {
-    pub fn new(
-        name: String,
-        default: Option<Value>,
-        provided: Option<String>
-    ) -> OptionalArgument {
+    pub fn new(name: String, default: Option<Value>, provided: Option<String>) -> OptionalArgument {
         OptionalArgument {
             name,
             default,
@@ -41,11 +37,7 @@ pub struct KeyArgument {
 }
 
 impl KeyArgument {
-    pub fn new(
-        name: String,
-        default: Option<Value>,
-        provided: Option<String>
-    )  -> KeyArgument{
+    pub fn new(name: String, default: Option<Value>, provided: Option<String>) -> KeyArgument {
         KeyArgument {
             name,
             default,
@@ -80,7 +72,7 @@ impl FunctionArguments {
             ordinary: Vec::new(),
             optional: Vec::new(),
             rest: None,
-            keys: Vec::new()
+            keys: Vec::new(),
         }
     }
 
@@ -133,7 +125,7 @@ impl FunctionArguments {
     }
 
     pub fn add_ordinary_argument(&mut self, name: String) -> Result<(), ()> {
-        if self.optional.len() > 0 || self.rest.is_some() || self.keys.len() > 0  {
+        if self.optional.len() > 0 || self.rest.is_some() || self.keys.len() > 0 {
             return Err(());
         }
 
@@ -142,17 +134,17 @@ impl FunctionArguments {
         }
 
         self.ordinary.push(name);
-        
+
         Ok(())
     }
-    
+
     pub fn add_optional_argument(
         &mut self,
         name: String,
         default: Option<Value>,
-        provided: Option<String>
+        provided: Option<String>,
     ) -> Result<(), ()> {
-        if self.rest.is_some() || self.keys.len() > 0  {
+        if self.rest.is_some() || self.keys.len() > 0 {
             return Err(());
         }
 
@@ -160,22 +152,15 @@ impl FunctionArguments {
             return Err(());
         }
 
-        let optional_argument = OptionalArgument::new(
-            name,
-            default,
-            provided
-        );
-        
+        let optional_argument = OptionalArgument::new(name, default, provided);
+
         self.optional.push(optional_argument);
-        
+
         Ok(())
     }
-    
-    pub fn add_rest_argument(
-        &mut self,
-        name: String
-    ) -> Result<(), ()> {
-        if self.rest.is_some() || self.keys.len() > 0  {
+
+    pub fn add_rest_argument(&mut self, name: String) -> Result<(), ()> {
+        if self.rest.is_some() || self.keys.len() > 0 {
             return Err(());
         }
 
@@ -187,14 +172,14 @@ impl FunctionArguments {
 
         Ok(())
     }
-    
+
     pub fn add_key_argument(
         &mut self,
         name: String,
         default: Option<Value>,
-        provided: Option<String>
+        provided: Option<String>,
     ) -> Result<(), ()> {
-        if self.optional.len() > 0 || self.rest.is_some()  {
+        if self.optional.len() > 0 || self.rest.is_some() {
             return Err(());
         }
 
@@ -202,12 +187,8 @@ impl FunctionArguments {
             return Err(());
         }
 
-        let keyword_argument = KeyArgument::new(
-            name,
-            default,
-            provided
-        );
-        
+        let keyword_argument = KeyArgument::new(name, default, provided);
+
         self.keys.push(keyword_argument);
 
         Ok(())
@@ -237,9 +218,10 @@ impl FunctionArguments {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    
     #[test]
     fn allows_to_add_ordinary_arguments() {
         let mut arguments = FunctionArguments::new();
@@ -248,11 +230,17 @@ mod tests {
 
         let result = arguments.add_ordinary_argument(String::from("argument-1"));
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&vec!(String::from("argument-1")), arguments.get_ordinary_arguments());
+        nia_assert_equal(
+            &vec![String::from("argument-1")],
+            arguments.get_ordinary_arguments(),
+        );
 
         let result = arguments.add_ordinary_argument(String::from("argument-2"));
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&vec!(String::from("argument-1"), String::from("argument-2")), arguments.get_ordinary_arguments());
+        nia_assert_equal(
+            &vec![String::from("argument-1"), String::from("argument-2")],
+            arguments.get_ordinary_arguments(),
+        );
     }
 
     #[test]
@@ -263,11 +251,17 @@ mod tests {
 
         let result = arguments.add_optional_argument(String::from("argument-1"), None, None);
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&OptionalArgument::new(String::from("argument-1"), None, None), arguments.get_optional_arguments().last().unwrap());
+        nia_assert_equal(
+            &OptionalArgument::new(String::from("argument-1"), None, None),
+            arguments.get_optional_arguments().last().unwrap(),
+        );
 
         let result = arguments.add_optional_argument(String::from("argument-2"), None, None);
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&OptionalArgument::new(String::from("argument-2"), None, None), arguments.get_optional_arguments().last().unwrap());
+        nia_assert_equal(
+            &OptionalArgument::new(String::from("argument-2"), None, None),
+            arguments.get_optional_arguments().last().unwrap(),
+        );
     }
 
     #[test]
@@ -289,11 +283,17 @@ mod tests {
 
         let result = arguments.add_key_argument(String::from("argument-1"), None, None);
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&KeyArgument::new(String::from("argument-1"), None, None), arguments.get_key_arguments().last().unwrap());
+        nia_assert_equal(
+            &KeyArgument::new(String::from("argument-1"), None, None),
+            arguments.get_key_arguments().last().unwrap(),
+        );
 
         let result = arguments.add_key_argument(String::from("argument-2"), None, None);
         nia_assert_equal(Ok(()), result);
-        nia_assert_equal(&KeyArgument::new(String::from("argument-2"), None, None), arguments.get_key_arguments().last().unwrap());
+        nia_assert_equal(
+            &KeyArgument::new(String::from("argument-2"), None, None),
+            arguments.get_key_arguments().last().unwrap(),
+        );
     }
 
     #[test]

@@ -20,7 +20,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let bit_object_id = interpreter.make_object();
     let bit_symbol_id = interpreter.intern("bit");
 
-    let bindings: Vec<(&str, BuiltinFunctionType)> = vec!(
+    let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("and", and::and),
         ("clear", clear::clear),
         ("flip", flip::flip),
@@ -31,21 +31,16 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("shift-right", shift_right::shift_right),
         ("test", test::test),
         ("xor", xor::xor),
-    );
+    ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
-            interpreter,
-            bit_object_id,
-            name,
-            func
-        )?;
+        infect_object_builtin_function(interpreter, bit_object_id, name, func)?;
     }
 
     interpreter.define_variable(
-        interpreter.get_root_environment(),
+        interpreter.get_root_environment_id(),
         bit_symbol_id,
-        Value::Object(bit_object_id)
+        Value::Object(bit_object_id),
     )?;
 
     Ok(())

@@ -1,9 +1,9 @@
 use std::convert::TryInto;
 
-use crate::interpreter::value::FunctionArguments;
-use crate::interpreter::value::Value;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::value::FunctionArguments;
+use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
 
@@ -11,7 +11,7 @@ pub fn read_as_flet_definitions(
     interpreter: &mut Interpreter,
     value: Value,
 ) -> Result<Vec<(Value, FunctionArguments, Vec<Value>)>, Error> {
-    let mut definitions = vec!();
+    let mut definitions = vec![];
 
     match value {
         Value::Cons(cons_id) => {
@@ -37,7 +37,7 @@ pub fn read_as_flet_definitions(
                             name,
                         )?;
 
-                        library::check_if_symbol_assignable(
+                        library::check_symbol_is_assignable(
                             interpreter,
                             name.try_into()?,
                         )?;
@@ -63,11 +63,10 @@ pub fn read_as_flet_definitions(
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
-                return Error::invalid_argument_error("")
-                    .into();
+                return Error::invalid_argument_error("").into();
             }
         }
-        _ => return Error::invalid_argument_error("").into()
+        _ => return Error::invalid_argument_error("").into(),
     };
 
     Ok(definitions)
@@ -76,167 +75,127 @@ pub fn read_as_flet_definitions(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     #[test]
     fn returns_vector_of_cons_cells_when_a_list_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
+        let specs = vec![
+            (vec![], "nil"),
+            (vec![], "'()"),
             (
-                vec!(),
-                "nil"
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    { FunctionArguments::new() },
+                    vec![],
+                )],
+                "'((a ()))",
             ),
             (
-                vec!(),
-                "'()"
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    { FunctionArguments::new() },
+                    vec![Value::Integer(1)],
+                )],
+                "'((a () 1))",
             ),
             (
-                vec!(
+                vec![
                     (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            FunctionArguments::new()
-                        },
-                        vec!(),
-                    ),
-                ),
-                "'((a ()))"
-            ),
-            (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            FunctionArguments::new()
-                        },
-                        vec!(
-                            Value::Integer(1)
-                        ),
-                    ),
-                ),
-                "'((a () 1))"
-            ),
-            (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            FunctionArguments::new()
-                        },
-                        vec!(),
+                        interpreter.execute_in_main_environment("'a").unwrap(),
+                        { FunctionArguments::new() },
+                        vec![],
                     ),
                     (
-                        interpreter.execute("'b").unwrap(),
-                        {
-                            FunctionArguments::new()
-                        },
-                        vec!(),
+                        interpreter.execute_in_main_environment("'b").unwrap(),
+                        { FunctionArguments::new() },
+                        vec![],
                     ),
-                ),
-                "'((a ()) (b ()))"
+                ],
+                "'((a ()) (b ()))",
             ),
             (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            let mut arguments = FunctionArguments::new();
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    {
+                        let mut arguments = FunctionArguments::new();
 
-                            arguments.add_ordinary_argument(String::from("b")).unwrap();
+                        arguments.add_ordinary_argument(String::from("b")).unwrap();
 
-                            arguments
-                        },
-                        vec!(
-                            Value::Integer(1)
-                        ),
-                    ),
-                ),
-                "'((a (b) 1))"
+                        arguments
+                    },
+                    vec![Value::Integer(1)],
+                )],
+                "'((a (b) 1))",
             ),
             (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            let mut arguments = FunctionArguments::new();
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    {
+                        let mut arguments = FunctionArguments::new();
 
-                            arguments.add_optional_argument(String::from("b"), None, None).unwrap();
+                        arguments
+                            .add_optional_argument(String::from("b"), None, None)
+                            .unwrap();
 
-                            arguments
-                        },
-                        vec!(
-                            Value::Integer(1)
-                        ),
-                    ),
-                ),
-                "'((a (#opt b) 1))"
+                        arguments
+                    },
+                    vec![Value::Integer(1)],
+                )],
+                "'((a (#opt b) 1))",
             ),
             (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            let mut arguments = FunctionArguments::new();
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    {
+                        let mut arguments = FunctionArguments::new();
 
-                            arguments.add_rest_argument(String::from("b")).unwrap();
+                        arguments.add_rest_argument(String::from("b")).unwrap();
 
-                            arguments
-                        },
-                        vec!(
-                            Value::Integer(1)
-                        ),
-                    ),
-                ),
-                "'((a (#rest b) 1))"
+                        arguments
+                    },
+                    vec![Value::Integer(1)],
+                )],
+                "'((a (#rest b) 1))",
             ),
             (
-                vec!(
-                    (
-                        interpreter.execute("'a").unwrap(),
-                        {
-                            let mut arguments = FunctionArguments::new();
+                vec![(
+                    interpreter.execute_in_main_environment("'a").unwrap(),
+                    {
+                        let mut arguments = FunctionArguments::new();
 
-                            arguments.add_key_argument(String::from("b"), None, None).unwrap();
+                        arguments
+                            .add_key_argument(String::from("b"), None, None)
+                            .unwrap();
 
-                            arguments
-                        },
-                        vec!(
-                            Value::Integer(1)
-                        ),
-                    ),
-                ),
-                "'((a (#keys b) 1))"
+                        arguments
+                    },
+                    vec![Value::Integer(1)],
+                )],
+                "'((a (#keys b) 1))",
             ),
-        );
+        ];
 
         for spec in specs {
             let expected = spec.0;
-            let value = interpreter.execute(spec.1).unwrap();
+            let value = interpreter.execute_in_main_environment(spec.1).unwrap();
 
-            let result = read_as_flet_definitions(
-                &mut interpreter,
-                value,
-            ).unwrap();
+            let result = read_as_flet_definitions(&mut interpreter, value).unwrap();
 
             nia_assert_equal(expected.len(), result.len());
 
             for (a, b) in expected.into_iter().zip(result.into_iter()) {
-                assertion::assert_deep_equal(
-                    &mut interpreter,
-                    a.0,
-                    b.0
-                );
+                assertion::assert_deep_equal(&mut interpreter, a.0, b.0);
 
                 nia_assert_equal(a.1, b.1);
 
-                assertion::assert_vectors_deep_equal(
-                    &mut interpreter,
-                    a.2,
-                    b.2
-                );
+                assertion::assert_vectors_deep_equal(&mut interpreter, a.2, b.2);
             }
         }
     }
@@ -245,22 +204,12 @@ mod tests {
     fn returns_err_when_not_correct_lists_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
-            "1",
-            "'a",
-            "'(a)",
-            "'((a))",
-            "'((1 ()))",
-            "'((1 1))",
-        );
+        let specs = vec!["1", "'a", "'(a)", "'((a))", "'((1 ()))", "'((1 1))"];
 
         for spec in specs {
-            let value = interpreter.execute(spec).unwrap();
+            let value = interpreter.execute_in_main_environment(spec).unwrap();
 
-            let result = read_as_flet_definitions(
-                &mut interpreter,
-                value,
-            );
+            let result = read_as_flet_definitions(&mut interpreter, value);
 
             nia_assert_is_err(&result);
         }

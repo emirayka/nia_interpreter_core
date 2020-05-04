@@ -1,17 +1,17 @@
 use std::cmp::max;
 use std::convert::TryInto;
 
-use crate::interpreter::value::Value;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::error::Error;
+use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::value::Value;
 
-use crate::parser::{SExpressionElement, SymbolElement};
-use crate::parser::{PrefixedElement, Prefix};
-use crate::parser::Element;
-use crate::parser::ObjectPatternElement;
-use crate::parser::ObjectElement;
 use crate::parser::DelimitedSymbolsElement;
+use crate::parser::Element;
+use crate::parser::ObjectElement;
+use crate::parser::ObjectPatternElement;
 use crate::parser::ShortLambdaElement;
+use crate::parser::{Prefix, PrefixedElement};
+use crate::parser::{SExpressionElement, SymbolElement};
 
 use crate::interpreter::library;
 
@@ -20,9 +20,7 @@ fn read_regular_s_expression(
     first_value: Element,
     s_expressions: Vec<Element>,
 ) -> Result<Value, Error> {
-    let mut values = vec!(
-        read_element(interpreter, first_value)?
-    );
+    let mut values = vec![read_element(interpreter, first_value)?];
 
     for s_expression in s_expressions {
         let element = read_element(interpreter, s_expression)?;
@@ -42,56 +40,40 @@ fn read_object_method_invocation_s_expression(
 ) -> Result<Value, Error> {
     let mut s_expressions = s_expressions;
 
-    let object_method_invocation = read_delimited_symbols_element(
-        interpreter,
-        delimited_symbols_element,
-    );
+    let object_method_invocation =
+        read_delimited_symbols_element(interpreter, delimited_symbols_element);
 
-    let car = interpreter.get_car(
-        object_method_invocation.try_into()?
-    )?;
+    let car = interpreter.get_car(object_method_invocation.try_into()?)?;
 
     let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
 
     let result = if library::deep_equal(interpreter, car, with_this_symbol_value)? {
-        let cdr = interpreter.get_cdr(
-            object_method_invocation.try_into()?
-        )?;
-        let cddr = interpreter.get_cdr(
-            cdr.try_into()?
-        )?;
-        let caddr = interpreter.get_car(
-            cddr.try_into()?
-        )?;
+        let cdr = interpreter.get_cdr(object_method_invocation.try_into()?)?;
+        let cddr = interpreter.get_cdr(cdr.try_into()?)?;
+        let caddr = interpreter.get_car(cddr.try_into()?)?;
 
         let cdddr = read_elements(interpreter, s_expressions)?;
         let cdddr = interpreter.vec_to_list(cdddr);
 
-        let new_caddr = interpreter.make_cons_value(
-            caddr,
-            cdddr
-        );
+        let new_caddr = interpreter.make_cons_value(caddr, cdddr);
 
-        interpreter.set_car(
-            cddr.try_into()?,
-            new_caddr,
-        )?;
+        interpreter.set_car(cddr.try_into()?, new_caddr)?;
 
         object_method_invocation
     } else {
         let cdr = read_elements(interpreter, s_expressions)?;
         let cdr = interpreter.vec_to_list(cdr);
 
-        interpreter.make_cons_value(
-            object_method_invocation,
-            cdr
-        )
+        interpreter.make_cons_value(object_method_invocation, cdr)
     };
 
     Ok(result)
 }
 
-fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionElement) -> Result<Value, Error> {
+fn read_s_expression(
+    interpreter: &mut Interpreter,
+    sexp_element: SExpressionElement,
+) -> Result<Value, Error> {
     if sexp_element.get_values_ref().len() == 0 {
         return Ok(interpreter.intern_nil_symbol_value());
     }
@@ -106,11 +88,7 @@ fn read_s_expression(interpreter: &mut Interpreter, sexp_element: SExpressionEle
             s_expressions,
         )
     } else {
-        read_regular_s_expression(
-            interpreter,
-            first_element,
-            s_expressions,
-        )
+        read_regular_s_expression(interpreter, first_element, s_expressions)
     }
     // read_regular_s_expression(
     //     interpreter,
@@ -169,10 +147,7 @@ fn count_short_lambda_argument_count(
     count
 }
 
-fn make_short_lambda_argument_list(
-    interpreter: &mut Interpreter,
-    count: u8,
-) -> Value {
+fn make_short_lambda_argument_list(interpreter: &mut Interpreter, count: u8) -> Value {
     let mut last_cons = interpreter.intern_nil_symbol_value();
 
     for i in 0..count {
@@ -195,10 +170,7 @@ fn read_short_lambda(
     let nil = interpreter.intern_nil_symbol_value();
 
     let argument_count = count_short_lambda_argument_count(interpreter, &short_lambda_element);
-    let code = read_s_expression(
-        interpreter,
-        short_lambda_element.get_value(),
-    )?;
+    let code = read_s_expression(interpreter, short_lambda_element.get_value())?;
     let arguments = make_short_lambda_argument_list(interpreter, argument_count);
 
     let cdr = interpreter.make_cons_value(code, nil);
@@ -211,7 +183,10 @@ fn read_short_lambda(
     Ok(value)
 }
 
-fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> Result<Value, Error> {
+fn read_object(
+    interpreter: &mut Interpreter,
+    object_element: ObjectElement,
+) -> Result<Value, Error> {
     let values = object_element.get_values();
 
     let nil = interpreter.intern_nil_symbol_value();
@@ -220,41 +195,23 @@ fn read_object(interpreter: &mut Interpreter, object_element: ObjectElement) -> 
     for (keyword_element, element) in values.into_iter().rev() {
         let name = keyword_element.get_value();
 
-        let value = read_element(
-            interpreter,
-            element,
-        )?;
+        let value = read_element(interpreter, element)?;
         let keyword = interpreter.intern_keyword_value(name);
 
-        last_cons = Value::Cons(interpreter.make_cons(
-            value,
-            last_cons,
-        ));
+        last_cons = Value::Cons(interpreter.make_cons(value, last_cons));
 
-        last_cons = Value::Cons(interpreter.make_cons(
-            keyword,
-            last_cons,
-        ));
+        last_cons = Value::Cons(interpreter.make_cons(keyword, last_cons));
     }
 
     let sym1 = interpreter.intern_symbol_value("object");
     let nil = interpreter.intern_nil_symbol_value();
-    let car = Value::Cons(interpreter.make_cons(
-        sym1,
-        nil,
-    ));
+    let car = Value::Cons(interpreter.make_cons(sym1, nil));
 
     let keyword = interpreter.intern_keyword_value("make");
 
-    let car = Value::Cons(interpreter.make_cons(
-        keyword,
-        car,
-    ));
+    let car = Value::Cons(interpreter.make_cons(keyword, car));
 
-    let cons_id = interpreter.make_cons(
-        car,
-        last_cons,
-    );
+    let cons_id = interpreter.make_cons(car, last_cons);
 
     Ok(Value::Cons(cons_id))
 }
@@ -273,53 +230,29 @@ fn read_object_pattern(
         let name = keyword_element.get_value();
 
         let value = interpreter.intern_symbol_value(&name);
-        let value_cell = interpreter.make_cons_value(
-            value,
-            nil,
-        );
-        let quoted_value = interpreter.make_cons_value(
-            quote,
-            value_cell,
-        );
+        let value_cell = interpreter.make_cons_value(value, nil);
+        let quoted_value = interpreter.make_cons_value(quote, value_cell);
         let keyword = interpreter.intern_keyword_value(name);
 
-        last_cons = Value::Cons(interpreter.make_cons(
-            quoted_value,
-            last_cons,
-        ));
+        last_cons = Value::Cons(interpreter.make_cons(quoted_value, last_cons));
 
-        last_cons = Value::Cons(interpreter.make_cons(
-            keyword,
-            last_cons,
-        ));
+        last_cons = Value::Cons(interpreter.make_cons(keyword, last_cons));
     }
 
     let sym1 = interpreter.intern_symbol_value("object");
     let nil = interpreter.intern_nil_symbol_value();
-    let car = Value::Cons(interpreter.make_cons(
-        sym1,
-        nil,
-    ));
+    let car = Value::Cons(interpreter.make_cons(sym1, nil));
 
     let keyword = interpreter.intern_keyword_value("make");
 
-    let car = Value::Cons(interpreter.make_cons(
-        keyword,
-        car,
-    ));
+    let car = Value::Cons(interpreter.make_cons(keyword, car));
 
-    let cons_id = interpreter.make_cons(
-        car,
-        last_cons,
-    );
+    let cons_id = interpreter.make_cons(car, last_cons);
 
     Ok(Value::Cons(cons_id))
 }
 
-fn expand_delimited_symbols(
-    interpreter: &mut Interpreter,
-    values: &[SymbolElement],
-) -> Value {
+fn expand_delimited_symbols(interpreter: &mut Interpreter, values: &[SymbolElement]) -> Value {
     let object_symbol_name = values[0].get_value();
     let mut previous_cons = interpreter.intern_symbol_value(object_symbol_name);
 
@@ -327,17 +260,11 @@ fn expand_delimited_symbols(
         let symbol_name = symbol_element.get_value();
 
         let nil = interpreter.intern_nil_symbol_value();
-        let current_cons = Value::Cons(interpreter.make_cons(
-            previous_cons,
-            nil,
-        ));
+        let current_cons = Value::Cons(interpreter.make_cons(previous_cons, nil));
 
         let keyword = interpreter.intern_keyword_value(symbol_name);
 
-        let current_cons = Value::Cons(interpreter.make_cons(
-            keyword,
-            current_cons,
-        ));
+        let current_cons = Value::Cons(interpreter.make_cons(keyword, current_cons));
 
         previous_cons = current_cons;
     }
@@ -356,29 +283,24 @@ fn read_delimited_symbols_element_as_object_method_invocation(
     interpreter: &mut Interpreter,
     values: &Vec<SymbolElement>,
 ) -> Value {
-    let value_of_this_object = expand_delimited_symbols(
-        interpreter,
-        &values[..(values.len() - 1)],
-    );
+    let value_of_this_object = expand_delimited_symbols(interpreter, &values[..(values.len() - 1)]);
 
     // construct this invocation
     let this_symbol_value = interpreter.intern_symbol_value("this");
-    let this_object_property_keyword = interpreter.intern_keyword_value(
-        values.last()
-            .unwrap()
-            .get_value()
-    );
+    let this_object_property_keyword =
+        interpreter.intern_keyword_value(values.last().unwrap().get_value());
 
-    let this_invocation_value = interpreter.vec_to_list(
-        vec!(this_object_property_keyword, this_symbol_value)
-    );
+    let this_invocation_value =
+        interpreter.vec_to_list(vec![this_object_property_keyword, this_symbol_value]);
 
     // construct with-this invocation
     let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
 
-    let result = interpreter.vec_to_list(
-        vec!(with_this_symbol_value, value_of_this_object, this_invocation_value)
-    );
+    let result = interpreter.vec_to_list(vec![
+        with_this_symbol_value,
+        value_of_this_object,
+        this_invocation_value,
+    ]);
 
     result
 }
@@ -396,90 +318,94 @@ fn read_delimited_symbols_element(
     }
 }
 
-fn read_quote_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_quote_prefixed_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
 
-    let quoted_value = interpreter.vec_to_list(vec!(quote, value));
+    let quoted_value = interpreter.vec_to_list(vec![quote, value]);
 
     Ok(quoted_value)
 }
 
-fn read_sharp_quote_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_sharp_quote_prefixed_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let quote = interpreter.intern_symbol_value("quote");
     let flookup = interpreter.intern_symbol_value("flookup");
 
-    let quoted_value = interpreter.vec_to_list(vec!(quote, value));
-    let flooked_up_value = interpreter.vec_to_list(vec!(flookup, quoted_value));
+    let quoted_value = interpreter.vec_to_list(vec![quote, value]);
+    let flooked_up_value = interpreter.vec_to_list(vec![flookup, quoted_value]);
 
     Ok(flooked_up_value)
 }
 
-fn read_graveaccent_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_graveaccent_prefixed_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let graveaccent = interpreter.intern_symbol_value("`");
 
     let nil = interpreter.intern_nil_symbol_value();
-    let cdr = Value::Cons(interpreter.make_cons(
-        value,
-        nil,
-    ));
+    let cdr = Value::Cons(interpreter.make_cons(value, nil));
 
-    let cons_id = interpreter.make_cons(
-        graveaccent,
-        cdr,
-    );
+    let cons_id = interpreter.make_cons(graveaccent, cdr);
 
     Ok(Value::Cons(cons_id))
 }
 
-fn read_comma_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_comma_prefixed_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let comma = interpreter.intern_symbol_value(",");
 
     let nil = interpreter.intern_nil_symbol_value();
-    let cdr = Value::Cons(interpreter.make_cons(
-        value,
-        nil,
-    ));
+    let cdr = Value::Cons(interpreter.make_cons(value, nil));
 
-    let cons_id = interpreter.make_cons(
-        comma,
-        cdr,
-    );
+    let cons_id = interpreter.make_cons(comma, cdr);
 
     Ok(Value::Cons(cons_id))
 }
 
-fn read_commadog_prefixed_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+fn read_commadog_prefixed_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = read_element(interpreter, element)?;
 
     let commadog = interpreter.intern_symbol_value(",@");
 
     let nil = interpreter.intern_nil_symbol_value();
-    let cdr = Value::Cons(interpreter.make_cons(
-        value,
-        nil,
-    ));
+    let cdr = Value::Cons(interpreter.make_cons(value, nil));
 
-    let cons_id = interpreter.make_cons(
-        commadog,
-        cdr,
-    );
+    let cons_id = interpreter.make_cons(commadog, cdr);
 
     Ok(Value::Cons(cons_id))
 }
 
-fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixedElement) -> Result<Value, Error> {
+fn read_prefix_element(
+    interpreter: &mut Interpreter,
+    prefix_element: PrefixedElement,
+) -> Result<Value, Error> {
     match prefix_element.get_prefix() {
         Prefix::Quote => read_quote_prefixed_element(interpreter, prefix_element.get_value()),
-        Prefix::SharpQuote => read_sharp_quote_prefixed_element(interpreter, prefix_element.get_value()),
-        Prefix::GraveAccent => read_graveaccent_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::SharpQuote => {
+            read_sharp_quote_prefixed_element(interpreter, prefix_element.get_value())
+        }
+        Prefix::GraveAccent => {
+            read_graveaccent_prefixed_element(interpreter, prefix_element.get_value())
+        }
         Prefix::Comma => read_comma_prefixed_element(interpreter, prefix_element.get_value()),
         Prefix::CommaDog => read_commadog_prefixed_element(interpreter, prefix_element.get_value()),
     }
@@ -487,12 +413,9 @@ fn read_prefix_element(interpreter: &mut Interpreter, prefix_element: PrefixedEl
 
 pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
     let value = match element {
-        Element::Integer(integer_element) =>
-            Value::Integer(integer_element.get_value()),
-        Element::Float(float_element) =>
-            Value::Float(float_element.get_value()),
-        Element::Boolean(boolean_element) =>
-            Value::Boolean(boolean_element.get_value()),
+        Element::Integer(integer_element) => Value::Integer(integer_element.get_value()),
+        Element::Float(float_element) => Value::Float(float_element.get_value()),
+        Element::Boolean(boolean_element) => Value::Boolean(boolean_element.get_value()),
         Element::String(string_element) => {
             let string = string_element.get_value();
 
@@ -507,24 +430,27 @@ pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<V
 
             interpreter.intern_keyword_value(keyword_name)
         }
-        Element::SExpression(sexp_element) =>
-            read_s_expression(interpreter, sexp_element)?,
-        Element::Object(object_element) =>
-            read_object(interpreter, object_element)?,
-        Element::ObjectPattern(object_pattern_element) =>
-            read_object_pattern(interpreter, object_pattern_element)?,
-        Element::DelimitedSymbols(delimited_symbols_element) =>
-            read_delimited_symbols_element(interpreter, delimited_symbols_element),
-        Element::Prefix(prefix_element) =>
-            read_prefix_element(interpreter, prefix_element)?,
-        Element::ShortLambda(short_lambda_element) =>
+        Element::SExpression(sexp_element) => read_s_expression(interpreter, sexp_element)?,
+        Element::Object(object_element) => read_object(interpreter, object_element)?,
+        Element::ObjectPattern(object_pattern_element) => {
+            read_object_pattern(interpreter, object_pattern_element)?
+        }
+        Element::DelimitedSymbols(delimited_symbols_element) => {
+            read_delimited_symbols_element(interpreter, delimited_symbols_element)
+        }
+        Element::Prefix(prefix_element) => read_prefix_element(interpreter, prefix_element)?,
+        Element::ShortLambda(short_lambda_element) => {
             read_short_lambda(interpreter, short_lambda_element)?
+        }
     };
 
     Ok(value)
 }
 
-pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> Result<Vec<Value>, Error> {
+pub fn read_elements(
+    interpreter: &mut Interpreter,
+    elements: Vec<Element>,
+) -> Result<Vec<Value>, Error> {
     let mut result = Vec::new();
 
     for element in elements {
@@ -539,17 +465,20 @@ pub fn read_elements(interpreter: &mut Interpreter, elements: Vec<Element>) -> R
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     use crate::parser::parse;
-    use crate::interpreter::library::assertion;
+    #[allow(unused_imports)]
+    use crate::utils::assertion;
 
     macro_rules! assert_reading_result_equal {
         ($expected:expr, $code:expr) => {
             let mut interpreter = Interpreter::new();
             let expected = $expected;
 
-            if let Ok((_, program)) = parse($code) {
+            if let Ok(program) = parse($code) {
                 let result = read_elements(&mut interpreter, program.get_elements()).unwrap();
 
                 let len = expected.len();
@@ -563,62 +492,28 @@ mod tests {
                     assertion::assert_deep_equal(&mut interpreter, expected, result);
                 }
             }
-        }
+        };
     }
-
 
     #[test]
     fn reads_integer_elements_correctly() {
-        assert_reading_result_equal!(
-            vec!(
-                Value::Integer(1)
-            ),
-            "1"
-        );
+        assert_reading_result_equal!(vec!(Value::Integer(1)), "1");
 
-        assert_reading_result_equal!(
-            vec!(
-                Value::Integer(1),
-                Value::Integer(2)
-            ),
-            "1 2"
-        );
+        assert_reading_result_equal!(vec!(Value::Integer(1), Value::Integer(2)), "1 2");
     }
 
     #[test]
     fn reads_float_elements_correctly() {
-        assert_reading_result_equal!(
-            vec!(
-                Value::Float(1.2)
-            ),
-            "1.2"
-        );
+        assert_reading_result_equal!(vec!(Value::Float(1.2)), "1.2");
 
-        assert_reading_result_equal!(
-            vec!(
-                Value::Float(1.2),
-                Value::Float(3.4)
-            ),
-            "1.2 3.4"
-        );
+        assert_reading_result_equal!(vec!(Value::Float(1.2), Value::Float(3.4)), "1.2 3.4");
     }
 
     #[test]
     fn reads_boolean_elements_correctly() {
-        assert_reading_result_equal!(
-            vec!(
-                Value::Boolean(true)
-            ),
-            "#t"
-        );
+        assert_reading_result_equal!(vec!(Value::Boolean(true)), "#t");
 
-        assert_reading_result_equal!(
-            vec!(
-                Value::Boolean(true),
-                Value::Boolean(false)
-            ),
-            "#t #f"
-        );
+        assert_reading_result_equal!(vec!(Value::Boolean(true), Value::Boolean(false)), "#t #f");
     }
 
     #[test]
@@ -626,9 +521,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_reading_result_equal!(
-            vec!(
-                interpreter.intern_string_value("cute string")
-            ),
+            vec!(interpreter.intern_string_value("cute string")),
             r#""cute string""#
         );
 
@@ -647,9 +540,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_reading_result_equal!(
-            vec!(
-                interpreter.intern_symbol_value("cutesymbol")
-            ),
+            vec!(interpreter.intern_symbol_value("cutesymbol")),
             r#"cutesymbol"#
         );
 
@@ -669,9 +560,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         assert_reading_result_equal!(
-            vec!(
-                interpreter.intern_keyword_value("cutekeyword")
-            ),
+            vec!(interpreter.intern_keyword_value("cutekeyword")),
             r#":cutekeyword"#
         );
 
@@ -695,23 +584,14 @@ mod tests {
 
         let symbol = interpreter.intern_symbol_value("a");
         let nil = interpreter.intern_nil_symbol_value();
-        let expected = interpreter.make_cons_value(
-            symbol,
-            nil,
-        );
+        let expected = interpreter.make_cons_value(symbol, nil);
         assert_reading_deeply(&mut interpreter, expected, "(a)");
 
         let symbol = interpreter.intern_symbol_value("b");
         let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            symbol,
-            nil,
-        );
+        let cdr = interpreter.make_cons_value(symbol, nil);
         let symbol = interpreter.intern_symbol_value("a");
-        let expected = interpreter.make_cons_value(
-            symbol,
-            cdr,
-        );
+        let expected = interpreter.make_cons_value(symbol, cdr);
         assert_reading_deeply(&mut interpreter, expected, "(a b)");
     }
 
@@ -829,15 +709,14 @@ mod tests {
         code: &str,
         expected: Vec<(&str, Value)>,
     ) {
-        if let Ok((_, code)) = parse(code) {
+        if let Ok(code) = parse(code) {
             let result = read_elements(interpreter, code.get_elements())
                 .unwrap()
                 .remove(0);
 
-            let result = interpreter.evaluate_value(
-                interpreter.get_root_environment(),
-                result,
-            ).unwrap();
+            let result = interpreter
+                .execute_value(interpreter.get_main_environment_id(), result)
+                .unwrap();
 
             match result {
                 Value::Object(object_id) => {
@@ -845,19 +724,15 @@ mod tests {
                         let symbol = interpreter.intern(name);
 
                         let expected = value;
-                        let result = interpreter.get_object_property(
-                            object_id,
-                            symbol,
-                        ).unwrap().unwrap();
+                        let result = interpreter
+                            .get_object_property(object_id, symbol)
+                            .unwrap()
+                            .unwrap();
 
-                        assertion::assert_deep_equal(
-                            interpreter,
-                            expected,
-                            result,
-                        );
+                        assertion::assert_deep_equal(interpreter, expected, result);
                     }
                 }
-                _ => unreachable!()
+                _ => unreachable!(),
             }
         } else {
             panic!();
@@ -872,25 +747,12 @@ mod tests {
         fn reads_elements_correctly() {
             let mut interpreter = Interpreter::new();
 
-            assert_object_has_items(
-                &mut interpreter,
-                "{}",
-                vec!(),
-            );
-            assert_object_has_items(
-                &mut interpreter,
-                "{:a 1}",
-                vec!(
-                    ("a", Value::Integer(1)),
-                ),
-            );
+            assert_object_has_items(&mut interpreter, "{}", vec![]);
+            assert_object_has_items(&mut interpreter, "{:a 1}", vec![("a", Value::Integer(1))]);
             assert_object_has_items(
                 &mut interpreter,
                 "{:a 1 :b 2}",
-                vec!(
-                    ("a", Value::Integer(1)),
-                    ("b", Value::Integer(2))
-                ),
+                vec![("a", Value::Integer(1)), ("b", Value::Integer(2))],
             );
         }
 
@@ -899,22 +761,22 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             // todo: uncomment two lines below, and find out why it doesn't work
-//            let keyword_value = interpreter.intern_keyword_value("keyword");
+            //            let keyword_value = interpreter.intern_keyword_value("keyword");
             let symbol_value = interpreter.intern_symbol_value("symbol");
             let string_value = interpreter.intern_string_value("string");
 
             assert_object_has_items(
                 &mut interpreter,
                 "{:a 1 :b 1.1 :c #t :d #f :e :keyword :f 'symbol :g \"string\"}",
-                vec!(
+                vec![
                     ("a", Value::Integer(1)),
                     ("b", Value::Float(1.1)),
                     ("c", Value::Boolean(true)),
                     ("d", Value::Boolean(false)),
-//                    ("e", keyword_value),
+                    //                    ("e", keyword_value),
                     ("f", symbol_value),
                     ("g", string_value),
-                ),
+                ],
             );
         }
     }
@@ -930,37 +792,19 @@ mod tests {
             let a = interpreter.intern_symbol_value("a");
             let b = interpreter.intern_symbol_value("b");
 
-            assert_object_has_items(
-                &mut interpreter,
-                "#{}",
-                vec!(),
-            );
+            assert_object_has_items(&mut interpreter, "#{}", vec![]);
 
-            assert_object_has_items(
-                &mut interpreter,
-                "#{:a}",
-                vec!(
-                    ("a", a)
-                ),
-            );
+            assert_object_has_items(&mut interpreter, "#{:a}", vec![("a", a)]);
 
-            assert_object_has_items(
-                &mut interpreter,
-                "#{:a :b}",
-                vec!(
-                    ("a", a),
-                    ("b", b)
-                ),
-            );
+            assert_object_has_items(&mut interpreter, "#{:a :b}", vec![("a", a), ("b", b)]);
         }
     }
 
     fn assert_reading_deeply(interpreter: &mut Interpreter, expected: Value, code: &str) {
-        if let Ok((_, program)) = parse(code) {
-            let result = read_elements(
-                interpreter,
-                program.get_elements(),
-            ).unwrap().remove(0);
+        if let Ok(program) = parse(code) {
+            let result = read_elements(interpreter, program.get_elements())
+                .unwrap()
+                .remove(0);
 
             assertion::assert_deep_equal(interpreter, expected, result);
         }
@@ -979,25 +823,17 @@ mod tests {
             let value1_keyword_value = interpreter.intern_keyword_value("value1");
             let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-            let expected = interpreter.vec_to_list(
-                vec!(value1_keyword_value, this_symbol_value)
-            );
+            let expected = interpreter.vec_to_list(vec![value1_keyword_value, this_symbol_value]);
 
             assert_reading_deeply(&mut interpreter, expected, "this:value1");
 
-            let expected = interpreter.vec_to_list(
-                vec!(value2_keyword_value, expected)
-            );
+            let expected = interpreter.vec_to_list(vec![value2_keyword_value, expected]);
 
             assert_reading_deeply(&mut interpreter, expected, "this:value1:value2");
 
-            let expected = interpreter.make_cons_value(
-                expected,
-                nil_symbol_value,
-            );
+            let expected = interpreter.make_cons_value(expected, nil_symbol_value);
             assert_reading_deeply(&mut interpreter, expected, "(this:value1:value2)");
         }
-
 
         #[test]
         fn reads_delimited_symbols_element_with_super_correctly() {
@@ -1008,22 +844,15 @@ mod tests {
             let value1_keyword_value = interpreter.intern_keyword_value("value1");
             let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-            let expected = interpreter.vec_to_list(
-                vec!(value1_keyword_value, super_symbol_value)
-            );
+            let expected = interpreter.vec_to_list(vec![value1_keyword_value, super_symbol_value]);
 
             assert_reading_deeply(&mut interpreter, expected, "super:value1");
 
-            let expected = interpreter.vec_to_list(
-                vec!(value2_keyword_value, expected)
-            );
+            let expected = interpreter.vec_to_list(vec![value2_keyword_value, expected]);
 
             assert_reading_deeply(&mut interpreter, expected, "super:value1:value2");
 
-            let expected = interpreter.make_cons_value(
-                expected,
-                nil_symbol_value,
-            );
+            let expected = interpreter.make_cons_value(expected, nil_symbol_value);
             assert_reading_deeply(&mut interpreter, expected, "(super:value1:value2)");
         }
 
@@ -1038,45 +867,38 @@ mod tests {
             let value1_keyword_value = interpreter.intern_keyword_value("value1");
             let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-            let this_invocation = interpreter.vec_to_list(
-                vec!(value1_keyword_value, this_symbol_value)
-            );
+            let this_invocation =
+                interpreter.vec_to_list(vec![value1_keyword_value, this_symbol_value]);
 
-            let expected = interpreter.vec_to_list(
-                vec!(with_this_symbol_value, object_symbol_value, this_invocation)
-            );
+            let expected = interpreter.vec_to_list(vec![
+                with_this_symbol_value,
+                object_symbol_value,
+                this_invocation,
+            ]);
 
             assert_reading_deeply(&mut interpreter, expected, "object:value1");
 
-            let this_invocation = interpreter.vec_to_list(
-                vec!(value2_keyword_value, this_symbol_value)
-            );
+            let this_invocation =
+                interpreter.vec_to_list(vec![value2_keyword_value, this_symbol_value]);
 
-            let this_object_value = interpreter.vec_to_list(
-                vec!(value1_keyword_value, object_symbol_value)
-            );
+            let this_object_value =
+                interpreter.vec_to_list(vec![value1_keyword_value, object_symbol_value]);
 
-            let expected = interpreter.vec_to_list(
-                vec!(with_this_symbol_value, this_object_value, this_invocation)
-            );
+            let expected = interpreter.vec_to_list(vec![
+                with_this_symbol_value,
+                this_object_value,
+                this_invocation,
+            ]);
 
             assert_reading_deeply(&mut interpreter, expected, "object:value1:value2");
 
-            let item3 = interpreter.vec_to_list(
-                vec!(value2_keyword_value, this_symbol_value)
-            );
+            let item3 = interpreter.vec_to_list(vec![value2_keyword_value, this_symbol_value]);
 
-            let item3 = interpreter.vec_to_list(
-                vec!(item3)
-            );
+            let item3 = interpreter.vec_to_list(vec![item3]);
 
-            let item2 = interpreter.vec_to_list(
-                vec!(value1_keyword_value, object_symbol_value)
-            );
+            let item2 = interpreter.vec_to_list(vec![value1_keyword_value, object_symbol_value]);
 
-            let expected = interpreter.vec_to_list(
-                vec!(with_this_symbol_value, item2, item3)
-            );
+            let expected = interpreter.vec_to_list(vec![with_this_symbol_value, item2, item3]);
 
             assert_reading_deeply(&mut interpreter, expected, "(object:value1:value2)");
         }
@@ -1084,30 +906,21 @@ mod tests {
 
     macro_rules! assert_prefix_result_equal {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
-            if let Ok((_, program)) = parse($code) {
+            if let Ok(program) = parse($code) {
                 let mut interpreter = Interpreter::new();
                 let expected = read_elements(&mut interpreter, program.get_elements()).unwrap()[0];
 
                 let nil = interpreter.intern_nil_symbol_value();
-                let expected = interpreter.make_cons_value(
-                    expected,
-                    nil
-                );
+                let expected = interpreter.make_cons_value(expected, nil);
 
                 let symbol = interpreter.intern_symbol_value($prefix_after);
-                let expected = interpreter.make_cons_value(
-                    symbol,
-                    expected
-                );
+                let expected = interpreter.make_cons_value(symbol, expected);
 
                 let prefixed_code = concat!($prefix, $code);
 
-                assert_reading_result_equal!(
-                    vec!(expected),
-                    prefixed_code
-                );
+                assert_reading_result_equal!(vec!(expected), prefixed_code);
             }
-        }
+        };
     }
 
     macro_rules! assert_prefix_values_works {
@@ -1122,7 +935,7 @@ mod tests {
             assert_prefix_result_equal!($prefix, $prefix_after, "()");
             assert_prefix_result_equal!($prefix, $prefix_after, "(a)");
             assert_prefix_result_equal!($prefix, $prefix_after, "(a b)");
-        }
+        };
     }
 
     #[test]
@@ -1137,7 +950,7 @@ mod tests {
     fn reads_sharp_quoted_values_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             ("'#'1", "'(flookup (quote 1))"),
             ("'#'1.1", "'(flookup (quote 1.1))"),
             ("'#'#t", "'(flookup (quote #t))"),
@@ -1148,13 +961,10 @@ mod tests {
             ("'#''(list)", "'(flookup (quote '(list)))"),
             ("'#'{}", "'(flookup (quote {}))"),
             ("'#'#()", "'(flookup (quote #()))"),
-            ("#'flookup", "(flookup (quote flookup))")
-        );
+            ("#'flookup", "(flookup (quote flookup))"),
+        ];
 
-        assertion::assert_results_are_equal(
-            &mut interpreter,
-            pairs,
-        )
+        assertion::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -1162,47 +972,23 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            Value::Integer(4),
-            nil,
-        );
+        let cdr = interpreter.make_cons_value(Value::Integer(4), nil);
 
-        let car = interpreter.make_cons_value(
-            Value::Integer(3),
-            cdr,
-        );
+        let car = interpreter.make_cons_value(Value::Integer(3), cdr);
 
         let nil = interpreter.intern_nil_symbol_value();
-        let cdr = interpreter.make_cons_value(
-            Value::Boolean(false),
-            nil,
-        );
+        let cdr = interpreter.make_cons_value(Value::Boolean(false), nil);
 
-        let cdr = interpreter.make_cons_value(
-            car,
-            cdr,
-        );
+        let cdr = interpreter.make_cons_value(car, cdr);
 
-        let cdr = interpreter.make_cons_value(
-            Value::Boolean(true),
-            cdr,
-        );
+        let cdr = interpreter.make_cons_value(Value::Boolean(true), cdr);
 
-        let cdr = interpreter.make_cons_value(
-            Value::Float(2.3),
-            cdr,
-        );
+        let cdr = interpreter.make_cons_value(Value::Float(2.3), cdr);
 
-        let cdr = interpreter.make_cons_value(
-            Value::Integer(1),
-            cdr,
-        );
+        let cdr = interpreter.make_cons_value(Value::Integer(1), cdr);
 
         let symbol = interpreter.intern_symbol_value("a");
-        let expected = interpreter.make_cons_value(
-            symbol,
-            cdr,
-        );
+        let expected = interpreter.make_cons_value(symbol, cdr);
 
         assert_reading_deeply(&mut interpreter, expected, "(a 1 2.3 #t (3 4) #f)");
     }

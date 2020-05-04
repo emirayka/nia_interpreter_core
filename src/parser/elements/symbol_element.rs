@@ -1,12 +1,6 @@
-use nom::{
-    named,
-    alt,
-    tag,
-    map_res,
-    many1
-};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
+use nom::{alt, many1, map_res, named, tag};
 
 use crate::parser::lib::parse_symbol_character;
 use crate::parser::ParseError;
@@ -18,9 +12,7 @@ pub struct SymbolElement {
 
 impl SymbolElement {
     pub fn new(value: String) -> SymbolElement {
-        SymbolElement {
-             value
-        }
+        SymbolElement { value }
     }
 
     pub fn get_value(&self) -> &String {
@@ -73,17 +65,35 @@ named!(pub parse(&str) -> SymbolElement, map_res!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
     #[test]
     fn works_on_simple_value() {
-        nia_assert_equal(Ok(("", SymbolElement {value: "test".to_string()})), parse("test"));
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: "test".to_string(),
+                },
+            )),
+            parse("test"),
+        );
     }
 
     #[test]
     fn able_to_parse_all_fine_symbols() {
         let example = "test1-_^v=+?<>./&*%$@!~";
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from(example)})), parse(example));
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from(example),
+                },
+            )),
+            parse(example),
+        );
     }
 
     #[test]
@@ -91,20 +101,68 @@ mod tests {
         let text = r##"test\"\,\`\ \(\)\:\\\{\}"##;
         let expected = r##"test",` ():\{}"##;
 
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from(expected)})), parse(text));
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from(expected),
+                },
+            )),
+            parse(text),
+        );
     }
 
     #[test]
     fn allows_numbers_not_at_the_first_position() {
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from("test1")})), parse("test1"));
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from("1test")})), parse("1test"));
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from("test1"),
+                },
+            )),
+            parse("test1"),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from("1test"),
+                },
+            )),
+            parse("1test"),
+        );
     }
 
     #[test]
     fn parses_special_symbols() {
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#opt")})), parse("#opt"));
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#rest")})), parse("#rest"));
-        nia_assert_equal(Ok(("", SymbolElement {value: String::from("#keys")})), parse("#keys"));
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from("#opt"),
+                },
+            )),
+            parse("#opt"),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from("#rest"),
+                },
+            )),
+            parse("#rest"),
+        );
+        nia_assert_equal(
+            Ok((
+                "",
+                SymbolElement {
+                    value: String::from("#keys"),
+                },
+            )),
+            parse("#keys"),
+        );
     }
 
     #[test]
