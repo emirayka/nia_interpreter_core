@@ -406,7 +406,7 @@ mod eval_import {
         let bindings = read_module_variable_import_variable_vector(interpreter, object_id)?;
 
         let mut result = Vec::new();
-        let module = interpreter.get_module_required_soft(module_id)?;
+        let module = interpreter.get_module(module_id)?;
 
         for (module_variable_symbol_id, import_variable_symbol_id) in bindings {
             let module_variable_value = module
@@ -447,7 +447,7 @@ mod eval_import {
         interpreter: &mut Interpreter,
         module_id: ModuleId,
     ) -> Result<Vec<(SymbolId, Value)>, Error> {
-        let module = interpreter.get_module_required_soft(module_id)?;
+        let module = interpreter.get_module(module_id)?;
 
         let mut result = Vec::new();
 
@@ -471,7 +471,7 @@ mod eval_import {
             }
             ImportType::ImportDefault(variable_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
-                let module = interpreter.get_module_required_soft(module_id)?;
+                let module = interpreter.get_module(module_id)?;
 
                 let default_export = match module.get_default_export() {
                     Some(default_export) => default_export,

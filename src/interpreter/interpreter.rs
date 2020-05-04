@@ -805,34 +805,12 @@ impl Interpreter {
             .unwrap()
     }
 
-    pub fn get_module(&self, module_id: ModuleId) -> Option<&Module> {
+    pub fn get_module(&self, module_id: ModuleId) -> Result<&Module, Error> {
         self.module_arena.get_module(module_id)
     }
 
-    pub fn get_module_mut(&mut self, module_id: ModuleId) -> Option<&mut Module> {
+    pub fn get_module_mut(&mut self, module_id: ModuleId) -> Result<&mut Module, Error> {
         self.module_arena.get_module_mut(module_id)
-    }
-
-    pub fn get_module_required_soft(&self, module_id: ModuleId) -> Result<&Module, Error> {
-        self.module_arena.get_module_required_soft(module_id)
-    }
-
-    pub fn get_module_mut_required_soft(
-        &mut self,
-        module_id: ModuleId,
-    ) -> Result<&mut Module, Error> {
-        self.module_arena.get_module_mut_required_soft(module_id)
-    }
-
-    pub fn get_module_required_hard(&self, module_id: ModuleId) -> Result<&Module, Error> {
-        self.module_arena.get_module_required_hard(module_id)
-    }
-
-    pub fn get_module_mut_required_hard(
-        &mut self,
-        module_id: ModuleId,
-    ) -> Result<&mut Module, Error> {
-        self.module_arena.get_module_mut_required_hard(module_id)
     }
 
     fn load_module(&mut self, module_path: &str) -> Result<ModuleId, Error> {
@@ -895,7 +873,7 @@ impl Interpreter {
     }
 
     pub fn resolve_with_current_module_path(&self, path: String) -> Result<String, Error> {
-        let current_module_path = self.get_module_required_hard(self.current_module)?
+        let current_module_path = self.get_module(self.current_module)?
             .get_path()
             .clone();
 

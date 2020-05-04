@@ -678,7 +678,7 @@ mod eval_export {
         module_path: &str,
     ) -> Result<EnvironmentId, Error> {
         let import_module_id = interpreter.intern_module(module_path)?;
-        let import_module = interpreter.get_module_required_soft(import_module_id)?;
+        let import_module = interpreter.get_module(import_module_id)?;
         let import_module_environment = import_module.get_environment();
 
         Ok(import_module_environment)
@@ -689,7 +689,7 @@ mod eval_export {
         module_path: &str,
     ) -> Result<Vec<(SymbolId, Value)>, Error> {
         let module_id = interpreter.intern_module(module_path)?;
-        let module = interpreter.get_module_required_soft(module_id)?;
+        let module = interpreter.get_module(module_id)?;
 
         let exports = module
             .get_exports()
@@ -722,7 +722,7 @@ mod eval_export {
         let mut result = Vec::new();
 
         let module_id = interpreter.intern_module(module_path)?;
-        let module = interpreter.get_module_required_soft(module_id)?;
+        let module = interpreter.get_module(module_id)?;
 
         for (module_name_symbol_id, export_name_value) in object_properties {
             let export_name_symbol_id = library::read_as_symbol_id(export_name_value)?;
@@ -800,7 +800,7 @@ mod eval_export {
             }
             ExportType::Reexport(export_name_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
-                let module = interpreter.get_module_required_soft(module_id)?;
+                let module = interpreter.get_module(module_id)?;
 
                 let module_name_value = module
                     .get_export(export_name_symbol_id)
@@ -810,7 +810,7 @@ mod eval_export {
             }
             ExportType::ReexportDefault(module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
-                let module = interpreter.get_module_required_soft(module_id)?;
+                let module = interpreter.get_module(module_id)?;
 
                 let module_name_value = module.get_default_export().ok_or_else(|| {
                     Error::generic_execution_error("Module has no default export.")
@@ -824,7 +824,7 @@ mod eval_export {
                 module_path,
             ) => {
                 let module_id = interpreter.intern_module(&module_path)?;
-                let module = interpreter.get_module_required_soft(module_id)?;
+                let module = interpreter.get_module(module_id)?;
 
                 let module_name_value =
                     module.get_export(module_name_symbol_id).ok_or_else(|| {
@@ -835,7 +835,7 @@ mod eval_export {
             }
             ExportType::ReexportAsDefault(module_name_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
-                let module = interpreter.get_module_required_soft(module_id)?;
+                let module = interpreter.get_module(module_id)?;
 
                 let module_name_value =
                     module.get_export(module_name_symbol_id).ok_or_else(|| {

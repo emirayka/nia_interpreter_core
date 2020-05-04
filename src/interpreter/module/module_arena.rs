@@ -52,36 +52,13 @@ impl ModuleArena {
             .ok_or_else(|| Error::failure(format!("Cannot find module with path: {}", path)))
     }
 
-    pub fn get_module(&self, module_id: ModuleId) -> Option<&Module> {
-        self.modules.get(&module_id)
-    }
-
-    pub fn get_module_mut(&mut self, module_id: ModuleId) -> Option<&mut Module> {
-        self.modules.get_mut(&module_id)
-    }
-
-    pub fn get_module_required_soft(&self, module_id: ModuleId) -> Result<&Module, Error> {
+    pub fn get_module(&self, module_id: ModuleId) -> Result<&Module, Error> {
         self.modules.get(&module_id).ok_or_else(|| {
             Error::generic_execution_error(&format!("Cannot find module with id: {}", module_id))
         })
     }
 
-    pub fn get_module_mut_required_soft(
-        &mut self,
-        module_id: ModuleId,
-    ) -> Result<&mut Module, Error> {
-        self.modules.get_mut(&module_id).ok_or_else(|| {
-            Error::generic_execution_error(&format!("Cannot find module with id: {}", module_id))
-        })
-    }
-
-    pub fn get_module_required_hard(&self, module_id: ModuleId) -> Result<&Module, Error> {
-        self.modules.get(&module_id).ok_or_else(|| {
-            Error::generic_execution_error(&format!("Cannot find module with id: {}", module_id))
-        })
-    }
-
-    pub fn get_module_mut_required_hard(
+    pub fn get_module_mut(
         &mut self,
         module_id: ModuleId,
     ) -> Result<&mut Module, Error> {
