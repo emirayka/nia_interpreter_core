@@ -56,6 +56,10 @@ impl CallStack {
     pub fn pop(&mut self) -> Option<CallStackItem> {
         self.items.pop()
     }
+
+    pub fn clear(&mut self) {
+        self.items.clear()
+    }
 }
 
 #[cfg(test)]
@@ -246,6 +250,27 @@ mod tests {
                 call_stack.pop(),
             );
             nia_assert_equal(None, call_stack.pop());
+        }
+    }
+
+    #[cfg(test)]
+    mod clear {
+        use super::*;
+
+        #[test]
+        fn clears_call_stack() {
+            let mut call_stack = CallStack::new();
+
+            call_stack
+                .push_anonymous_function_invocation(FunctionId::new(1), vec![]);
+            call_stack
+                .push_anonymous_function_invocation(FunctionId::new(2), vec![]);
+            call_stack
+                .push_anonymous_function_invocation(FunctionId::new(3), vec![]);
+            nia_assert_equal(3, call_stack.len());
+
+            call_stack.clear();
+            nia_assert_equal(0, call_stack.len());
         }
     }
 }

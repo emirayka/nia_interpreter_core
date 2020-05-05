@@ -169,9 +169,6 @@ mod tests {
                 read_prefixed_element(&mut interpreter, prefix_element)
                     .unwrap();
 
-            interpreter.print_value(expected_value);
-            interpreter.print_value(result_value);
-
             crate::utils::assertion::assert_deep_equal(
                 &mut interpreter,
                 expected_value,

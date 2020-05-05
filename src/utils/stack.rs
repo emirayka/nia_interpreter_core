@@ -27,6 +27,10 @@ impl<T> Stack<T> {
     pub fn pop(&mut self) -> Option<T> {
         self.items.pop()
     }
+
+    pub fn clear(&mut self) {
+        self.items.clear();
+    }
 }
 
 #[cfg(test)]
@@ -157,6 +161,24 @@ mod tests {
             nia_assert_equal(Some(1), stack.pop());
             nia_assert_equal(Some(0), stack.pop());
             nia_assert_equal(None, stack.pop());
+        }
+    }
+
+    #[cfg(test)]
+    mod clear {
+        use super::*;
+
+        #[test]
+        fn clears_call_stack() {
+            let mut call_stack = Stack::new();
+
+            call_stack.push(1);
+            call_stack.push(2);
+            call_stack.push(3);
+            nia_assert_equal(3, call_stack.len());
+
+            call_stack.clear();
+            nia_assert_equal(0, call_stack.len());
         }
     }
 }

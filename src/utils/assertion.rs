@@ -98,10 +98,9 @@ make_assertion_function!(
 );
 
 make_assertion_function!(assert_overflow_error, ErrorKind::Overflow);
-
 make_assertion_function!(assert_zero_division_error, ErrorKind::ZeroDivision);
-
 make_assertion_function!(assert_assertion_error, ErrorKind::Assertion);
+make_assertion_function!(assert_stack_overflow_error, ErrorKind::StackOverflow);
 
 pub fn assert_is_function(param: Value) {
     nia_assert(match param {
@@ -137,8 +136,8 @@ pub fn assert_results_are_equal(
         let result = interpreter.execute_in_main_environment(code).unwrap();
 
         println!("{}", code_expected);
-        interpreter.print_value(expected);
-        interpreter.print_value(result);
+        crate::library::print_value(interpreter, expected);
+        crate::library::print_value(interpreter, result);
 
         assert_deep_equal(interpreter, expected, result);
     }
@@ -152,9 +151,9 @@ pub fn assert_results_are_correct(
         let result = interpreter.execute_in_main_environment(code).unwrap();
 
         println!("{}", code);
-        interpreter.print_value(expected);
+        crate::library::print_value(interpreter, expected);
         println!();
-        interpreter.print_value(result);
+        crate::library::print_value(interpreter, result);
         println!();
 
         assert_deep_equal(interpreter, expected, result);

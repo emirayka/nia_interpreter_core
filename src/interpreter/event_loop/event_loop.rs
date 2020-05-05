@@ -303,7 +303,7 @@ fn send_events(
                 },
                 v => {
                     println!("Cannot parse event: expected duration, got:");
-                    interpreter.print_value(v);
+                    crate::library::print_value(interpreter, v);
                     continue;
                 },
             };
@@ -442,7 +442,10 @@ impl EventLoop {
                             Ok(action) => match action {
                                 Action::Empty => {},
                                 Action::Execute(value) => {
-                                    match interpreter.execute_function(value) {
+                                    match interpreter
+                                        .execute_function_without_arguments(
+                                            value,
+                                        ) {
                                         Ok(_) => {},
                                         Err(error) => {
                                             println!("Error happened:");

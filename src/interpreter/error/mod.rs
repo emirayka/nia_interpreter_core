@@ -19,6 +19,7 @@ pub const SYMBOL_NAME_INVALID_ARGUMENT_ERROR: &'static str =
 pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR: &'static str =
     "invalid-argument-count-error";
 
+pub const SYMBOL_NAME_STACK_OVERFLOW_ERROR: &'static str = "stack-overflow";
 pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion-error";
 pub const SYMBOL_NAME_BREAK_ERROR: &'static str = "break-error";
 pub const SYMBOL_NAME_CONTINUE_ERROR: &'static str = "continue-error";
@@ -39,6 +40,7 @@ pub enum ErrorKind {
     InvalidArgument,
     InvalidArgumentCount,
 
+    StackOverflow,
     Assertion,
     Break,
     Continue,
@@ -226,6 +228,15 @@ impl Error {
             ErrorKind::InvalidArgumentCount,
             message,
             String::from(SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR),
+        )
+    }
+
+    pub fn stack_overflow_error() -> Error {
+        Error::from(
+            None,
+            ErrorKind::StackOverflow,
+            "",
+            String::from(SYMBOL_NAME_STACK_OVERFLOW_ERROR),
         )
     }
 

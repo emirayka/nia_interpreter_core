@@ -22,13 +22,13 @@ fn evaluate_s_expression_keyword_get(
     let value = match evaluated_argument {
         Value::Object(object_id) => {
             interpreter.get_object_property(object_id, property_symbol_id)?
-        }
+        },
         _ => {
             return Error::generic_execution_error(
                 "Cannot get an item of not an object.",
             )
             .into();
-        }
+        },
     };
 
     match value {
@@ -62,7 +62,7 @@ fn evaluate_s_expression_keyword_set(
                 "Cannot get an item of not an object.",
             )
             .into();
-        }
+        },
     };
 
     Ok(property_new_value)
@@ -99,6 +99,6 @@ pub fn evaluate_s_expression_keyword(
                 "Invalid argument count in keyword s-expression.",
             )
             .into();
-        }
+        },
     }
 }

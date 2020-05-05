@@ -1,45 +1,53 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
+use std::path::Path;
+use std::path::PathBuf;
 
-use crate::interpreter::context::Context;
-use crate::interpreter::environment::EnvironmentArena;
-use crate::interpreter::environment::EnvironmentId;
-use crate::interpreter::error::Error;
-use crate::interpreter::library;
-use crate::interpreter::module::ModuleArena;
-use crate::interpreter::module::ModuleId;
-use crate::interpreter::special_variables::SpecialVariableFunction;
-use crate::interpreter::value::BuiltinFunction;
-use crate::interpreter::value::Function;
-use crate::interpreter::value::FunctionArguments;
-use crate::interpreter::value::InterpretedFunction;
-use crate::interpreter::value::Keyword;
-use crate::interpreter::value::MacroFunction;
-use crate::interpreter::value::NiaString;
-use crate::interpreter::value::Object;
-use crate::interpreter::value::ObjectArena;
-use crate::interpreter::value::ObjectId;
-use crate::interpreter::value::ObjectValueWrapper;
-use crate::interpreter::value::SpecialFormFunction;
-use crate::interpreter::value::Value;
-use crate::interpreter::value::{ConsArena, ConsId};
-use crate::interpreter::value::{FunctionArena, FunctionId};
-use crate::interpreter::value::{KeywordArena, KeywordId};
-use crate::interpreter::value::{StringArena, StringId};
-use crate::interpreter::value::{Symbol, SymbolArena, SymbolId};
+use crate::BuiltinFunction;
+use crate::CallStack;
+use crate::ConsArena;
+use crate::ConsId;
+use crate::Context;
+use crate::EnvironmentArena;
+use crate::EnvironmentId;
+use crate::Error;
+use crate::Function;
+use crate::FunctionArena;
+use crate::FunctionArguments;
+use crate::FunctionId;
+use crate::InterpretedFunction;
+use crate::Keyword;
+use crate::KeywordArena;
+use crate::KeywordId;
+use crate::MacroFunction;
+use crate::Module;
+use crate::ModuleArena;
+use crate::ModuleId;
+use crate::NiaString;
+use crate::Object;
+use crate::ObjectArena;
+use crate::ObjectId;
+use crate::ObjectValueWrapper;
+use crate::SpecialFormFunction;
+use crate::SpecialVariableFunction;
+use crate::StringArena;
+use crate::StringId;
+use crate::Symbol;
+use crate::SymbolArena;
+use crate::SymbolId;
+use crate::Value;
 
-use crate::interpreter::evaluator::evaluate_builtin_function_invocation;
-use crate::interpreter::evaluator::evaluate_interpreted_function_invocation;
-use crate::interpreter::evaluator::evaluate_value;
-use crate::interpreter::evaluator::evaluate_values;
-use crate::interpreter::garbage_collector::{
-    collect_garbage, GarbageCollectable,
-};
+use crate::interpreter::garbage_collector::collect_garbage;
 use crate::interpreter::reader::read_elements;
-use crate::interpreter::stdlib::infect_stdlib;
 use crate::parser::parse;
-use crate::{CallStack, Module};
-use std::path::{Path, PathBuf};
+
+use crate::evaluate_builtin_function_invocation;
+use crate::evaluate_interpreted_function_invocation;
+use crate::evaluate_value;
+use crate::evaluate_values;
+use crate::interpreter::stdlib::infect_stdlib;
+
+use crate::library;
 
 #[derive(Clone)]
 pub struct Interpreter {
@@ -246,31 +254,6 @@ impl Interpreter {
 
     pub fn stop_listening(&mut self) {
         self.is_listening = false;
-    }
-}
-
-impl Interpreter {
-    pub fn print_value(&mut self, value: Value) {
-        let string = match value {
-            Value::String(string_id) => {
-                let vstring = match self.get_string(string_id) {
-                    Ok(string) => string,
-                    _ => panic!("Cannot print value"),
-                };
-
-                let mut result = String::from("\"");
-                result.push_str(vstring.get_string());
-                result.push_str("\"");
-
-                result
-            },
-            _ => match library::value_to_string(self, value) {
-                Ok(string) => string,
-                Err(_) => panic!("Cannot print value"),
-            },
-        };
-
-        println!("{}", string)
     }
 }
 
@@ -1098,6 +1081,42 @@ impl Interpreter {
 }
 
 impl Interpreter {
+    pub fn push_named_call(
+        &mut self,
+        function_id: FunctionId,
+        function_name_symbol_id: SymbolId,
+        arguments: Vec<Value>,
+    ) {
+        self.call_stack.push_named_function_invocation(
+            function_id,
+            function_name_symbol_id,
+            arguments,
+        )
+    }
+
+    pub fn push_anonymous_call(
+        &mut self,
+        function_id: FunctionId,
+        arguments: Vec<Value>,
+    ) {
+        self.call_stack
+            .push_anonymous_function_invocation(function_id, arguments)
+    }
+
+    pub fn pop_call(&mut self) {
+        self.call_stack.pop();
+    }
+
+    pub fn clear_call_stack(&mut self) {
+        self.call_stack.clear()
+    }
+
+    pub fn is_overflow(&self) -> bool {
+        self.call_stack.len() > 100
+    }
+}
+
+impl Interpreter {
     fn execute_code(
         &mut self,
         execution_environment_id: EnvironmentId,
@@ -1129,9 +1148,7 @@ impl Interpreter {
 
         Ok(last_result)
     }
-}
 
-impl Interpreter {
     pub fn execute_value(
         &mut self,
         environment_id: EnvironmentId,
@@ -1166,7 +1183,10 @@ impl Interpreter {
         )
     }
 
-    pub fn execute_function(&mut self, value: Value) -> Result<Value, Error> {
+    pub fn execute_function_without_arguments(
+        &mut self,
+        value: Value,
+    ) -> Result<Value, Error> {
         match value {
             Value::Function(function_id) => {
                 let nil = self.intern_nil_symbol_value();
@@ -1799,5 +1819,23 @@ mod tests {
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }
+    }
+
+    #[test]
+    fn handles_stack_overflow() {
+        let mut interpreter = Interpreter::new();
+
+        nia_assert_is_ok(
+            &interpreter.execute_in_main_environment("(defn a () (a))"),
+        );
+
+        let result = interpreter.execute_in_main_environment("(a)");
+
+        assertion::assert_stack_overflow_error(&result);
+
+        // and it continues to work
+        let result = interpreter.execute_in_main_environment("(a)");
+
+        assertion::assert_stack_overflow_error(&result);
     }
 }
