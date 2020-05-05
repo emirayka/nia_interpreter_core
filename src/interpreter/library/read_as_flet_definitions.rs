@@ -58,14 +58,14 @@ pub fn read_as_flet_definitions(
             }
 
             cons_cells
-        }
+        },
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return Error::invalid_argument_error("").into();
             }
-        }
+        },
         _ => return Error::invalid_argument_error("").into(),
     };
 
@@ -126,7 +126,9 @@ mod tests {
                     {
                         let mut arguments = FunctionArguments::new();
 
-                        arguments.add_ordinary_argument(String::from("b")).unwrap();
+                        arguments
+                            .add_ordinary_argument(String::from("b"))
+                            .unwrap();
 
                         arguments
                     },
@@ -141,7 +143,11 @@ mod tests {
                         let mut arguments = FunctionArguments::new();
 
                         arguments
-                            .add_optional_argument(String::from("b"), None, None)
+                            .add_optional_argument(
+                                String::from("b"),
+                                None,
+                                None,
+                            )
                             .unwrap();
 
                         arguments
@@ -184,9 +190,11 @@ mod tests {
 
         for spec in specs {
             let expected = spec.0;
-            let value = interpreter.execute_in_main_environment(spec.1).unwrap();
+            let value =
+                interpreter.execute_in_main_environment(spec.1).unwrap();
 
-            let result = read_as_flet_definitions(&mut interpreter, value).unwrap();
+            let result =
+                read_as_flet_definitions(&mut interpreter, value).unwrap();
 
             nia_assert_equal(expected.len(), result.len());
 
@@ -195,7 +203,11 @@ mod tests {
 
                 nia_assert_equal(a.1, b.1);
 
-                assertion::assert_vectors_deep_equal(&mut interpreter, a.2, b.2);
+                assertion::assert_vectors_deep_equal(
+                    &mut interpreter,
+                    a.2,
+                    b.2,
+                );
             }
         }
     }

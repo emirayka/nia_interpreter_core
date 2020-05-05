@@ -18,10 +18,10 @@ fn read_create_flag_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<bool, Error> {
-    let create_symbol_id = interpreter.intern("create");
+    let create_symbol_id = interpreter.intern_symbol_id("create");
 
-    let result = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, create_symbol_id)?
+    let result = if let Some(value) = interpreter
+        .get_object_property(property_descriptor_object_id, create_symbol_id)?
     {
         library::read_as_bool(value)?
     } else {
@@ -47,7 +47,8 @@ pub fn update_property_mark(
 
     let object_id = library::read_as_object_id(values.remove(0))?;
 
-    let property_descriptor_object_id = library::read_as_object_id(values.remove(0))?;
+    let property_descriptor_object_id =
+        library::read_as_object_id(values.remove(0))?;
 
     let property_symbol_id =
         super::define_property_mark::read_property_symbol_id_from_property_descriptor(
@@ -55,10 +56,14 @@ pub fn update_property_mark(
             property_descriptor_object_id,
         )?;
 
-    let create_flag =
-        read_create_flag_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let create_flag = read_create_flag_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
-    if !create_flag && !interpreter.object_has_property(object_id, property_symbol_id)? {
+    if !create_flag
+        && !interpreter.object_has_property(object_id, property_symbol_id)?
+    {
         return Error::generic_execution_error(
             "Cannot update property because it is not defined and create flag is false.",
         )
@@ -70,10 +75,11 @@ pub fn update_property_mark(
         property_descriptor_object_id,
     )?;
 
-    let flags = super::define_property_mark::read_flags_from_property_descriptor(
-        interpreter,
-        property_descriptor_object_id,
-    )?;
+    let flags =
+        super::define_property_mark::read_flags_from_property_descriptor(
+            interpreter,
+            property_descriptor_object_id,
+        )?;
 
     let object = interpreter.get_object_mut(object_id)?;
 
@@ -97,65 +103,134 @@ mod tests {
     fn defines_new_property() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\"}) obj)", "{:prop nil}"),
-            ("(let ((obj {})) (object:update-property! obj {:name 'prop}) obj)", "{:prop nil}"),
-            ("(let ((obj {})) (object:update-property! obj {:name :prop}) obj)", "{:prop nil}"),
-
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :value 1}) obj)", "{:prop 1}"),
-            ("(let ((obj {})) (object:update-property! obj {:name 'prop :value 1}) obj)", "{:prop 1}"),
-            ("(let ((obj {})) (object:update-property! obj {:name :prop :value 1}) obj)", "{:prop 1}"),
-
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name \"prop\"}) obj)", "{:prop nil}"),
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name 'prop}) obj)", "{:prop nil}"),
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name :prop}) obj)", "{:prop nil}"),
-
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name \"prop\" :value 1}) obj)", "{:prop 1}"),
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name 'prop :value 1}) obj)", "{:prop 1}"),
-            ("(let ((obj {})) (object:update-property! obj {:create #t :name :prop :value 1}) obj)", "{:prop 1}"),
-        );
+        let specs = vec![
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\"}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name 'prop}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name :prop}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :value 1}) obj)",
+                "{:prop 1}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name 'prop :value 1}) obj)",
+                "{:prop 1}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name :prop :value 1}) obj)",
+                "{:prop 1}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name \"prop\"}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name 'prop}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name :prop}) obj)",
+                "{:prop nil}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name \"prop\" :value 1}) obj)",
+                "{:prop 1}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name 'prop :value 1}) obj)",
+                "{:prop 1}",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:create #t :name :prop :value 1}) obj)",
+                "{:prop 1}",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
-    fn returns_error_when_provided_create_flag_false_and_property_does_not_exist() {
+    fn returns_error_when_provided_create_flag_false_and_property_does_not_exist(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
+        let specs = vec![
             "(let ((obj {})) (object:update-property! obj {:create #f :name \"prop\"}) obj)",
             "(let ((obj {})) (object:update-property! obj {:create #f :name 'prop}) obj)",
             "(let ((obj {})) (object:update-property! obj {:create #f :name :prop}) obj)",
-
             "(let ((obj {})) (object:update-property! obj {:create #f :name \"prop\" :value 1}) obj)",
             "(let ((obj {})) (object:update-property! obj {:create #f :name 'prop :value 1}) obj)",
-            "(let ((obj {})) (object:update-property! obj {:create #f :name :prop :value 1}) obj)"
-        );
+            "(let ((obj {})) (object:update-property! obj {:create #f :name :prop :value 1}) obj)",
+        ];
 
-        assertion::assert_results_are_generic_execution_errors(&mut interpreter, specs);
+        assertion::assert_results_are_generic_execution_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
     fn defines_new_property_with_flags() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:update-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))", "#t"),
-        );
+        let specs = vec![
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:update-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, specs);
     }
@@ -164,23 +239,56 @@ mod tests {
     fn sets_flags_of_existing_properties() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))", "#t"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))", "#f"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))", "#t"),
-
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))", "#t"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))", "#f"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))", "#t"),
-
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))", "#t"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))", "#f"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))", "#t"),
-
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))", "#t"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))", "#f"),
-            ("(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))", "#t"),
-        );
+        let specs = vec![
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {:prop nil})) (object:update-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, specs);
     }
@@ -195,7 +303,10 @@ mod tests {
             "(let ((obj {})) (object:update-property! obj {:value 1}) obj)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -223,11 +334,15 @@ mod tests {
             "(object:update-property! {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -236,6 +351,9 @@ mod tests {
             "(object:update-property! {} 'item 'sym2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

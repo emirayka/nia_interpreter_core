@@ -13,7 +13,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub trait GarbageCollectable {
     fn get_gc_items(&self) -> Vec<Value>;
-    fn get_gc_environment(&self) -> Option<EnvironmentId>;
+    fn get_gc_environments(&self) -> Vec<EnvironmentId>;
 }
 
 struct GarbageCollector {
@@ -33,21 +33,26 @@ struct GarbageCollector {
 }
 
 impl GarbageCollector {
-    pub fn new(interpreter: &mut Interpreter, environment_id: EnvironmentId) -> GarbageCollector {
+    pub fn new(interpreter: &mut Interpreter) -> GarbageCollector {
         // these would be ignored
         let ignored_environment_ids = Vec::new();
 
         // these are candidates for deletion
-        let candidate_environment_ids = interpreter.get_environment_arena().get_all_environments();
+        let candidate_environment_ids =
+            interpreter.get_environment_arena().get_all_environments();
 
-        let candidate_string_ids = interpreter.get_string_arena().get_all_string_identifiers();
+        let candidate_string_ids =
+            interpreter.get_string_arena().get_all_string_identifiers();
         let candidate_keyword_ids = interpreter
             .get_keyword_arena()
             .get_all_keyword_identifiers();
-        let mut candidate_symbol_ids = interpreter.get_symbol_arena().get_all_symbol_identifiers();
+        let mut candidate_symbol_ids =
+            interpreter.get_symbol_arena().get_all_symbol_identifiers();
 
-        let candidate_cons_ids = interpreter.get_cons_arena().get_all_cons_identifiers();
-        let candidate_object_ids = interpreter.get_object_arena().get_all_object_identifiers();
+        let candidate_cons_ids =
+            interpreter.get_cons_arena().get_all_cons_identifiers();
+        let candidate_object_ids =
+            interpreter.get_object_arena().get_all_object_identifiers();
         let mut candidate_function_ids = interpreter
             .get_function_arena()
             .get_all_function_identifiers();
@@ -62,7 +67,14 @@ impl GarbageCollector {
         }
 
         // iteration base
-        let environment_ids = vec![environment_id];
+        let mut environment_ids = vec![
+            interpreter.get_root_environment_id(),
+        ];
+
+        environment_ids.extend(
+            interpreter.get_module_arena()
+                .get_gc_environments()
+        );
 
         let items = Vec::new();
 
@@ -114,7 +126,8 @@ impl GarbageCollector {
     ) -> Result<(), Error> {
         self.candidate_object_ids.retain(|id| *id != object_id);
 
-        let mut gc_items = interpreter.get_object_arena().get_gc_items(object_id)?;
+        let mut gc_items =
+            interpreter.get_object_arena().get_gc_items(object_id)?;
 
         self.items.append(&mut gc_items);
 
@@ -130,7 +143,7 @@ impl GarbageCollector {
 
         match interpreter.get_function_arena().get_gc_items(function_id)? {
             Some(mut gc_items) => self.items.append(&mut gc_items),
-            _ => {}
+            _ => {},
         }
 
         match interpreter
@@ -141,40 +154,47 @@ impl GarbageCollector {
                 if !self.ignored_environment_ids.contains(&gc_environment_id) {
                     self.environment_ids.push(gc_environment_id)
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(())
     }
 
-    fn retain_value(&mut self, interpreter: &mut Interpreter, value: Value) -> Result<(), Error> {
+    fn retain_value(
+        &mut self,
+        interpreter: &mut Interpreter,
+        value: Value,
+    ) -> Result<(), Error> {
         match value {
             Value::String(string_id) => {
                 self.retain_string_id(string_id);
-            }
+            },
             Value::Keyword(keyword_id) => {
                 self.retain_keyword_id(keyword_id);
-            }
+            },
             Value::Symbol(symbol_id) => {
                 self.retain_symbol_id(symbol_id);
-            }
+            },
             Value::Cons(cons_id) => {
                 self.retain_cons_id(interpreter, cons_id)?;
-            }
+            },
             Value::Object(object_id) => {
                 self.retain_object_id(interpreter, object_id)?;
-            }
+            },
             Value::Function(function_id) => {
                 self.retain_function_id(interpreter, function_id)?;
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(())
     }
 
-    fn collect_context_items(&mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+    fn collect_context_items(
+        &mut self,
+        interpreter: &mut Interpreter,
+    ) -> Result<(), Error> {
         // remove context values
         let mut context_items = interpreter.get_context().get_gc_items();
 
@@ -187,7 +207,10 @@ impl GarbageCollector {
         Ok(())
     }
 
-    fn collect_ordinary_items(&mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+    fn collect_ordinary_items(
+        &mut self,
+        interpreter: &mut Interpreter,
+    ) -> Result<(), Error> {
         // iteration over accessible environments
         while !self.environment_ids.is_empty() {
             let environment_id = self.environment_ids.remove(0);
@@ -204,8 +227,8 @@ impl GarbageCollector {
                     if !self.ignored_environment_ids.contains(&parent_id) {
                         self.environment_ids.push(parent_id)
                     }
-                }
-                _ => {}
+                },
+                _ => {},
             }
             let mut items_to_persist = interpreter
                 .get_environment_arena()
@@ -236,7 +259,10 @@ impl GarbageCollector {
         Ok(())
     }
 
-    pub fn collect(mut self, interpreter: &mut Interpreter) -> Result<(), Error> {
+    pub fn collect(
+        mut self,
+        interpreter: &mut Interpreter,
+    ) -> Result<(), Error> {
         self.collect_context_items(interpreter)?;
         self.collect_ordinary_items(interpreter)?;
         self.free(interpreter)?;
@@ -245,11 +271,8 @@ impl GarbageCollector {
     }
 }
 
-pub fn collect_garbage(
-    interpreter: &mut Interpreter,
-    environment_id: EnvironmentId,
-) -> Result<(), Error> {
-    let gc = GarbageCollector::new(interpreter, environment_id);
+pub fn collect_garbage(interpreter: &mut Interpreter) -> Result<(), Error> {
+    let gc = GarbageCollector::new(interpreter);
 
     let before = SystemTime::now().duration_since(UNIX_EPOCH).expect("");
     gc.collect(interpreter)?;
@@ -275,7 +298,12 @@ mod tests {
     use std::convert::TryInto;
 
     use crate::interpreter::environment::EnvironmentId;
-    use crate::interpreter::value::{BuiltinFunction, Function, SpecialFormFunction};
+    use crate::interpreter::value::{
+        BuiltinFunction, Function, SpecialFormFunction,
+    };
+    use crate::utils::{
+        with_named_file, with_tempdir, with_tempfile, with_working_directory,
+    };
 
     fn builtin_test_function(
         _interpreter: &mut Interpreter,
@@ -305,7 +333,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_string(string_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_string(string_id).is_err());
     }
 
@@ -321,7 +349,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_keyword(keyword_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_keyword(keyword_id).is_err());
     }
 
@@ -337,7 +365,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_symbol(symbol_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_symbol(symbol_id).is_err());
     }
 
@@ -354,7 +382,7 @@ mod tests {
 
         nia_assert(interpreter.get_car(cons_id).is_ok());
         nia_assert(interpreter.get_cdr(cons_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_car(cons_id).is_err());
         nia_assert(interpreter.get_cdr(cons_id).is_err());
     }
@@ -371,7 +399,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_object_prototype(object_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_object_prototype(object_id).is_err());
     }
 
@@ -380,11 +408,12 @@ mod tests {
         let mut interpreter = Interpreter::new();
         let root_environment = interpreter.get_main_environment_id();
 
-        let function = Function::Builtin(BuiltinFunction::new(builtin_test_function));
+        let function =
+            Function::Builtin(BuiltinFunction::new(builtin_test_function));
         let function_id = interpreter.register_function(function);
 
         nia_assert(interpreter.get_function(function_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_function(function_id).is_err());
     }
 
@@ -393,11 +422,12 @@ mod tests {
         let mut interpreter = Interpreter::new();
         let root_environment = interpreter.get_main_environment_id();
 
-        let function = Function::SpecialForm(SpecialFormFunction::new(test_special_form));
+        let function =
+            Function::SpecialForm(SpecialFormFunction::new(test_special_form));
         let function_id = interpreter.register_function(function);
 
         nia_assert(interpreter.get_function(function_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_function(function_id).is_err());
     }
 
@@ -413,7 +443,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_function(function_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_function(function_id).is_err());
     }
 
@@ -429,7 +459,7 @@ mod tests {
             .unwrap();
 
         nia_assert(interpreter.get_function(function_id).is_ok());
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
         nia_assert(interpreter.get_function(function_id).is_err());
     }
 
@@ -462,7 +492,7 @@ mod tests {
         nia_assert(interpreter.get_symbol(symbol_1).is_ok());
         nia_assert(interpreter.get_symbol(symbol_2).is_ok());
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_car(cons_id).is_ok());
         nia_assert(interpreter.get_cdr(cons_id).is_ok());
@@ -506,7 +536,7 @@ mod tests {
         nia_assert(interpreter.get_keyword(item_value).is_ok());
         nia_assert(interpreter.get_object_prototype(object_id).is_ok());
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_keyword(item_key).is_err());
         nia_assert(interpreter.get_symbol(item_key_symbol).is_ok());
@@ -533,7 +563,7 @@ mod tests {
             .try_into()
             .unwrap();
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_function(function_id).is_ok());
         nia_assert(interpreter.get_symbol(symbol_id).is_ok());
@@ -568,7 +598,7 @@ mod tests {
         nia_assert(interpreter.get_symbol(symbol1).is_ok());
         nia_assert(interpreter.get_symbol(symbol2).is_ok());
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_function(function_id).is_ok());
         nia_assert(interpreter.get_symbol(symbol1).is_ok());
@@ -613,7 +643,7 @@ mod tests {
         nia_assert(interpreter.get_symbol(symbol1).is_ok());
         nia_assert(interpreter.get_symbol(symbol2).is_ok());
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_function(function1).is_ok());
         nia_assert(interpreter.get_function(function2).is_ok());
@@ -627,24 +657,24 @@ mod tests {
         let root_environment = interpreter.get_main_environment_id();
 
         let symbols = vec![
-            interpreter.intern("kekurus-closure-parameter"),
-            interpreter.intern("kekurus-arg-1"),
-            interpreter.intern("kekurus-arg-2"),
-            interpreter.intern("kekurus-opt-default-parameter"),
-            interpreter.intern("kekurus-key-default-parameter"),
+            interpreter.intern_symbol_id("kekurus-closure-parameter"),
+            interpreter.intern_symbol_id("kekurus-arg-1"),
+            interpreter.intern_symbol_id("kekurus-arg-2"),
+            interpreter.intern_symbol_id("kekurus-opt-default-parameter"),
+            interpreter.intern_symbol_id("kekurus-key-default-parameter"),
         ];
 
         let pairs = vec!(
-            (interpreter.intern("kekurus-1"), interpreter.execute_in_main_environment("\"kekurus-string\"").unwrap()),
-            (interpreter.intern("kekurus-2"), interpreter.execute_in_main_environment(":kekurus-keyword").unwrap()),
-            (interpreter.intern("kekurus-3"), interpreter.execute_in_main_environment("'kekurus-symbol").unwrap()),
-            (interpreter.intern("kekurus-4"), interpreter.execute_in_main_environment("(cons 1 2)").unwrap()),
-            (interpreter.intern("kekurus-5"), interpreter.execute_in_main_environment("{:a 1}").unwrap()),
-            (interpreter.intern("kekurus-6"),
+            (interpreter.intern_symbol_id("kekurus-1"), interpreter.execute_in_main_environment("\"kekurus-string\"").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-2"), interpreter.execute_in_main_environment(":kekurus-keyword").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-3"), interpreter.execute_in_main_environment("'kekurus-symbol").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-4"), interpreter.execute_in_main_environment("(cons 1 2)").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-5"), interpreter.execute_in_main_environment("{:a 1}").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-6"),
              interpreter.execute_in_main_environment(
                  "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #opt (kekurus-arg-2 'kekurus-opt-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
              ).unwrap()),
-            (interpreter.intern("kekurus-7"),
+            (interpreter.intern_symbol_id("kekurus-7"),
              interpreter.execute_in_main_environment(
                  "(let ((kekurus-closure-parameter 0)) (fn (kekurus-arg-1 #keys (kekurus-arg-2 'kekurus-key-default-parameter)) (+ kekurus-arg-1 kekurus-arg-2)))"
              ).unwrap()),
@@ -654,7 +684,7 @@ mod tests {
             interpreter.set_context_value(pair.0, pair.1).unwrap();
         }
 
-        nia_assert(collect_garbage(&mut interpreter, root_environment).is_ok());
+        nia_assert(collect_garbage(&mut interpreter).is_ok());
 
         nia_assert(interpreter.get_symbol(pairs[0].0).is_ok());
         nia_assert(interpreter.get_symbol(pairs[1].0).is_ok());
@@ -701,5 +731,56 @@ mod tests {
         for symbol_id in symbols {
             nia_assert(interpreter.get_symbol(symbol_id).is_ok());
         }
+    }
+
+    #[test]
+    #[ignore]
+    fn respects_module_contents() {
+        let content = r#"
+        (defc nia-a 1)
+        (defc nia-b 1.1)
+        (defc nia-c #t)
+        (defc nia-d #f)
+        (defc nia-e "nia-string")
+        (defc nia-f :nia-keyword)
+        (defc nia-g 'nia-symbol)
+        "#;
+
+        with_tempdir(|directory| {
+            with_named_file(&directory, "test.nia", content, || {
+                with_working_directory(&directory, || {
+                    let mut interpreter = Interpreter::new();
+
+                    let symbol_identifiers = vec![
+                        interpreter.intern_symbol_id("nia-a"),
+                        interpreter.intern_symbol_id("nia-b"),
+                        interpreter.intern_symbol_id("nia-c"),
+                        interpreter.intern_symbol_id("nia-d"),
+                        interpreter.intern_symbol_id("nia-e"),
+                        interpreter.intern_symbol_id("nia-f"),
+                        interpreter.intern_symbol_id("nia-g"),
+                    ];
+
+                    let string_id = interpreter.intern_string_id("nia-string");
+                    let keyword_id =
+                        interpreter.intern_keyword_id("nia-keyword");
+                    let symbol_id = interpreter.intern_symbol_id("nia-symbol");
+
+                    interpreter
+                        .execute_in_main_environment("(import \"./test.nia\")")
+                        .unwrap();
+
+                    collect_garbage(&mut interpreter).unwrap();
+
+                    for symbol_id in symbol_identifiers {
+                        nia_assert_is_ok(&interpreter.get_symbol(symbol_id));
+                    }
+
+                    nia_assert_is_ok(&interpreter.get_string(string_id));
+                    nia_assert_is_ok(&interpreter.get_keyword(keyword_id));
+                    nia_assert_is_ok(&interpreter.get_symbol(symbol_id));
+                })
+            })
+        })
     }
 }

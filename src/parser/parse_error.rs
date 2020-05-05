@@ -11,13 +11,15 @@ pub enum ParseError {
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ParseError::TrailingInput(string) => write!(f, "Trailing input: {}", string),
+            ParseError::TrailingInput(string) => {
+                write!(f, "Trailing input: {}", string)
+            },
             ParseError::NomError((string, error_kind)) => {
                 write!(f, "Parse error: {} {:?}", string, error_kind)
-            }
+            },
             ParseError::NomFailure((string, error_kind)) => {
                 write!(f, "Parse failure: {} {:?}", string, error_kind)
-            }
+            },
             ParseError::NomIncomplete() => write!(f, "Incomplete."),
         }
     }

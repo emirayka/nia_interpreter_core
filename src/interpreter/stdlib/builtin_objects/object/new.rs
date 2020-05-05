@@ -25,8 +25,8 @@ pub fn new(
                 return Error::invalid_argument_error(
                     "The first argument of `object:new' must be an object.",
                 )
-                .into()
-            }
+                .into();
+            },
         }
     } else {
         None
@@ -36,7 +36,7 @@ pub fn new(
         Some(proto_id) => interpreter
             .set_object_prototype(object_id, proto_id)
             .map_err(|err| Error::generic_execution_error_caused("", err))?,
-        None => {}
+        None => {},
     }
 
     Ok(Value::Object(object_id))
@@ -73,12 +73,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_odd_count_of_arguments_was_provided() {
+    fn returns_invalid_argument_count_error_when_odd_count_of_arguments_was_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(object:new {} 1)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -95,6 +99,9 @@ mod tests {
             "(object:new :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, invalid_arguments);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            invalid_arguments,
+        );
     }
 }

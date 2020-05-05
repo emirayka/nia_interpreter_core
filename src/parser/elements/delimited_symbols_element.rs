@@ -94,13 +94,20 @@ mod tests {
             nia_assert_equal(expected, parse($code));
         };
         ($symbol_names:expr, $code:expr) => {
-            assert_parsing_of_delimited_symbols_element!($symbol_names, $code, "");
+            assert_parsing_of_delimited_symbols_element!(
+                $symbol_names,
+                $code,
+                ""
+            );
         };
     }
 
     #[test]
     fn parses_several_delimited_symbols() {
-        assert_parsing_of_delimited_symbols_element!(vec!("object", "value1",), "object:value1");
+        assert_parsing_of_delimited_symbols_element!(
+            vec!("object", "value1",),
+            "object:value1"
+        );
         assert_parsing_of_delimited_symbols_element!(
             vec!("object", "value1", "value2",),
             "object:value1:value2"

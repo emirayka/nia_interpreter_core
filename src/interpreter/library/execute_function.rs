@@ -14,12 +14,14 @@ pub fn execute_function(
     let function = interpreter.get_function(function_id)?.clone();
 
     match function {
-        Function::Interpreted(interpreted_function) => {
-            interpreter.execute_interpreted_function(&interpreted_function, arguments)
-        }
-        Function::Builtin(builtin_function) => {
-            interpreter.execute_builtin_function(&builtin_function, environment_id, arguments)
-        }
+        Function::Interpreted(interpreted_function) => interpreter
+            .execute_interpreted_function(&interpreted_function, arguments),
+        Function::Builtin(builtin_function) => interpreter
+            .execute_builtin_function(
+                &builtin_function,
+                environment_id,
+                arguments,
+            ),
         _ => Error::invalid_argument_error("").into(),
     }
 }
@@ -36,11 +38,15 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils::assertion;
 
-    fn execute_forms(interpreter: &mut Interpreter, values: Vec<&str>) -> Vec<Value> {
+    fn execute_forms(
+        interpreter: &mut Interpreter,
+        values: Vec<&str>,
+    ) -> Vec<Value> {
         let mut results = Vec::new();
 
         for value in values {
-            let result = interpreter.execute_in_main_environment(value).unwrap();
+            let result =
+                interpreter.execute_in_main_environment(value).unwrap();
 
             results.push(result);
         }
@@ -69,11 +75,17 @@ mod tests {
                 .unwrap();
 
             let arguments = execute_forms(&mut interpreter, spec.1);
-            let expected = interpreter.execute_in_main_environment(spec.2).unwrap();
+            let expected =
+                interpreter.execute_in_main_environment(spec.2).unwrap();
             let environment_id = interpreter.get_root_environment_id();
 
-            let result =
-                execute_function(&mut interpreter, environment_id, function_id, arguments).unwrap();
+            let result = execute_function(
+                &mut interpreter,
+                environment_id,
+                function_id,
+                arguments,
+            )
+            .unwrap();
 
             assertion::assert_deep_equal(&mut interpreter, expected, result);
         }
@@ -98,7 +110,12 @@ mod tests {
             let arguments = execute_forms(&mut interpreter, spec.1);
             let environment_id = interpreter.get_root_environment_id();
 
-            let result = execute_function(&mut interpreter, environment_id, function_id, arguments);
+            let result = execute_function(
+                &mut interpreter,
+                environment_id,
+                function_id,
+                arguments,
+            );
 
             nia_assert(result.is_err())
         }

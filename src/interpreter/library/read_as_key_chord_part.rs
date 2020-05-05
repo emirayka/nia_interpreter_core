@@ -11,7 +11,9 @@ pub fn read_as_key_chord_part(
     key_chord_part_value: Value,
 ) -> Result<KeyChordPart, Error> {
     match key_chord_part_value {
-        Value::Integer(key_id) => Ok(KeyChordPart::Key1(KeyId::new(key_id as u16))),
+        Value::Integer(key_id) => {
+            Ok(KeyChordPart::Key1(KeyId::new(key_id as u16)))
+        },
         Value::Cons(cons_id) => {
             let mut values = interpreter.list_to_vec(cons_id)?;
 
@@ -22,7 +24,7 @@ pub fn read_as_key_chord_part(
                 KeyboardId::new(keyboard_id as u16),
                 KeyId::new(key_id as u16),
             ))
-        }
+        },
         _ => Error::invalid_argument_error("Invalid key chord part").into(),
     }
 }
@@ -34,7 +36,10 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    fn assert_returns_correct_key_chord_part(s: &str, key_chord_part: KeyChordPart) {
+    fn assert_returns_correct_key_chord_part(
+        s: &str,
+        key_chord_part: KeyChordPart,
+    ) {
         let mut interpreter = Interpreter::new();
 
         let expected = key_chord_part;

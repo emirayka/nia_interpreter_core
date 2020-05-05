@@ -5,7 +5,10 @@ use super::key_chord_part_to_list;
 
 use nia_events::KeyChord;
 
-pub fn key_chord_to_list(interpreter: &mut Interpreter, key_chord: KeyChord) -> Value {
+pub fn key_chord_to_list(
+    interpreter: &mut Interpreter,
+    key_chord: KeyChord,
+) -> Value {
     let mut vector = Vec::new();
 
     for modifier in key_chord.get_modifiers() {

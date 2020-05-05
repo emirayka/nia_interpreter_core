@@ -18,8 +18,11 @@ pub fn let_star(
 
     let mut values = values;
 
-    let definitions = library::read_as_let_definitions(interpreter, values.remove(0))
-        .map_err(|_| Error::invalid_argument_error("Invalid `let*' definitions."))?;
+    let definitions =
+        library::read_as_let_definitions(interpreter, values.remove(0))
+            .map_err(|_| {
+                Error::invalid_argument_error("Invalid `let*' definitions.")
+            })?;
 
     let forms = values;
 
@@ -120,13 +123,15 @@ mod tests {
     fn able_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec![("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)", Value::Integer(1))];
+        let specs =
+            vec![("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)", Value::Integer(1))];
 
         assertion::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
-    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let mut specs = vec![
@@ -141,7 +146,10 @@ mod tests {
             "(let* ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -160,7 +168,10 @@ mod tests {
             "(let* (super 2) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -177,7 +188,10 @@ mod tests {
             "(let* {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, incorrect_strings);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            incorrect_strings,
+        );
     }
 
     #[test]
@@ -196,7 +210,10 @@ mod tests {
             "(let* ({}))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -214,7 +231,10 @@ mod tests {
             "(let* (({} 2)) {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -223,16 +243,23 @@ mod tests {
 
         let specs = vec!["(let* ((nil 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
+    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items()
+    {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!["(let* ((sym)) nil)", "(let* ((sym 1 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]

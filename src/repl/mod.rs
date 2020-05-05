@@ -48,17 +48,17 @@ pub fn run() -> Result<(), std::io::Error> {
                 };
 
                 println!("{}", result);
-            }
+            },
             Err(ReadlineError::Interrupted) => {
                 // break;
-            }
+            },
             Err(ReadlineError::Eof) => {
                 break;
-            }
+            },
             Err(err) => {
                 println!("Error: {:?}", err);
                 break;
-            }
+            },
         }
     }
 

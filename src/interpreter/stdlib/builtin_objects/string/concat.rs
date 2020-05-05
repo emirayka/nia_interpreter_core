@@ -27,7 +27,8 @@ pub fn concat(
             break;
         }
 
-        let next_string = library::read_as_string(interpreter, values.remove(0))?;
+        let next_string =
+            library::read_as_string(interpreter, values.remove(0))?;
 
         result.push_str(next_string);
     }
@@ -68,12 +69,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_was_called_with_invalid_amount_of_arguments() {
+    fn returns_invalid_argument_count_when_was_called_with_invalid_amount_of_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(string:concat)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -101,6 +106,9 @@ mod tests {
             r#"(string:concat "a" #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

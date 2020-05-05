@@ -23,7 +23,8 @@ pub fn send_mouse_move_by(
 
     let mut move_by_y = library::read_as_i64(values.remove(0))?;
 
-    let mouse_move_by_symbol_value = interpreter.intern_symbol_value("mouse-move-by");
+    let mouse_move_by_symbol_value =
+        interpreter.intern_symbol_value("mouse-move-by");
     let mouse_move_by = interpreter.vec_to_list(vec![
         mouse_move_by_symbol_value,
         Value::Integer(move_by_x),
@@ -89,11 +90,15 @@ mod tests {
             "(action:send-mouse-move-by 1 #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -102,6 +107,9 @@ mod tests {
             "(action:send-mouse-move-by 1 2 3)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

@@ -14,7 +14,7 @@ mod symbol;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let to_object_id = interpreter.make_object();
-    let to_symbol_id = interpreter.intern("to");
+    let to_symbol_id = interpreter.intern_symbol_id("to");
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("boolean", boolean::boolean),

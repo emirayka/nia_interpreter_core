@@ -20,7 +20,8 @@ pub fn fold(
 
     let function_id = library::read_as_function_id(values.remove(0))?;
 
-    let argument_values = library::read_as_vector(interpreter, values.remove(0))?;
+    let argument_values =
+        library::read_as_vector(interpreter, values.remove(0))?;
 
     let initial_value = values.remove(0);
     let mut acc = initial_value;
@@ -28,7 +29,12 @@ pub fn fold(
     for value in argument_values {
         let arguments = vec![acc, value];
 
-        acc = library::execute_function(interpreter, environment_id, function_id, arguments)?;
+        acc = library::execute_function(
+            interpreter,
+            environment_id,
+            function_id,
+            arguments,
+        )?;
     }
 
     Ok(acc)
@@ -95,11 +101,15 @@ mod tests {
             "(list:fold (function (lambda (_1 _2) nil)) #() nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -109,6 +119,9 @@ mod tests {
             "(list:fold 1 2 3 4)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

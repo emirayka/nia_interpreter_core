@@ -20,12 +20,10 @@ pub fn fset(
 
     let function_symbol_id = match values.remove(0) {
         Value::Symbol(symbol) => symbol,
-        _ => {
-            return Error::invalid_argument_error(
-                "The first argument of built-in function `fset!' must be a symbol.",
-            )
-            .into()
-        }
+        _ => return Error::invalid_argument_error(
+            "The first argument of built-in function `fset!' must be a symbol.",
+        )
+        .into(),
     };
 
     library::check_symbol_is_assignable(interpreter, function_symbol_id)?;
@@ -33,18 +31,26 @@ pub fn fset(
     let value = values.remove(0);
 
     //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
-    let value = interpreter
-        .execute_value(environment, value)
-        .map_err(|err| {
-            Error::generic_execution_error_caused("Cannot execute value: \"{}\"", err)
-        })?;
+    let value =
+        interpreter
+            .execute_value(environment, value)
+            .map_err(|err| {
+                Error::generic_execution_error_caused(
+                    "Cannot execute value: \"{}\"",
+                    err,
+                )
+            })?;
 
     let target_env = interpreter
         .lookup_environment_by_function(environment, function_symbol_id)
         .map_err(|err| Error::generic_execution_error_caused("", err))?;
 
     match target_env {
-        Some(target_env) => match interpreter.set_function(target_env, function_symbol_id, value) {
+        Some(target_env) => match interpreter.set_function(
+            target_env,
+            function_symbol_id,
+            value,
+        ) {
             Ok(()) => Ok(value),
             Err(error) => {
                 let message = &format!(
@@ -53,7 +59,7 @@ pub fn fset(
                 );
 
                 Error::generic_execution_error_caused(message, error).into()
-            }
+            },
         },
         None => {
             let message = &format!(
@@ -62,7 +68,7 @@ pub fn fset(
             );
 
             Error::generic_execution_error(message).into()
-        }
+        },
     }
 }
 
@@ -97,7 +103,11 @@ mod tests {
             "(define-function a (function (lambda () 1))) (fset! a (function (lambda () 2)))",
         );
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result.unwrap());
+        assertion::assert_deep_equal(
+            &mut interpreter,
+            expected,
+            result.unwrap(),
+        );
     }
 
     #[test]
@@ -105,7 +115,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter
-            .execute_in_main_environment("(define-function a (function (lambda () 0)))")
+            .execute_in_main_environment(
+                "(define-function a (function (lambda () 0)))",
+            )
             .unwrap();
 
         let specs = vec![
@@ -125,10 +137,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter
-            .execute_in_main_environment("(define-function b (function (lambda () 0)))")
+            .execute_in_main_environment(
+                "(define-function b (function (lambda () 0)))",
+            )
             .unwrap();
         interpreter
-            .execute_in_main_environment("(flet ((a () 1)) (fset! b (function (lambda () 2))))")
+            .execute_in_main_environment(
+                "(flet ((a () 1)) (fset! b (function (lambda () 2))))",
+            )
             .unwrap();
 
         let result = interpreter.execute_in_main_environment("(b)").unwrap();
@@ -152,7 +168,10 @@ mod tests {
             "(fset! super 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -161,7 +180,10 @@ mod tests {
 
         let specs = vec!["(fset!)", "(fset! a b c)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -179,6 +201,9 @@ mod tests {
             "(fset! {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

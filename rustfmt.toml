@@ -1,0 +1,74 @@
+edition = "2018"
+
+# Reorder import and extern crate statements alphabetically in groups (a group is separated by a newline).
+# Default value: true
+# Possible values: true, false
+reorder_imports = true
+
+# Reorder mod declarations alphabetically in group.
+#    Default value: true
+#    Possible values: true, false
+reorder_modules = true
+
+# Number of spaces per tab.
+# Default: 4
+tab_spaces = 4
+
+# Maximum width of each line.
+# Default: 100
+max_width = 80
+
+# Merge multiple derives into a single one.
+# Default value: true
+# Possible values: true, false
+merge_derives = true
+
+# How to handle trailing commas for lists
+# Default: "Vertical"
+# Possible values: "Always", "Never", "Vertical"
+trailing_comma = "Vertical"
+
+# Add trailing semicolon after break, continue and return
+# Default: true
+# Possible values: true, false
+trailing_semicolon = true
+
+# Put a trailing comma after a block based match arm (non-block arms are not affected)
+# Default: false
+# Possible values: true, false
+match_block_trailing_comma = true
+
+# Whether to use colored output or not.
+# Default value: "Auto"
+# Possible values: "Auto", "Always", "Never"
+color = "Always"
+
+## Maximum width of an array literal before falling back to vertical formatting.
+## Default: 60
+## Possible values: any positive integer that is less than or equal to the value specified for max_width
+#array_width = 40
+#
+## Maximum width of a chain to fit on one line.
+## Default: 60
+## Possible values: any positive integer that is less than or equal to the value specified for max_width
+#chain_width = 60
+#
+## Maximum width of the args of a function call before falling back to vertical formatting.
+## Default value: 60
+## Possible values: any positive integer that is less than or equal to the value specified for max_width
+#fn_call_width = 40
+#
+## Write an item and its attribute on the same line if their combined width is below a threshold
+## Default value: 0
+## Possible values: any positive integer
+#inline_attribute_width = 0
+#
+## Maximum width of the args of a function-like attributes before falling back to vertical formatting.
+## Default: 70
+## Possible values: any positive integer that is less than or equal to the value specified for max_width
+#attr_fn_like_width = 80
+#
+## Maximum length of comments. No effect unlesswrap_comments = true.
+## Default value: 80
+## Possible values: any positive integer
+#comment_width = 80

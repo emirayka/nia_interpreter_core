@@ -26,7 +26,8 @@ pub fn define_function(
     };
 
     let need_to_be_const = if values.len() > 0 {
-        let result = library::read_as_keyword(interpreter, values.remove(0))?.is_const();
+        let result =
+            library::read_as_keyword(interpreter, values.remove(0))?.is_const();
 
         if !result {
             return Error::invalid_argument_error(
@@ -46,8 +47,8 @@ pub fn define_function(
             return Error::invalid_argument_error(
                 "First form of `define-function' must be a symbol.",
             )
-            .into()
-        }
+            .into();
+        },
     };
 
     library::check_symbol_is_assignable(interpreter, function_symbol_id)?;
@@ -64,13 +65,22 @@ pub fn define_function(
     })?;
 
     let result = if need_to_be_const {
-        interpreter.define_const_function(environment, function_symbol_id, evaluated_value)
+        interpreter.define_const_function(
+            environment,
+            function_symbol_id,
+            evaluated_value,
+        )
     } else {
-        interpreter.define_function(environment, function_symbol_id, evaluated_value)
+        interpreter.define_function(
+            environment,
+            function_symbol_id,
+            evaluated_value,
+        )
     };
 
     result.map_err(|err| {
-        let symbol_name = match interpreter.get_symbol_name(function_symbol_id) {
+        let symbol_name = match interpreter.get_symbol_name(function_symbol_id)
+        {
             Ok(symbol_name) => symbol_name,
             _ => return Error::generic_execution_error(""),
         };
@@ -97,7 +107,7 @@ mod tests {
         interpreter
             .execute_in_main_environment("(define-function test 2)")
             .unwrap();
-        let name = interpreter.intern("test");
+        let name = interpreter.intern_symbol_id("test");
 
         let result = interpreter
             .has_function(interpreter.get_main_environment_id(), name)
@@ -105,7 +115,8 @@ mod tests {
         nia_assert(result);
 
         let expected = Ok(Some(Value::Integer(2)));
-        let result = interpreter.lookup_function(interpreter.get_main_environment_id(), name);
+        let result = interpreter
+            .lookup_function(interpreter.get_main_environment_id(), name);
         nia_assert_equal(expected, result);
     }
 
@@ -116,7 +127,7 @@ mod tests {
         interpreter
             .execute_in_main_environment("(define-function test)")
             .unwrap();
-        let name = interpreter.intern("test");
+        let name = interpreter.intern_symbol_id("test");
 
         let result = interpreter
             .has_function(interpreter.get_main_environment_id(), name)
@@ -124,7 +135,8 @@ mod tests {
         nia_assert(result);
 
         let expected = Ok(Some(interpreter.intern_nil_symbol_value()));
-        let result = interpreter.lookup_function(interpreter.get_main_environment_id(), name);
+        let result = interpreter
+            .lookup_function(interpreter.get_main_environment_id(), name);
         nia_assert_equal(expected, result);
     }
 
@@ -133,7 +145,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         interpreter
-            .execute_in_main_environment("(define-function test (function (lambda (a b) b)))")
+            .execute_in_main_environment(
+                "(define-function test (function (lambda (a b) b)))",
+            )
             .unwrap();
         let result = interpreter.execute_in_main_environment("(test 2 3)");
 
@@ -192,16 +206,23 @@ mod tests {
             "(define-function super #(% 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!["(define-function)", "(define-function test 2 :const 2)"];
+        let specs =
+            vec!["(define-function)", "(define-function test 2 :const 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -210,6 +231,9 @@ mod tests {
 
         let specs = vec!["(define-function 3 2)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

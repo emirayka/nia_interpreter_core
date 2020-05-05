@@ -22,7 +22,8 @@ pub fn send_spawn(
     let text = library::read_as_string_id(values.remove(0))?;
 
     let spawn_symbol_value = interpreter.intern_symbol_value("spawn");
-    let spawn = interpreter.vec_to_list(vec![spawn_symbol_value, Value::String(text)]);
+    let spawn =
+        interpreter.vec_to_list(vec![spawn_symbol_value, Value::String(text)]);
 
     library::add_value_to_root_list(interpreter, "--actions", spawn)?;
 
@@ -74,15 +75,23 @@ mod tests {
             "(action:send-spawn #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(action:send-spawn)", "(action:send-spawn \"at\" 3)"];
+        let code_vector =
+            vec!["(action:send-spawn)", "(action:send-spawn \"at\" 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

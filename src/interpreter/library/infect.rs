@@ -12,7 +12,7 @@ pub fn infect_object_builtin_function(
     item_name: &str,
     func: BuiltinFunctionType,
 ) -> Result<(), Error> {
-    let name = interpreter.intern(item_name);
+    let name = interpreter.intern_symbol_id(item_name);
 
     let function = Function::Builtin(BuiltinFunction::new(func));
     let function_id = interpreter.register_function(function);
@@ -28,14 +28,17 @@ pub fn infect_builtin_function(
     name: &str,
     func: BuiltinFunctionType,
 ) -> Result<(), Error> {
-    let name = interpreter.intern(name);
+    let name = interpreter.intern_symbol_id(name);
 
     let function = Function::Builtin(BuiltinFunction::new(func));
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    let result =
-        interpreter.define_function(interpreter.get_root_environment_id(), name, function_value);
+    let result = interpreter.define_function(
+        interpreter.get_root_environment_id(),
+        name,
+        function_value,
+    );
 
     match result {
         Ok(()) => Ok(()),
@@ -48,14 +51,17 @@ pub fn infect_special_form(
     name: &str,
     func: SpecialFormFunctionType,
 ) -> Result<(), Error> {
-    let name = interpreter.intern(name);
+    let name = interpreter.intern_symbol_id(name);
 
     let function = Function::SpecialForm(SpecialFormFunction::new(func));
     let function_id = interpreter.register_function(function);
     let function_value = Value::Function(function_id);
 
-    let result =
-        interpreter.define_function(interpreter.get_root_environment_id(), name, function_value);
+    let result = interpreter.define_function(
+        interpreter.get_root_environment_id(),
+        name,
+        function_value,
+    );
 
     match result {
         Ok(()) => Ok(()),
@@ -90,7 +96,7 @@ mod tests {
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
-            let function_symbol_id = interpreter.intern("test");
+            let function_symbol_id = interpreter.intern_symbol_id("test");
             nia_assert(
                 interpreter
                     .has_function(root_environment_id, function_symbol_id)
@@ -104,7 +110,9 @@ mod tests {
 
             infect_special_form(&mut interpreter, "test", test).unwrap();
 
-            nia_assert(infect_special_form(&mut interpreter, "test", test).is_err());
+            nia_assert(
+                infect_special_form(&mut interpreter, "test", test).is_err(),
+            );
         }
     }
 }

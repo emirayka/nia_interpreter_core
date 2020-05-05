@@ -7,9 +7,11 @@ pub fn check_symbol_is_assignable(
     symbol_id: SymbolId,
 ) -> Result<(), Error> {
     match interpreter.check_if_symbol_assignable(symbol_id) {
-        Ok(true) => {}
+        Ok(true) => {},
         Ok(false) => return Error::invalid_argument_error("").into(),
-        Err(error) => return Error::generic_execution_error_caused("", error).into(),
+        Err(error) => {
+            return Error::generic_execution_error_caused("", error).into();
+        },
     }
 
     Ok(())
@@ -28,7 +30,7 @@ mod tests {
     #[test]
     fn returns_ok_on_ordinary_symbols() {
         let mut interpreter = Interpreter::new();
-        let symbol_id = interpreter.intern("test");
+        let symbol_id = interpreter.intern_symbol_id("test");
 
         let result = check_symbol_is_assignable(&mut interpreter, symbol_id);
 
@@ -41,14 +43,14 @@ mod tests {
 
         let mut specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
-            interpreter.intern("nil"),
+            interpreter.intern_symbol_id("nil"),
             // todo: remainder, when new special symbols will be introduced, add them here
-            interpreter.intern("#opt"),
-            interpreter.intern("#rest"),
-            interpreter.intern("#keys"),
+            interpreter.intern_symbol_id("#opt"),
+            interpreter.intern_symbol_id("#rest"),
+            interpreter.intern_symbol_id("#keys"),
             // todo: remainder, when new special variable will be introduced, add them here
-            interpreter.intern("this"),
-            interpreter.intern("super"),
+            interpreter.intern_symbol_id("this"),
+            interpreter.intern_symbol_id("super"),
         ];
 
         for spec in specs {
@@ -64,19 +66,20 @@ mod tests {
 
         let mut specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
-            interpreter.intern("nil"),
+            interpreter.intern_symbol_id("nil"),
             // todo: remainder, when new special symbols will be introduced, add them here
-            interpreter.intern("#opt"),
-            interpreter.intern("#rest"),
-            interpreter.intern("#keys"),
+            interpreter.intern_symbol_id("#opt"),
+            interpreter.intern_symbol_id("#rest"),
+            interpreter.intern_symbol_id("#keys"),
             // todo: remainder, when new special variable will be introduced, add them here
-            interpreter.intern("this"),
-            interpreter.intern("super"),
+            interpreter.intern_symbol_id("this"),
+            interpreter.intern_symbol_id("super"),
         ];
 
         for spec in specs {
             let symbol_id = spec;
-            let result = check_symbol_is_assignable(&mut interpreter, symbol_id);
+            let result =
+                check_symbol_is_assignable(&mut interpreter, symbol_id);
 
             assertion::assert_invalid_argument_error(&result);
         }

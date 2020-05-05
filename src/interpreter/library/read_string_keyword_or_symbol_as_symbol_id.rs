@@ -10,20 +10,27 @@ pub fn read_string_keyword_or_symbol_as_symbol_id(
     let symbol_id = match value {
         Value::Symbol(symbol_id) => symbol_id,
         Value::Keyword(keyword_id) => {
-            let keyword_name = interpreter.get_keyword(keyword_id)?.get_name().clone();
+            let keyword_name =
+                interpreter.get_keyword(keyword_id)?.get_name().clone();
 
-            let symbol_id = interpreter.intern(&keyword_name);
+            let symbol_id = interpreter.intern_symbol_id(&keyword_name);
 
             symbol_id
-        }
+        },
         Value::String(string_id) => {
-            let string = interpreter.get_string(string_id)?.get_string().clone(); // todo: fix
+            let string =
+                interpreter.get_string(string_id)?.get_string().clone(); // todo: fix
 
-            let symbol_id = interpreter.intern(&string);
+            let symbol_id = interpreter.intern_symbol_id(&string);
 
             symbol_id
-        }
-        _ => return Error::invalid_argument_error("Expected string, keyword or symbol.").into(),
+        },
+        _ => {
+            return Error::invalid_argument_error(
+                "Expected string, keyword or symbol.",
+            )
+            .into();
+        },
     };
 
     Ok(symbol_id)
@@ -43,9 +50,11 @@ mod tests {
     fn returns_correct_symbol_id_from_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern("test");
+        let expected = interpreter.intern_symbol_id("test");
         let value = interpreter.intern_symbol_value("test");
-        let result = read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value).unwrap();
+        let result =
+            read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value)
+                .unwrap();
 
         nia_assert_equal(expected, result);
     }
@@ -54,9 +63,11 @@ mod tests {
     fn returns_correct_symbol_id_from_keyword() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern("test");
+        let expected = interpreter.intern_symbol_id("test");
         let value = interpreter.intern_keyword_value("test");
-        let result = read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value).unwrap();
+        let result =
+            read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value)
+                .unwrap();
 
         nia_assert_equal(expected, result);
     }
@@ -65,9 +76,11 @@ mod tests {
     fn returns_correct_symbol_id_from_string() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern("test");
+        let expected = interpreter.intern_symbol_id("test");
         let value = interpreter.intern_string_value("test");
-        let result = read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value).unwrap();
+        let result =
+            read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, value)
+                .unwrap();
 
         nia_assert_equal(expected, result);
     }
@@ -89,8 +102,10 @@ mod tests {
         ];
 
         for not_symbol_value in invalid_values {
-            let result =
-                read_string_keyword_or_symbol_as_symbol_id(&mut interpreter, not_symbol_value);
+            let result = read_string_keyword_or_symbol_as_symbol_id(
+                &mut interpreter,
+                not_symbol_value,
+            );
             assertion::assert_invalid_argument_error(&result);
         }
     }

@@ -23,28 +23,29 @@ pub fn list_question(
             let mut is_list_correct = true;
 
             loop {
-                let cdr = interpreter
-                    .get_cdr(current_cons)
-                    .map_err(|err| Error::generic_execution_error_caused("", err))?;
+                let cdr = interpreter.get_cdr(current_cons).map_err(|err| {
+                    Error::generic_execution_error_caused("", err)
+                })?;
 
                 match cdr {
                     Value::Symbol(symbol_id) => {
-                        is_list_correct = interpreter.symbol_is_nil(symbol_id)?;
+                        is_list_correct =
+                            interpreter.symbol_is_nil(symbol_id)?;
 
                         break;
-                    }
+                    },
                     Value::Cons(next_cons_id) => {
                         current_cons = next_cons_id;
-                    }
+                    },
                     _ => {
                         is_list_correct = false;
                         break;
-                    }
+                    },
                 }
             }
 
             is_list_correct
-        }
+        },
         Value::Symbol(symbol_id) => interpreter.symbol_is_nil(symbol_id)?,
         _ => false,
     };
@@ -97,11 +98,15 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(is:list?)", "(is:list? 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

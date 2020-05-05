@@ -1,13 +1,18 @@
-use nom::{alt, character::complete::multispace1, complete, map_res, named, peek, tag, terminated};
+use nom::{
+    alt, character::complete::multispace1, complete, map_res, named, peek, tag,
+    terminated,
+};
 
 use super::{
-    elements::boolean_element, elements::delimited_symbols_element, elements::float_element,
-    elements::integer_element, elements::keyword_element, elements::object_element,
-    elements::object_pattern_element, elements::prefixed_element, elements::s_expression_element,
-    elements::short_lambda_element, elements::string_element, elements::symbol_element,
-    BooleanElement, DelimitedSymbolsElement, FloatElement, IntegerElement, KeywordElement,
-    ObjectElement, ObjectPatternElement, PrefixedElement, SExpressionElement, ShortLambdaElement,
-    StringElement, SymbolElement,
+    elements::boolean_element, elements::delimited_symbols_element,
+    elements::float_element, elements::integer_element,
+    elements::keyword_element, elements::object_element,
+    elements::object_pattern_element, elements::prefixed_element,
+    elements::s_expression_element, elements::short_lambda_element,
+    elements::string_element, elements::symbol_element, BooleanElement,
+    DelimitedSymbolsElement, FloatElement, IntegerElement, KeywordElement,
+    ObjectElement, ObjectPatternElement, PrefixedElement, SExpressionElement,
+    ShortLambdaElement, StringElement, SymbolElement,
 };
 
 use crate::parser::lib::end_of_input;
@@ -57,11 +62,15 @@ fn make_boolean_element(el: BooleanElement) -> Result<Element, ParseError> {
     Ok(Element::Boolean(el))
 }
 
-fn make_short_lambda_element(el: ShortLambdaElement) -> Result<Element, ParseError> {
+fn make_short_lambda_element(
+    el: ShortLambdaElement,
+) -> Result<Element, ParseError> {
     Ok(Element::ShortLambda(el))
 }
 
-fn make_object_pattern_element(el: ObjectPatternElement) -> Result<Element, ParseError> {
+fn make_object_pattern_element(
+    el: ObjectPatternElement,
+) -> Result<Element, ParseError> {
     Ok(Element::ObjectPattern(el))
 }
 
@@ -81,7 +90,9 @@ fn make_keyword_element(el: KeywordElement) -> Result<Element, ParseError> {
     Ok(Element::Keyword(el))
 }
 
-fn make_s_expression_element(el: SExpressionElement) -> Result<Element, ParseError> {
+fn make_s_expression_element(
+    el: SExpressionElement,
+) -> Result<Element, ParseError> {
     Ok(Element::SExpression(el))
 }
 
@@ -93,7 +104,9 @@ fn make_prefix_element(el: PrefixedElement) -> Result<Element, ParseError> {
     Ok(Element::Prefix(el))
 }
 
-fn make_delimited_symbols_element(el: DelimitedSymbolsElement) -> Result<Element, ParseError> {
+fn make_delimited_symbols_element(
+    el: DelimitedSymbolsElement,
+) -> Result<Element, ParseError> {
     Ok(Element::DelimitedSymbols(el))
 }
 

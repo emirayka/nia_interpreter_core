@@ -2,7 +2,9 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Function;
 use crate::interpreter::value::Value;
-use crate::interpreter::value::{FunctionArguments, KeyArgument, OptionalArgument};
+use crate::interpreter::value::{
+    FunctionArguments, KeyArgument, OptionalArgument,
+};
 use crate::{Object, ObjectValueWrapper};
 
 fn deep_equal_option_values(
@@ -51,7 +53,8 @@ fn deep_equal_key_arguments(
     let iterator = iterator1.zip(iterator2);
 
     for (key_argument1, key_argument2) in iterator {
-        if !deep_equal_key_argument(interpreter, key_argument1, key_argument2)? {
+        if !deep_equal_key_argument(interpreter, key_argument1, key_argument2)?
+        {
             return Ok(false);
         }
     }
@@ -97,7 +100,11 @@ fn deep_equal_optional_arguments(
     let iterator = iterator1.zip(iterator2);
 
     for (optional_argument1, optional_argument2) in iterator {
-        if !deep_equal_optional_argument(interpreter, optional_argument1, optional_argument2)? {
+        if !deep_equal_optional_argument(
+            interpreter,
+            optional_argument1,
+            optional_argument2,
+        )? {
             return Ok(false);
         }
     }
@@ -110,7 +117,9 @@ fn deep_equal_arguments(
     arguments1: &FunctionArguments,
     arguments2: &FunctionArguments,
 ) -> Result<bool, Error> {
-    if arguments1.get_ordinary_arguments() != arguments2.get_ordinary_arguments() {
+    if arguments1.get_ordinary_arguments()
+        != arguments2.get_ordinary_arguments()
+    {
         return Ok(false);
     }
 
@@ -164,7 +173,8 @@ fn deep_equal_object_value_wrapper(
     object_value_wrapper_1: &ObjectValueWrapper,
     object_value_wrapper_2: &ObjectValueWrapper,
 ) -> Result<bool, Error> {
-    if object_value_wrapper_1.get_flags() != object_value_wrapper_2.get_flags() {
+    if object_value_wrapper_1.get_flags() != object_value_wrapper_2.get_flags()
+    {
         return Ok(false);
     }
 
@@ -193,14 +203,18 @@ fn deep_equal_object(
 
     for (item_symbol, wrapper_1) in object1_items.iter() {
         let result = match object2_items.get(item_symbol) {
-            Some(wrapper_2) => deep_equal_object_value_wrapper(interpreter, wrapper_1, wrapper_2),
+            Some(wrapper_2) => deep_equal_object_value_wrapper(
+                interpreter,
+                wrapper_1,
+                wrapper_2,
+            ),
             None => return Ok(false),
         };
 
         match result {
             Ok(false) => return Ok(false),
             Err(error) => return Err(error),
-            _ => {}
+            _ => {},
         }
     }
 
@@ -218,7 +232,11 @@ fn deep_equal_function(
                 return Ok(false);
             }
 
-            if !deep_equal_arguments(interpreter, b1.get_arguments(), b2.get_arguments())? {
+            if !deep_equal_arguments(
+                interpreter,
+                b1.get_arguments(),
+                b2.get_arguments(),
+            )? {
                 return Ok(false);
             }
 
@@ -227,14 +245,18 @@ fn deep_equal_function(
             }
 
             Ok(true)
-        }
+        },
         (Function::Builtin(b1), Function::Builtin(b2)) => return Ok(b1 == b2),
         (Function::Macro(b1), Function::Macro(b2)) => {
             if b1.get_environment() != b2.get_environment() {
                 return Ok(false);
             }
 
-            if !deep_equal_arguments(interpreter, b1.get_arguments(), b2.get_arguments())? {
+            if !deep_equal_arguments(
+                interpreter,
+                b1.get_arguments(),
+                b2.get_arguments(),
+            )? {
                 return Ok(false);
             }
 
@@ -243,13 +265,19 @@ fn deep_equal_function(
             }
 
             Ok(true)
-        }
-        (Function::SpecialForm(b1), Function::SpecialForm(b2)) => return Ok(b1 == b2),
+        },
+        (Function::SpecialForm(b1), Function::SpecialForm(b2)) => {
+            return Ok(b1 == b2);
+        },
         _ => Ok(false),
     }
 }
 
-pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Result<bool, Error> {
+pub fn deep_equal(
+    interpreter: &Interpreter,
+    value1: Value,
+    value2: Value,
+) -> Result<bool, Error> {
     use crate::interpreter::value::Value::*;
 
     match (value1, value2) {
@@ -263,7 +291,7 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
             let string2 = interpreter.get_string(val2)?;
 
             Ok(string1 == string2)
-        }
+        },
         (Cons(val1), Cons(val2)) => {
             let car1 = interpreter.get_car(val1)?;
             let car2 = interpreter.get_car(val2)?;
@@ -275,21 +303,22 @@ pub fn deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) -> Re
             let cdr_equals = deep_equal(&interpreter, cdr1, cdr2)?;
 
             Ok(car_equals && cdr_equals)
-        }
+        },
         (Object(object1_id), Object(object2_id)) => {
             let object_1 = interpreter.get_object(object1_id)?;
             let object_2 = interpreter.get_object(object2_id)?;
 
             deep_equal_object(interpreter, object_1, object_2)
-        }
+        },
         (Function(val1), Function(val2)) => {
             let function_1 = interpreter.get_function(val1)?;
             let function_2 = interpreter.get_function(val2)?;
 
-            let result = deep_equal_function(interpreter, function_1, function_2)?;
+            let result =
+                deep_equal_function(interpreter, function_1, function_2)?;
 
             Ok(result)
-        }
+        },
         _ => Ok(false),
     }
 }
@@ -301,10 +330,15 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    fn assert_values_are_deeply_equal(interpreter: &mut Interpreter, pairs: Vec<(&str, &str)>) {
+    fn assert_values_are_deeply_equal(
+        interpreter: &mut Interpreter,
+        pairs: Vec<(&str, &str)>,
+    ) {
         for pair in pairs {
-            let value1 = interpreter.execute_in_main_environment(pair.0).unwrap();
-            let value2 = interpreter.execute_in_main_environment(pair.1).unwrap();
+            let value1 =
+                interpreter.execute_in_main_environment(pair.0).unwrap();
+            let value2 =
+                interpreter.execute_in_main_environment(pair.1).unwrap();
 
             if !deep_equal(interpreter, value1, value2).unwrap() {
                 panic!();
@@ -312,10 +346,15 @@ mod tests {
         }
     }
 
-    fn assert_values_are_not_deeply_equal(interpreter: &mut Interpreter, pairs: Vec<(&str, &str)>) {
+    fn assert_values_are_not_deeply_equal(
+        interpreter: &mut Interpreter,
+        pairs: Vec<(&str, &str)>,
+    ) {
         for pair in pairs {
-            let value1 = interpreter.execute_in_main_environment(pair.0).unwrap();
-            let value2 = interpreter.execute_in_main_environment(pair.1).unwrap();
+            let value1 =
+                interpreter.execute_in_main_environment(pair.0).unwrap();
+            let value2 =
+                interpreter.execute_in_main_environment(pair.1).unwrap();
 
             if deep_equal(interpreter, value1, value2).unwrap() {
                 panic!();

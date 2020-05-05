@@ -29,9 +29,12 @@ pub fn send_mouse_button_up(
         }
     };
 
-    let mouse_button_up_symbol_value = interpreter.intern_symbol_value("mouse-button-up");
-    let mouse_button_up =
-        interpreter.vec_to_list(vec![mouse_button_up_symbol_value, Value::Integer(key_code)]);
+    let mouse_button_up_symbol_value =
+        interpreter.intern_symbol_value("mouse-button-up");
+    let mouse_button_up = interpreter.vec_to_list(vec![
+        mouse_button_up_symbol_value,
+        Value::Integer(key_code),
+    ]);
 
     library::add_value_to_root_list(interpreter, "--actions", mouse_button_up)?;
 
@@ -83,11 +86,15 @@ mod tests {
             "(action:send-mouse-button-up #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -95,6 +102,9 @@ mod tests {
             "(action:send-mouse-button-up 1 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

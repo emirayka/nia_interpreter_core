@@ -18,12 +18,16 @@ use crate::interpreter::{Action, Error, Interpreter, Value};
 
 use crate::interpreter::library;
 
-fn read_keyboards(interpreter: &mut Interpreter) -> Result<Vec<(String, String)>, Error> {
-    let registered_keyboards = library::get_root_variable(interpreter, "registered-keyboards")?;
+fn read_keyboards(
+    interpreter: &mut Interpreter,
+) -> Result<Vec<(String, String)>, Error> {
+    let registered_keyboards =
+        library::get_root_variable(interpreter, "registered-keyboards")?;
 
     library::check_value_is_cons(interpreter, registered_keyboards)?;
 
-    let registered_keyboards = interpreter.list_to_vec(registered_keyboards.try_into()?)?;
+    let registered_keyboards =
+        interpreter.list_to_vec(registered_keyboards.try_into()?)?;
 
     let mut keyboards = Vec::new();
 
@@ -32,10 +36,13 @@ fn read_keyboards(interpreter: &mut Interpreter) -> Result<Vec<(String, String)>
 
         let registered_keyboard_cons_id = registered_keyboard.try_into()?;
 
-        let registered_keyboard = interpreter.list_to_vec(registered_keyboard_cons_id)?;
+        let registered_keyboard =
+            interpreter.list_to_vec(registered_keyboard_cons_id)?;
 
-        let path = library::read_as_string(interpreter, registered_keyboard[0])?;
-        let name = library::read_as_string(interpreter, registered_keyboard[1])?;
+        let path =
+            library::read_as_string(interpreter, registered_keyboard[0])?;
+        let name =
+            library::read_as_string(interpreter, registered_keyboard[1])?;
 
         keyboards.push((path.clone(), name.clone()))
     }
@@ -43,16 +50,20 @@ fn read_keyboards(interpreter: &mut Interpreter) -> Result<Vec<(String, String)>
     Ok(keyboards)
 }
 
-fn read_modifiers(interpreter: &mut Interpreter) -> Result<Vec<KeyChordPart>, Error> {
+fn read_modifiers(
+    interpreter: &mut Interpreter,
+) -> Result<Vec<KeyChordPart>, Error> {
     let modifiers_value = library::get_root_variable(interpreter, "modifiers")?;
 
     library::check_value_is_list(interpreter, modifiers_value)?;
 
-    let modifiers_values = library::read_as_vector(interpreter, modifiers_value)?;
+    let modifiers_values =
+        library::read_as_vector(interpreter, modifiers_value)?;
     let mut modifiers = Vec::new();
 
     for modifier_value in modifiers_values {
-        let modifier = library::read_as_key_chord_part(interpreter, modifier_value)?;
+        let modifier =
+            library::read_as_key_chord_part(interpreter, modifier_value)?;
 
         modifiers.push(modifier);
     }
@@ -71,7 +82,8 @@ fn read_key_chords(
     let mut key_chords = Vec::new();
 
     for key_chord_value in key_chords_values {
-        let key_chord = library::read_as_key_chord(interpreter, key_chord_value)?;
+        let key_chord =
+            library::read_as_key_chord(interpreter, key_chord_value)?;
 
         key_chords.push(key_chord);
     }
@@ -93,7 +105,9 @@ fn read_mapping(
     Ok((key_chords, function))
 }
 
-fn read_mappings(interpreter: &mut Interpreter) -> Result<Vec<(Vec<KeyChord>, Value)>, Error> {
+fn read_mappings(
+    interpreter: &mut Interpreter,
+) -> Result<Vec<(Vec<KeyChord>, Value)>, Error> {
     let mappings = library::get_root_variable(interpreter, "global-map")?;
 
     library::check_value_is_list(interpreter, mappings)?;
@@ -127,11 +141,14 @@ impl NiaEventListener {
     pub fn from_interpreter(interpreter: &mut Interpreter) -> NiaEventListener {
         let mut event_listener = NiaEventListener::new();
 
-        let keyboards = read_keyboards(interpreter).expect("Failed keyboard reading.");
+        let keyboards =
+            read_keyboards(interpreter).expect("Failed keyboard reading.");
 
-        let modifiers = read_modifiers(interpreter).expect("Failed modifiers' reading.");
+        let modifiers =
+            read_modifiers(interpreter).expect("Failed modifiers' reading.");
 
-        let mappings = read_mappings(interpreter).expect("Failed mappings' reading.");
+        let mappings =
+            read_mappings(interpreter).expect("Failed mappings' reading.");
 
         for keyboard in keyboards {
             event_listener.add_keyboard(&keyboard.0, &keyboard.1);
@@ -172,7 +189,8 @@ impl NiaEventListener {
         let mut iterator = self.keyboards.iter().enumerate();
 
         for (index, (keyboard_path, keyboard_name)) in iterator {
-            settings_builder = settings_builder.add_keyboard(keyboard_path.clone());
+            settings_builder =
+                settings_builder.add_keyboard(keyboard_path.clone());
             map.insert(keyboard_name.clone(), KeyboardId::new(index as u16));
         }
 
@@ -210,31 +228,36 @@ impl NiaEventListener {
                     println!("{:?}", event);
 
                     match event {
-                        Event::KeyChordEvent(key_chord) => match state_machine.excite(key_chord) {
-                            StateMachineResult::Excited(action) => {
-                                action_sender.send(action);
-                            }
-                            StateMachineResult::Fallback(previous) => {
-                                for key_chord in previous {
-                                    let command = nia_events::Command::UinputCommand(
-                                        UinputCommand::ForwardKeyChord(key_chord),
-                                    );
+                        Event::KeyChordEvent(key_chord) => {
+                            match state_machine.excite(key_chord) {
+                                StateMachineResult::Excited(action) => {
+                                    action_sender.send(action);
+                                },
+                                StateMachineResult::Fallback(previous) => {
+                                    for key_chord in previous {
+                                        let command =
+                                            nia_events::Command::UinputCommand(
+                                                UinputCommand::ForwardKeyChord(
+                                                    key_chord,
+                                                ),
+                                            );
 
-                                    match cmd_sender.send(command) {
-                                        Ok(_) => {}
-                                        Err(_) => break,
+                                        match cmd_sender.send(command) {
+                                            Ok(_) => {},
+                                            Err(_) => break,
+                                        }
                                     }
-                                }
+                                },
+                                StateMachineResult::Transition() => {},
                             }
-                            StateMachineResult::Transition() => {}
                         },
                     }
 
                     match rx.try_recv() {
                         Ok(()) | Err(TryRecvError::Disconnected) => {
                             break;
-                        }
-                        Err(TryRecvError::Empty) => {}
+                        },
+                        Err(TryRecvError::Empty) => {},
                     }
                 }
 

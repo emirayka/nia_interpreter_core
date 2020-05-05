@@ -17,18 +17,17 @@ pub fn float(
 
     let mut values = values;
 
-    let result = match values.remove(0) {
-        Value::Integer(int) => Value::Float(int as f64),
-        Value::Float(float) => Value::Float(float),
-        Value::Boolean(true) => Value::Float(1.0),
-        Value::Boolean(false) => Value::Float(0.0),
-        _ => {
-            return Error::generic_execution_error(
+    let result =
+        match values.remove(0) {
+            Value::Integer(int) => Value::Float(int as f64),
+            Value::Float(float) => Value::Float(float),
+            Value::Boolean(true) => Value::Float(1.0),
+            Value::Boolean(false) => Value::Float(0.0),
+            _ => return Error::generic_execution_error(
                 "Only integers, floats or booleans can be converted to float.",
             )
-            .into()
-        }
-    };
+            .into(),
+        };
 
     Ok(result)
 }
@@ -71,15 +70,22 @@ mod tests {
             "(to:float #())",
         ];
 
-        assertion::assert_results_are_generic_execution_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_generic_execution_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(to:float)", "(to:float 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

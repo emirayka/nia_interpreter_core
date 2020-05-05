@@ -5,10 +5,11 @@ pub const OBJECT_VALUE_WRAPPER_FLAG_WRITABLE: u8 = 0x2;
 pub const OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE: u8 = 0x4;
 pub const OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE: u8 = 0x80;
 
-pub const OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT: u8 = OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE
-    | OBJECT_VALUE_WRAPPER_FLAG_WRITABLE
-    | OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE
-    | OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
+pub const OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT: u8 =
+    OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE
+        | OBJECT_VALUE_WRAPPER_FLAG_WRITABLE
+        | OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE
+        | OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
 
 pub const OBJECT_VALUE_WRAPPER_FLAGS_NONE: u8 = 0x0;
 
@@ -24,7 +25,10 @@ impl ObjectValueWrapper {
     }
 
     pub fn new(value: Value) -> ObjectValueWrapper {
-        ObjectValueWrapper::with_flags(value, OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT)
+        ObjectValueWrapper::with_flags(
+            value,
+            OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
+        )
     }
 
     pub fn is_internable(&self) -> bool {
@@ -47,8 +51,10 @@ impl ObjectValueWrapper {
         if self.is_internable() {
             Ok(())
         } else {
-            Error::generic_execution_error("Cannot intern not internable item from an object.")
-                .into()
+            Error::generic_execution_error(
+                "Cannot intern not internable item from an object.",
+            )
+            .into()
         }
     }
 
@@ -56,8 +62,10 @@ impl ObjectValueWrapper {
         if self.is_writable() {
             Ok(())
         } else {
-            Error::generic_execution_error("Cannot overwrite not writable item of an object.")
-                .into()
+            Error::generic_execution_error(
+                "Cannot overwrite not writable item of an object.",
+            )
+            .into()
         }
     }
 
@@ -65,8 +73,10 @@ impl ObjectValueWrapper {
         if self.is_enumerable() {
             Ok(())
         } else {
-            Error::generic_execution_error("Cannot enumerate not enumerable item of an object.")
-                .into()
+            Error::generic_execution_error(
+                "Cannot enumerate not enumerable item of an object.",
+            )
+            .into()
         }
     }
 
@@ -74,8 +84,10 @@ impl ObjectValueWrapper {
         if self.is_configurable() {
             Ok(())
         } else {
-            Error::generic_execution_error("Cannot configure not configurable item of an object.")
-                .into()
+            Error::generic_execution_error(
+                "Cannot configure not configurable item of an object.",
+            )
+            .into()
         }
     }
 
@@ -94,7 +106,11 @@ impl ObjectValueWrapper {
         self.flags & flag != 0
     }
 
-    pub fn set_flag(&mut self, flag: u8, flag_value: bool) -> Result<(), Error> {
+    pub fn set_flag(
+        &mut self,
+        flag: u8,
+        flag_value: bool,
+    ) -> Result<(), Error> {
         self.check_is_configurable()?;
 
         if flag_value {
@@ -118,7 +134,10 @@ impl ObjectValueWrapper {
         self.set_flag(OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE, enumerable)
     }
 
-    pub fn set_configurable(&mut self, configurable: bool) -> Result<(), Error> {
+    pub fn set_configurable(
+        &mut self,
+        configurable: bool,
+    ) -> Result<(), Error> {
         self.set_flag(OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE, configurable)
     }
 
@@ -173,7 +192,8 @@ mod tests {
         fn returns_error_during_internation_of_not_internable_binding() {
             let mut value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(1),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE,
             );
 
             nia_assert(value_wrapper.get_value().is_err())
@@ -199,7 +219,8 @@ mod tests {
         fn returns_error_during_setting_of_not_writable_binding() {
             let mut value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(1),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_WRITABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_WRITABLE,
             );
 
             nia_assert(value_wrapper.set_value(Value::Integer(2)).is_err())
@@ -228,8 +249,10 @@ mod tests {
 
         #[test]
         fn returns_error_during_configuring_of_not_configurable_binding() {
-            let flags = OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
-            let mut value_wrapper = ObjectValueWrapper::with_flags(Value::Integer(1), flags);
+            let flags = OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
+            let mut value_wrapper =
+                ObjectValueWrapper::with_flags(Value::Integer(1), flags);
 
             nia_assert_equal(flags, value_wrapper.get_flags());
             nia_assert(
@@ -273,19 +296,23 @@ mod tests {
 
             nia_assert_equal(
                 Ok(()),
-                value_wrapper.set_flag(OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE, false),
+                value_wrapper
+                    .set_flag(OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE, false),
             );
             nia_assert_equal(
                 Ok(()),
-                value_wrapper.set_flag(OBJECT_VALUE_WRAPPER_FLAG_WRITABLE, false),
+                value_wrapper
+                    .set_flag(OBJECT_VALUE_WRAPPER_FLAG_WRITABLE, false),
             );
             nia_assert_equal(
                 Ok(()),
-                value_wrapper.set_flag(OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE, false),
+                value_wrapper
+                    .set_flag(OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE, false),
             );
             nia_assert_equal(
                 Ok(()),
-                value_wrapper.set_flag(OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE, false),
+                value_wrapper
+                    .set_flag(OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE, false),
             );
 
             nia_assert_equal(
@@ -335,11 +362,15 @@ mod tests {
 
         #[test]
         fn gets_and_sets_internable_flag() {
-            let mut object_value_wrapper = ObjectValueWrapper::new(Value::Integer(0));
+            let mut object_value_wrapper =
+                ObjectValueWrapper::new(Value::Integer(0));
 
             nia_assert_equal(true, object_value_wrapper.is_internable());
 
-            nia_assert_equal(Ok(()), object_value_wrapper.set_internable(false));
+            nia_assert_equal(
+                Ok(()),
+                object_value_wrapper.set_internable(false),
+            );
             nia_assert_equal(false, object_value_wrapper.is_internable());
 
             nia_assert_equal(Ok(()), object_value_wrapper.set_internable(true));
@@ -347,10 +378,12 @@ mod tests {
         }
 
         #[test]
-        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper() {
+        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper(
+        ) {
             let mut object_value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(0),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
             );
 
             nia_assert_equal(true, object_value_wrapper.is_internable());
@@ -365,7 +398,8 @@ mod tests {
 
         #[test]
         fn gets_and_sets_writable_flag() {
-            let mut object_value_wrapper = ObjectValueWrapper::new(Value::Integer(0));
+            let mut object_value_wrapper =
+                ObjectValueWrapper::new(Value::Integer(0));
 
             nia_assert_equal(true, object_value_wrapper.is_writable());
 
@@ -377,10 +411,12 @@ mod tests {
         }
 
         #[test]
-        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper() {
+        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper(
+        ) {
             let mut object_value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(0),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
             );
 
             nia_assert_equal(true, object_value_wrapper.is_writable());
@@ -395,11 +431,15 @@ mod tests {
 
         #[test]
         fn gets_and_sets_enumerable_flag() {
-            let mut object_value_wrapper = ObjectValueWrapper::new(Value::Integer(0));
+            let mut object_value_wrapper =
+                ObjectValueWrapper::new(Value::Integer(0));
 
             nia_assert_equal(true, object_value_wrapper.is_enumerable());
 
-            nia_assert_equal(Ok(()), object_value_wrapper.set_enumerable(false));
+            nia_assert_equal(
+                Ok(()),
+                object_value_wrapper.set_enumerable(false),
+            );
             nia_assert_equal(false, object_value_wrapper.is_enumerable());
 
             nia_assert_equal(Ok(()), object_value_wrapper.set_enumerable(true));
@@ -407,10 +447,12 @@ mod tests {
         }
 
         #[test]
-        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper() {
+        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper(
+        ) {
             let mut object_value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(0),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
             );
 
             nia_assert_equal(true, object_value_wrapper.is_enumerable());
@@ -425,19 +467,25 @@ mod tests {
 
         #[test]
         fn sets_configurable_flag() {
-            let mut object_value_wrapper = ObjectValueWrapper::new(Value::Integer(0));
+            let mut object_value_wrapper =
+                ObjectValueWrapper::new(Value::Integer(0));
 
             nia_assert_equal(true, object_value_wrapper.is_configurable());
 
-            nia_assert_equal(Ok(()), object_value_wrapper.set_configurable(false));
+            nia_assert_equal(
+                Ok(()),
+                object_value_wrapper.set_configurable(false),
+            );
             nia_assert_equal(false, object_value_wrapper.is_configurable());
         }
 
         #[test]
-        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper() {
+        fn returns_error_when_attempts_to_change_not_configurable_value_wrapper(
+        ) {
             let mut object_value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(0),
-                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
+                    ^ OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
             );
 
             nia_assert_equal(false, object_value_wrapper.is_configurable());

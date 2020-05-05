@@ -2,7 +2,10 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn read_as_string(interpreter: &Interpreter, value: Value) -> Result<&String, Error> {
+pub fn read_as_string(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<&String, Error> {
     let string_id = match value {
         Value::String(string_id) => string_id,
         _ => return Error::invalid_argument_error("Expected string.").into(),

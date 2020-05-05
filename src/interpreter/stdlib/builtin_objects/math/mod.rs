@@ -14,7 +14,7 @@ mod pow;
 mod round;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let math_symbol_id = interpreter.intern("math");
+    let math_symbol_id = interpreter.intern_symbol_id("math");
     let math_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
@@ -28,7 +28,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, math_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            math_object_id,
+            name,
+            func,
+        )?;
     }
 
     interpreter.define_variable(

@@ -36,7 +36,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol_id = interpreter.intern("test");
+        let symbol_id = interpreter.intern_symbol_id("test");
 
         interpreter
             .define_variable(
@@ -48,7 +48,8 @@ mod tests {
 
         let forms = vec![Value::Integer(1), Value::Symbol(symbol_id)];
 
-        let result = execute_forms(&mut interpreter, root_environment_id, &forms);
+        let result =
+            execute_forms(&mut interpreter, root_environment_id, &forms);
 
         nia_assert_equal(Value::Integer(10), result.unwrap());
     }
@@ -58,9 +59,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
         let root_environment_id = interpreter.get_root_environment_id();
 
-        let forms = vec![Value::Integer(1), interpreter.intern_symbol_value("test")];
+        let forms =
+            vec![Value::Integer(1), interpreter.intern_symbol_value("test")];
 
-        let result = execute_forms(&mut interpreter, root_environment_id, &forms);
+        let result =
+            execute_forms(&mut interpreter, root_environment_id, &forms);
 
         nia_assert_is_err(&result);
     }

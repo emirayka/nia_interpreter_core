@@ -10,11 +10,13 @@ pub fn add_value_to_root_list(
     value: Value,
 ) -> Result<(), Error> {
     let root_environment = interpreter.get_root_environment_id();
-    let symbol_name = interpreter.intern(name);
+    let symbol_name = interpreter.intern_symbol_id(name);
 
     let root_variable = interpreter
         .lookup_variable(root_environment, symbol_name)?
-        .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))?;
+        .ok_or_else(|| {
+            Error::generic_execution_error("Cannot find variable.")
+        })?;
 
     check_value_is_list(interpreter, root_variable)?;
 
@@ -41,7 +43,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
         let nil = interpreter.intern_nil_symbol_value();
 
         interpreter
@@ -55,7 +58,8 @@ mod tests {
     fn adds_value_to_empty_list() {
         let mut interpreter = setup();
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
         add_value_to_root_list(
             &mut interpreter,
@@ -67,7 +71,9 @@ mod tests {
         let result = interpreter
             .lookup_variable(root_environment_id, symbol)
             .unwrap()
-            .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot find variable.")
+            })
             .unwrap();
 
         let expected = interpreter.vec_to_list(vec![Value::Integer(1)]);
@@ -80,7 +86,8 @@ mod tests {
         let mut interpreter = setup();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
         add_value_to_root_list(
             &mut interpreter,
@@ -99,10 +106,13 @@ mod tests {
         let result = interpreter
             .lookup_variable(root_environment_id, symbol)
             .unwrap()
-            .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot find variable.")
+            })
             .unwrap();
 
-        let expected = interpreter.vec_to_list(vec![Value::Integer(2), Value::Integer(1)]);
+        let expected =
+            interpreter.vec_to_list(vec![Value::Integer(2), Value::Integer(1)]);
 
         assertion::assert_deep_equal(&mut interpreter, expected, result)
     }

@@ -47,25 +47,27 @@ fn read_object_method_invocation_s_expression(
 
     let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
 
-    let result = if library::deep_equal(interpreter, car, with_this_symbol_value)? {
-        let cdr = interpreter.get_cdr(object_method_invocation.try_into()?)?;
-        let cddr = interpreter.get_cdr(cdr.try_into()?)?;
-        let caddr = interpreter.get_car(cddr.try_into()?)?;
+    let result =
+        if library::deep_equal(interpreter, car, with_this_symbol_value)? {
+            let cdr =
+                interpreter.get_cdr(object_method_invocation.try_into()?)?;
+            let cddr = interpreter.get_cdr(cdr.try_into()?)?;
+            let caddr = interpreter.get_car(cddr.try_into()?)?;
 
-        let cdddr = read_elements(interpreter, s_expressions)?;
-        let cdddr = interpreter.vec_to_list(cdddr);
+            let cdddr = read_elements(interpreter, s_expressions)?;
+            let cdddr = interpreter.vec_to_list(cdddr);
 
-        let new_caddr = interpreter.make_cons_value(caddr, cdddr);
+            let new_caddr = interpreter.make_cons_value(caddr, cdddr);
 
-        interpreter.set_car(cddr.try_into()?, new_caddr)?;
+            interpreter.set_car(cddr.try_into()?, new_caddr)?;
 
-        object_method_invocation
-    } else {
-        let cdr = read_elements(interpreter, s_expressions)?;
-        let cdr = interpreter.vec_to_list(cdr);
+            object_method_invocation
+        } else {
+            let cdr = read_elements(interpreter, s_expressions)?;
+            let cdr = interpreter.vec_to_list(cdr);
 
-        interpreter.make_cons_value(object_method_invocation, cdr)
-    };
+            interpreter.make_cons_value(object_method_invocation, cdr)
+        };
 
     Ok(result)
 }
@@ -81,7 +83,8 @@ fn read_s_expression(
     let mut s_expressions = sexp_element.get_values();
     let first_element = s_expressions.remove(0);
 
-    if let Element::DelimitedSymbols(delimited_symbols_element) = first_element {
+    if let Element::DelimitedSymbols(delimited_symbols_element) = first_element
+    {
         read_object_method_invocation_s_expression(
             interpreter,
             delimited_symbols_element,
@@ -123,31 +126,34 @@ fn count_short_lambda_argument_count(
                 match (&name['%'.len_utf8()..]).parse::<u8>() {
                     Ok(val) => {
                         count = max(count, val);
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 }
-            }
+            },
             Element::Prefix(prefix_element) => {
                 candidates.push(prefix_element.get_value_ref());
-            }
+            },
             Element::SExpression(s_expression_element) => {
                 for element in s_expression_element.get_values_ref() {
                     candidates.push(element);
                 }
-            }
+            },
             Element::Object(object_element) => {
                 for (_, element) in object_element.get_values_ref() {
                     candidates.push(element)
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
     count
 }
 
-fn make_short_lambda_argument_list(interpreter: &mut Interpreter, count: u8) -> Value {
+fn make_short_lambda_argument_list(
+    interpreter: &mut Interpreter,
+    count: u8,
+) -> Value {
     let mut last_cons = interpreter.intern_nil_symbol_value();
 
     for i in 0..count {
@@ -169,9 +175,12 @@ fn read_short_lambda(
     let lambda = interpreter.intern_symbol_value("lambda");
     let nil = interpreter.intern_nil_symbol_value();
 
-    let argument_count = count_short_lambda_argument_count(interpreter, &short_lambda_element);
-    let code = read_s_expression(interpreter, short_lambda_element.get_value())?;
-    let arguments = make_short_lambda_argument_list(interpreter, argument_count);
+    let argument_count =
+        count_short_lambda_argument_count(interpreter, &short_lambda_element);
+    let code =
+        read_s_expression(interpreter, short_lambda_element.get_value())?;
+    let arguments =
+        make_short_lambda_argument_list(interpreter, argument_count);
 
     let cdr = interpreter.make_cons_value(code, nil);
     let cdr = interpreter.make_cons_value(arguments, cdr);
@@ -252,7 +261,10 @@ fn read_object_pattern(
     Ok(Value::Cons(cons_id))
 }
 
-fn expand_delimited_symbols(interpreter: &mut Interpreter, values: &[SymbolElement]) -> Value {
+fn expand_delimited_symbols(
+    interpreter: &mut Interpreter,
+    values: &[SymbolElement],
+) -> Value {
     let object_symbol_name = values[0].get_value();
     let mut previous_cons = interpreter.intern_symbol_value(object_symbol_name);
 
@@ -260,11 +272,13 @@ fn expand_delimited_symbols(interpreter: &mut Interpreter, values: &[SymbolEleme
         let symbol_name = symbol_element.get_value();
 
         let nil = interpreter.intern_nil_symbol_value();
-        let current_cons = Value::Cons(interpreter.make_cons(previous_cons, nil));
+        let current_cons =
+            Value::Cons(interpreter.make_cons(previous_cons, nil));
 
         let keyword = interpreter.intern_keyword_value(symbol_name);
 
-        let current_cons = Value::Cons(interpreter.make_cons(keyword, current_cons));
+        let current_cons =
+            Value::Cons(interpreter.make_cons(keyword, current_cons));
 
         previous_cons = current_cons;
     }
@@ -283,15 +297,16 @@ fn read_delimited_symbols_element_as_object_method_invocation(
     interpreter: &mut Interpreter,
     values: &Vec<SymbolElement>,
 ) -> Value {
-    let value_of_this_object = expand_delimited_symbols(interpreter, &values[..(values.len() - 1)]);
+    let value_of_this_object =
+        expand_delimited_symbols(interpreter, &values[..(values.len() - 1)]);
 
     // construct this invocation
     let this_symbol_value = interpreter.intern_symbol_value("this");
     let this_object_property_keyword =
         interpreter.intern_keyword_value(values.last().unwrap().get_value());
 
-    let this_invocation_value =
-        interpreter.vec_to_list(vec![this_object_property_keyword, this_symbol_value]);
+    let this_invocation_value = interpreter
+        .vec_to_list(vec![this_object_property_keyword, this_symbol_value]);
 
     // construct with-this invocation
     let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
@@ -314,7 +329,10 @@ fn read_delimited_symbols_element(
     if values[0].get_value() == "this" || values[0].get_value() == "super" {
         read_delimited_symbols_element_as_this_invocation(interpreter, values)
     } else {
-        read_delimited_symbols_element_as_object_method_invocation(interpreter, values)
+        read_delimited_symbols_element_as_object_method_invocation(
+            interpreter,
+            values,
+        )
     }
 }
 
@@ -399,49 +417,76 @@ fn read_prefix_element(
     prefix_element: PrefixedElement,
 ) -> Result<Value, Error> {
     match prefix_element.get_prefix() {
-        Prefix::Quote => read_quote_prefixed_element(interpreter, prefix_element.get_value()),
-        Prefix::SharpQuote => {
-            read_sharp_quote_prefixed_element(interpreter, prefix_element.get_value())
-        }
-        Prefix::GraveAccent => {
-            read_graveaccent_prefixed_element(interpreter, prefix_element.get_value())
-        }
-        Prefix::Comma => read_comma_prefixed_element(interpreter, prefix_element.get_value()),
-        Prefix::CommaDog => read_commadog_prefixed_element(interpreter, prefix_element.get_value()),
+        Prefix::Quote => {
+            read_quote_prefixed_element(interpreter, prefix_element.get_value())
+        },
+        Prefix::SharpQuote => read_sharp_quote_prefixed_element(
+            interpreter,
+            prefix_element.get_value(),
+        ),
+        Prefix::GraveAccent => read_graveaccent_prefixed_element(
+            interpreter,
+            prefix_element.get_value(),
+        ),
+        Prefix::Comma => {
+            read_comma_prefixed_element(interpreter, prefix_element.get_value())
+        },
+        Prefix::CommaDog => read_commadog_prefixed_element(
+            interpreter,
+            prefix_element.get_value(),
+        ),
     }
 }
 
-pub fn read_element(interpreter: &mut Interpreter, element: Element) -> Result<Value, Error> {
+pub fn read_element(
+    interpreter: &mut Interpreter,
+    element: Element,
+) -> Result<Value, Error> {
     let value = match element {
-        Element::Integer(integer_element) => Value::Integer(integer_element.get_value()),
-        Element::Float(float_element) => Value::Float(float_element.get_value()),
-        Element::Boolean(boolean_element) => Value::Boolean(boolean_element.get_value()),
+        Element::Integer(integer_element) => {
+            Value::Integer(integer_element.get_value())
+        },
+        Element::Float(float_element) => {
+            Value::Float(float_element.get_value())
+        },
+        Element::Boolean(boolean_element) => {
+            Value::Boolean(boolean_element.get_value())
+        },
         Element::String(string_element) => {
             let string = string_element.get_value();
 
             interpreter.intern_string_value(&string)
-        }
+        },
         Element::Symbol(symbol_element) => {
             let symbol_name = symbol_element.get_value();
             interpreter.intern_symbol_value(symbol_name)
-        }
+        },
         Element::Keyword(keyword_element) => {
             let keyword_name = keyword_element.get_value();
 
             interpreter.intern_keyword_value(keyword_name)
-        }
-        Element::SExpression(sexp_element) => read_s_expression(interpreter, sexp_element)?,
-        Element::Object(object_element) => read_object(interpreter, object_element)?,
+        },
+        Element::SExpression(sexp_element) => {
+            read_s_expression(interpreter, sexp_element)?
+        },
+        Element::Object(object_element) => {
+            read_object(interpreter, object_element)?
+        },
         Element::ObjectPattern(object_pattern_element) => {
             read_object_pattern(interpreter, object_pattern_element)?
-        }
+        },
         Element::DelimitedSymbols(delimited_symbols_element) => {
-            read_delimited_symbols_element(interpreter, delimited_symbols_element)
-        }
-        Element::Prefix(prefix_element) => read_prefix_element(interpreter, prefix_element)?,
+            read_delimited_symbols_element(
+                interpreter,
+                delimited_symbols_element,
+            )
+        },
+        Element::Prefix(prefix_element) => {
+            read_prefix_element(interpreter, prefix_element)?
+        },
         Element::ShortLambda(short_lambda_element) => {
             read_short_lambda(interpreter, short_lambda_element)?
-        }
+        },
     };
 
     Ok(value)
@@ -479,7 +524,9 @@ mod tests {
             let expected = $expected;
 
             if let Ok(program) = parse($code) {
-                let result = read_elements(&mut interpreter, program.get_elements()).unwrap();
+                let result =
+                    read_elements(&mut interpreter, program.get_elements())
+                        .unwrap();
 
                 let len = expected.len();
 
@@ -489,7 +536,11 @@ mod tests {
                     let expected = expected[i];
                     let result = result[i];
 
-                    assertion::assert_deep_equal(&mut interpreter, expected, result);
+                    assertion::assert_deep_equal(
+                        &mut interpreter,
+                        expected,
+                        result,
+                    );
                 }
             }
         };
@@ -499,21 +550,30 @@ mod tests {
     fn reads_integer_elements_correctly() {
         assert_reading_result_equal!(vec!(Value::Integer(1)), "1");
 
-        assert_reading_result_equal!(vec!(Value::Integer(1), Value::Integer(2)), "1 2");
+        assert_reading_result_equal!(
+            vec!(Value::Integer(1), Value::Integer(2)),
+            "1 2"
+        );
     }
 
     #[test]
     fn reads_float_elements_correctly() {
         assert_reading_result_equal!(vec!(Value::Float(1.2)), "1.2");
 
-        assert_reading_result_equal!(vec!(Value::Float(1.2), Value::Float(3.4)), "1.2 3.4");
+        assert_reading_result_equal!(
+            vec!(Value::Float(1.2), Value::Float(3.4)),
+            "1.2 3.4"
+        );
     }
 
     #[test]
     fn reads_boolean_elements_correctly() {
         assert_reading_result_equal!(vec!(Value::Boolean(true)), "#t");
 
-        assert_reading_result_equal!(vec!(Value::Boolean(true), Value::Boolean(false)), "#t #f");
+        assert_reading_result_equal!(
+            vec!(Value::Boolean(true), Value::Boolean(false)),
+            "#t #f"
+        );
     }
 
     #[test]
@@ -652,7 +712,12 @@ mod tests {
 
             let arguments = interpreter.make_cons_value(arg1, nil);
 
-            assert_short_lambda_valid(&mut interpreter, arguments, body, "#(+ 1 %1)");
+            assert_short_lambda_valid(
+                &mut interpreter,
+                arguments,
+                body,
+                "#(+ 1 %1)",
+            );
         }
 
         #[test]
@@ -671,7 +736,12 @@ mod tests {
             let cdr = interpreter.make_cons_value(arg2, nil);
             let arguments = interpreter.make_cons_value(arg1, cdr);
 
-            assert_short_lambda_valid(&mut interpreter, arguments, body, "#(+ %1 %2)");
+            assert_short_lambda_valid(
+                &mut interpreter,
+                arguments,
+                body,
+                "#(+ %1 %2)",
+            );
         }
 
         #[test]
@@ -700,7 +770,12 @@ mod tests {
 
             let arguments = interpreter.make_cons_value(arg1, nil);
 
-            assert_short_lambda_valid(&mut interpreter, arguments, body, "#(#(+ %1 %2) %1 %1)");
+            assert_short_lambda_valid(
+                &mut interpreter,
+                arguments,
+                body,
+                "#(#(+ %1 %2) %1 %1)",
+            );
         }
     }
 
@@ -721,7 +796,7 @@ mod tests {
             match result {
                 Value::Object(object_id) => {
                     for (name, value) in expected {
-                        let symbol = interpreter.intern(name);
+                        let symbol = interpreter.intern_symbol_id(name);
 
                         let expected = value;
                         let result = interpreter
@@ -729,9 +804,13 @@ mod tests {
                             .unwrap()
                             .unwrap();
 
-                        assertion::assert_deep_equal(interpreter, expected, result);
+                        assertion::assert_deep_equal(
+                            interpreter,
+                            expected,
+                            result,
+                        );
                     }
-                }
+                },
                 _ => unreachable!(),
             }
         } else {
@@ -748,7 +827,11 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             assert_object_has_items(&mut interpreter, "{}", vec![]);
-            assert_object_has_items(&mut interpreter, "{:a 1}", vec![("a", Value::Integer(1))]);
+            assert_object_has_items(
+                &mut interpreter,
+                "{:a 1}",
+                vec![("a", Value::Integer(1))],
+            );
             assert_object_has_items(
                 &mut interpreter,
                 "{:a 1 :b 2}",
@@ -796,11 +879,19 @@ mod tests {
 
             assert_object_has_items(&mut interpreter, "#{:a}", vec![("a", a)]);
 
-            assert_object_has_items(&mut interpreter, "#{:a :b}", vec![("a", a), ("b", b)]);
+            assert_object_has_items(
+                &mut interpreter,
+                "#{:a :b}",
+                vec![("a", a), ("b", b)],
+            );
         }
     }
 
-    fn assert_reading_deeply(interpreter: &mut Interpreter, expected: Value, code: &str) {
+    fn assert_reading_deeply(
+        interpreter: &mut Interpreter,
+        expected: Value,
+        code: &str,
+    ) {
         if let Ok(program) = parse(code) {
             let result = read_elements(interpreter, program.get_elements())
                 .unwrap()
@@ -820,19 +911,32 @@ mod tests {
 
             let nil_symbol_value = interpreter.intern_nil_symbol_value();
             let this_symbol_value = interpreter.intern_symbol_value("this");
-            let value1_keyword_value = interpreter.intern_keyword_value("value1");
-            let value2_keyword_value = interpreter.intern_keyword_value("value2");
+            let value1_keyword_value =
+                interpreter.intern_keyword_value("value1");
+            let value2_keyword_value =
+                interpreter.intern_keyword_value("value2");
 
-            let expected = interpreter.vec_to_list(vec![value1_keyword_value, this_symbol_value]);
+            let expected = interpreter
+                .vec_to_list(vec![value1_keyword_value, this_symbol_value]);
 
             assert_reading_deeply(&mut interpreter, expected, "this:value1");
 
-            let expected = interpreter.vec_to_list(vec![value2_keyword_value, expected]);
+            let expected =
+                interpreter.vec_to_list(vec![value2_keyword_value, expected]);
 
-            assert_reading_deeply(&mut interpreter, expected, "this:value1:value2");
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "this:value1:value2",
+            );
 
-            let expected = interpreter.make_cons_value(expected, nil_symbol_value);
-            assert_reading_deeply(&mut interpreter, expected, "(this:value1:value2)");
+            let expected =
+                interpreter.make_cons_value(expected, nil_symbol_value);
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "(this:value1:value2)",
+            );
         }
 
         #[test]
@@ -841,34 +945,51 @@ mod tests {
 
             let nil_symbol_value = interpreter.intern_nil_symbol_value();
             let super_symbol_value = interpreter.intern_symbol_value("super");
-            let value1_keyword_value = interpreter.intern_keyword_value("value1");
-            let value2_keyword_value = interpreter.intern_keyword_value("value2");
+            let value1_keyword_value =
+                interpreter.intern_keyword_value("value1");
+            let value2_keyword_value =
+                interpreter.intern_keyword_value("value2");
 
-            let expected = interpreter.vec_to_list(vec![value1_keyword_value, super_symbol_value]);
+            let expected = interpreter
+                .vec_to_list(vec![value1_keyword_value, super_symbol_value]);
 
             assert_reading_deeply(&mut interpreter, expected, "super:value1");
 
-            let expected = interpreter.vec_to_list(vec![value2_keyword_value, expected]);
+            let expected =
+                interpreter.vec_to_list(vec![value2_keyword_value, expected]);
 
-            assert_reading_deeply(&mut interpreter, expected, "super:value1:value2");
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "super:value1:value2",
+            );
 
-            let expected = interpreter.make_cons_value(expected, nil_symbol_value);
-            assert_reading_deeply(&mut interpreter, expected, "(super:value1:value2)");
+            let expected =
+                interpreter.make_cons_value(expected, nil_symbol_value);
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "(super:value1:value2)",
+            );
         }
 
         #[test]
-        fn reads_delimited_symbols_element_object_method_invocation_correctly() {
+        fn reads_delimited_symbols_element_object_method_invocation_correctly()
+        {
             let mut interpreter = Interpreter::new();
 
             let nil_symbol_value = interpreter.intern_nil_symbol_value();
             let this_symbol_value = interpreter.intern_symbol_value("this");
-            let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
+            let with_this_symbol_value =
+                interpreter.intern_symbol_value("with-this");
             let object_symbol_value = interpreter.intern_symbol_value("object");
-            let value1_keyword_value = interpreter.intern_keyword_value("value1");
-            let value2_keyword_value = interpreter.intern_keyword_value("value2");
+            let value1_keyword_value =
+                interpreter.intern_keyword_value("value1");
+            let value2_keyword_value =
+                interpreter.intern_keyword_value("value2");
 
-            let this_invocation =
-                interpreter.vec_to_list(vec![value1_keyword_value, this_symbol_value]);
+            let this_invocation = interpreter
+                .vec_to_list(vec![value1_keyword_value, this_symbol_value]);
 
             let expected = interpreter.vec_to_list(vec![
                 with_this_symbol_value,
@@ -878,11 +999,11 @@ mod tests {
 
             assert_reading_deeply(&mut interpreter, expected, "object:value1");
 
-            let this_invocation =
-                interpreter.vec_to_list(vec![value2_keyword_value, this_symbol_value]);
+            let this_invocation = interpreter
+                .vec_to_list(vec![value2_keyword_value, this_symbol_value]);
 
-            let this_object_value =
-                interpreter.vec_to_list(vec![value1_keyword_value, object_symbol_value]);
+            let this_object_value = interpreter
+                .vec_to_list(vec![value1_keyword_value, object_symbol_value]);
 
             let expected = interpreter.vec_to_list(vec![
                 with_this_symbol_value,
@@ -890,17 +1011,31 @@ mod tests {
                 this_invocation,
             ]);
 
-            assert_reading_deeply(&mut interpreter, expected, "object:value1:value2");
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "object:value1:value2",
+            );
 
-            let item3 = interpreter.vec_to_list(vec![value2_keyword_value, this_symbol_value]);
+            let item3 = interpreter
+                .vec_to_list(vec![value2_keyword_value, this_symbol_value]);
 
             let item3 = interpreter.vec_to_list(vec![item3]);
 
-            let item2 = interpreter.vec_to_list(vec![value1_keyword_value, object_symbol_value]);
+            let item2 = interpreter
+                .vec_to_list(vec![value1_keyword_value, object_symbol_value]);
 
-            let expected = interpreter.vec_to_list(vec![with_this_symbol_value, item2, item3]);
+            let expected = interpreter.vec_to_list(vec![
+                with_this_symbol_value,
+                item2,
+                item3,
+            ]);
 
-            assert_reading_deeply(&mut interpreter, expected, "(object:value1:value2)");
+            assert_reading_deeply(
+                &mut interpreter,
+                expected,
+                "(object:value1:value2)",
+            );
         }
     }
 
@@ -908,7 +1043,9 @@ mod tests {
         ($prefix:expr, $prefix_after:expr, $code: expr) => {
             if let Ok(program) = parse($code) {
                 let mut interpreter = Interpreter::new();
-                let expected = read_elements(&mut interpreter, program.get_elements()).unwrap()[0];
+                let expected =
+                    read_elements(&mut interpreter, program.get_elements())
+                        .unwrap()[0];
 
                 let nil = interpreter.intern_nil_symbol_value();
                 let expected = interpreter.make_cons_value(expected, nil);
@@ -990,6 +1127,10 @@ mod tests {
         let symbol = interpreter.intern_symbol_value("a");
         let expected = interpreter.make_cons_value(symbol, cdr);
 
-        assert_reading_deeply(&mut interpreter, expected, "(a 1 2.3 #t (3 4) #f)");
+        assert_reading_deeply(
+            &mut interpreter,
+            expected,
+            "(a 1 2.3 #t (3 4) #f)",
+        );
     }
 }

@@ -30,19 +30,24 @@ pub fn combine(
     for value in values {
         let argument_function_id = library::read_as_function_id(value)?;
 
-        let cons = interpreter.make_cons_value(Value::Function(argument_function_id), nil);
+        let cons = interpreter
+            .make_cons_value(Value::Function(argument_function_id), nil);
         arguments.push(cons)
     }
 
     let cons = interpreter.vec_to_list(arguments);
 
-    let result = interpreter.make_cons_value(Value::Function(function_id), cons);
+    let result =
+        interpreter.make_cons_value(Value::Function(function_id), cons);
 
-    let interpreted_function =
-        InterpretedFunction::new(environment_id, FunctionArguments::new(), vec![result]);
+    let interpreted_function = InterpretedFunction::new(
+        environment_id,
+        FunctionArguments::new(),
+        vec![result],
+    );
 
-    let constructed_function_id =
-        interpreter.register_function(Function::Interpreted(interpreted_function));
+    let constructed_function_id = interpreter
+        .register_function(Function::Interpreted(interpreted_function));
 
     Ok(Value::Function(constructed_function_id))
 }
@@ -98,15 +103,22 @@ mod tests {
             "(func:combine #(+ %1 %1) {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(func:combine)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

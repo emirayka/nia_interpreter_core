@@ -31,7 +31,7 @@ impl Module {
         &self.path
     }
 
-    pub fn get_environment(&self) -> EnvironmentId {
+    pub fn get_environment_id(&self) -> EnvironmentId {
         self.environment_id
     }
 
@@ -47,9 +47,14 @@ impl Module {
         self.default_export
     }
 
-    pub fn add_export(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn add_export(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         if self.exports.contains_key(&symbol_id) {
-            Error::generic_execution_error("Named export was already defined.").into()
+            Error::generic_execution_error("Named export was already defined.")
+                .into()
         } else {
             self.exports.insert(symbol_id, value);
             Ok(())
@@ -59,11 +64,14 @@ impl Module {
     pub fn add_default_export(&mut self, value: Value) -> Result<(), Error> {
         match self.default_export {
             Some(_) => {
-                return Error::generic_execution_error("Default export was already defined.").into()
-            }
+                return Error::generic_execution_error(
+                    "Default export was already defined.",
+                )
+                .into();
+            },
             None => {
                 self.default_export = Some(value);
-            }
+            },
         }
 
         Ok(())

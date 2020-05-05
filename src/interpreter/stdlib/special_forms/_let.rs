@@ -59,7 +59,11 @@ fn set_variable_via_cons(
         }
     };
 
-    interpreter.define_variable(definition_setting_environment, variable_symbol_id, value)
+    interpreter.define_variable(
+        definition_setting_environment,
+        variable_symbol_id,
+        value,
+    )
 }
 
 fn set_variable_to_nil(
@@ -94,10 +98,19 @@ fn set_definition(
                 )
                 .into();
             } else {
-                set_variable_to_nil(interpreter, definition_setting_environment, symbol_id)
+                set_variable_to_nil(
+                    interpreter,
+                    definition_setting_environment,
+                    symbol_id,
+                )
             }
-        }
-        _ => return Error::invalid_argument_error("Invalid `let*' definitions.").into(),
+        },
+        _ => {
+            return Error::invalid_argument_error(
+                "Invalid `let*' definitions.",
+            )
+            .into();
+        },
     }
 }
 
@@ -145,7 +158,12 @@ pub fn _let(
         .make_environment(environment)
         .map_err(|err| Error::generic_execution_error_caused("", err))?;
 
-    set_definitions(interpreter, environment, execution_environment, definitions)?;
+    set_definitions(
+        interpreter,
+        environment,
+        execution_environment,
+        definitions,
+    )?;
 
     library::execute_forms(interpreter, execution_environment, &forms)
 }
@@ -181,7 +199,10 @@ mod tests {
 
         for (value, string) in specs {
             let result = interpreter
-                .execute_in_main_environment(&format!("(let ((value {})) value)", string))
+                .execute_in_main_environment(&format!(
+                    "(let ((value {})) value)",
+                    string
+                ))
                 .unwrap();
 
             assertion::assert_deep_equal(&mut interpreter, value, result);
@@ -218,7 +239,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let mut specs = vec![
@@ -233,11 +255,15 @@ mod tests {
             "(let ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_error_when_definition_is_constant_special_symbol_or_special_variable() {
+    fn returns_error_when_definition_is_constant_special_symbol_or_special_variable(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let mut specs = vec![
@@ -252,7 +278,10 @@ mod tests {
             "(let (super 2) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -262,7 +291,8 @@ mod tests {
         let specs = vec!["1", "1.1", "#t", "#f", "\"string\"", ":keyword"];
 
         for spec in specs {
-            let result = interpreter.execute_in_main_environment(&format!("(let {})", spec));
+            let result = interpreter
+                .execute_in_main_environment(&format!("(let {})", spec));
 
             assertion::assert_invalid_argument_error(&result);
         }
@@ -284,7 +314,8 @@ mod tests {
         ];
 
         for spec in specs {
-            let result = interpreter.execute_in_main_environment(&format!("(let ({}))", spec));
+            let result = interpreter
+                .execute_in_main_environment(&format!("(let ({}))", spec));
 
             assertion::assert_invalid_argument_error(&result);
         }
@@ -305,8 +336,10 @@ mod tests {
         ];
 
         for spec in specs {
-            let result =
-                interpreter.execute_in_main_environment(&format!("(let (({} 2)) {})", spec, spec));
+            let result = interpreter.execute_in_main_environment(&format!(
+                "(let (({} 2)) {})",
+                spec, spec
+            ));
 
             assertion::assert_invalid_argument_error(&result);
         }
@@ -318,24 +351,32 @@ mod tests {
 
         let specs = vec!["(let ((nil 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
+    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items()
+    {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!["(let ((sym)) nil)", "(let ((sym 1 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
     fn returns_err_when_attempt_to_use_previously_defined_values() {
         let mut interpreter = Interpreter::new();
 
-        let result =
-            interpreter.execute_in_main_environment("(let ((sym-1 1) (sym-2 sym-1)) sym-2)");
+        let result = interpreter.execute_in_main_environment(
+            "(let ((sym-1 1) (sym-2 sym-1)) sym-2)",
+        );
 
         nia_assert(result.is_err())
     }
@@ -344,7 +385,8 @@ mod tests {
     fn returns_err_when_attempt_to_redefine_already_defined_value() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute_in_main_environment("(let ((sym-1 1) (sym-1 2)) sym-1)");
+        let result = interpreter
+            .execute_in_main_environment("(let ((sym-1 1) (sym-1 2)) sym-1)");
 
         nia_assert(result.is_err())
     }

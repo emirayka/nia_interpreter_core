@@ -34,8 +34,10 @@ pub fn int(
     };
 
     if min > max {
-        return Error::invalid_argument_error("Built-in function `rand:int' expects min <= max.")
-            .into();
+        return Error::invalid_argument_error(
+            "Built-in function `rand:int' expects min <= max.",
+        )
+        .into();
     }
 
     let mut rng = rand::thread_rng();
@@ -68,7 +70,10 @@ mod tests {
         ];
 
         for _ in 0..1000 {
-            assertion::assert_results_are_equal(&mut interpreter, pairs.clone());
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs.clone(),
+            );
         }
     }
 
@@ -78,7 +83,10 @@ mod tests {
 
         let code_vector = vec!["(rand:int 10 1)", "(rand:int 100 1)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -106,15 +114,22 @@ mod tests {
             "(rand:int 1 #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count() {
+    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(rand:int 1 2 3)", "(rand:int 1 2 3 4)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

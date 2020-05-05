@@ -19,19 +19,25 @@ pub fn symbol(
 
     match values.remove(0) {
         Value::String(string_id) => {
-            let symbol_name = interpreter.get_string(string_id)?.get_string().clone();
+            let symbol_name =
+                interpreter.get_string(string_id)?.get_string().clone();
 
             if symbol_name.starts_with("#") {
-                return Error::invalid_argument_error("Cannot convert to special symbols.").into();
+                return Error::invalid_argument_error(
+                    "Cannot convert to special symbols.",
+                )
+                .into();
             }
 
             let symbol = interpreter.intern_symbol_value(&symbol_name);
 
             Ok(symbol)
-        }
+        },
         symbol @ Value::Symbol(_) => Ok(symbol),
-        _ => Error::invalid_argument_error("Only keywords or strings can be casted to keyword.")
-            .into(),
+        _ => Error::invalid_argument_error(
+            "Only keywords or strings can be casted to keyword.",
+        )
+        .into(),
     }
 }
 
@@ -60,7 +66,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_attempts_to_convert_to_special_symbols() {
+    fn returns_invalid_argument_error_when_attempts_to_convert_to_special_symbols(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
@@ -70,7 +77,10 @@ mod tests {
             "(to:symbol \"#another-special-symbol\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
@@ -91,15 +101,22 @@ mod tests {
             "(to:symbol (flookup 'cond))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(to:symbol)", "(to:symbol 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

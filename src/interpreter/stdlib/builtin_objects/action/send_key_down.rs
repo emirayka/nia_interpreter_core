@@ -44,7 +44,8 @@ pub fn send_key_down(
     };
 
     let key_down_symbol_value = interpreter.intern_symbol_value("key-down");
-    let key_down = interpreter.vec_to_list(vec![key_down_symbol_value, Value::Integer(key_code)]);
+    let key_down = interpreter
+        .vec_to_list(vec![key_down_symbol_value, Value::Integer(key_code)]);
 
     library::add_value_to_root_list(interpreter, "--actions", key_down)?;
 
@@ -92,15 +93,23 @@ mod tests {
             "(action:send-key-down #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(action:send-key-down)", "(action:send-key-down 1 2)"];
+        let code_vector =
+            vec!["(action:send-key-down)", "(action:send-key-down 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

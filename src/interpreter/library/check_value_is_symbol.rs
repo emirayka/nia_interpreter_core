@@ -2,7 +2,10 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn check_value_is_symbol(interpreter: &Interpreter, value: Value) -> Result<(), Error> {
+pub fn check_value_is_symbol(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<(), Error> {
     match value {
         Value::Symbol(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected symbol").into(),

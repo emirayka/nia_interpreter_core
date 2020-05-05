@@ -23,13 +23,14 @@ pub fn iterate_through_list(
                 if interpreter.symbol_is_nil(symbol_id)? {
                     break;
                 } else {
-                    return Error::generic_execution_error("Invalid list").into();
+                    return Error::generic_execution_error("Invalid list")
+                        .into();
                 }
-            }
+            },
             Value::Cons(cons_id) => {
                 car = interpreter.get_car(cons_id)?;
                 cdr = interpreter.get_cdr(cons_id)?;
-            }
+            },
             _ => return Error::generic_execution_error("Invalid list").into(),
         };
     }

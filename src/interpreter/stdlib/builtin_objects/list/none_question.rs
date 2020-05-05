@@ -28,8 +28,12 @@ pub fn none_question(
     }
 
     for value in vector {
-        let current_result =
-            library::execute_function(interpreter, environment_id, function_id, vec![value])?;
+        let current_result = library::execute_function(
+            interpreter,
+            environment_id,
+            function_id,
+            vec![value],
+        )?;
 
         match current_result {
             Value::Boolean(false) => {}
@@ -106,9 +110,13 @@ mod tests {
     fn returns_invalid_argument_error_when_predicate_returns_not_a_boolean() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(list:none? (function (lambda (value) 1)) '(1 2 3 4 5))"];
+        let code_vector =
+            vec!["(list:none? (function (lambda (value) 1)) '(1 2 3 4 5))"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -136,15 +144,23 @@ mod tests {
             "(list:none? (function (lambda (_1) nil)) #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(list:none?)", "(list:none? 1)", "(list:none? 1 2 3)"];
+        let code_vector =
+            vec!["(list:none?)", "(list:none? 1)", "(list:none? 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

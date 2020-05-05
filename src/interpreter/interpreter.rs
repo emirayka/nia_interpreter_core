@@ -28,7 +28,7 @@ use crate::interpreter::value::{KeywordArena, KeywordId};
 use crate::interpreter::value::{StringArena, StringId};
 use crate::interpreter::value::{Symbol, SymbolArena, SymbolId};
 
-use crate::interpreter::garbage_collector::collect_garbage;
+use crate::interpreter::garbage_collector::{collect_garbage, GarbageCollectable};
 use crate::interpreter::reader::read_elements;
 use crate::interpreter::stdlib::infect_stdlib;
 use crate::parser::parse;
@@ -74,8 +74,10 @@ impl Interpreter {
             // making stdlib and root modules
             let mut module_arena = ModuleArena::new();
 
-            let root_module_id = module_arena.make_with_empty_path(root_environment_id);
-            let main_module_id = module_arena.make_with_empty_path(main_environment_id);
+            let root_module_id =
+                module_arena.make_with_empty_path(root_environment_id);
+            let main_module_id =
+                module_arena.make_with_empty_path(main_environment_id);
             let current_module = main_module_id;
 
             let string_arena = StringArena::new();
@@ -121,11 +123,15 @@ impl Interpreter {
 
         // nil
         let root_environment_id = interpreter.get_root_environment_id();
-        let nil_symbol_id = interpreter.intern("nil");
+        let nil_symbol_id = interpreter.intern_symbol_id("nil");
         let nil_value = nil_symbol_id.into();
 
         interpreter
-            .define_const_variable(root_environment_id, nil_symbol_id, nil_value)
+            .define_const_variable(
+                root_environment_id,
+                nil_symbol_id,
+                nil_value,
+            )
             .expect("Cannot define `nil' symbol.");
 
         // break
@@ -141,18 +147,20 @@ impl Interpreter {
         let continue_function = Function::Builtin(BuiltinFunction::new(
             crate::interpreter::internal_functions::_continue,
         ));
-        let continue_function_id = interpreter.register_function(continue_function);
+        let continue_function_id =
+            interpreter.register_function(continue_function);
         interpreter
             .internal_functions
             .insert(String::from("continue"), continue_function_id);
 
         // special variables
-        let this_symbol_id = interpreter.intern("this");
-        let super_symbol_id = interpreter.intern("super");
+        let this_symbol_id = interpreter.intern_symbol_id("this");
+        let super_symbol_id = interpreter.intern_symbol_id("super");
 
-        interpreter
-            .special_variables
-            .insert(this_symbol_id, crate::interpreter::special_variables::_this);
+        interpreter.special_variables.insert(
+            this_symbol_id,
+            crate::interpreter::special_variables::_this,
+        );
         interpreter.special_variables.insert(
             super_symbol_id,
             crate::interpreter::special_variables::_super,
@@ -166,7 +174,7 @@ impl Interpreter {
         let mut interpreter = Interpreter::raw();
 
         match infect_stdlib(&mut interpreter) {
-            Ok(()) => {}
+            Ok(()) => {},
             Err(error) => panic!("Cannot construct interpreter: {:?}", error),
         }
 
@@ -229,7 +237,7 @@ impl Interpreter {
                 result.push_str("\"");
 
                 result
-            }
+            },
             _ => match library::value_to_string(self, value) {
                 Ok(string) => string,
                 Err(_) => panic!("Cannot print value"),
@@ -245,7 +253,10 @@ impl Interpreter {
         &self.string_arena
     }
 
-    pub fn free_strings(&mut self, string_ids: Vec<StringId>) -> Result<(), Error> {
+    pub fn free_strings(
+        &mut self,
+        string_ids: Vec<StringId>,
+    ) -> Result<(), Error> {
         for string_id in string_ids {
             self.string_arena.free_string(string_id)?;
         }
@@ -253,12 +264,12 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn intern_string(&mut self, string: &str) -> StringId {
+    pub fn intern_string_id(&mut self, string: &str) -> StringId {
         self.string_arena.intern_string(string)
     }
 
     pub fn intern_string_value(&mut self, string: &str) -> Value {
-        Value::String(self.intern_string(string))
+        Value::String(self.intern_string_id(string))
     }
 
     pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
@@ -271,7 +282,10 @@ impl Interpreter {
         &self.keyword_arena
     }
 
-    pub fn free_keywords(&mut self, keyword_ids: Vec<KeywordId>) -> Result<(), Error> {
+    pub fn free_keywords(
+        &mut self,
+        keyword_ids: Vec<KeywordId>,
+    ) -> Result<(), Error> {
         for keyword_id in keyword_ids {
             self.keyword_arena.free_keyword(keyword_id)?;
         }
@@ -279,15 +293,18 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn intern_keyword(&mut self, keyword_name: &str) -> KeywordId {
+    pub fn intern_keyword_id(&mut self, keyword_name: &str) -> KeywordId {
         self.keyword_arena.intern_keyword(keyword_name)
     }
 
     pub fn intern_keyword_value(&mut self, keyword_name: &str) -> Value {
-        self.intern_keyword(keyword_name).into()
+        self.intern_keyword_id(keyword_name).into()
     }
 
-    pub fn get_keyword(&self, keyword_id: KeywordId) -> Result<&Keyword, Error> {
+    pub fn get_keyword(
+        &self,
+        keyword_id: KeywordId,
+    ) -> Result<&Keyword, Error> {
         self.keyword_arena
             .get_keyword(keyword_id)
             .map(|keyword| keyword)
@@ -299,7 +316,10 @@ impl Interpreter {
         &self.symbol_arena
     }
 
-    pub fn free_symbols(&mut self, symbol_ids: Vec<SymbolId>) -> Result<(), Error> {
+    pub fn free_symbols(
+        &mut self,
+        symbol_ids: Vec<SymbolId>,
+    ) -> Result<(), Error> {
         for symbol_id in symbol_ids {
             self.symbol_arena.free_symbol(symbol_id)?;
         }
@@ -311,13 +331,16 @@ impl Interpreter {
         self.symbol_arena.get_symbol(symbol_id)
     }
 
-    pub fn get_symbol_name(&self, symbol_id: SymbolId) -> Result<&String, Error> {
+    pub fn get_symbol_name(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<&String, Error> {
         let symbol = self.get_symbol(symbol_id)?;
 
         Ok(symbol.get_name())
     }
 
-    pub fn intern(&mut self, symbol_name: &str) -> SymbolId {
+    pub fn intern_symbol_id(&mut self, symbol_name: &str) -> SymbolId {
         self.symbol_arena.intern(symbol_name)
     }
 
@@ -332,7 +355,7 @@ impl Interpreter {
     }
 
     pub fn intern_nil(&mut self) -> SymbolId {
-        self.intern("nil")
+        self.intern_symbol_id("nil")
     }
 
     pub fn intern_nil_symbol(&mut self) -> &Symbol {
@@ -365,36 +388,55 @@ impl Interpreter {
         Ok(symbol.get_name() == "nil" && symbol.get_gensym_id() == 0)
     }
 
-    pub fn symbol_is_not_nil(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn symbol_is_not_nil(
+        &mut self,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let symbol = self.get_symbol(symbol_id)?;
 
         Ok(symbol.get_name() != "nil" || symbol.get_gensym_id() != 0)
     }
 
-    pub fn check_if_symbol_special(&self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_special(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let symbol_name = self.get_symbol_name(symbol_id)?;
 
-        let result = symbol_name == "#opt" || symbol_name == "#rest" || symbol_name == "#keys";
+        let result = symbol_name == "#opt"
+            || symbol_name == "#rest"
+            || symbol_name == "#keys";
 
         Ok(result)
     }
 
-    pub fn check_if_symbol_constant(&self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_constant(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let symbol_name = self.get_symbol_name(symbol_id)?;
 
-        let result = symbol_name == "nil" || symbol_name == "this" || symbol_name == "super";
+        let result = symbol_name == "nil"
+            || symbol_name == "this"
+            || symbol_name == "super";
 
         Ok(result)
     }
 
-    pub fn check_if_symbol_assignable(&self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_assignable(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let is_not_constant = !self.check_if_symbol_constant(symbol_id)?;
         let is_not_special = !self.check_if_symbol_special(symbol_id)?;
 
         Ok(is_not_constant && is_not_special)
     }
 
-    pub fn check_if_symbol_internable(&mut self, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn check_if_symbol_internable(
+        &mut self,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let is_not_special = !self.check_if_symbol_special(symbol_id)?;
 
         Ok(is_not_special)
@@ -406,7 +448,10 @@ impl Interpreter {
         &self.cons_arena
     }
 
-    pub fn free_cons_cells(&mut self, cons_ids: Vec<ConsId>) -> Result<(), Error> {
+    pub fn free_cons_cells(
+        &mut self,
+        cons_ids: Vec<ConsId>,
+    ) -> Result<(), Error> {
         for cons_id in cons_ids {
             self.cons_arena.free_cons(cons_id)?;
         }
@@ -436,8 +481,11 @@ impl Interpreter {
         match cdr {
             Value::Cons(cdr_cons_id) => self.get_car(cdr_cons_id),
             _ => {
-                return Error::generic_execution_error("Cannot get car of not a cons value").into()
-            }
+                return Error::generic_execution_error(
+                    "Cannot get car of not a cons value",
+                )
+                .into();
+            },
         }
     }
 
@@ -447,16 +495,27 @@ impl Interpreter {
         match cdr {
             Value::Cons(cdr_cons_id) => self.get_cdr(cdr_cons_id),
             _ => {
-                return Error::generic_execution_error("Cannot get cdr of not a cons value").into()
-            }
+                return Error::generic_execution_error(
+                    "Cannot get cdr of not a cons value",
+                )
+                .into();
+            },
         }
     }
 
-    pub fn set_car(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
+    pub fn set_car(
+        &mut self,
+        cons_id: ConsId,
+        value: Value,
+    ) -> Result<(), Error> {
         self.cons_arena.set_car(cons_id, value)
     }
 
-    pub fn set_cdr(&mut self, cons_id: ConsId, value: Value) -> Result<(), Error> {
+    pub fn set_cdr(
+        &mut self,
+        cons_id: ConsId,
+        value: Value,
+    ) -> Result<(), Error> {
         self.cons_arena.set_cdr(cons_id, value)
     }
 
@@ -479,8 +538,8 @@ impl Interpreter {
                         vector.remove(vector.len() - 1);
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(vector)
@@ -492,7 +551,10 @@ impl Interpreter {
         &self.object_arena
     }
 
-    pub fn free_objects(&mut self, object_ids: Vec<ObjectId>) -> Result<(), Error> {
+    pub fn free_objects(
+        &mut self,
+        object_ids: Vec<ObjectId>,
+    ) -> Result<(), Error> {
         for object_id in object_ids {
             self.object_arena.free_object(object_id)?;
         }
@@ -518,7 +580,10 @@ impl Interpreter {
         Ok(object)
     }
 
-    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, Error> {
+    pub fn get_object_mut(
+        &mut self,
+        object_id: ObjectId,
+    ) -> Result<&mut Object, Error> {
         let object = self.object_arena.get_object_mut(object_id)?;
 
         Ok(object)
@@ -551,7 +616,10 @@ impl Interpreter {
             .set_property(object_id, key_symbol_id, value)
     }
 
-    pub fn get_object_prototype(&self, object_id: ObjectId) -> Result<Option<ObjectId>, Error> {
+    pub fn get_object_prototype(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Option<ObjectId>, Error> {
         let object = self.object_arena.get_object(object_id)?;
 
         Ok(object.get_prototype())
@@ -583,7 +651,10 @@ impl Interpreter {
         &self.function_arena
     }
 
-    pub fn free_functions(&mut self, function_ids: Vec<FunctionId>) -> Result<(), Error> {
+    pub fn free_functions(
+        &mut self,
+        function_ids: Vec<FunctionId>,
+    ) -> Result<(), Error> {
         for function_id in function_ids {
             self.function_arena.free_function(function_id)?;
         }
@@ -595,14 +666,24 @@ impl Interpreter {
         self.function_arena.register_function(function)
     }
 
-    pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
+    pub fn get_function(
+        &self,
+        function_id: FunctionId,
+    ) -> Result<&Function, Error> {
         self.function_arena.get_function(function_id)
     }
 
-    pub fn get_internal_function(&self, name: &str) -> Result<FunctionId, Error> {
+    pub fn get_internal_function(
+        &self,
+        name: &str,
+    ) -> Result<FunctionId, Error> {
         match self.internal_functions.get(name) {
             Some(function_id) => Ok(*function_id),
-            _ => Error::failure(format!("Cannot find internal function: {}", name)).into(),
+            _ => Error::failure(format!(
+                "Cannot find internal function: {}",
+                name
+            ))
+            .into(),
         }
     }
 }
@@ -612,7 +693,10 @@ impl Interpreter {
         &self.environment_arena
     }
 
-    pub fn free_environments(&mut self, environment_ids: Vec<EnvironmentId>) -> Result<(), Error> {
+    pub fn free_environments(
+        &mut self,
+        environment_ids: Vec<EnvironmentId>,
+    ) -> Result<(), Error> {
         for environment_id in environment_ids {
             self.environment_arena.free_environment(environment_id)?;
         }
@@ -621,11 +705,11 @@ impl Interpreter {
     }
 
     pub fn get_root_environment_id(&self) -> EnvironmentId {
-        self.get_root_module().get_environment()
+        self.get_root_module().get_environment_id()
     }
 
     pub fn get_main_environment_id(&self) -> EnvironmentId {
-        self.get_main_module().get_environment()
+        self.get_main_module().get_environment_id()
     }
 
     pub fn lookup_environment_by_variable(
@@ -670,8 +754,11 @@ impl Interpreter {
         variable_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .define_variable(environment_id, variable_symbol_id, value)
+        self.environment_arena.define_variable(
+            environment_id,
+            variable_symbol_id,
+            value,
+        )
     }
 
     pub fn define_const_variable(
@@ -680,8 +767,11 @@ impl Interpreter {
         variable_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .define_const_variable(environment_id, variable_symbol_id, value)
+        self.environment_arena.define_const_variable(
+            environment_id,
+            variable_symbol_id,
+            value,
+        )
     }
 
     pub fn define_function(
@@ -690,8 +780,11 @@ impl Interpreter {
         function_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .define_function(environment_id, function_symbol_id, value)
+        self.environment_arena.define_function(
+            environment_id,
+            function_symbol_id,
+            value,
+        )
     }
 
     pub fn define_const_function(
@@ -700,8 +793,11 @@ impl Interpreter {
         function_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .define_const_function(environment_id, function_symbol_id, value)
+        self.environment_arena.define_const_function(
+            environment_id,
+            function_symbol_id,
+            value,
+        )
     }
 
     pub fn set_environment_variable(
@@ -710,8 +806,11 @@ impl Interpreter {
         variable_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .set_environment_variable(environment_id, variable_symbol_id, value)
+        self.environment_arena.set_environment_variable(
+            environment_id,
+            variable_symbol_id,
+            value,
+        )
     }
 
     pub fn set_environment_function(
@@ -720,8 +819,11 @@ impl Interpreter {
         function_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .set_environment_function(environment_id, function_symbol_id, value)
+        self.environment_arena.set_environment_function(
+            environment_id,
+            function_symbol_id,
+            value,
+        )
     }
 
     pub fn set_variable(
@@ -730,8 +832,11 @@ impl Interpreter {
         variable_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .set_variable(environment_id, variable_symbol_id, value)
+        self.environment_arena.set_variable(
+            environment_id,
+            variable_symbol_id,
+            value,
+        )
     }
 
     pub fn set_function(
@@ -740,8 +845,11 @@ impl Interpreter {
         function_symbol_id: SymbolId,
         value: Value,
     ) -> Result<(), Error> {
-        self.environment_arena
-            .set_function(environment_id, function_symbol_id, value)
+        self.environment_arena.set_function(
+            environment_id,
+            function_symbol_id,
+            value,
+        )
     }
 
     pub fn lookup_variable(
@@ -769,7 +877,10 @@ impl Interpreter {
         self.environment_arena.alloc_child(parent_environment)
     }
 
-    pub fn remove_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
+    pub fn remove_environment(
+        &mut self,
+        environment_id: EnvironmentId,
+    ) -> Result<(), Error> {
         self.environment_arena.free_environment(environment_id)
     }
 
@@ -783,7 +894,15 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn make_module(&mut self, path: String, environment_id: EnvironmentId) -> ModuleId {
+    pub fn get_module_arena(&self) -> &ModuleArena {
+        &self.module_arena
+    }
+
+    fn make_module(
+        &mut self,
+        path: String,
+        environment_id: EnvironmentId,
+    ) -> ModuleId {
         self.module_arena.make(path, environment_id)
     }
 
@@ -809,7 +928,10 @@ impl Interpreter {
         self.module_arena.get_module(module_id)
     }
 
-    pub fn get_module_mut(&mut self, module_id: ModuleId) -> Result<&mut Module, Error> {
+    pub fn get_module_mut(
+        &mut self,
+        module_id: ModuleId,
+    ) -> Result<&mut Module, Error> {
         self.module_arena.get_module_mut(module_id)
     }
 
@@ -832,12 +954,18 @@ impl Interpreter {
         })?;
 
         if !metadata.is_file() {
-            return Error::generic_execution_error(&format!("\"{}\" is not a file.", module_path))
-                .into();
+            return Error::generic_execution_error(&format!(
+                "\"{}\" is not a file.",
+                module_path
+            ))
+            .into();
         }
 
         let module_content = std::fs::read_to_string(path).map_err(|_| {
-            Error::generic_execution_error(&format!("Cannot read file: \"{}\"", module_path))
+            Error::generic_execution_error(&format!(
+                "Cannot read file: \"{}\"",
+                module_path
+            ))
         })?;
 
         let code = parse(&module_content).map_err(|error| {
@@ -847,13 +975,17 @@ impl Interpreter {
             ))
         })?;
 
-        let values = read_elements(self, code.get_elements())
-            .map_err(|error| Error::generic_execution_error("Error reading module."))?;
+        let values =
+            read_elements(self, code.get_elements()).map_err(|error| {
+                Error::generic_execution_error("Error reading module.")
+            })?;
 
         let root_environment_id = self.get_root_environment_id();
-        let module_environment_id = self.make_environment(root_environment_id)?;
+        let module_environment_id =
+            self.make_environment(root_environment_id)?;
 
-        let module_id = self.make_module(String::from(module_path), module_environment_id);
+        let module_id =
+            self.make_module(String::from(module_path), module_environment_id);
         let previous_current_module_id = self.current_module;
 
         self.current_module = module_id;
@@ -863,7 +995,10 @@ impl Interpreter {
         Ok(module_id)
     }
 
-    pub fn intern_module(&mut self, module_path: &str) -> Result<ModuleId, Error> {
+    pub fn intern_module(
+        &mut self,
+        module_path: &str,
+    ) -> Result<ModuleId, Error> {
         let module_id = match self.module_arena.get_module_id(module_path) {
             Some(module_id) => module_id,
             None => self.load_module(module_path)?,
@@ -872,10 +1007,12 @@ impl Interpreter {
         Ok(module_id)
     }
 
-    pub fn resolve_with_current_module_path(&self, path: String) -> Result<String, Error> {
-        let current_module_path = self.get_module(self.current_module)?
-            .get_path()
-            .clone();
+    pub fn resolve_with_current_module_path(
+        &self,
+        path: String,
+    ) -> Result<String, Error> {
+        let current_module_path =
+            self.get_module(self.current_module)?.get_path().clone();
 
         if current_module_path == "" {
             return Ok(path);
@@ -885,21 +1022,25 @@ impl Interpreter {
         let mut path = PathBuf::from(path);
 
         if path.is_absolute() {
-            let path = path.to_str()
-                .ok_or_else(|| Error::generic_execution_error(
-                    "Cannot resolve path."
-                ))?.to_string();
+            let path = path
+                .to_str()
+                .ok_or_else(|| {
+                    Error::generic_execution_error("Cannot resolve path.")
+                })?
+                .to_string();
 
-            return Ok(path)
+            return Ok(path);
         }
 
         resolved_path.pop();
         resolved_path.push(path);
 
-        let resolved_path = resolved_path.to_str()
-            .ok_or_else(|| Error::generic_execution_error(
-                "Cannot resolve path."
-            ))?.to_string();
+        let resolved_path = resolved_path
+            .to_str()
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot resolve path.")
+            })?
+            .to_string();
 
         Ok(resolved_path)
     }
@@ -914,11 +1055,18 @@ impl Interpreter {
         &mut self.context
     }
 
-    pub fn get_context_value(&self, symbol_id: SymbolId) -> Result<Value, Error> {
+    pub fn get_context_value(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<Value, Error> {
         self.context.get_value(symbol_id)
     }
 
-    pub fn set_context_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn set_context_value(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         self.context.set_value(symbol_id, value)
     }
 }
@@ -930,29 +1078,36 @@ impl Interpreter {
         symbol_id: SymbolId,
     ) -> Result<Value, Error> {
         if self.check_if_symbol_special(symbol_id)? {
-            return Error::generic_execution_error("Cannot evaluate special symbols.").into();
+            return Error::generic_execution_error(
+                "Cannot evaluate special symbols.",
+            )
+            .into();
         }
 
-        let evaluation_result = match self.lookup_variable(environment_id, symbol_id)? {
-            Some(result) => result,
-            None => match self.special_variables.get(&symbol_id) {
-                Some(func) => return func(self),
-                None => {
-                    let variable_name = self.get_symbol_name(symbol_id)?;
+        let evaluation_result =
+            match self.lookup_variable(environment_id, symbol_id)? {
+                Some(result) => result,
+                None => match self.special_variables.get(&symbol_id) {
+                    Some(func) => return func(self),
+                    None => {
+                        let variable_name = self.get_symbol_name(symbol_id)?;
 
-                    return Error::generic_execution_error(&format!(
-                        "Cannot find variable `{}'.",
-                        variable_name
-                    ))
-                    .into();
-                }
-            },
-        };
+                        return Error::generic_execution_error(&format!(
+                            "Cannot find variable `{}'.",
+                            variable_name
+                        ))
+                        .into();
+                    },
+                },
+            };
 
         Ok(evaluation_result)
     }
 
-    fn extract_arguments(&mut self, cons_id: ConsId) -> Result<Vec<Value>, Error> {
+    fn extract_arguments(
+        &mut self,
+        cons_id: ConsId,
+    ) -> Result<Vec<Value>, Error> {
         let cdr = self.cons_arena.get_cdr(cons_id)?;
 
         match cdr {
@@ -961,11 +1116,16 @@ impl Interpreter {
                 if self.symbol_is_nil(symbol_id)? {
                     Ok(Vec::new())
                 } else {
-                    Error::generic_execution_error("Cannot extract arguments from not a list.")
-                        .into()
+                    Error::generic_execution_error(
+                        "Cannot extract arguments from not a list.",
+                    )
+                    .into()
                 }
-            }
-            _ => Error::generic_execution_error("Cannot extract arguments from not a list.").into(),
+            },
+            _ => Error::generic_execution_error(
+                "Cannot extract arguments from not a list.",
+            )
+            .into(),
         }
     }
 
@@ -977,11 +1137,14 @@ impl Interpreter {
         let mut evaluated_arguments = Vec::new();
 
         for argument in arguments {
-            let evaluated_argument =
-                self.evaluate_value(environment_id, argument)
-                    .map_err(|err| {
-                        Error::generic_execution_error_caused("Cannot evaluate arguments.", err)
-                    })?;
+            let evaluated_argument = self
+                .evaluate_value(environment_id, argument)
+                .map_err(|err| {
+                    Error::generic_execution_error_caused(
+                        "Cannot evaluate arguments.",
+                        err,
+                    )
+                })?;
 
             evaluated_arguments.push(evaluated_argument)
         }
@@ -999,25 +1162,35 @@ impl Interpreter {
 
         // ordinary
         for variable_name in arguments.get_ordinary_arguments().iter() {
-            let variable_symbol_id = self.intern(variable_name);
+            let variable_symbol_id = self.intern_symbol_id(variable_name);
             let value = values[current_argument];
 
-            self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+            self.define_variable(
+                execution_environment_id,
+                variable_symbol_id,
+                value,
+            )?;
 
             current_argument += 1;
         }
 
         // optional
         for optional_argument in arguments.get_optional_arguments().iter() {
-            let variable_symbol_id = self.intern(optional_argument.get_name());
+            let variable_symbol_id =
+                self.intern_symbol_id(optional_argument.get_name());
 
             if current_argument < values.len() {
                 let value = values[current_argument];
 
-                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                self.define_variable(
+                    execution_environment_id,
+                    variable_symbol_id,
+                    value,
+                )?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
-                    let variable_symbol_id = self.intern(provided_name);
+                    let variable_symbol_id =
+                        self.intern_symbol_id(provided_name);
 
                     self.define_variable(
                         execution_environment_id,
@@ -1029,16 +1202,22 @@ impl Interpreter {
                 current_argument += 1;
             } else {
                 let value = match optional_argument.get_default() {
-                    Some(default_value) => {
-                        self.evaluate_value(execution_environment_id, default_value)?
-                    }
+                    Some(default_value) => self.evaluate_value(
+                        execution_environment_id,
+                        default_value,
+                    )?,
                     None => self.intern_nil_symbol_value(),
                 };
 
-                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                self.define_variable(
+                    execution_environment_id,
+                    variable_symbol_id,
+                    value,
+                )?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
-                    let variable_symbol_id = self.intern(provided_name);
+                    let variable_symbol_id =
+                        self.intern_symbol_id(provided_name);
 
                     self.define_variable(
                         execution_environment_id,
@@ -1051,7 +1230,7 @@ impl Interpreter {
 
         // rest
         if let Some(rest_argument_name) = arguments.get_rest_argument() {
-            let variable_symbol_id = self.intern(rest_argument_name);
+            let variable_symbol_id = self.intern_symbol_id(rest_argument_name);
 
             let rest_values_slice = &values[current_argument..];
             let rest_values = Vec::from(rest_values_slice);
@@ -1072,14 +1251,22 @@ impl Interpreter {
         // key arguments
         if arguments.get_key_arguments().len() != 0 {
             if values.len() % 2 != 0 {
-                return Error::generic_execution_error("Invalid usage of key arguments.").into();
+                return Error::generic_execution_error(
+                    "Invalid usage of key arguments.",
+                )
+                .into();
             }
 
             for key_argument in arguments.get_key_arguments() {
-                let variable_symbol_id = self.intern(key_argument.get_name());
+                let variable_symbol_id =
+                    self.intern_symbol_id(key_argument.get_name());
                 let value = self.exclusive_nil_value;
 
-                self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                self.define_variable(
+                    execution_environment_id,
+                    variable_symbol_id,
+                    value,
+                )?;
             }
 
             loop {
@@ -1089,33 +1276,51 @@ impl Interpreter {
 
                 let keyword = values[current_argument];
 
-                let variable_symbol_id = if let Value::Keyword(keyword_id) = keyword {
-                    let keyword_name = self.get_keyword(keyword_id)?.get_name().clone();
+                let variable_symbol_id =
+                    if let Value::Keyword(keyword_id) = keyword {
+                        let keyword_name =
+                            self.get_keyword(keyword_id)?.get_name().clone();
 
-                    self.intern(&keyword_name)
-                } else {
-                    return Error::generic_execution_error("").into();
-                };
+                        self.intern_symbol_id(&keyword_name)
+                    } else {
+                        return Error::generic_execution_error("").into();
+                    };
 
                 let value = values[current_argument + 1];
 
-                self.set_environment_variable(execution_environment_id, variable_symbol_id, value)?;
+                self.set_environment_variable(
+                    execution_environment_id,
+                    variable_symbol_id,
+                    value,
+                )?;
 
                 current_argument += 2;
             }
 
             for key_argument in arguments.get_key_arguments() {
-                let variable_symbol_id = self.intern(key_argument.get_name());
-                let looked_up_variable = match self
-                    .lookup_variable(execution_environment_id, variable_symbol_id)?
-                {
+                let variable_symbol_id =
+                    self.intern_symbol_id(key_argument.get_name());
+                let looked_up_variable = match self.lookup_variable(
+                    execution_environment_id,
+                    variable_symbol_id,
+                )? {
                     Some(variable_value) => variable_value,
-                    None => return Error::generic_execution_error("Cannot find variable").into(),
+                    None => {
+                        return Error::generic_execution_error(
+                            "Cannot find variable",
+                        )
+                        .into();
+                    },
                 };
 
                 if looked_up_variable == self.exclusive_nil_value {
-                    let value = if let Some(default_value) = key_argument.get_default() {
-                        self.evaluate_value(execution_environment_id, default_value)?
+                    let value = if let Some(default_value) =
+                        key_argument.get_default()
+                    {
+                        self.evaluate_value(
+                            execution_environment_id,
+                            default_value,
+                        )?
                     } else {
                         self.intern_nil_symbol_value()
                     };
@@ -1127,25 +1332,37 @@ impl Interpreter {
                     )?;
 
                     if let Some(provided_name) = key_argument.get_provided() {
-                        let variable_symbol_id = self.intern(provided_name);
+                        let variable_symbol_id =
+                            self.intern_symbol_id(provided_name);
                         let value = Value::Boolean(false);
 
-                        self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                        self.define_variable(
+                            execution_environment_id,
+                            variable_symbol_id,
+                            value,
+                        )?;
                     }
                 } else {
                     if let Some(provided_name) = key_argument.get_provided() {
-                        let variable_symbol_id = self.intern(provided_name);
+                        let variable_symbol_id =
+                            self.intern_symbol_id(provided_name);
                         let value = Value::Boolean(true);
 
-                        self.define_variable(execution_environment_id, variable_symbol_id, value)?;
+                        self.define_variable(
+                            execution_environment_id,
+                            variable_symbol_id,
+                            value,
+                        )?;
                     }
                 }
             }
         }
 
         if values.len() > current_argument {
-            return Error::generic_execution_error("Function was called with too many arguments.")
-                .into();
+            return Error::generic_execution_error(
+                "Function was called with too many arguments.",
+            )
+            .into();
         } else if values.len() < current_argument {
             return Error::generic_execution_error(
                 "Function was called with too little arguments.",
@@ -1166,25 +1383,35 @@ impl Interpreter {
 
         // ordinary
         for function_name in arguments.get_ordinary_arguments().iter() {
-            let function_symbol_id = self.intern(function_name);
+            let function_symbol_id = self.intern_symbol_id(function_name);
             let value = values[current_argument];
 
-            self.define_function(execution_environment_id, function_symbol_id, value)?;
+            self.define_function(
+                execution_environment_id,
+                function_symbol_id,
+                value,
+            )?;
 
             current_argument += 1;
         }
 
         // optional
         for optional_argument in arguments.get_optional_arguments().iter() {
-            let function_symbol_id = self.intern(optional_argument.get_name());
+            let function_symbol_id =
+                self.intern_symbol_id(optional_argument.get_name());
 
             if current_argument < values.len() {
                 let value = values[current_argument];
 
-                self.define_function(execution_environment_id, function_symbol_id, value)?;
+                self.define_function(
+                    execution_environment_id,
+                    function_symbol_id,
+                    value,
+                )?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
-                    let function_symbol_id = self.intern(provided_name);
+                    let function_symbol_id =
+                        self.intern_symbol_id(provided_name);
 
                     self.define_function(
                         execution_environment_id,
@@ -1196,16 +1423,22 @@ impl Interpreter {
                 current_argument += 1;
             } else {
                 let value = match optional_argument.get_default() {
-                    Some(default_value) => {
-                        self.evaluate_value(execution_environment_id, default_value)?
-                    }
+                    Some(default_value) => self.evaluate_value(
+                        execution_environment_id,
+                        default_value,
+                    )?,
                     None => self.intern_nil_symbol_value(),
                 };
 
-                self.define_function(execution_environment_id, function_symbol_id, value)?;
+                self.define_function(
+                    execution_environment_id,
+                    function_symbol_id,
+                    value,
+                )?;
 
                 if let Some(provided_name) = optional_argument.get_provided() {
-                    let function_symbol_id = self.intern(provided_name);
+                    let function_symbol_id =
+                        self.intern_symbol_id(provided_name);
 
                     self.define_function(
                         execution_environment_id,
@@ -1225,12 +1458,15 @@ impl Interpreter {
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > evaluated_arguments.len() {
-            return Error::generic_execution_error("Not enough arguments to call a function.")
-                .into();
+            return Error::generic_execution_error(
+                "Not enough arguments to call a function.",
+            )
+            .into();
         }
 
         // 1) make new environment
-        let execution_environment_id = self.make_environment(func.get_environment())?;
+        let execution_environment_id =
+            self.make_environment(func.get_environment())?;
 
         // 2) setup environment variables and functions
         self.define_environment_variables(
@@ -1246,10 +1482,12 @@ impl Interpreter {
         )?;
 
         // 3) execute code
-        let execution_result = self.evaluate_values(execution_environment_id, func.get_code())?;
+        let execution_result =
+            self.evaluate_values(execution_environment_id, func.get_code())?;
 
         // 4) return result
-        let result = execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
+        let result =
+            execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
 
         Ok(result)
     }
@@ -1260,7 +1498,11 @@ impl Interpreter {
         execution_environment: EnvironmentId,
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
-        (builtin_function.get_func())(self, execution_environment, evaluated_arguments)
+        (builtin_function.get_func())(
+            self,
+            execution_environment,
+            evaluated_arguments,
+        )
     }
 
     fn evaluate_special_form_invocation(
@@ -1278,11 +1520,15 @@ impl Interpreter {
         arguments: Vec<Value>,
     ) -> Result<Value, Error> {
         if func.get_arguments().required_len() > arguments.len() {
-            return Error::generic_execution_error("Not enough arguments to call a macro.").into();
+            return Error::generic_execution_error(
+                "Not enough arguments to call a macro.",
+            )
+            .into();
         }
 
         // 1) make new environment
-        let execution_environment_id = self.make_environment(func.get_environment())?;
+        let execution_environment_id =
+            self.make_environment(func.get_environment())?;
 
         // 2) set arguments in that environment
         self.define_environment_variables(
@@ -1298,10 +1544,12 @@ impl Interpreter {
         )?;
 
         // 3) execute code
-        let execution_result = self.evaluate_values(execution_environment_id, func.get_code())?;
+        let execution_result =
+            self.evaluate_values(execution_environment_id, func.get_code())?;
 
         // 4) return result
-        let result = execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
+        let result =
+            execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
 
         Ok(result)
     }
@@ -1320,7 +1568,8 @@ impl Interpreter {
             Function::Builtin(builtin_function) => {
                 // 2) evaluate arguments
                 let arguments = self.extract_arguments(cons_id)?;
-                let evaluated_arguments = self.evaluate_arguments(environment_id, arguments)?;
+                let evaluated_arguments =
+                    self.evaluate_arguments(environment_id, arguments)?;
 
                 // 3) apply function from step 1 to arguments from step 2
                 self.evaluate_builtin_function_invocation(
@@ -1328,30 +1577,35 @@ impl Interpreter {
                     environment_id,
                     evaluated_arguments,
                 )
-            }
+            },
             Function::Interpreted(interpreted_function) => {
                 // 2) evaluate arguments
                 let arguments = self.extract_arguments(cons_id)?;
-                let evaluated_arguments = self.evaluate_arguments(environment_id, arguments)?;
+                let evaluated_arguments =
+                    self.evaluate_arguments(environment_id, arguments)?;
 
                 // 3) apply function from step 1 to arguments from step 2
                 self.evaluate_interpreted_function_invocation(
                     &interpreted_function,
                     evaluated_arguments,
                 )
-            }
+            },
             Function::SpecialForm(special_form) => {
                 let arguments = self.extract_arguments(cons_id)?;
 
-                self.evaluate_special_form_invocation(environment_id, &special_form, arguments)
-            }
+                self.evaluate_special_form_invocation(
+                    environment_id,
+                    &special_form,
+                    arguments,
+                )
+            },
             Function::Macro(macro_function) => {
                 let arguments = self.extract_arguments(cons_id)?;
                 let evaluation_result =
                     self.evaluate_macro_invocation(&macro_function, arguments)?;
 
                 self.evaluate_value(environment_id, evaluation_result)
-            }
+            },
         }
     }
 
@@ -1365,7 +1619,7 @@ impl Interpreter {
             .get_keyword(keyword_id)
             .map(|keyword| keyword.get_name().clone())?;
 
-        let symbol_id = self.intern(&keyword_name);
+        let symbol_id = self.intern_symbol_id(&keyword_name);
 
         let mut arguments = self.extract_arguments(cons_id)?;
 
@@ -1378,17 +1632,24 @@ impl Interpreter {
 
         let argument = arguments.remove(0);
 
-        let evaluated_argument = self.evaluate_value(environment_id, argument)?;
+        let evaluated_argument =
+            self.evaluate_value(environment_id, argument)?;
 
         match evaluated_argument {
             Value::Object(object_id) => self
                 .object_arena
                 .get_property_value(object_id, symbol_id)?
-                .ok_or_else(|| Error::generic_execution_error("Object have not an item to yield.")),
+                .ok_or_else(|| {
+                    Error::generic_execution_error(
+                        "Object have not an item to yield.",
+                    )
+                }),
             _ => {
-                return Error::generic_execution_error("Cannot get an item of not an object.")
-                    .into()
-            }
+                return Error::generic_execution_error(
+                    "Cannot get an item of not an object.",
+                )
+                .into();
+            },
         }
     }
 
@@ -1464,9 +1725,15 @@ impl Interpreter {
         }
     }
 
-    fn evaluate_value(&mut self, environment: EnvironmentId, value: Value) -> Result<Value, Error> {
+    fn evaluate_value(
+        &mut self,
+        environment: EnvironmentId,
+        value: Value,
+    ) -> Result<Value, Error> {
         match value {
-            Value::Symbol(symbol_name) => self.evaluate_symbol(environment, symbol_name),
+            Value::Symbol(symbol_name) => {
+                self.evaluate_symbol(environment, symbol_name)
+            },
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
             _ => Ok(value),
         }
@@ -1495,7 +1762,9 @@ impl Interpreter {
     ) -> Result<Value, Error> {
         // first step: parse code
         let code = parse(code).map_err(|err| {
-            Error::parse_error(format!("Error while parsing code: {:?}", err).as_str())
+            Error::parse_error(
+                format!("Error while parsing code: {:?}", err).as_str(),
+            )
         })?;
 
         // second step: read forms
@@ -1546,7 +1815,10 @@ impl Interpreter {
         interpreted_function: &InterpretedFunction,
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
-        self.evaluate_interpreted_function_invocation(interpreted_function, evaluated_arguments)
+        self.evaluate_interpreted_function_invocation(
+            interpreted_function,
+            evaluated_arguments,
+        )
     }
 
     pub fn execute_function(&mut self, value: Value) -> Result<Value, Error> {
@@ -1556,19 +1828,28 @@ impl Interpreter {
                 let function_invocation_cons = self.make_cons_value(value, nil);
                 let root_environment_id = self.get_main_environment_id();
 
-                self.execute_value(root_environment_id, function_invocation_cons)
-            }
+                self.execute_value(
+                    root_environment_id,
+                    function_invocation_cons,
+                )
+            },
             _ => Error::invalid_argument_error("").into(),
         }
     }
 
-    pub fn execute_in_root_environment(&mut self, code: &str) -> Result<Value, Error> {
+    pub fn execute_in_root_environment(
+        &mut self,
+        code: &str,
+    ) -> Result<Value, Error> {
         let root_environment_id = self.get_root_environment_id();
 
         self.execute_code(root_environment_id, code)
     }
 
-    pub fn execute_in_main_environment(&mut self, code: &str) -> Result<Value, Error> {
+    pub fn execute_in_main_environment(
+        &mut self,
+        code: &str,
+    ) -> Result<Value, Error> {
         let main_environment_id = self.get_main_environment_id();
 
         self.execute_code(main_environment_id, code)
@@ -1620,7 +1901,8 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             let expected = interpreter.intern_string_value("tas");
-            let result = interpreter.execute_in_main_environment(r#""tas""#).unwrap();
+            let result =
+                interpreter.execute_in_main_environment(r#""tas""#).unwrap();
 
             assertion::assert_deep_equal(&mut interpreter, expected, result);
         }
@@ -1628,7 +1910,7 @@ mod tests {
         #[test]
         pub fn executes_symbol_correctly() {
             let mut interpreter = Interpreter::new();
-            let name = interpreter.intern("test");
+            let name = interpreter.intern_symbol_id("test");
             let root_environment_id = interpreter.get_main_environment_id();
 
             interpreter
@@ -1647,16 +1929,22 @@ mod tests {
 
             for special_symbol_name in special_symbol_names {
                 let mut interpreter = Interpreter::new();
-                let symbol_id = interpreter.intern(special_symbol_name);
+                let symbol_id =
+                    interpreter.intern_symbol_id(special_symbol_name);
 
                 let root_environment_id = interpreter.get_main_environment_id();
 
                 interpreter
                     .environment_arena
-                    .define_variable(root_environment_id, symbol_id, Value::Integer(1))
+                    .define_variable(
+                        root_environment_id,
+                        symbol_id,
+                        Value::Integer(1),
+                    )
                     .unwrap();
 
-                let result = interpreter.execute_in_main_environment(special_symbol_name);
+                let result = interpreter
+                    .execute_in_main_environment(special_symbol_name);
                 nia_assert_is_err(&result);
             }
         }
@@ -1668,7 +1956,8 @@ mod tests {
             let specs = vec![":a", ":b", ":c"];
 
             for spec in specs {
-                let result = interpreter.execute_in_main_environment(spec).unwrap();
+                let result =
+                    interpreter.execute_in_main_environment(spec).unwrap();
                 let keyword_id = result.try_into().unwrap();
                 let keyword = interpreter.get_keyword(keyword_id).unwrap();
 
@@ -1705,12 +1994,14 @@ mod tests {
                 ("{:value #()}", "#()"),
             ];
 
-            let value_symbol_name = interpreter.intern("value");
+            let value_symbol_name = interpreter.intern_symbol_id("value");
 
             for (code, expected) in pairs {
-                let expected = interpreter.execute_in_main_environment(expected).unwrap();
+                let expected =
+                    interpreter.execute_in_main_environment(expected).unwrap();
 
-                let result = interpreter.execute_in_main_environment(code).unwrap();
+                let result =
+                    interpreter.execute_in_main_environment(code).unwrap();
 
                 let object_id = result.try_into().unwrap();
 
@@ -1719,7 +2010,11 @@ mod tests {
                     .unwrap()
                     .unwrap();
 
-                assertion::assert_deep_equal(&mut interpreter, expected, result);
+                assertion::assert_deep_equal(
+                    &mut interpreter,
+                    expected,
+                    result,
+                );
             }
         }
 
@@ -1736,7 +2031,10 @@ mod tests {
                     ("(let ((obj {:value 1.1})) obj:value)", "1.1"),
                     ("(let ((obj {:value #t})) obj:value)", "#t"),
                     ("(let ((obj {:value #f})) obj:value)", "#f"),
-                    ("(let ((obj {:value \"string\"})) obj:value)", "\"string\""),
+                    (
+                        "(let ((obj {:value \"string\"})) obj:value)",
+                        "\"string\"",
+                    ),
                     ("(let ((obj {:value :keyword})) obj:value)", ":keyword"),
                     ("(let ((obj {:value 'symbol})) obj:value)", "'symbol"),
                     ("(let ((obj {:value {:a 1}})) obj:value)", "{:a 1}"),
@@ -1763,12 +2061,24 @@ mod tests {
             fn executes_this_bindings_correctly() {
                 let mut interpreter = Interpreter::new();
 
-                let specs = vec!(
-                    ("(let ((obj {:a 1 :b 2 :c (fn () (+ this:a this:b))})) (obj:c))", "3"),
-                    ("(let ((obj {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))})) (obj:c))", "3"),
-                    ("(defv a {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))}) (a:c)", "3"),
-                    ("(defv b {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))}) (with-this b (this:c))", "3"),
-                );
+                let specs = vec![
+                    (
+                        "(let ((obj {:a 1 :b 2 :c (fn () (+ this:a this:b))})) (obj:c))",
+                        "3",
+                    ),
+                    (
+                        "(let ((obj {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))})) (obj:c))",
+                        "3",
+                    ),
+                    (
+                        "(defv a {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))}) (a:c)",
+                        "3",
+                    ),
+                    (
+                        "(defv b {:a (fn () 1) :b (fn () 2) :c (fn () (+ (this:a) (this:b)))}) (with-this b (this:c))",
+                        "3",
+                    ),
+                ];
 
                 assertion::assert_results_are_equal(&mut interpreter, specs);
             }
@@ -1822,7 +2132,8 @@ mod tests {
                 let mut interpreter = Interpreter::new();
                 let nil = interpreter.intern_nil_symbol_value();
 
-                let result = interpreter.execute_in_main_environment("(#())").unwrap();
+                let result =
+                    interpreter.execute_in_main_environment("(#())").unwrap();
                 assert_deep_equal(&mut interpreter, nil, result);
 
                 let result = interpreter
@@ -1865,7 +2176,9 @@ mod tests {
                 assert_deep_equal(&mut interpreter, Value::Integer(5), result);
 
                 let result = interpreter
-                    .execute_in_main_environment("(flet ((test () #(%1))) ((test) #(+ 3 2)))")
+                    .execute_in_main_environment(
+                        "(flet ((test () #(%1))) ((test) #(+ 3 2)))",
+                    )
                     .unwrap();
                 assert_deep_equal(&mut interpreter, Value::Integer(5), result);
             }
@@ -1884,7 +2197,8 @@ mod tests {
             let result = interpreter.execute_in_main_environment("(+ 1.1 2.4)");
             nia_assert_equal(Value::Float(3.5), result.unwrap());
 
-            let result = interpreter.execute_in_main_environment("(+ (+ (+ 1 2) 3) 4)");
+            let result =
+                interpreter.execute_in_main_environment("(+ (+ (+ 1 2) 3) 4)");
             nia_assert_equal(Value::Integer(10), result.unwrap());
         }
 
@@ -1906,7 +2220,7 @@ mod tests {
 
             let code = vec![value];
 
-            let name = interpreter.intern("test");
+            let name = interpreter.intern_symbol_id("test");
             let mut arguments = FunctionArguments::new();
 
             arguments.add_ordinary_argument(String::from("a")).unwrap();
@@ -1922,7 +2236,11 @@ mod tests {
 
             interpreter
                 .environment_arena
-                .define_function(root_environment_id, name, Value::Function(function_id))
+                .define_function(
+                    root_environment_id,
+                    name,
+                    Value::Function(function_id),
+                )
                 .unwrap();
 
             let result = interpreter.execute_in_main_environment("(test 3 2)");
@@ -2072,31 +2390,31 @@ mod tests {
             let mut interpreter = Interpreter::new();
             let root_environment_id = interpreter.get_main_environment_id();
 
-            let name = interpreter.intern("testif");
-            let function = Function::SpecialForm(SpecialFormFunction::new(
-                |interpreter: &mut Interpreter,
-                 environment: EnvironmentId,
-                 values: Vec<Value>|
-                 -> Result<Value, Error> {
-                    let mut values = values;
+            let name = interpreter.intern_symbol_id("testif");
+            let function =
+                Function::SpecialForm(SpecialFormFunction::new(
+                    |interpreter: &mut Interpreter,
+                     environment: EnvironmentId,
+                     values: Vec<Value>|
+                     -> Result<Value, Error> {
+                        let mut values = values;
 
-                    let condition = values.remove(0);
-                    let then_clause = values.remove(0);
-                    let else_clause = values.remove(0);
+                        let condition = values.remove(0);
+                        let then_clause = values.remove(0);
+                        let else_clause = values.remove(0);
 
-                    let evaluated_condition = interpreter.execute_value(environment, condition);
+                        let evaluated_condition =
+                            interpreter.execute_value(environment, condition);
 
-                    match evaluated_condition {
-                        Ok(Value::Boolean(true)) => {
-                            interpreter.execute_value(environment, then_clause)
+                        match evaluated_condition {
+                            Ok(Value::Boolean(true)) => interpreter
+                                .execute_value(environment, then_clause),
+                            Ok(Value::Boolean(false)) => interpreter
+                                .execute_value(environment, else_clause),
+                            _ => Error::generic_execution_error("").into(),
                         }
-                        Ok(Value::Boolean(false)) => {
-                            interpreter.execute_value(environment, else_clause)
-                        }
-                        _ => Error::generic_execution_error("").into(),
-                    }
-                },
-            ));
+                    },
+                ));
 
             let function_id = interpreter.register_function(function);
             let function_value = Value::Function(function_id);
@@ -2114,9 +2432,14 @@ mod tests {
             ];
 
             for (code, expected) in pairs {
-                let result = interpreter.execute_in_main_environment(code).unwrap();
+                let result =
+                    interpreter.execute_in_main_environment(code).unwrap();
 
-                assertion::assert_deep_equal(&mut interpreter, expected, result);
+                assertion::assert_deep_equal(
+                    &mut interpreter,
+                    expected,
+                    result,
+                );
             }
         }
 
@@ -2124,9 +2447,10 @@ mod tests {
         pub fn macro_invocation_evaluates_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
-                ("((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)", "(list 'aa 'bb 'cc)")
-            );
+            let pairs = vec![(
+                "((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)",
+                "(list 'aa 'bb 'cc)",
+            )];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }

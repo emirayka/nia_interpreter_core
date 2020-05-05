@@ -64,7 +64,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -72,7 +73,10 @@ mod tests {
             "(let ((obj {:item 1})) (object:get-proto obj 'smth-other))",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -81,6 +85,9 @@ mod tests {
 
         let code_vector = vec!["(let ((obj 2)) (object:get-proto obj))"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

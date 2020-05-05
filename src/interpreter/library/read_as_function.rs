@@ -5,12 +5,17 @@ use crate::interpreter::value::Value;
 use crate::interpreter::library;
 use crate::interpreter::value::Function;
 
-pub fn read_as_function(interpreter: &Interpreter, value: Value) -> Result<&Function, Error> {
+pub fn read_as_function(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<&Function, Error> {
     let function_id = library::read_as_function_id(value)?;
 
     let function = match interpreter.get_function(function_id) {
         Ok(function) => function,
-        Err(error) => return Error::generic_execution_error_caused("", error).into(),
+        Err(error) => {
+            return Error::generic_execution_error_caused("", error).into();
+        },
     };
 
     Ok(function)
@@ -60,7 +65,8 @@ mod tests {
         ];
 
         for not_string_value in not_string_values {
-            let result = library::read_as_function(&mut interpreter, not_string_value);
+            let result =
+                library::read_as_function(&mut interpreter, not_string_value);
             assertion::assert_invalid_argument_error(&result);
         }
     }

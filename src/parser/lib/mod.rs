@@ -1,7 +1,9 @@
 use nom::error::ErrorKind;
 use nom::{IResult, InputLength};
 
-pub fn parse_symbol_character(input: &str) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
+pub fn parse_symbol_character(
+    input: &str,
+) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
     match input.chars().next() {
         Some('\\') => {
             let next_input = &input['\\'.len_utf8()..];
@@ -19,10 +21,12 @@ pub fn parse_symbol_character(input: &str) -> IResult<&str, char, (&str, nom::er
                 Some(':') => Ok((&next_input[':'.len_utf8()..], ':')),
                 Some('"') => Ok((&next_input['"'.len_utf8()..], '"')),
                 Some(';') => Ok((&next_input[';'.len_utf8()..], ';')),
-                None => Err(nom::Err::Error((input, nom::error::ErrorKind::Eof))),
+                None => {
+                    Err(nom::Err::Error((input, nom::error::ErrorKind::Eof)))
+                },
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsA))),
             }
-        }
+        },
         Some(c) => match c {
             '(' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
             ')' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
@@ -43,7 +47,9 @@ pub fn parse_symbol_character(input: &str) -> IResult<&str, char, (&str, nom::er
     }
 }
 
-pub fn parse_keyword_character(input: &str) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
+pub fn parse_keyword_character(
+    input: &str,
+) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
     match input.chars().next() {
         Some('\\') => {
             let next_input = &input['\\'.len_utf8()..];
@@ -60,10 +66,12 @@ pub fn parse_keyword_character(input: &str) -> IResult<&str, char, (&str, nom::e
                 Some(' ') => Ok((&next_input[' '.len_utf8()..], ' ')),
                 Some('"') => Ok((&next_input['"'.len_utf8()..], '"')),
                 Some(';') => Ok((&next_input[';'.len_utf8()..], ';')),
-                None => Err(nom::Err::Error((input, nom::error::ErrorKind::Eof))),
+                None => {
+                    Err(nom::Err::Error((input, nom::error::ErrorKind::Eof)))
+                },
                 _ => Err(nom::Err::Error((input, nom::error::ErrorKind::IsA))),
             }
-        }
+        },
         Some(c) => match c {
             '(' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
             ')' => Err(nom::Err::Error((input, nom::error::ErrorKind::IsNot))),
@@ -83,7 +91,9 @@ pub fn parse_keyword_character(input: &str) -> IResult<&str, char, (&str, nom::e
     }
 }
 
-pub fn parse_comment_character(input: &str) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
+pub fn parse_comment_character(
+    input: &str,
+) -> IResult<&str, char, (&str, nom::error::ErrorKind)> {
     match input.chars().next() {
         Some(c) => {
             if c == '\n' {
@@ -91,18 +101,20 @@ pub fn parse_comment_character(input: &str) -> IResult<&str, char, (&str, nom::e
             } else {
                 Ok((&input[c.len_utf8()..], c))
             }
-        }
+        },
         None => {
             if input.is_empty() {
                 IResult::Err(nom::Err::Error((input, ErrorKind::Eof)))
             } else {
                 IResult::Err(nom::Err::Failure((input, ErrorKind::Eof)))
             }
-        }
+        },
     }
 }
 
-pub fn end_of_input(input: &str) -> IResult<&str, &str, (&str, nom::error::ErrorKind)> {
+pub fn end_of_input(
+    input: &str,
+) -> IResult<&str, &str, (&str, nom::error::ErrorKind)> {
     if input.input_len() == 0 {
         IResult::Ok((input, input))
     } else {

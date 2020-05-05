@@ -41,29 +41,60 @@ mod tests {
     fn freezes_object() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
+        let code_vector = vec![
             // todo: probably change generic execution error to another error symbol
-            ("(let ((a {})) (object:freeze! a) (object:is-frozen? a))", "#t"),
-            ("(try (let ((a {})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-proto! a {})) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property a :kek)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-internable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-writable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-enumerable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
-            ("(try (let ((a {:kek nil})) (object:freeze! a) (object:set-configurable! a :kek #f)) (catch 'generic-execution-error #t))", "#t"),
-        );
+            (
+                "(let ((a {})) (object:freeze! a) (object:is-frozen? a))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set-proto! a {})) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set! a :kek 2)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property a :kek)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set-internable! a :kek #f)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set-writable! a :kek #f)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set-enumerable! a :kek #f)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+            (
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:set-configurable! a :kek #f)) (catch 'generic-execution-error #t))",
+                "#t",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(object:freeze!)", "(object:freeze! {} 'val)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -82,6 +113,9 @@ mod tests {
             "(object:freeze! #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

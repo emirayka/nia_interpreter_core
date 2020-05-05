@@ -53,14 +53,14 @@ pub fn read_as_let_definitions(
             }
 
             cons_cells
-        }
+        },
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return Error::invalid_argument_error("").into();
             }
-        }
+        },
         _ => return Error::invalid_argument_error("").into(),
     };
 
@@ -95,7 +95,9 @@ mod tests {
                 interpreter.execute_in_main_environment("'(a)").unwrap(),
             ),
             (
-                vec![interpreter.execute_in_main_environment("'(a 1)").unwrap()],
+                vec![interpreter
+                    .execute_in_main_environment("'(a 1)")
+                    .unwrap()],
                 interpreter.execute_in_main_environment("'((a 1))").unwrap(),
             ),
             (
@@ -136,9 +138,14 @@ mod tests {
 
         for spec in specs {
             let expected = spec.0;
-            let result = read_as_let_definitions(&mut interpreter, spec.1).unwrap();
+            let result =
+                read_as_let_definitions(&mut interpreter, spec.1).unwrap();
 
-            assertion::assert_vectors_deep_equal(&mut interpreter, expected, result);
+            assertion::assert_vectors_deep_equal(
+                &mut interpreter,
+                expected,
+                result,
+            );
         }
     }
 

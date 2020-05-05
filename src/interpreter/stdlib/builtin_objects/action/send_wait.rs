@@ -22,8 +22,10 @@ pub fn send_wait(
     let milliseconds = library::read_as_i64(values.remove(0))?;
 
     let text_type_symbol_value = interpreter.intern_symbol_value("wait");
-    let text_type =
-        interpreter.vec_to_list(vec![text_type_symbol_value, Value::Integer(milliseconds)]);
+    let text_type = interpreter.vec_to_list(vec![
+        text_type_symbol_value,
+        Value::Integer(milliseconds),
+    ]);
 
     library::add_value_to_root_list(interpreter, "--actions", text_type)?;
 
@@ -72,15 +74,23 @@ mod tests {
             "(action:send-wait #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(action:send-wait)", "(action:send-wait 3 \"at\")"];
+        let code_vector =
+            vec!["(action:send-wait)", "(action:send-wait 3 \"at\")"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

@@ -18,8 +18,11 @@ pub fn mlet_star(
 
     let mut values = values;
 
-    let definitions = library::read_as_flet_definitions(interpreter, values.remove(0))
-        .map_err(|_| Error::invalid_argument_error("Invalid `mlet*' definitions."))?;
+    let definitions =
+        library::read_as_flet_definitions(interpreter, values.remove(0))
+            .map_err(|_| {
+                Error::invalid_argument_error("Invalid `mlet*' definitions.")
+            })?;
 
     let forms = values;
     let macro_definition_environment = interpreter
@@ -81,11 +84,20 @@ mod tests {
     fn able_to_define_several_macros() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
-            ("(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-1))", Value::Integer(1)),
-            ("(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-2))", Value::Integer(2)),
-            ("(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-3))", Value::Integer(3)),
-        );
+        let pairs = vec![
+            (
+                "(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-1))",
+                Value::Integer(1),
+            ),
+            (
+                "(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-2))",
+                Value::Integer(2),
+            ),
+            (
+                "(mlet* ((test-macro-1 () 1) (test-macro-2 () 2) (test-macro-3 () 3)) (test-macro-3))",
+                Value::Integer(3),
+            ),
+        ];
 
         assertion::assert_results_are_correct(&mut interpreter, pairs);
     }
@@ -182,7 +194,8 @@ mod tests {
         assertion::assert_results_are_correct(&mut interpreter, pairs);
     }
 
-    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol() {
+    fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let mut specs = vec![
@@ -197,7 +210,10 @@ mod tests {
             "(mlet* ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -216,7 +232,10 @@ mod tests {
             "(mlet* #(+ %1 %2))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, incorrect_strings);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            incorrect_strings,
+        );
     }
 
     #[test]
@@ -233,7 +252,10 @@ mod tests {
             "(mlet* ({}))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -250,7 +272,10 @@ mod tests {
             "(mlet* (((quote symbol) () 2)) (quote symbol))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -267,16 +292,23 @@ mod tests {
             "(mlet* ((func some-symbol 2)) (func))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items() {
+    fn returns_err_when_definition_is_a_list_but_have_incorrect_count_of_items()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(mlet* ((sym)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -285,6 +317,9 @@ mod tests {
 
         let code_vector = vec!["(mlet* ((sym-1 () 1) (sym-1 () 2)) (sym-1))"];
 
-        assertion::assert_results_are_just_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

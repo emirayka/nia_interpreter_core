@@ -23,7 +23,8 @@ mod tests {
     fn returns_correct_int() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec![(Value::Boolean(true), true), (Value::Boolean(false), false)];
+        let pairs =
+            vec![(Value::Boolean(true), true), (Value::Boolean(false), false)];
 
         for (value, expected) in pairs {
             let result = read_as_bool(value).unwrap();

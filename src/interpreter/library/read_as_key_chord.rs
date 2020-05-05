@@ -19,7 +19,8 @@ pub fn read_as_key_chord(
     let mut key_chord_parts = Vec::new();
 
     for key_chord_part_value in key_chord_part_values {
-        let key_chord_part = library::read_as_key_chord_part(interpreter, key_chord_part_value)?;
+        let key_chord_part =
+            library::read_as_key_chord_part(interpreter, key_chord_part_value)?;
         key_chord_parts.push(key_chord_part);
     }
 

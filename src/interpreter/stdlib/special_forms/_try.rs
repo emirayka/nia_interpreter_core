@@ -14,9 +14,9 @@ fn read_catch_clauses(
     for clause in clauses {
         match clause {
             Value::Cons(cons_id) => {
-                let car = interpreter
-                    .get_car(cons_id)
-                    .map_err(|err| Error::generic_execution_error_caused("", err))?;
+                let car = interpreter.get_car(cons_id).map_err(|err| {
+                    Error::generic_execution_error_caused("", err)
+                })?;
 
                 match car {
                     Value::Symbol(symbol_id) => {
@@ -33,13 +33,13 @@ fn read_catch_clauses(
                         .into()
                     }
                 }
-            }
+            },
             _ => {
                 return Error::invalid_argument_error(
                     "The clauses of special form `try' must be lists.",
                 )
-                .into()
-            }
+                .into();
+            },
         }
     }
 
@@ -86,7 +86,8 @@ pub fn _try(
                     )
                 })?;
 
-                let catch_value = interpreter.execute_value(environment_id, catch_value)?;
+                let catch_value =
+                    interpreter.execute_value(environment_id, catch_value)?;
 
                 let catch_symbol_id = match catch_value {
                     Value::Symbol(symbol) => symbol,
@@ -95,9 +96,10 @@ pub fn _try(
                     ).into(),
                 };
 
-                let catch_symbol_name = interpreter
-                    .get_symbol_name(catch_symbol_id)
-                    .map_err(|err| Error::generic_execution_error_caused("", err))?;
+                let catch_symbol_name =
+                    interpreter.get_symbol_name(catch_symbol_id).map_err(
+                        |err| Error::generic_execution_error_caused("", err),
+                    )?;
 
                 if catch_symbol_name == error.get_symbol_name() {
                     found_clause = Some(catch_clause);
@@ -118,22 +120,31 @@ pub fn _try(
                             if interpreter.symbol_is_nil(symbol_id)? {
                                 Ok(interpreter.intern_nil_symbol_value())
                             } else {
-                                return Error::generic_execution_error("").into();
+                                return Error::generic_execution_error("")
+                                    .into();
                             }
-                        }
+                        },
                         Value::Cons(cons_id) => {
                             let values = interpreter
                                 .list_to_vec(cons_id)
-                                .map_err(|err| Error::generic_execution_error_caused("", err))?;
+                                .map_err(|err| {
+                                    Error::generic_execution_error_caused(
+                                        "", err,
+                                    )
+                                })?;
 
-                            library::execute_forms(interpreter, environment_id, &values)
-                        }
+                            library::execute_forms(
+                                interpreter,
+                                environment_id,
+                                &values,
+                            )
+                        },
                         _ => unreachable!(),
                     }
-                }
+                },
                 None => Err(error),
             }
-        }
+        },
     }
 }
 
@@ -217,6 +228,9 @@ mod tests {
 
         let specs = vec!["(try 1 ())", "(try 1 (catch))"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

@@ -18,7 +18,8 @@ pub fn check_property_is_not_defined(
     property_symbol_id: SymbolId,
 ) -> Result<(), Error> {
     if interpreter.object_has_property(object_id, property_symbol_id)? {
-        return Error::generic_execution_error("Property already defined.").into();
+        return Error::generic_execution_error("Property already defined.")
+            .into();
     }
 
     Ok(())
@@ -28,10 +29,10 @@ pub fn read_property_symbol_id_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<SymbolId, Error> {
-    let name_symbol_id = interpreter.intern("name");
+    let name_symbol_id = interpreter.intern_symbol_id("name");
 
-    let property_symbol_id = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, name_symbol_id)?
+    let property_symbol_id = if let Some(value) = interpreter
+        .get_object_property(property_descriptor_object_id, name_symbol_id)?
     {
         library::read_string_keyword_or_symbol_as_symbol_id(interpreter, value)?
     } else {
@@ -48,10 +49,10 @@ pub fn read_property_value_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<Value, Error> {
-    let value_symbol_id = interpreter.intern("value");
+    let value_symbol_id = interpreter.intern_symbol_id("value");
 
-    let value = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, value_symbol_id)?
+    let value = if let Some(value) = interpreter
+        .get_object_property(property_descriptor_object_id, value_symbol_id)?
     {
         value
     } else {
@@ -65,11 +66,12 @@ pub fn read_internable_flag_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<bool, Error> {
-    let internable_symbol_id = interpreter.intern("internable");
+    let internable_symbol_id = interpreter.intern_symbol_id("internable");
 
-    let internable = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, internable_symbol_id)?
-    {
+    let internable = if let Some(value) = interpreter.get_object_property(
+        property_descriptor_object_id,
+        internable_symbol_id,
+    )? {
         library::read_as_bool(value)?
     } else {
         true
@@ -82,11 +84,12 @@ pub fn read_writable_flag_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<bool, Error> {
-    let writable_symbol_id = interpreter.intern("writable");
+    let writable_symbol_id = interpreter.intern_symbol_id("writable");
 
-    let writable = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, writable_symbol_id)?
-    {
+    let writable = if let Some(value) = interpreter.get_object_property(
+        property_descriptor_object_id,
+        writable_symbol_id,
+    )? {
         library::read_as_bool(value)?
     } else {
         true
@@ -99,11 +102,12 @@ pub fn read_enumerable_flag_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<bool, Error> {
-    let enumerable_symbol_id = interpreter.intern("enumerable");
+    let enumerable_symbol_id = interpreter.intern_symbol_id("enumerable");
 
-    let enumerable = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, enumerable_symbol_id)?
-    {
+    let enumerable = if let Some(value) = interpreter.get_object_property(
+        property_descriptor_object_id,
+        enumerable_symbol_id,
+    )? {
         library::read_as_bool(value)?
     } else {
         true
@@ -116,11 +120,12 @@ pub fn read_configurable_flag_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<bool, Error> {
-    let configurable_symbol_id = interpreter.intern("configurable");
+    let configurable_symbol_id = interpreter.intern_symbol_id("configurable");
 
-    let configurable = if let Some(value) =
-        interpreter.get_object_property(property_descriptor_object_id, configurable_symbol_id)?
-    {
+    let configurable = if let Some(value) = interpreter.get_object_property(
+        property_descriptor_object_id,
+        configurable_symbol_id,
+    )? {
         library::read_as_bool(value)?
     } else {
         true
@@ -133,14 +138,20 @@ pub fn read_flags_from_property_descriptor(
     interpreter: &mut Interpreter,
     property_descriptor_object_id: ObjectId,
 ) -> Result<u8, Error> {
-    let flag_internable =
-        read_internable_flag_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let flag_internable = read_internable_flag_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
-    let flag_writable =
-        read_writable_flag_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let flag_writable = read_writable_flag_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
-    let flag_enumerable =
-        read_enumerable_flag_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let flag_enumerable = read_enumerable_flag_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
     let flag_configurable = read_configurable_flag_from_property_descriptor(
         interpreter,
@@ -184,7 +195,8 @@ pub fn define_property_mark(
 
     let object_id = library::read_as_object_id(values.remove(0))?;
 
-    let property_descriptor_object_id = library::read_as_object_id(values.remove(0))?;
+    let property_descriptor_object_id =
+        library::read_as_object_id(values.remove(0))?;
 
     let property_symbol_id = read_property_symbol_id_from_property_descriptor(
         interpreter,
@@ -193,10 +205,15 @@ pub fn define_property_mark(
 
     check_property_is_not_defined(interpreter, object_id, property_symbol_id)?;
 
-    let property_value =
-        read_property_value_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let property_value = read_property_value_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
-    let flags = read_flags_from_property_descriptor(interpreter, property_descriptor_object_id)?;
+    let flags = read_flags_from_property_descriptor(
+        interpreter,
+        property_descriptor_object_id,
+    )?;
 
     let object = interpreter.get_object_mut(object_id)?;
 
@@ -254,23 +271,56 @@ mod tests {
     fn defines_new_property_with_flags() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))", "#t"),
-
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))", "#t"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))", "#f"),
-            ("(let ((obj {})) (object:define-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))", "#t"),
-        );
+        let specs = vec![
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :internable #f}) (object:is-internable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :internable #t}) (object:is-internable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :writable #f}) (object:is-writable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :writable #t}) (object:is-writable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :enumerable #f}) (object:is-enumerable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :enumerable #t}) (object:is-enumerable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\"}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :configurable #f}) (object:is-configurable? obj :prop))",
+                "#f",
+            ),
+            (
+                "(let ((obj {})) (object:define-property! obj {:name \"prop\" :configurable #t}) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, specs);
     }
@@ -279,10 +329,14 @@ mod tests {
     fn returns_generic_execution_error_when_property_already_defined() {
         let mut interpreter = Interpreter::new();
 
-        let specs =
-            vec!["(let ((obj {:a 1})) (object:define-property! obj {:name 'a :value 10}) obj)"];
+        let specs = vec![
+            "(let ((obj {:a 1})) (object:define-property! obj {:name 'a :value 10}) obj)",
+        ];
 
-        assertion::assert_results_are_generic_execution_errors(&mut interpreter, specs);
+        assertion::assert_results_are_generic_execution_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -295,7 +349,10 @@ mod tests {
             "(let ((obj {})) (object:define-property! obj {:value 1}) obj)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -323,11 +380,15 @@ mod tests {
             "(object:define-property! {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -336,6 +397,9 @@ mod tests {
             "(object:define-property! {} 'item 'sym2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

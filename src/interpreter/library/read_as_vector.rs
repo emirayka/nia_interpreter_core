@@ -2,7 +2,10 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Value>, Error> {
+pub fn read_as_vector(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<Vec<Value>, Error> {
     let vector = match value {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id)?,
         Value::Symbol(symbol_id) => {
@@ -11,7 +14,7 @@ pub fn read_as_vector(interpreter: &Interpreter, value: Value) -> Result<Vec<Val
             } else {
                 return Error::invalid_argument_error("Expected list.").into();
             }
-        }
+        },
         _ => return Error::invalid_argument_error("Expected list.").into(),
     };
 
@@ -48,7 +51,11 @@ mod tests {
             let value = interpreter.execute_in_main_environment(code).unwrap();
             let result = read_as_vector(&interpreter, value).unwrap();
 
-            assertion::assert_vectors_deep_equal(&mut interpreter, expected, result);
+            assertion::assert_vectors_deep_equal(
+                &mut interpreter,
+                expected,
+                result,
+            );
         }
     }
 

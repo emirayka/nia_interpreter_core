@@ -26,7 +26,8 @@ pub fn define_variable(
     };
 
     let need_to_be_const = if values.len() > 0 {
-        let result = library::read_as_keyword(interpreter, values.remove(0))?.is_const();
+        let result =
+            library::read_as_keyword(interpreter, values.remove(0))?.is_const();
 
         if !result {
             return Error::invalid_argument_error(
@@ -46,37 +47,48 @@ pub fn define_variable(
             return Error::invalid_argument_error(
                 "First form of `define-variable' must be a symbol.",
             )
-            .into()
-        }
+            .into();
+        },
     };
 
     library::check_symbol_is_assignable(interpreter, variable_symbol_id)?;
 
-    let evaluated_value = match second_argument {
-        Some(value) => interpreter
-            .execute_value(environment, value)
-            .map_err(|err| {
-                Error::generic_execution_error_caused(
-                    "Cannot evaluate the second form of define-variable.",
-                    err,
-                )
-            })?,
-        None => interpreter.intern_nil_symbol_value(),
-    };
+    let evaluated_value =
+        match second_argument {
+            Some(value) => interpreter
+                .execute_value(environment, value)
+                .map_err(|err| {
+                    Error::generic_execution_error_caused(
+                        "Cannot evaluate the second form of define-variable.",
+                        err,
+                    )
+                })?,
+            None => interpreter.intern_nil_symbol_value(),
+        };
 
     let result = if need_to_be_const {
-        interpreter.define_const_variable(environment, variable_symbol_id, evaluated_value)
+        interpreter.define_const_variable(
+            environment,
+            variable_symbol_id,
+            evaluated_value,
+        )
     } else {
-        interpreter.define_variable(environment, variable_symbol_id, evaluated_value)
+        interpreter.define_variable(
+            environment,
+            variable_symbol_id,
+            evaluated_value,
+        )
     };
 
     result.map_err(|err| {
-        let symbol_name = match interpreter.get_symbol_name(variable_symbol_id) {
+        let symbol_name = match interpreter.get_symbol_name(variable_symbol_id)
+        {
             Ok(symbol_name) => symbol_name,
             _ => return Error::generic_execution_error(""),
         };
 
-        let variable_name = &format!("Cannot define variable: {}.", symbol_name);
+        let variable_name =
+            &format!("Cannot define variable: {}.", symbol_name);
 
         Error::generic_execution_error_caused(variable_name, err)
     })?;
@@ -95,13 +107,14 @@ mod tests {
     use crate::utils::assertion;
 
     #[test]
-    fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided() {
+    fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         interpreter
             .execute_in_main_environment("(define-variable test 2)")
             .unwrap();
-        let name = interpreter.intern("test");
+        let name = interpreter.intern_symbol_id("test");
 
         nia_assert(
             interpreter
@@ -124,7 +137,7 @@ mod tests {
         interpreter
             .execute_in_main_environment("(define-variable test)")
             .unwrap();
-        let name = interpreter.intern("test");
+        let name = interpreter.intern_symbol_id("test");
 
         nia_assert(
             interpreter
@@ -134,7 +147,8 @@ mod tests {
 
         nia_assert_equal(
             Ok(Some(interpreter.intern_nil_symbol_value())),
-            interpreter.lookup_variable(interpreter.get_main_environment_id(), name),
+            interpreter
+                .lookup_variable(interpreter.get_main_environment_id(), name),
         );
     }
 
@@ -169,16 +183,23 @@ mod tests {
             "(define-variable super #(% 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
     fn returns_err_when_incorrect_count_of_forms_were_provided() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!["(define-variable)", "(define-variable test 2 :const kek)"];
+        let specs =
+            vec!["(define-variable)", "(define-variable test 2 :const kek)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -187,6 +208,9 @@ mod tests {
 
         let specs = vec!["(define-variable 3 2)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

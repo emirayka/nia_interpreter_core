@@ -11,18 +11,23 @@ pub fn remove_last_item_from_root_list(
     name: &str,
 ) -> Result<(), Error> {
     let root_environment = interpreter.get_root_environment_id();
-    let symbol_name = interpreter.intern(name);
+    let symbol_name = interpreter.intern_symbol_id(name);
 
     let root_variable = interpreter
         .lookup_variable(root_environment, symbol_name)?
-        .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))?;
+        .ok_or_else(|| {
+            Error::generic_execution_error("Cannot find variable.")
+        })?;
 
     check_value_is_list(interpreter, root_variable)?;
 
     let mut items = read_as_vector(interpreter, root_variable)?;
 
     if items.len() == 0 {
-        return Error::generic_execution_error("Cannot remove item from empty list.").into();
+        return Error::generic_execution_error(
+            "Cannot remove item from empty list.",
+        )
+        .into();
     }
 
     items.remove(items.len() - 1);
@@ -51,7 +56,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
         let list = interpreter.vec_to_list(items);
 
         interpreter
@@ -64,9 +70,17 @@ mod tests {
     fn assert_works_for_list(expected: Vec<Value>, vector: Vec<Value>) {
         let mut interpreter = setup(vector);
 
-        remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME).unwrap();
+        remove_last_item_from_root_list(
+            &mut interpreter,
+            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+        )
+        .unwrap();
 
-        let result = get_root_variable(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME).unwrap();
+        let result = get_root_variable(
+            &mut interpreter,
+            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+        )
+        .unwrap();
 
         let result = read_as_vector(&mut interpreter, result).unwrap();
 
@@ -91,8 +105,10 @@ mod tests {
     fn returns_generic_execution_error_if_list_is_empty() {
         let mut interpreter = setup(vec![]);
 
-        let result =
-            remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let result = remove_last_item_from_root_list(
+            &mut interpreter,
+            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+        );
 
         nia_assert_is_err(&result);
     }
@@ -113,7 +129,8 @@ mod tests {
         ];
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
         interpreter
             .define_variable(root_environment_id, symbol, Value::Integer(0))
@@ -124,8 +141,10 @@ mod tests {
                 .set_variable(root_environment_id, symbol, spec)
                 .unwrap();
 
-            let result =
-                remove_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+            let result = remove_last_item_from_root_list(
+                &mut interpreter,
+                EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+            );
 
             nia_assert_is_err(&result);
         }

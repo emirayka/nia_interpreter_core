@@ -2,9 +2,12 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn get_root_variable(interpreter: &mut Interpreter, name: &str) -> Result<Value, Error> {
+pub fn get_root_variable(
+    interpreter: &mut Interpreter,
+    name: &str,
+) -> Result<Value, Error> {
     let root_environment = interpreter.get_root_environment_id();
-    let symbol_name = interpreter.intern(name);
+    let symbol_name = interpreter.intern_symbol_id(name);
 
     interpreter
         .lookup_variable(root_environment, symbol_name)?
@@ -28,7 +31,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(VARIABLE_SYMBOL_NAME);
+        let symbol = interpreter.intern_symbol_id(VARIABLE_SYMBOL_NAME);
 
         interpreter
             .define_variable(root_environment_id, symbol, Value::Integer(1))
@@ -39,7 +42,8 @@ mod tests {
             .unwrap()
             .unwrap();
 
-        let result = get_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME).unwrap();
+        let result =
+            get_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME).unwrap();
 
         assertion::assert_deep_equal(&mut interpreter, expected, result);
     }

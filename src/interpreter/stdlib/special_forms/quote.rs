@@ -88,6 +88,9 @@ mod tests {
 
         let specs = vec!["(quote 1 2)", "(quote)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

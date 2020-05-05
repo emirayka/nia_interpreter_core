@@ -24,12 +24,16 @@ pub fn delete_property_mark(
     let object_id = library::read_as_object_id(values.remove(0))?;
 
     let property_symbol_id =
-        library::read_string_keyword_or_symbol_as_symbol_id(interpreter, values.remove(0))?;
+        library::read_string_keyword_or_symbol_as_symbol_id(
+            interpreter,
+            values.remove(0),
+        )?;
 
     let object = interpreter.get_object_mut(object_id)?;
 
     if !object.has_property(property_symbol_id) {
-        return Error::generic_execution_error("Object has not property.").into();
+        return Error::generic_execution_error("Object has not property.")
+            .into();
     }
 
     object.delete_property(property_symbol_id)?;
@@ -94,7 +98,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_generic_execution_error_when_property_does_not_exist_in_object() {
+    fn returns_generic_execution_error_when_property_does_not_exist_in_object()
+    {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
@@ -106,7 +111,10 @@ mod tests {
             "(let ((obj {:prop 1})) (object:delete-property! obj 'prop-2) obj)",
         ];
 
-        assertion::assert_results_are_generic_execution_errors(&mut interpreter, specs);
+        assertion::assert_results_are_generic_execution_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -132,11 +140,15 @@ mod tests {
             "(object:delete-property! {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -145,6 +157,9 @@ mod tests {
             "(object:delete-property! {:item 2} 'item 'sym2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

@@ -36,29 +36,36 @@ mod tests {
 
         let specs = vec![
             (
-                interpreter.make_cons_value(Value::Integer(1), Value::Integer(2)),
+                interpreter
+                    .make_cons_value(Value::Integer(1), Value::Integer(2)),
                 "(cons 1 2)",
             ),
             (
-                interpreter.make_cons_value(Value::Float(1.1), Value::Float(2.2)),
+                interpreter
+                    .make_cons_value(Value::Float(1.1), Value::Float(2.2)),
                 "(cons 1.1 2.2)",
             ),
         ];
 
         for spec in specs {
             let expected = spec.0;
-            let result = interpreter.execute_in_main_environment(spec.1).unwrap();
+            let result =
+                interpreter.execute_in_main_environment(spec.1).unwrap();
 
             assertion::assert_deep_equal(&mut interpreter, expected, result)
         }
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
+    fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(cons)", "(cons 1)", "(cons 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

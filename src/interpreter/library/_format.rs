@@ -4,7 +4,10 @@ use crate::interpreter::value::Value;
 
 use crate::library;
 
-pub fn _format(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<String, Error> {
+pub fn _format(
+    interpreter: &mut Interpreter,
+    values: Vec<Value>,
+) -> Result<String, Error> {
     let mut values = values;
 
     let string = library::read_as_string(interpreter, values.remove(0))?;
@@ -12,8 +15,10 @@ pub fn _format(interpreter: &mut Interpreter, values: Vec<Value>) -> Result<Stri
     let strings: Vec<&str> = string.split("{}").collect();
 
     if strings.len() - 1 != values.len() {
-        return Error::invalid_argument_count_error("Invalid count of arguments were provided.")
-            .into();
+        return Error::invalid_argument_count_error(
+            "Invalid count of arguments were provided.",
+        )
+        .into();
     }
 
     let mut result = String::new();

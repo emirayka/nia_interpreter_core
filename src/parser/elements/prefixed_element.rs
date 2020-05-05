@@ -66,7 +66,9 @@ fn make_prefix(s: &str) -> Result<Prefix, String> {
     Ok(prefix)
 }
 
-fn make_prefixed_element(pair: (Prefix, Element)) -> Result<PrefixedElement, ParseError> {
+fn make_prefixed_element(
+    pair: (Prefix, Element),
+) -> Result<PrefixedElement, ParseError> {
     Ok(PrefixedElement::new(pair.0, pair.1))
 }
 
@@ -126,14 +128,20 @@ mod tests {
                 "",
                 PrefixedElement::new(
                     expected_prefix_1,
-                    Element::Prefix(PrefixedElement::new(expected_prefix_2, expected_element)),
+                    Element::Prefix(PrefixedElement::new(
+                        expected_prefix_2,
+                        expected_element,
+                    )),
                 ),
             )),
             parse(code),
         )
     }
 
-    fn assert_prefix_works(expected_prefix: Prefix, expected_prefix_code: &str) {
+    fn assert_prefix_works(
+        expected_prefix: Prefix,
+        expected_prefix_code: &str,
+    ) {
         assert_prefixed_element_parsed_correctly(
             expected_prefix,
             Element::Symbol(SymbolElement::new(String::from("a"))),

@@ -1,6 +1,6 @@
 use nom::{
-    alt, character::complete::multispace1, combinator::all_consuming, map_res, named, peek, tag,
-    terminated,
+    alt, character::complete::multispace1, combinator::all_consuming, map_res,
+    named, peek, tag, terminated,
 };
 
 use crate::parser::ParseError;
@@ -66,7 +66,10 @@ mod tests {
 
     #[test]
     fn returns_correct_remaining_input() {
-        nia_assert_equal(Ok((" #f", BooleanElement { value: false })), parse("#f #f"))
+        nia_assert_equal(
+            Ok((" #f", BooleanElement { value: false })),
+            parse("#f #f"),
+        )
     }
 
     #[test]

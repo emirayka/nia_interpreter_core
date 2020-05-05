@@ -29,14 +29,20 @@ impl FunctionArena {
         function_id
     }
 
-    pub fn get_function(&self, function_id: FunctionId) -> Result<&Function, Error> {
+    pub fn get_function(
+        &self,
+        function_id: FunctionId,
+    ) -> Result<&Function, Error> {
         self.arena.get(&function_id).ok_or(Error::failure(format!(
             "Cannot get a function with id: {}",
             function_id.get_id()
         )))
     }
 
-    pub fn free_function(&mut self, function_id: FunctionId) -> Result<(), Error> {
+    pub fn free_function(
+        &mut self,
+        function_id: FunctionId,
+    ) -> Result<(), Error> {
         match self.arena.remove(&function_id) {
             Some(_) => Ok(()),
             _ => Error::failure(format!(
@@ -57,7 +63,10 @@ impl FunctionArena {
         result
     }
 
-    pub fn get_gc_items(&self, function_id: FunctionId) -> Result<Option<Vec<Value>>, Error> {
+    pub fn get_gc_items(
+        &self,
+        function_id: FunctionId,
+    ) -> Result<Option<Vec<Value>>, Error> {
         match self.arena.get(&function_id) {
             Some(function) => Ok(function.get_gc_items()),
             _ => Error::failure(format!(

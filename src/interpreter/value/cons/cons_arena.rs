@@ -31,7 +31,11 @@ impl ConsArena {
     pub fn free_cons(&mut self, cons_id: ConsId) -> Result<(), Error> {
         match self.arena.remove(&cons_id) {
             Some(_) => Ok(()),
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
@@ -50,68 +54,113 @@ impl ConsArena {
     pub fn get_cons(&self, cons_id: ConsId) -> Result<&Cons, Error> {
         match self.arena.get(&cons_id) {
             Some(value) => Ok(value),
-            None => {
-                Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into()
-            }
+            None => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn get_cons_mut(&mut self, cons_id: ConsId) -> Result<&mut Cons, Error> {
+    pub fn get_cons_mut(
+        &mut self,
+        cons_id: ConsId,
+    ) -> Result<&mut Cons, Error> {
         match self.arena.get_mut(&cons_id) {
             Some(value) => Ok(value),
-            None => {
-                Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into()
-            }
+            None => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
     pub fn get_car(&self, cons_id: ConsId) -> Result<Value, Error> {
         match self.get_cons(cons_id) {
             Ok(cons) => Ok(cons.get_car()),
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
     pub fn get_cdr(&self, cons_id: ConsId) -> Result<Value, Error> {
         match self.get_cons(cons_id) {
             Ok(cons) => Ok(cons.get_cdr()),
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn get_car_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, Error> {
+    pub fn get_car_mut(
+        &mut self,
+        cons_id: ConsId,
+    ) -> Result<&mut Value, Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => Ok(cons.get_car_mut()),
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn get_cdr_mut(&mut self, cons_id: ConsId) -> Result<&mut Value, Error> {
+    pub fn get_cdr_mut(
+        &mut self,
+        cons_id: ConsId,
+    ) -> Result<&mut Value, Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => Ok(cons.get_cdr_mut()),
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn set_car(&mut self, cons_id: ConsId, new_car: Value) -> Result<(), Error> {
+    pub fn set_car(
+        &mut self,
+        cons_id: ConsId,
+        new_car: Value,
+    ) -> Result<(), Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => {
                 cons.set_car(new_car);
 
                 Ok(())
-            }
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            },
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 
-    pub fn set_cdr(&mut self, cons_id: ConsId, new_cdr: Value) -> Result<(), Error> {
+    pub fn set_cdr(
+        &mut self,
+        cons_id: ConsId,
+        new_cdr: Value,
+    ) -> Result<(), Error> {
         match self.get_cons_mut(cons_id) {
             Ok(cons) => {
                 cons.set_cdr(new_cdr);
 
                 Ok(())
-            }
-            _ => Error::failure(format!("Cannot find a cons with id: {}", cons_id.get_id())).into(),
+            },
+            _ => Error::failure(format!(
+                "Cannot find a cons with id: {}",
+                cons_id.get_id()
+            ))
+            .into(),
         }
     }
 }
@@ -122,7 +171,10 @@ impl ConsArena {
 
         match cdr {
             Value::Cons(cons_id) => self.get_car(cons_id),
-            _ => Error::generic_execution_error("Cannot get car of not a cons cell.").into(),
+            _ => Error::generic_execution_error(
+                "Cannot get car of not a cons cell.",
+            )
+            .into(),
         }
     }
 
@@ -131,7 +183,10 @@ impl ConsArena {
 
         match cdr {
             Value::Cons(cons_id) => self.get_cdr(cons_id),
-            _ => Error::generic_execution_error("Cannot get cdr of not a cons cell.").into(),
+            _ => Error::generic_execution_error(
+                "Cannot get cdr of not a cons cell.",
+            )
+            .into(),
         }
     }
 }
@@ -151,7 +206,7 @@ impl ConsArena {
                     results.push(value);
 
                     break;
-                }
+                },
             };
         }
 
@@ -200,7 +255,8 @@ mod tests {
         fn removes_cons() {
             let mut cons_arena = ConsArena::new();
 
-            let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
+            let cons_id =
+                cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
 
             nia_assert(cons_arena.get_cons(cons_id).is_ok());
             nia_assert(cons_arena.free_cons(cons_id).is_ok());
@@ -220,7 +276,8 @@ mod tests {
         fn returns_error_when_attempts_to_remove_cons_twice() {
             let mut cons_arena = ConsArena::new();
 
-            let cons_id = cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
+            let cons_id =
+                cons_arena.make_cons(Value::Integer(1), Value::Integer(1));
 
             nia_assert(cons_arena.free_cons(cons_id).is_ok());
             nia_assert(cons_arena.free_cons(cons_id).is_err());
@@ -238,9 +295,10 @@ mod tests {
         fn returns_correct_vector_that_represents_values_in_cons_cells() {
             let mut cons_arena = ConsArena::new();
 
-            let cdr = Value::Cons(
-                cons_arena.make_cons(Value::Integer(3), Value::Symbol(new_symbol("nil"))),
-            );
+            let cdr = Value::Cons(cons_arena.make_cons(
+                Value::Integer(3),
+                Value::Symbol(new_symbol("nil")),
+            ));
 
             let cdr = Value::Cons(cons_arena.make_cons(Value::Integer(2), cdr));
 
@@ -275,11 +333,15 @@ mod tests {
             ];
 
             for incorrect_cdr in incorrect_cudders {
-                let cdr = Value::Cons(cons_arena.make_cons(Value::Integer(3), incorrect_cdr));
+                let cdr = Value::Cons(
+                    cons_arena.make_cons(Value::Integer(3), incorrect_cdr),
+                );
 
-                let cdr = Value::Cons(cons_arena.make_cons(Value::Integer(2), cdr));
+                let cdr =
+                    Value::Cons(cons_arena.make_cons(Value::Integer(2), cdr));
 
-                let incorrect_cons = cons_arena.make_cons(Value::Integer(1), cdr);
+                let incorrect_cons =
+                    cons_arena.make_cons(Value::Integer(1), cdr);
 
                 let result = cons_arena.list_to_vec(incorrect_cons).unwrap();
 
@@ -296,7 +358,10 @@ mod tests {
             ($expected:expr, $vector:expr) => {
                 let mut cons_arena = ConsArena::new();
 
-                nia_assert_equal($expected, cons_arena.vec_to_list(nil(), $vector));
+                nia_assert_equal(
+                    $expected,
+                    cons_arena.vec_to_list(nil(), $vector),
+                );
             };
         }
 
@@ -317,7 +382,10 @@ mod tests {
             for value in values {
                 let mut cons_arena = ConsArena::new();
 
-                assert_result_eq!(Value::Cons(cons_arena.make_cons(value, nil())), vec!(value));
+                assert_result_eq!(
+                    Value::Cons(cons_arena.make_cons(value, nil())),
+                    vec!(value)
+                );
             }
         }
     }

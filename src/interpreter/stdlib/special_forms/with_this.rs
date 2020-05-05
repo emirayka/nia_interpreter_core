@@ -20,7 +20,8 @@ pub fn with_this(
     let mut values = values;
 
     let first_value = values.remove(0);
-    let first_value_evaluated = interpreter.execute_value(environment_id, first_value)?;
+    let first_value_evaluated =
+        interpreter.execute_value(environment_id, first_value)?;
 
     let object_id = library::read_as_object_id(first_value_evaluated)?;
 
@@ -34,10 +35,10 @@ pub fn with_this(
     match previous_this {
         Some(previous_this_object_id) => {
             interpreter.set_this_object(previous_this_object_id);
-        }
+        },
         None => {
             interpreter.clear_this_object();
-        }
+        },
     }
 
     let result = result?;
@@ -78,7 +79,10 @@ mod tests {
 
         let specs = vec!["(with-this)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -97,6 +101,9 @@ mod tests {
             "(with-this '() 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

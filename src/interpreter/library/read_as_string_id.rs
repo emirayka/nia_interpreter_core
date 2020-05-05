@@ -27,7 +27,7 @@ mod tests {
     fn returns_correct_string() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern_string("test");
+        let expected = interpreter.intern_string_id("test");
         let value = Value::from(expected);
 
         let result = read_as_string_id(value);

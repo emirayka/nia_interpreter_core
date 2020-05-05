@@ -23,7 +23,7 @@ mod send_wait;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let action_object_id = interpreter.make_object();
-    let action_symbol_id = interpreter.intern("action");
+    let action_symbol_id = interpreter.intern_symbol_id("action");
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("send-key-down", send_key_down::send_key_down),
@@ -49,7 +49,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, action_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            action_object_id,
+            name,
+            func,
+        )?;
     }
 
     interpreter.define_variable(

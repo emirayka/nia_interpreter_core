@@ -26,7 +26,7 @@ mod tests {
     fn returns_correct_symbol_id() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern("test");
+        let expected = interpreter.intern_symbol_id("test");
         let value = interpreter.intern_symbol_value("test");
         let result = read_as_symbol_id(value).unwrap();
 

@@ -41,13 +41,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
-            (interpreter.intern("test"), "test", 0),
-            (interpreter.intern("test-2"), "test-2", 0),
+            (interpreter.intern_symbol_id("test"), "test", 0),
+            (interpreter.intern_symbol_id("test-2"), "test-2", 0),
             (interpreter.gensym("test-3"), "test-3", 1),
             (interpreter.gensym("test-3"), "test-3", 2),
         ];
 
-        for (symbol_id, expected_symbol_name, expected_symbol_gensym_id) in specs {
+        for (symbol_id, expected_symbol_name, expected_symbol_gensym_id) in
+            specs
+        {
             let result = check_symbol_is_expected(
                 &mut interpreter,
                 symbol_id,
@@ -63,8 +65,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
-            (interpreter.intern("test"), "wat", 0),
-            (interpreter.intern("wat"), "wat", 1),
+            (interpreter.intern_symbol_id("test"), "wat", 0),
+            (interpreter.intern_symbol_id("wat"), "wat", 1),
         ];
 
         for spec in specs {}

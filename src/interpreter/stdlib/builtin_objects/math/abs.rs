@@ -81,15 +81,23 @@ mod tests {
             "(math:abs (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(math:abs)", "(math:abs 1 2)", "(math:abs 1 2 3)"];
+        let code_vector =
+            vec!["(math:abs)", "(math:abs 1 2)", "(math:abs 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

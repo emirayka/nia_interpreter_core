@@ -13,10 +13,10 @@ fn make_dolist_environment(
 ) -> Result<EnvironmentId, Error> {
     let dolist_environment_id = interpreter.make_environment(environment_id)?;
 
-    let break_symbol_id = interpreter.intern("break");
+    let break_symbol_id = interpreter.intern_symbol_id("break");
     let break_function_id = interpreter.get_internal_function("break")?;
 
-    let continue_symbol_id = interpreter.intern("continue");
+    let continue_symbol_id = interpreter.intern_symbol_id("continue");
     let continue_function_id = interpreter.get_internal_function("continue")?;
 
     interpreter.define_function(
@@ -61,25 +61,34 @@ pub fn dolist(
 
     let binding_symbol_id = library::read_as_symbol_id(binding.remove(0))?;
 
-    let evaluated_list = interpreter.execute_value(environment_id, binding.remove(0))?;
+    let evaluated_list =
+        interpreter.execute_value(environment_id, binding.remove(0))?;
 
     let vector = library::read_as_vector(interpreter, evaluated_list)?;
 
-    let dolist_environment_id =
-        make_dolist_environment(interpreter, environment_id, binding_symbol_id)?;
+    let dolist_environment_id = make_dolist_environment(
+        interpreter,
+        environment_id,
+        binding_symbol_id,
+    )?;
 
     let code = values;
 
     for value in vector {
-        interpreter.set_environment_variable(dolist_environment_id, binding_symbol_id, value)?;
+        interpreter.set_environment_variable(
+            dolist_environment_id,
+            binding_symbol_id,
+            value,
+        )?;
 
-        match library::execute_forms(interpreter, dolist_environment_id, &code) {
-            Ok(_) => {}
+        match library::execute_forms(interpreter, dolist_environment_id, &code)
+        {
+            Ok(_) => {},
             Err(error) => match error.get_error_kind() {
                 ErrorKind::Break => {
                     break;
-                }
-                ErrorKind::Continue => {}
+                },
+                ErrorKind::Continue => {},
                 _ => return Err(error),
             },
         };
@@ -102,15 +111,27 @@ mod tests {
     fn loops() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             ("(dolist (i '(1 2)))", "nil"),
             ("(dolist (i '(1 2 3)))", "nil"),
             ("(defv lst (list 1 2 3)) (dolist (i lst))", "nil"),
-            ("(defv a (list)) (dolist (i '(1 2 3)) (set! a (cons i a))) a", "'(3 2 1)"),
-            ("(defv b (list)) (dolist (i '(1 2 3)) (break) (set! b (cons i b))) b", "'()"),
-            ("(defv c (list)) (dolist (i '(1 2 3)) (set! c (cons i c)) (set! c (cons i c))) c", "'(3 3 2 2 1 1)"),
-            ("(defv d (list)) (dolist (i '(1 2 3)) (set! d (cons i d)) (continue) (set! d (cons i d))) d", "'(3 2 1)"),
-        );
+            (
+                "(defv a (list)) (dolist (i '(1 2 3)) (set! a (cons i a))) a",
+                "'(3 2 1)",
+            ),
+            (
+                "(defv b (list)) (dolist (i '(1 2 3)) (break) (set! b (cons i b))) b",
+                "'()",
+            ),
+            (
+                "(defv c (list)) (dolist (i '(1 2 3)) (set! c (cons i c)) (set! c (cons i c))) c",
+                "'(3 3 2 2 1 1)",
+            ),
+            (
+                "(defv d (list)) (dolist (i '(1 2 3)) (set! d (cons i d)) (continue) (set! d (cons i d))) d",
+                "'(3 2 1)",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, pairs)
     }
@@ -132,7 +153,10 @@ mod tests {
             "(dolist (1 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
@@ -151,7 +175,10 @@ mod tests {
             "(dolist (#() '(1 2)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
@@ -171,15 +198,22 @@ mod tests {
             "(dolist (i #()))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_was_called_with_invalid_argument_count() {
+    fn returns_invalid_argument_count_when_was_called_with_invalid_argument_count(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(dolist)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 }

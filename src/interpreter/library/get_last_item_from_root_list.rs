@@ -10,18 +10,23 @@ pub fn get_last_item_from_root_list(
     name: &str,
 ) -> Result<Value, Error> {
     let root_environment = interpreter.get_root_environment_id();
-    let symbol_name = interpreter.intern(name);
+    let symbol_name = interpreter.intern_symbol_id(name);
 
     let root_variable = interpreter
         .lookup_variable(root_environment, symbol_name)?
-        .ok_or_else(|| Error::generic_execution_error("Cannot find variable."))?;
+        .ok_or_else(|| {
+            Error::generic_execution_error("Cannot find variable.")
+        })?;
 
     check_value_is_list(interpreter, root_variable)?;
 
     let items = read_as_vector(interpreter, root_variable)?;
 
     if items.len() == 0 {
-        return Error::generic_execution_error("Cannot return item from empty list.").into();
+        return Error::generic_execution_error(
+            "Cannot return item from empty list.",
+        )
+        .into();
     }
 
     Ok(*items.last().unwrap())
@@ -43,7 +48,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
         let list = interpreter.vec_to_list(items);
 
         interpreter
@@ -56,16 +62,21 @@ mod tests {
     fn assert_gets_last_item_correctly(expected: Value, vector: Vec<Value>) {
         let mut interpreter = setup(vector);
 
-        let result =
-            get_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME)
-                .unwrap();
+        let result = get_last_item_from_root_list(
+            &mut interpreter,
+            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+        )
+        .unwrap();
 
         assertion::assert_deep_equal(&mut interpreter, expected, result)
     }
 
     #[test]
     fn gets_last_item_from_list() {
-        assert_gets_last_item_correctly(Value::Integer(1), vec![Value::Integer(1)]);
+        assert_gets_last_item_correctly(
+            Value::Integer(1),
+            vec![Value::Integer(1)],
+        );
         assert_gets_last_item_correctly(
             Value::Integer(2),
             vec![Value::Integer(1), Value::Integer(2)],
@@ -80,8 +91,10 @@ mod tests {
     fn returns_generic_execution_error_if_list_is_empty() {
         let mut interpreter = setup(vec![]);
 
-        let result =
-            get_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let result = get_last_item_from_root_list(
+            &mut interpreter,
+            EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+        );
 
         nia_assert_is_err(&result);
     }
@@ -102,7 +115,8 @@ mod tests {
         ];
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+        let symbol =
+            interpreter.intern_symbol_id(EMPTY_LIST_VARIABLE_SYMBOL_NAME);
 
         interpreter
             .define_variable(root_environment_id, symbol, Value::Integer(0))
@@ -113,8 +127,10 @@ mod tests {
                 .set_variable(root_environment_id, symbol, spec)
                 .unwrap();
 
-            let result =
-                get_last_item_from_root_list(&mut interpreter, EMPTY_LIST_VARIABLE_SYMBOL_NAME);
+            let result = get_last_item_from_root_list(
+                &mut interpreter,
+                EMPTY_LIST_VARIABLE_SYMBOL_NAME,
+            );
 
             nia_assert_is_err(&result);
         }

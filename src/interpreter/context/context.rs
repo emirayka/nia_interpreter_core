@@ -26,14 +26,18 @@ impl Context {
         }
     }
 
-    pub fn set_value(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn set_value(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         match self.values.get_mut(&symbol_id) {
             Some(mut_value_ref) => {
                 *mut_value_ref = value;
-            }
+            },
             _ => {
                 self.values.insert(symbol_id, value);
-            }
+            },
         };
 
         Ok(())

@@ -51,7 +51,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments() {
+    fn returns_invalid_argument_count_when_called_with_invalid_count_of_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -60,11 +61,15 @@ mod tests {
             "(set-car! (cons 1 2) 3 4)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons() {
+    fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_cons(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -78,6 +83,9 @@ mod tests {
             "(set-car! {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

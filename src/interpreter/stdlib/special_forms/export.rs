@@ -41,20 +41,27 @@ fn deep_equal_export_type(
         (ExportObject(o1), ExportObject(o2))
         | (ExportObjectAsDefault(o1), ExportObjectAsDefault(o2)) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
-        }
+        },
         (ExportObjectAsNamed(o1, s1), ExportObjectAsNamed(o2, s2)) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && library::deep_equal(interpreter, s1.into(), s2.into())?
-        }
+        },
         (ReexportObject(o1, string1), ReexportObject(o2, string2))
-        | (ReexportObjectAsDefault(o1, string1), ReexportObjectAsDefault(o2, string2)) => {
-            library::deep_equal(interpreter, o1.into(), o2.into())? && string1 == string2
-        }
-        (ReexportObjectAsNamed(o1, s1, string1), ReexportObjectAsNamed(o2, s2, string2)) => {
+        | (
+            ReexportObjectAsDefault(o1, string1),
+            ReexportObjectAsDefault(o2, string2),
+        ) => {
+            library::deep_equal(interpreter, o1.into(), o2.into())?
+                && string1 == string2
+        },
+        (
+            ReexportObjectAsNamed(o1, s1, string1),
+            ReexportObjectAsNamed(o2, s2, string2),
+        ) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && library::deep_equal(interpreter, s1.into(), s2.into())?
                 && string1 == string2
-        }
+        },
         (v1, v2) => v1 == v2,
     };
 
@@ -111,14 +118,22 @@ mod read_export_type {
         interpreter: &mut Interpreter,
         symbol_id: SymbolId,
     ) -> Result<(), Error> {
-        library::check_interned_symbol_is_expected(interpreter, symbol_id, "from")
+        library::check_interned_symbol_is_expected(
+            interpreter,
+            symbol_id,
+            "from",
+        )
     }
 
     fn check_interned_symbol_is_default(
         interpreter: &mut Interpreter,
         symbol_id: SymbolId,
     ) -> Result<(), Error> {
-        library::check_interned_symbol_is_expected(interpreter, symbol_id, "default")
+        library::check_interned_symbol_is_expected(
+            interpreter,
+            symbol_id,
+            "default",
+        )
     }
 
     fn check_interned_symbol_is_asterisk(
@@ -135,8 +150,10 @@ mod read_export_type {
         let symbol = interpreter.get_symbol(symbol_id)?;
 
         if symbol.get_gensym_id() != 0 || symbol.get_name() == "*" {
-            return Error::invalid_argument_error("Expected interned symbol that is not `*'.")
-                .into();
+            return Error::invalid_argument_error(
+                "Expected interned symbol that is not `*'.",
+            )
+            .into();
         }
 
         return Ok(());
@@ -237,7 +254,10 @@ mod read_export_type {
         let from_symbol_id = library::read_as_symbol_id(values[1])?;
         let module_path_string_id = library::read_as_string_id(values[2])?;
 
-        check_interned_symbol_is_not_asterisk(interpreter, module_value_symbol_id)?;
+        check_interned_symbol_is_not_asterisk(
+            interpreter,
+            module_value_symbol_id,
+        )?;
         check_interned_symbol_is_from(interpreter, from_symbol_id)?;
 
         let module_path_string = interpreter
@@ -245,9 +265,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         if interned_symbol_is_default(interpreter, module_value_symbol_id)? {
             Ok(ExportType::ReexportDefault(module_path_string))
@@ -279,9 +298,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         Ok(ExportType::ReexportDefault(module_path_string))
     }
@@ -300,7 +318,10 @@ mod read_export_type {
         let from_symbol_id = library::read_as_symbol_id(values[3])?;
         let module_path_string_id = library::read_as_string_id(values[4])?;
 
-        check_interned_symbol_is_not_asterisk(interpreter, module_value_symbol_id)?;
+        check_interned_symbol_is_not_asterisk(
+            interpreter,
+            module_value_symbol_id,
+        )?;
         check_interned_symbol_is_as(interpreter, as_symbol_id)?;
         check_interned_symbol_is_from(interpreter, from_symbol_id)?;
 
@@ -343,9 +364,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         Ok(ExportType::ReexportAll(module_path_string))
     }
@@ -373,9 +393,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         if interned_symbol_is_default(interpreter, export_value_symbol_id)? {
             Ok(ExportType::ReexportAllAsDefault(module_path_string))
@@ -406,9 +425,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         Ok(ExportType::ReexportObject(
             module_value_object_id,
@@ -438,9 +456,8 @@ mod read_export_type {
             .get_string()
             .clone();
 
-        let module_path_string = interpreter.resolve_with_current_module_path(
-            module_path_string
-        )?;
+        let module_path_string =
+            interpreter.resolve_with_current_module_path(module_path_string)?;
 
         if interned_symbol_is_default(interpreter, export_value_symbol_id)? {
             Ok(ExportType::ReexportObjectAsDefault(
@@ -457,7 +474,9 @@ mod read_export_type {
     }
 
     fn read_export_type_runner(
-        funcs: Vec<fn(&mut Interpreter, &Vec<Value>) -> Result<ExportType, Error>>,
+        funcs: Vec<
+            fn(&mut Interpreter, &Vec<Value>) -> Result<ExportType, Error>,
+        >,
         interpreter: &mut Interpreter,
         values: Vec<Value>,
     ) -> Result<ExportType, Error> {
@@ -468,7 +487,7 @@ mod read_export_type {
                     if error.is_failure() {
                         return Err(error);
                     }
-                }
+                },
             }
         }
 
@@ -508,14 +527,17 @@ mod read_export_type {
         fn reads_export_types_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let name_symbol_id = interpreter.intern("name");
-            let exported_name_symbol_id = interpreter.intern("exported-name");
+            let name_symbol_id = interpreter.intern_symbol_id("name");
+            let exported_name_symbol_id =
+                interpreter.intern_symbol_id("exported-name");
 
-            let name_1_symbol_id = interpreter.intern("name-1");
-            let exported_name_1_symbol_id = interpreter.intern("exported-name-1");
+            let name_1_symbol_id = interpreter.intern_symbol_id("name-1");
+            let exported_name_1_symbol_id =
+                interpreter.intern_symbol_id("exported-name-1");
 
-            let name_2_symbol_id = interpreter.intern("name-2");
-            let exported_name_2_symbol_id = interpreter.intern("exported-name-2");
+            let name_2_symbol_id = interpreter.intern_symbol_id("name-2");
+            let exported_name_2_symbol_id =
+                interpreter.intern_symbol_id("exported-name-2");
 
             let module_path_string = String::from("./module");
 
@@ -526,48 +548,166 @@ mod read_export_type {
                 .unwrap();
 
             let export_object_2_object_id = interpreter
-                .execute_in_main_environment("{:name-1 'exported-name-1 :name-2 'exported-name-2}")
+                .execute_in_main_environment(
+                    "{:name-1 'exported-name-1 :name-2 'exported-name-2}",
+                )
                 .unwrap()
                 .try_into()
                 .unwrap();
 
-            let specs = vec!(
+            let specs = vec![
                 (ExportType::Export(name_symbol_id), "(list 'name)"),
-                (ExportType::ExportAsNamed(name_symbol_id, exported_name_symbol_id), "(list 'name 'as 'exported-name)"),
-                (ExportType::ExportAsDefault(name_symbol_id), "(list 'name 'as 'default)"),
-                (ExportType::ExportObject(export_object_1_object_id), "(list #{:name-1 :name-2})"),
-                (ExportType::ExportObject(export_object_2_object_id), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2})"),
-                (ExportType::ExportObjectAsNamed(export_object_1_object_id, name_symbol_id), "(list #{:name-1 :name-2} 'as 'name)"),
-                (ExportType::ExportObjectAsNamed(export_object_2_object_id, name_symbol_id), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name)"),
-                (ExportType::ExportObjectAsDefault(export_object_1_object_id), "(list #{:name-1 :name-2} 'as 'default)"),
-                (ExportType::ExportObjectAsDefault(export_object_2_object_id), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default)"),
-                (ExportType::Reexport(name_symbol_id, module_path_string.clone()), "(list 'name 'from \"./module\")"),
-                (ExportType::ReexportDefault(module_path_string.clone()), "(list 'default 'from \"./module\")"),
-                (ExportType::ReexportAsNamed(name_symbol_id, exported_name_symbol_id, module_path_string.clone()), "(list 'name 'as 'exported-name 'from \"./module\")"),
-                (ExportType::ReexportAsDefault(name_symbol_id, module_path_string.clone()), "(list 'name 'as 'default 'from \"./module\")"),
-                (ExportType::ReexportAll(module_path_string.clone()), "(list '* 'from \"./module\")"),
-                (ExportType::ReexportAllAsNamed(name_symbol_id, module_path_string.clone()), "(list '* 'as 'name 'from \"./module\")"),
-                (ExportType::ReexportAllAsDefault(module_path_string.clone()), "(list '* 'as 'default 'from \"./module\")"),
-                (ExportType::ReexportObject(export_object_1_object_id, module_path_string.clone()), "(list #{:name-1 :name-2} 'from \"./module\")"),
-                (ExportType::ReexportObject(export_object_2_object_id, module_path_string.clone()), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'from \"./module\")"),
-                (ExportType::ReexportObjectAsNamed(export_object_1_object_id, name_symbol_id, module_path_string.clone()), "(list #{:name-1 :name-2} 'as 'name 'from \"./module\")"),
-                (ExportType::ReexportObjectAsNamed(export_object_2_object_id, name_symbol_id, module_path_string.clone()), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name 'from \"./module\")"),
-                (ExportType::ReexportObjectAsDefault(export_object_1_object_id, module_path_string.clone()), "(list #{:name-1 :name-2} 'as 'default 'from \"./module\")"),
-                (ExportType::ReexportObjectAsDefault(export_object_2_object_id, module_path_string.clone()), "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default 'from \"./module\")"),
-            );
+                (
+                    ExportType::ExportAsNamed(
+                        name_symbol_id,
+                        exported_name_symbol_id,
+                    ),
+                    "(list 'name 'as 'exported-name)",
+                ),
+                (
+                    ExportType::ExportAsDefault(name_symbol_id),
+                    "(list 'name 'as 'default)",
+                ),
+                (
+                    ExportType::ExportObject(export_object_1_object_id),
+                    "(list #{:name-1 :name-2})",
+                ),
+                (
+                    ExportType::ExportObject(export_object_2_object_id),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2})",
+                ),
+                (
+                    ExportType::ExportObjectAsNamed(
+                        export_object_1_object_id,
+                        name_symbol_id,
+                    ),
+                    "(list #{:name-1 :name-2} 'as 'name)",
+                ),
+                (
+                    ExportType::ExportObjectAsNamed(
+                        export_object_2_object_id,
+                        name_symbol_id,
+                    ),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name)",
+                ),
+                (
+                    ExportType::ExportObjectAsDefault(
+                        export_object_1_object_id,
+                    ),
+                    "(list #{:name-1 :name-2} 'as 'default)",
+                ),
+                (
+                    ExportType::ExportObjectAsDefault(
+                        export_object_2_object_id,
+                    ),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default)",
+                ),
+                (
+                    ExportType::Reexport(
+                        name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list 'name 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportDefault(module_path_string.clone()),
+                    "(list 'default 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportAsNamed(
+                        name_symbol_id,
+                        exported_name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list 'name 'as 'exported-name 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportAsDefault(
+                        name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list 'name 'as 'default 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportAll(module_path_string.clone()),
+                    "(list '* 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportAllAsNamed(
+                        name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list '* 'as 'name 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportAllAsDefault(
+                        module_path_string.clone(),
+                    ),
+                    "(list '* 'as 'default 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObject(
+                        export_object_1_object_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list #{:name-1 :name-2} 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObject(
+                        export_object_2_object_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObjectAsNamed(
+                        export_object_1_object_id,
+                        name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list #{:name-1 :name-2} 'as 'name 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObjectAsNamed(
+                        export_object_2_object_id,
+                        name_symbol_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObjectAsDefault(
+                        export_object_1_object_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list #{:name-1 :name-2} 'as 'default 'from \"./module\")",
+                ),
+                (
+                    ExportType::ReexportObjectAsDefault(
+                        export_object_2_object_id,
+                        module_path_string.clone(),
+                    ),
+                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default 'from \"./module\")",
+                ),
+            ];
 
             for (expected, code) in specs {
-                let args = interpreter.execute_in_main_environment(code).unwrap();
+                let args =
+                    interpreter.execute_in_main_environment(code).unwrap();
                 let cons_id: ConsId = args.try_into().unwrap();
                 let args = interpreter.list_to_vec(cons_id).unwrap();
                 println!("{}", code);
                 println!("{:?}", expected);
 
-                let result = read_export_type(&mut interpreter, args.clone()).unwrap();
+                let result =
+                    read_export_type(&mut interpreter, args.clone()).unwrap();
 
                 println!("{:?}", result);
 
-                nia_assert(deep_equal_export_type(&mut interpreter, expected, result).unwrap());
+                nia_assert(
+                    deep_equal_export_type(&mut interpreter, expected, result)
+                        .unwrap(),
+                );
             }
         }
 
@@ -585,7 +725,10 @@ mod eval_export {
         Default(Value),
     }
 
-    fn try_intern_module(interpreter: &mut Interpreter, path: String) -> Result<ModuleId, Error> {
+    fn try_intern_module(
+        interpreter: &mut Interpreter,
+        path: String,
+    ) -> Result<ModuleId, Error> {
         interpreter.intern_module(&path)
     }
 
@@ -594,17 +737,20 @@ mod eval_export {
         module_environment: EnvironmentId,
         module_name_symbol_id: SymbolId,
     ) -> Result<Value, Error> {
-        match interpreter.lookup_variable(module_environment, module_name_symbol_id)? {
+        match interpreter
+            .lookup_variable(module_environment, module_name_symbol_id)?
+        {
             Some(value) => Ok(value),
             None => {
-                let module_name_symbol_name = interpreter.get_symbol_name(module_name_symbol_id)?;
+                let module_name_symbol_name =
+                    interpreter.get_symbol_name(module_name_symbol_id)?;
 
                 Error::generic_execution_error(&format!(
                     "Cannot resolve export \"{}\".",
                     module_name_symbol_name
                 ))
-                    .into()
-            }
+                .into()
+            },
         }
     }
 
@@ -616,9 +762,12 @@ mod eval_export {
         let object = interpreter.get_object(object_id)?;
         let mut pairs = Vec::new();
 
-        for (module_name_symbol_id, export_name_value_wrapper) in object.get_properties() {
+        for (module_name_symbol_id, export_name_value_wrapper) in
+            object.get_properties()
+        {
             let export_name_value = export_name_value_wrapper.get_value()?;
-            let object_property_key_symbol_id = library::read_as_symbol_id(export_name_value)?;
+            let object_property_key_symbol_id =
+                library::read_as_symbol_id(export_name_value)?;
             pairs.push((object_property_key_symbol_id, *module_name_symbol_id));
         }
 
@@ -658,8 +807,11 @@ mod eval_export {
         module_environment: EnvironmentId,
         object_id: ObjectId,
     ) -> Result<Value, Error> {
-        let object_properties =
-            read_export_object_properties(interpreter, module_environment, object_id)?;
+        let object_properties = read_export_object_properties(
+            interpreter,
+            module_environment,
+            object_id,
+        )?;
 
         let mut export_object_id = interpreter.make_object();
         let export_object = interpreter.get_object_mut(export_object_id)?;
@@ -679,7 +831,7 @@ mod eval_export {
     ) -> Result<EnvironmentId, Error> {
         let import_module_id = interpreter.intern_module(module_path)?;
         let import_module = interpreter.get_module(import_module_id)?;
-        let import_module_environment = import_module.get_environment();
+        let import_module_environment = import_module.get_environment_id();
 
         Ok(import_module_environment)
     }
@@ -725,11 +877,18 @@ mod eval_export {
         let module = interpreter.get_module(module_id)?;
 
         for (module_name_symbol_id, export_name_value) in object_properties {
-            let export_name_symbol_id = library::read_as_symbol_id(export_name_value)?;
-            let module_export_value = match module.get_export(module_name_symbol_id) {
-                Some(value) => value,
-                None => return Error::generic_execution_error("Module has no export.").into(),
-            };
+            let export_name_symbol_id =
+                library::read_as_symbol_id(export_name_value)?;
+            let module_export_value =
+                match module.get_export(module_name_symbol_id) {
+                    Some(value) => value,
+                    None => {
+                        return Error::generic_execution_error(
+                            "Module has no export.",
+                        )
+                        .into();
+                    },
+                };
             result.push((export_name_symbol_id, module_export_value))
         }
 
@@ -749,8 +908,11 @@ mod eval_export {
                     module_name_symbol_id,
                 )?;
                 vec![Export::Named(module_name_symbol_id, module_name_value)]
-            }
-            ExportType::ExportAsNamed(module_name_symbol_id, export_name_symbol_id) => {
+            },
+            ExportType::ExportAsNamed(
+                module_name_symbol_id,
+                export_name_symbol_id,
+            ) => {
                 let module_name_value = read_value_from_environment(
                     interpreter,
                     current_module_environment,
@@ -758,7 +920,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            }
+            },
             ExportType::ExportAsDefault(module_name_symbol_id) => {
                 let module_name_value = read_value_from_environment(
                     interpreter,
@@ -767,7 +929,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Default(module_name_value)]
-            }
+            },
             ExportType::ExportObject(object_id) => {
                 let object_properties = read_export_object_properties(
                     interpreter,
@@ -779,8 +941,11 @@ mod eval_export {
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            }
-            ExportType::ExportObjectAsNamed(object_id, export_name_symbol_id) => {
+            },
+            ExportType::ExportObjectAsNamed(
+                object_id,
+                export_name_symbol_id,
+            ) => {
                 let export_object_value = construct_exportation_object(
                     interpreter,
                     current_module_environment,
@@ -788,7 +953,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            }
+            },
             ExportType::ExportObjectAsDefault(object_id) => {
                 let export_object_value = construct_exportation_object(
                     interpreter,
@@ -797,27 +962,34 @@ mod eval_export {
                 )?;
 
                 vec![Export::Default(export_object_value)]
-            }
+            },
             ExportType::Reexport(export_name_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
 
                 let module_name_value = module
                     .get_export(export_name_symbol_id)
-                    .ok_or_else(|| Error::generic_execution_error("Module has no named export."))?;
+                    .ok_or_else(|| {
+                        Error::generic_execution_error(
+                            "Module has no named export.",
+                        )
+                    })?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            }
+            },
             ExportType::ReexportDefault(module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
 
-                let module_name_value = module.get_default_export().ok_or_else(|| {
-                    Error::generic_execution_error("Module has no default export.")
-                })?;
+                let module_name_value =
+                    module.get_default_export().ok_or_else(|| {
+                        Error::generic_execution_error(
+                            "Module has no default export.",
+                        )
+                    })?;
 
                 vec![Export::Default(module_name_value)]
-            }
+            },
             ExportType::ReexportAsNamed(
                 module_name_symbol_id,
                 export_name_symbol_id,
@@ -826,62 +998,94 @@ mod eval_export {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
 
-                let module_name_value =
-                    module.get_export(module_name_symbol_id).ok_or_else(|| {
-                        Error::generic_execution_error("Module has no default export.")
+                let module_name_value = module
+                    .get_export(module_name_symbol_id)
+                    .ok_or_else(|| {
+                        Error::generic_execution_error(
+                            "Module has no default export.",
+                        )
                     })?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            }
-            ExportType::ReexportAsDefault(module_name_symbol_id, module_path) => {
+            },
+            ExportType::ReexportAsDefault(
+                module_name_symbol_id,
+                module_path,
+            ) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
 
-                let module_name_value =
-                    module.get_export(module_name_symbol_id).ok_or_else(|| {
-                        Error::generic_execution_error("Module has no default export.")
+                let module_name_value = module
+                    .get_export(module_name_symbol_id)
+                    .ok_or_else(|| {
+                        Error::generic_execution_error(
+                            "Module has no default export.",
+                        )
                     })?;
 
                 vec![Export::Default(module_name_value)]
-            }
+            },
             ExportType::ReexportAll(module_path) => {
-                let module_exports = read_all_exports_of_module(interpreter, &module_path)?;
+                let module_exports =
+                    read_all_exports_of_module(interpreter, &module_path)?;
 
                 module_exports
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            }
-            ExportType::ReexportAllAsNamed(export_name_symbol_id, module_path) => {
-                let module_exports = read_all_exports_of_module(interpreter, &module_path)?;
+            },
+            ExportType::ReexportAllAsNamed(
+                export_name_symbol_id,
+                module_path,
+            ) => {
+                let module_exports =
+                    read_all_exports_of_module(interpreter, &module_path)?;
 
                 let export_object_value =
-                    construct_exportation_object_from_vector(interpreter, module_exports)?;
+                    construct_exportation_object_from_vector(
+                        interpreter,
+                        module_exports,
+                    )?;
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            }
+            },
             ExportType::ReexportAllAsDefault(module_path) => {
-                let module_exports = read_all_exports_of_module(interpreter, &module_path)?;
+                let module_exports =
+                    read_all_exports_of_module(interpreter, &module_path)?;
 
                 let export_object_value =
-                    construct_exportation_object_from_vector(interpreter, module_exports)?;
+                    construct_exportation_object_from_vector(
+                        interpreter,
+                        module_exports,
+                    )?;
 
                 vec![Export::Default(export_object_value)]
-            }
+            },
             ExportType::ReexportObject(object_id, module_path) => {
-                let object_properties = read_key_value_vector_from_object(interpreter, object_id)?;
+                let object_properties =
+                    read_key_value_vector_from_object(interpreter, object_id)?;
 
                 read_reexports(interpreter, object_properties, &module_path)?
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            }
-            ExportType::ReexportObjectAsNamed(object_id, export_name_symbol_id, module_path) => {
-                let object_properties = read_key_value_vector_from_object(interpreter, object_id)?;
-                let reexports = read_reexports(interpreter, object_properties, &module_path)?;
+            },
+            ExportType::ReexportObjectAsNamed(
+                object_id,
+                export_name_symbol_id,
+                module_path,
+            ) => {
+                let object_properties =
+                    read_key_value_vector_from_object(interpreter, object_id)?;
+                let reexports = read_reexports(
+                    interpreter,
+                    object_properties,
+                    &module_path,
+                )?;
 
                 let export_object_id = interpreter.make_object();
-                let export_object = interpreter.get_object_mut(export_object_id)?;
+                let export_object =
+                    interpreter.get_object_mut(export_object_id)?;
 
                 for (symbol_id, value) in reexports {
                     export_object.set_property(symbol_id, value)?;
@@ -890,14 +1094,20 @@ mod eval_export {
                 let export_object_value = export_object_id.into();
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            }
+            },
             ExportType::ReexportObjectAsDefault(object_id, module_path) => {
-                let object_properties = read_key_value_vector_from_object(interpreter, object_id)?;
+                let object_properties =
+                    read_key_value_vector_from_object(interpreter, object_id)?;
 
-                let reexports = read_reexports(interpreter, object_properties, &module_path)?;
+                let reexports = read_reexports(
+                    interpreter,
+                    object_properties,
+                    &module_path,
+                )?;
 
                 let export_object_id = interpreter.make_object();
-                let export_object = interpreter.get_object_mut(export_object_id)?;
+                let export_object =
+                    interpreter.get_object_mut(export_object_id)?;
 
                 for (symbol_id, value) in reexports {
                     export_object.set_property(symbol_id, value)?;
@@ -906,7 +1116,7 @@ mod eval_export {
                 let export_object_value = export_object_id.into();
 
                 vec![Export::Default(export_object_value)]
-            }
+            },
         };
 
         Ok(exportation_vector)
@@ -917,14 +1127,19 @@ mod eval_export {
         environment_id: EnvironmentId,
         export_type: ExportType,
     ) -> Result<(), Error> {
-        let exportation_vector = read_exportation_vector(interpreter, environment_id, export_type)?;
+        let exportation_vector =
+            read_exportation_vector(interpreter, environment_id, export_type)?;
 
         let current_module = interpreter.get_current_module_mut();
 
         for export in exportation_vector {
             match export {
-                Export::Named(symbol_id, value) => current_module.add_export(symbol_id, value)?,
-                Export::Default(value) => current_module.add_default_export(value)?,
+                Export::Named(symbol_id, value) => {
+                    current_module.add_export(symbol_id, value)?
+                },
+                Export::Default(value) => {
+                    current_module.add_default_export(value)?
+                },
             }
         }
 
@@ -952,7 +1167,8 @@ mod eval_export {
             eval_export(interpreter, main_environment_id, export_type).unwrap();
 
             let exports = interpreter.get_main_module().get_exports();
-            let default_export = interpreter.get_main_module().get_default_export();
+            let default_export =
+                interpreter.get_main_module().get_default_export();
 
             assertion::assert_option_deep_equal(
                 interpreter,
@@ -976,7 +1192,7 @@ mod eval_export {
             let mut interpreter = Interpreter::new();
 
             let main_environment_id = interpreter.get_main_environment_id();
-            let module_symbol = interpreter.intern("test-nia-name");
+            let module_symbol = interpreter.intern_symbol_id("test-nia-name");
             let value = Value::Integer(1);
 
             let main_environment_id = interpreter.get_main_environment_id();
@@ -997,8 +1213,9 @@ mod eval_export {
             let mut interpreter = Interpreter::new();
 
             let main_environment_id = interpreter.get_main_environment_id();
-            let module_symbol = interpreter.intern("test-nia-name");
-            let export_symbol = interpreter.intern("test-nia-exported-name");
+            let module_symbol = interpreter.intern_symbol_id("test-nia-name");
+            let export_symbol =
+                interpreter.intern_symbol_id("test-nia-exported-name");
             let value = Value::Integer(1);
 
             let main_environment_id = interpreter.get_main_environment_id();
@@ -1019,7 +1236,7 @@ mod eval_export {
             let mut interpreter = Interpreter::new();
 
             let main_environment_id = interpreter.get_main_environment_id();
-            let module_symbol = interpreter.intern("test-nia-name");
+            let module_symbol = interpreter.intern_symbol_id("test-nia-name");
             let value = Value::Integer(1);
 
             let main_environment_id = interpreter.get_main_environment_id();
@@ -1040,10 +1257,14 @@ mod eval_export {
             let mut interpreter = Interpreter::new();
 
             let main_environment_id = interpreter.get_main_environment_id();
-            let module_symbol_1 = interpreter.intern("test-nia-name-1");
-            let module_symbol_2 = interpreter.intern("test-nia-name-2");
-            let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-            let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+            let module_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-name-1");
+            let module_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-name-2");
+            let export_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-exported-name-1");
+            let export_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-exported-name-2");
             let value_1 = Value::Integer(1);
             let value_2 = Value::Integer(2);
 
@@ -1056,8 +1277,16 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(object_id, module_symbol_1, export_symbol_1.into());
-            interpreter.set_object_property(object_id, module_symbol_2, export_symbol_2.into());
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_1,
+                export_symbol_1.into(),
+            );
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_2,
+                export_symbol_2.into(),
+            );
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1073,11 +1302,16 @@ mod eval_export {
 
             let main_environment_id = interpreter.get_main_environment_id();
 
-            let object_name_symbol = interpreter.intern("test-nia-object");
-            let module_symbol_1 = interpreter.intern("test-nia-name-1");
-            let module_symbol_2 = interpreter.intern("test-nia-name-2");
-            let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-            let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+            let object_name_symbol =
+                interpreter.intern_symbol_id("test-nia-object");
+            let module_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-name-1");
+            let module_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-name-2");
+            let export_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-exported-name-1");
+            let export_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-exported-name-2");
             let value_1 = Value::Integer(1);
             let value_2 = Value::Integer(2);
 
@@ -1090,12 +1324,28 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(object_id, module_symbol_1, export_symbol_1.into());
-            interpreter.set_object_property(object_id, module_symbol_2, export_symbol_2.into());
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_1,
+                export_symbol_1.into(),
+            );
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_2,
+                export_symbol_2.into(),
+            );
 
             let expected_object_id = interpreter.make_object();
-            interpreter.set_object_property(expected_object_id, export_symbol_1, value_1);
-            interpreter.set_object_property(expected_object_id, export_symbol_2, value_2);
+            interpreter.set_object_property(
+                expected_object_id,
+                export_symbol_1,
+                value_1,
+            );
+            interpreter.set_object_property(
+                expected_object_id,
+                export_symbol_2,
+                value_2,
+            );
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1111,11 +1361,16 @@ mod eval_export {
 
             let main_environment_id = interpreter.get_main_environment_id();
 
-            let object_name_symbol = interpreter.intern("test-nia-object");
-            let module_symbol_1 = interpreter.intern("test-nia-name-1");
-            let module_symbol_2 = interpreter.intern("test-nia-name-2");
-            let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-            let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+            let object_name_symbol =
+                interpreter.intern_symbol_id("test-nia-object");
+            let module_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-name-1");
+            let module_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-name-2");
+            let export_symbol_1 =
+                interpreter.intern_symbol_id("test-nia-exported-name-1");
+            let export_symbol_2 =
+                interpreter.intern_symbol_id("test-nia-exported-name-2");
             let value_1 = Value::Integer(1);
             let value_2 = Value::Integer(2);
 
@@ -1128,12 +1383,28 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(object_id, module_symbol_1, export_symbol_1.into());
-            interpreter.set_object_property(object_id, module_symbol_2, export_symbol_2.into());
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_1,
+                export_symbol_1.into(),
+            );
+            interpreter.set_object_property(
+                object_id,
+                module_symbol_2,
+                export_symbol_2.into(),
+            );
 
             let expected_object_id = interpreter.make_object();
-            interpreter.set_object_property(expected_object_id, export_symbol_1, value_1);
-            interpreter.set_object_property(expected_object_id, export_symbol_2, value_2);
+            interpreter.set_object_property(
+                expected_object_id,
+                export_symbol_1,
+                value_1,
+            );
+            interpreter.set_object_property(
+                expected_object_id,
+                export_symbol_2,
+                value_2,
+            );
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1150,11 +1421,14 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
-                    let module_symbol = interpreter.intern("test-nia-name");
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
+                    let module_symbol =
+                        interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1173,11 +1447,14 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
-                    let module_symbol = interpreter.intern("test-nia-name");
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
+                    let module_symbol =
+                        interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1196,16 +1473,24 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
-                    let module_symbol = interpreter.intern("test-nia-name");
-                    let export_symbol = interpreter.intern("test-nia-exported-name");
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
+                    let module_symbol =
+                        interpreter.intern_symbol_id("test-nia-name");
+                    let export_symbol =
+                        interpreter.intern_symbol_id("test-nia-exported-name");
                     let value = Value::Integer(1);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
-                        ExportType::ReexportAsNamed(module_symbol, export_symbol, module_path),
+                        ExportType::ReexportAsNamed(
+                            module_symbol,
+                            export_symbol,
+                            module_path,
+                        ),
                         None,
                         vec![(export_symbol, value)],
                     );
@@ -1220,15 +1505,21 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
-                    let module_symbol = interpreter.intern("test-nia-name");
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
+                    let module_symbol =
+                        interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
-                        ExportType::ReexportAsDefault(module_symbol, module_path),
+                        ExportType::ReexportAsDefault(
+                            module_symbol,
+                            module_path,
+                        ),
                         Some(value),
                         vec![],
                     );
@@ -1247,10 +1538,13 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
@@ -1258,7 +1552,10 @@ mod eval_export {
                         &mut interpreter,
                         ExportType::ReexportAll(module_path),
                         None,
-                        vec![(module_symbol_1, value_1), (module_symbol_2, value_2)],
+                        vec![
+                            (module_symbol_1, value_1),
+                            (module_symbol_2, value_2),
+                        ],
                     );
                 },
             )
@@ -1275,21 +1572,36 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
-                    let object_name_symbol = interpreter.intern("test-nia-object");
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
+                    let object_name_symbol =
+                        interpreter.intern_symbol_id("test-nia-object");
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(expected_object_id, module_symbol_1, value_1);
-                    interpreter.set_object_property(expected_object_id, module_symbol_2, value_2);
+                    interpreter.set_object_property(
+                        expected_object_id,
+                        module_symbol_1,
+                        value_1,
+                    );
+                    interpreter.set_object_property(
+                        expected_object_id,
+                        module_symbol_2,
+                        value_2,
+                    );
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
-                        ExportType::ReexportAllAsNamed(object_name_symbol, module_path),
+                        ExportType::ReexportAllAsNamed(
+                            object_name_symbol,
+                            module_path,
+                        ),
                         None,
                         vec![(object_name_symbol, expected_object_id.into())],
                     );
@@ -1308,16 +1620,27 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(expected_object_id, module_symbol_1, value_1);
-                    interpreter.set_object_property(expected_object_id, module_symbol_2, value_2);
+                    interpreter.set_object_property(
+                        expected_object_id,
+                        module_symbol_1,
+                        value_1,
+                    );
+                    interpreter.set_object_property(
+                        expected_object_id,
+                        module_symbol_2,
+                        value_2,
+                    );
 
                     let expected_object_value = expected_object_id.into();
 
@@ -1342,15 +1665,21 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
-                    let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-                    let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
+                    let export_symbol_1 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-1");
+                    let export_symbol_2 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     let object_id = interpreter.make_object();
                     interpreter.set_object_property(
@@ -1368,7 +1697,10 @@ mod eval_export {
                         &mut interpreter,
                         ExportType::ReexportObject(object_id, module_path),
                         None,
-                        vec![(export_symbol_1, value_1), (export_symbol_2, value_2)],
+                        vec![
+                            (export_symbol_1, value_1),
+                            (export_symbol_2, value_2),
+                        ],
                     );
                 },
             );
@@ -1385,17 +1717,24 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
-                    let object_name_symbol = interpreter.intern("test-nia-object");
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
-                    let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-                    let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+                    let object_name_symbol =
+                        interpreter.intern_symbol_id("test-nia-object");
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
+                    let export_symbol_1 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-1");
+                    let export_symbol_2 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     let object_id = interpreter.make_object();
                     interpreter.set_object_property(
@@ -1410,8 +1749,20 @@ mod eval_export {
                     );
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(expected_object_id, export_symbol_1, value_1);
-                    interpreter.set_object_property(expected_object_id, export_symbol_2, value_2);
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            export_symbol_1,
+                            value_1,
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            export_symbol_2,
+                            value_2,
+                        )
+                        .unwrap();
 
                     let expected_object_value = expected_object_id.into();
 
@@ -1440,39 +1791,65 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
-                    let object_name_symbol = interpreter.intern("test-nia-object");
-                    let module_symbol_1 = interpreter.intern("test-nia-name-1");
-                    let module_symbol_2 = interpreter.intern("test-nia-name-2");
-                    let export_symbol_1 = interpreter.intern("test-nia-exported-name-1");
-                    let export_symbol_2 = interpreter.intern("test-nia-exported-name-2");
+                    let object_name_symbol =
+                        interpreter.intern_symbol_id("test-nia-object");
+                    let module_symbol_1 =
+                        interpreter.intern_symbol_id("test-nia-name-1");
+                    let module_symbol_2 =
+                        interpreter.intern_symbol_id("test-nia-name-2");
+                    let export_symbol_1 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-1");
+                    let export_symbol_2 = interpreter
+                        .intern_symbol_id("test-nia-exported-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
-                    let main_environment_id = interpreter.get_main_environment_id();
+                    let main_environment_id =
+                        interpreter.get_main_environment_id();
 
                     let object_id = interpreter.make_object();
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_1,
-                        export_symbol_1.into(),
-                    );
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_2,
-                        export_symbol_2.into(),
-                    );
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_1,
+                            export_symbol_1.into(),
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_2,
+                            export_symbol_2.into(),
+                        )
+                        .unwrap();
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(expected_object_id, export_symbol_1, value_1);
-                    interpreter.set_object_property(expected_object_id, export_symbol_2, value_2);
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            export_symbol_1,
+                            value_1,
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            export_symbol_2,
+                            value_2,
+                        )
+                        .unwrap();
 
                     let expected_object_value = expected_object_id.into();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
-                        ExportType::ReexportObjectAsDefault(object_id, module_path),
+                        ExportType::ReexportObjectAsDefault(
+                            object_id,
+                            module_path,
+                        ),
                         Some(expected_object_value),
                         vec![],
                     );
@@ -1487,9 +1864,11 @@ pub fn export(
     environment_id: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
-    let evaluated_values = evaluate_values(interpreter, environment_id, values)?;
+    let evaluated_values =
+        evaluate_values(interpreter, environment_id, values)?;
 
-    let export_type = read_export_type::read_export_type(interpreter, evaluated_values)?;
+    let export_type =
+        read_export_type::read_export_type(interpreter, evaluated_values)?;
 
     // todo: resolve relative module path
     eval_export::eval_export(interpreter, environment_id, export_type)?;
@@ -1654,27 +2033,50 @@ mod tests {
             println!("{:?}", spec);
 
             utils::with_tempdir(|directory| {
-                utils::with_named_file(&directory, "module1.nia", module_1_content, || {
-                    utils::with_named_file(&directory, "module2.nia", module_2_content, || {
-                        utils::with_working_directory(&directory, || {
-                            let mut interpreter = Interpreter::new();
+                utils::with_named_file(
+                    &directory,
+                    "module1.nia",
+                    module_1_content,
+                    || {
+                        utils::with_named_file(
+                            &directory,
+                            "module2.nia",
+                            module_2_content,
+                            || {
+                                utils::with_working_directory(
+                                    &directory,
+                                    || {
+                                        let mut interpreter =
+                                            Interpreter::new();
 
-                            interpreter.execute_in_main_environment(import_code)
-                                .unwrap();
+                                        interpreter
+                                            .execute_in_main_environment(
+                                                import_code,
+                                            )
+                                            .unwrap();
 
-                            let result = interpreter.execute_in_main_environment(result_code)
-                                .unwrap();
-                            let expected = interpreter.execute_in_main_environment(expected_code)
-                                .unwrap();
+                                        let result = interpreter
+                                            .execute_in_main_environment(
+                                                result_code,
+                                            )
+                                            .unwrap();
+                                        let expected = interpreter
+                                            .execute_in_main_environment(
+                                                expected_code,
+                                            )
+                                            .unwrap();
 
-                            assertion::assert_deep_equal(
-                                &mut interpreter,
-                                expected,
-                                result,
-                            );
-                        })
-                    });
-                });
+                                        assertion::assert_deep_equal(
+                                            &mut interpreter,
+                                            expected,
+                                            result,
+                                        );
+                                    },
+                                )
+                            },
+                        );
+                    },
+                );
             });
         }
     }
@@ -1684,22 +2086,52 @@ mod tests {
     fn respects_relative_paths() {
         utils::with_tempdir(|directory| {
             utils::with_working_directory(&directory, || {
-                utils::with_named_file(&directory, "first.nia", "(export default from \"./first/second.nia\")", || {
-                    utils::with_named_dir(&directory, "first", |directory| {
-                        utils::with_named_file(&directory, "second.nia", "(export default from \"./third.nia\")", || {
-                            utils::with_named_file(&directory, "third.nia", "(defc nya 1) (export nya as default)", || {
-                                let mut interpreter = Interpreter::new();
+                utils::with_named_file(
+                    &directory,
+                    "first.nia",
+                    "(export default from \"./first/second.nia\")",
+                    || {
+                        utils::with_named_dir(
+                            &directory,
+                            "first",
+                            |directory| {
+                                utils::with_named_file(
+                                    &directory,
+                                    "second.nia",
+                                    "(export default from \"./third.nia\")",
+                                    || {
+                                        utils::with_named_file(
+                                            &directory,
+                                            "third.nia",
+                                            "(defc nya 1) (export nya as default)",
+                                            || {
+                                                let mut interpreter =
+                                                    Interpreter::new();
 
-                                interpreter.execute_in_main_environment("(import a from \"./first.nia\")")
-                                    .unwrap();
-                                let result = interpreter.execute_in_main_environment("a").unwrap();
-                                let expected = Value::Integer(1);
+                                                interpreter
+                                                .execute_in_main_environment(
+                                                    "(import a from \"./first.nia\")",
+                                                )
+                                                .unwrap();
+                                                let result = interpreter
+                                                .execute_in_main_environment("a")
+                                                .unwrap();
+                                                let expected =
+                                                    Value::Integer(1);
 
-                                assertion::assert_deep_equal(&mut interpreter, expected, result);
-                            })
-                        })
-                    })
-                })
+                                                assertion::assert_deep_equal(
+                                                    &mut interpreter,
+                                                    expected,
+                                                    result,
+                                                );
+                                            },
+                                        )
+                                    },
+                                )
+                            },
+                        )
+                    },
+                )
             })
         })
     }

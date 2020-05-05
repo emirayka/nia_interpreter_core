@@ -28,7 +28,8 @@ pub fn gensym(
     };
 
     if symbol_name.starts_with("#") {
-        return Error::invalid_argument_error("Cannot intern special symbols.").into();
+        return Error::invalid_argument_error("Cannot intern special symbols.")
+            .into();
     }
 
     Ok(Value::Symbol(interpreter.gensym(&symbol_name)))
@@ -90,7 +91,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_attempts_to_gensym_special_symbols() {
+    fn returns_invalid_argument_error_when_attempts_to_gensym_special_symbols()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -100,16 +102,23 @@ mod tests {
             "(gensym \"#another-special-symbol\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(gensym 1 2)", "(gensym 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -129,6 +138,9 @@ mod tests {
             "(gensym (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 }

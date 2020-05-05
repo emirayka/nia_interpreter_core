@@ -20,7 +20,10 @@ impl EnvironmentArena {
         )))
     }
 
-    fn get_mut(&mut self, id: EnvironmentId) -> Result<&mut LexicalEnvironment, Error> {
+    fn get_mut(
+        &mut self,
+        id: EnvironmentId,
+    ) -> Result<&mut LexicalEnvironment, Error> {
         self.arena.get_mut(&id).ok_or(Error::failure(format!(
             "Cannot find an environment with id: {}",
             id.get_id()
@@ -61,7 +64,10 @@ impl EnvironmentArena {
         id
     }
 
-    pub fn alloc_child(&mut self, parent_id: EnvironmentId) -> Result<EnvironmentId, Error> {
+    pub fn alloc_child(
+        &mut self,
+        parent_id: EnvironmentId,
+    ) -> Result<EnvironmentId, Error> {
         let child_id = self.alloc();
 
         {
@@ -72,7 +78,10 @@ impl EnvironmentArena {
         Ok(child_id)
     }
 
-    pub fn free_environment(&mut self, environment_id: EnvironmentId) -> Result<(), Error> {
+    pub fn free_environment(
+        &mut self,
+        environment_id: EnvironmentId,
+    ) -> Result<(), Error> {
         match self.arena.remove(&environment_id) {
             Some(_) => Ok(()),
             _ => Error::failure(format!(
@@ -83,13 +92,21 @@ impl EnvironmentArena {
         }
     }
 
-    pub fn has_variable(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn has_variable(
+        &self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let env = self.get(id)?;
 
         Ok(env.has_variable(symbol_id))
     }
 
-    pub fn has_function(&self, id: EnvironmentId, symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn has_function(
+        &self,
+        id: EnvironmentId,
+        symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let env = self.get(id)?;
 
         Ok(env.has_function(symbol_id))
@@ -206,7 +223,8 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_variable(parent_id, symbol_id, value)
         } else {
-            Error::generic_execution_error("Cannot find a variable to set.").into()
+            Error::generic_execution_error("Cannot find a variable to set.")
+                .into()
         }
     }
 
@@ -223,7 +241,8 @@ impl EnvironmentArena {
         } else if let Some(parent_id) = env.get_parent() {
             self.set_function(parent_id, symbol_id, value)
         } else {
-            Error::generic_execution_error("Cannot find a function to set.").into()
+            Error::generic_execution_error("Cannot find a function to set.")
+                .into()
         }
     }
 
@@ -237,7 +256,8 @@ impl EnvironmentArena {
         match env.has_variable(variable_symbol_id) {
             true => Ok(Some(environment_id)),
             false => match env.get_parent() {
-                Some(parent) => self.lookup_environment_by_variable(parent, variable_symbol_id),
+                Some(parent) => self
+                    .lookup_environment_by_variable(parent, variable_symbol_id),
                 None => Ok(None),
             },
         }
@@ -253,7 +273,8 @@ impl EnvironmentArena {
         match env.has_function(function_symbol_id) {
             true => Ok(Some(environment_id)),
             false => match env.get_parent() {
-                Some(parent) => self.lookup_environment_by_function(parent, function_symbol_id),
+                Some(parent) => self
+                    .lookup_environment_by_function(parent, function_symbol_id),
                 None => Ok(None),
             },
         }
@@ -280,8 +301,8 @@ impl EnvironmentArena {
                     "Cannot find an environment with id: {}",
                     environment_id.get_id()
                 ))
-                .into()
-            }
+                .into();
+            },
         };
 
         Ok(environment.get_gc_items())
@@ -434,11 +455,17 @@ mod tests {
 
             arena.define_variable(parent_id, key, parent_value).unwrap();
             arena.set_variable(child_id, key, child_value).unwrap();
-            nia_assert_equal(Ok(Some(child_value)), arena.lookup_variable(parent_id, key));
+            nia_assert_equal(
+                Ok(Some(child_value)),
+                arena.lookup_variable(parent_id, key),
+            );
 
             arena.define_function(parent_id, key, parent_value).unwrap();
             arena.set_function(child_id, key, child_value).unwrap();
-            nia_assert_equal(Ok(Some(child_value)), arena.lookup_function(child_id, key));
+            nia_assert_equal(
+                Ok(Some(child_value)),
+                arena.lookup_function(child_id, key),
+            );
         }
 
         #[test]
@@ -448,7 +475,9 @@ mod tests {
             let env_id = arena.alloc();
             let key = SymbolId::new(0);
 
-            nia_assert(arena.set_variable(env_id, key, Value::Integer(2)).is_err());
+            nia_assert(
+                arena.set_variable(env_id, key, Value::Integer(2)).is_err(),
+            );
         }
 
         #[test]
@@ -458,7 +487,9 @@ mod tests {
             let env_id = arena.alloc();
             let key = SymbolId::new(0);
 
-            nia_assert(arena.set_function(env_id, key, Value::Integer(2)).is_err());
+            nia_assert(
+                arena.set_function(env_id, key, Value::Integer(2)).is_err(),
+            );
         }
     }
 
@@ -496,7 +527,10 @@ mod tests {
                 Ok(Some(parent_value)),
                 arena.lookup_variable(child_id, parent_key),
             );
-            nia_assert_equal(Ok(None), arena.lookup_variable(parent_id, child_key));
+            nia_assert_equal(
+                Ok(None),
+                arena.lookup_variable(parent_id, child_key),
+            );
             nia_assert_equal(
                 Ok(Some(child_value)),
                 arena.lookup_variable(child_id, child_key),
@@ -518,7 +552,10 @@ mod tests {
                 Ok(Some(parent_value)),
                 arena.lookup_function(child_id, parent_key),
             );
-            nia_assert_equal(Ok(None), arena.lookup_function(parent_id, child_key));
+            nia_assert_equal(
+                Ok(None),
+                arena.lookup_function(parent_id, child_key),
+            );
             nia_assert_equal(
                 Ok(Some(child_value)),
                 arena.lookup_function(child_id, child_key),
@@ -584,7 +621,10 @@ mod tests {
 
             nia_assert_equal(
                 Ok(Some(parent_id)),
-                arena.lookup_environment_by_variable(child_child_id, variable_name),
+                arena.lookup_environment_by_variable(
+                    child_child_id,
+                    variable_name,
+                ),
             );
         }
 
@@ -600,7 +640,10 @@ mod tests {
 
             nia_assert_equal(
                 Ok(None),
-                arena.lookup_environment_by_variable(child_child_id, variable_name),
+                arena.lookup_environment_by_variable(
+                    child_child_id,
+                    variable_name,
+                ),
             );
         }
     }

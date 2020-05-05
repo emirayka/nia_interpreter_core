@@ -9,7 +9,7 @@ pub fn set_root_variable(
     value: Value,
 ) -> Result<(), Error> {
     let root_environment = interpreter.get_root_environment_id();
-    let symbol_name = interpreter.intern(name);
+    let symbol_name = interpreter.intern_symbol_id(name);
 
     if interpreter.has_variable(root_environment, symbol_name)? {
         interpreter.set_variable(root_environment, symbol_name, value)
@@ -35,14 +35,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(VARIABLE_SYMBOL_NAME);
+        let symbol = interpreter.intern_symbol_id(VARIABLE_SYMBOL_NAME);
 
         interpreter
             .define_variable(root_environment_id, symbol, Value::Integer(0))
             .unwrap();
 
         let expected = Value::Integer(1);
-        set_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME, expected).unwrap();
+        set_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME, expected)
+            .unwrap();
 
         let result = interpreter
             .lookup_variable(root_environment_id, symbol)
@@ -57,10 +58,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let root_environment_id = interpreter.get_root_environment_id();
-        let symbol = interpreter.intern(VARIABLE_SYMBOL_NAME);
+        let symbol = interpreter.intern_symbol_id(VARIABLE_SYMBOL_NAME);
 
         let expected = Value::Integer(1);
-        set_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME, expected).unwrap();
+        set_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME, expected)
+            .unwrap();
 
         let result = interpreter
             .lookup_variable(root_environment_id, symbol)

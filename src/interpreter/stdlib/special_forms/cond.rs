@@ -17,20 +17,27 @@ fn execute_part(
         .get_car(part_cons_id)
         .map_err(|err| Error::generic_execution_error_caused("", err))?;
 
-    let predicate_result = interpreter.execute_value(environment, part_predicate)?;
+    let predicate_result =
+        interpreter.execute_value(environment, part_predicate)?;
 
     match predicate_result {
         Value::Boolean(true) => {
             let action_result = interpreter
                 .execute_value(environment, part_action)
                 .map_err(|err| {
-                    Error::generic_execution_error_caused("Cannot evaluate the action part.", err)
+                    Error::generic_execution_error_caused(
+                        "Cannot evaluate the action part.",
+                        err,
+                    )
                 })?;
 
             Ok(Some(action_result))
-        }
+        },
         Value::Boolean(false) => Ok(None),
-        _ => Error::invalid_argument_error("Predicate must evaluate to boolean value.").into(),
+        _ => Error::invalid_argument_error(
+            "Predicate must evaluate to boolean value.",
+        )
+        .into(),
     }
 }
 
@@ -47,7 +54,7 @@ pub fn cond(
                 Ok(Some(value)) => {
                     result = Ok(value);
                     break;
-                }
+                },
                 Err(error) => {
                     result = Error::generic_execution_error_caused(
                         "Cannot execute special form `cond' clause.",
@@ -55,11 +62,14 @@ pub fn cond(
                     )
                     .into();
                     break;
-                }
+                },
                 _ => (),
             }
         } else {
-            result = Error::invalid_argument_error("Invalid usage of special form `cond'.").into();
+            result = Error::invalid_argument_error(
+                "Invalid usage of special form `cond'.",
+            )
+            .into();
             break;
         }
     }
@@ -106,7 +116,10 @@ mod tests {
             "(cond :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        )
     }
 
     #[test]
@@ -123,11 +136,15 @@ mod tests {
             "(cond :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond() {
+    fn returns_invalid_argument_error_when_invalid_predicate_was_provided_to_cond(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
@@ -139,6 +156,9 @@ mod tests {
             "(cond ((cond (#t 1)) 1))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

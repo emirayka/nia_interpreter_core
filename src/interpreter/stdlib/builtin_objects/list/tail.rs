@@ -26,8 +26,10 @@ pub fn tail(
 
         Ok(interpreter.vec_to_list(values))
     } else {
-        Error::invalid_argument_error("Built-in function `list:tail' takes one list with values.")
-            .into()
+        Error::invalid_argument_error(
+            "Built-in function `list:tail' takes one list with values.",
+        )
+        .into()
     }
 }
 
@@ -61,7 +63,10 @@ mod tests {
 
         let code_vector = vec!["(list:tail '())"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -80,15 +85,22 @@ mod tests {
             "(list:tail #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(list:tail)", "(list:tail 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

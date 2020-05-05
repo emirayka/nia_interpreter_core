@@ -108,7 +108,8 @@ mod tests {
         assertion::assert_results_are_equal(&mut interpreter, pairs);
     }
     #[test]
-    fn returns_invalid_argument_count_error_when_was_called_with_invalid_count_of_arguments() {
+    fn returns_invalid_argument_count_error_when_was_called_with_invalid_count_of_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -118,7 +119,10 @@ mod tests {
             r#"(string:substr 1 2 "test" "")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -155,6 +159,9 @@ mod tests {
             r#"(string:substr 1 2 #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

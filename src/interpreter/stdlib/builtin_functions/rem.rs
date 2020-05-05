@@ -17,56 +17,55 @@ pub fn rem(
 
     let mut values = values;
 
-    let result = match (values.remove(0), values.remove(0)) {
-        (Value::Integer(int1), Value::Integer(int2)) => match int2 {
-            0 => {
-                return Error::zero_division_error(&format!(
-                    "Can't compute the remainder of {} on {}.",
-                    int1, int2
-                ))
-                .into()
-            }
-            _ => Value::Integer(int1 % int2),
-        },
-        (Value::Integer(int1), Value::Float(float2)) => {
-            if float2 == 0.0 {
-                return Error::zero_division_error(&format!(
-                    "Can't compute the remainder of {} on {}.",
-                    int1, float2
-                ))
-                .into();
-            } else {
-                Value::Float((int1 as f64) % float2)
-            }
-        }
-        (Value::Float(float1), Value::Integer(int2)) => match int2 {
-            0 => {
-                return Error::zero_division_error(&format!(
-                    "Can't compute the remainder of {} on {}.",
-                    float1, int2
-                ))
-                .into()
-            }
-            _ => Value::Float(float1 % (int2 as f64)),
-        },
-        (Value::Float(float1), Value::Float(float2)) => {
-            if float2 == 0.0 {
-                return Error::zero_division_error(&format!(
-                    "Can't compute the remainder of {} on {}.",
-                    float1, float2
-                ))
-                .into();
-            } else {
-                Value::Float(float1 % float2)
-            }
-        }
-        _ => {
-            return Error::invalid_argument_error(
+    let result =
+        match (values.remove(0), values.remove(0)) {
+            (Value::Integer(int1), Value::Integer(int2)) => match int2 {
+                0 => {
+                    return Error::zero_division_error(&format!(
+                        "Can't compute the remainder of {} on {}.",
+                        int1, int2
+                    ))
+                    .into();
+                },
+                _ => Value::Integer(int1 % int2),
+            },
+            (Value::Integer(int1), Value::Float(float2)) => {
+                if float2 == 0.0 {
+                    return Error::zero_division_error(&format!(
+                        "Can't compute the remainder of {} on {}.",
+                        int1, float2
+                    ))
+                    .into();
+                } else {
+                    Value::Float((int1 as f64) % float2)
+                }
+            },
+            (Value::Float(float1), Value::Integer(int2)) => match int2 {
+                0 => {
+                    return Error::zero_division_error(&format!(
+                        "Can't compute the remainder of {} on {}.",
+                        float1, int2
+                    ))
+                    .into();
+                },
+                _ => Value::Float(float1 % (int2 as f64)),
+            },
+            (Value::Float(float1), Value::Float(float2)) => {
+                if float2 == 0.0 {
+                    return Error::zero_division_error(&format!(
+                        "Can't compute the remainder of {} on {}.",
+                        float1, float2
+                    ))
+                    .into();
+                } else {
+                    Value::Float(float1 % float2)
+                }
+            },
+            _ => return Error::invalid_argument_error(
                 "Built-in function `%' must take only integer or float values.",
             )
-            .into()
-        }
-    };
+            .into(),
+        };
 
     Ok(result)
 }
@@ -104,12 +103,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(%)", "(% 1 2 3)", "(% 1)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -128,15 +131,22 @@ mod tests {
             "(% 1 (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
     fn returns_zero_division_error_when_attempts_to_divide_on_zero() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(% 1 0)", "(% 1 0.0)", "(% 1.0 0)", "(% 1.0 0.0)"];
+        let code_vector =
+            vec!["(% 1 0)", "(% 1 0.0)", "(% 1.0 0)", "(% 1.0 0.0)"];
 
-        assertion::assert_results_are_zero_division_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_zero_division_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

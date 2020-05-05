@@ -1,6 +1,7 @@
 use nom::{
-    character::complete::multispace0, character::complete::multispace1, delimited, many0, map_res,
-    named, pair, preceded, separated_list, separated_pair, tag, terminated,
+    character::complete::multispace0, character::complete::multispace1,
+    delimited, many0, map_res, named, pair, preceded, separated_list,
+    separated_pair, tag, terminated,
 };
 
 use crate::parser::element;
@@ -117,7 +118,9 @@ mod tests {
 
     #[test]
     fn simple_object_2() {
-        assert_parsed_correctly(r#"{:oi test :a 1 :b 1.0 :c "test" :d #t :e #f :f :keyword}"#);
+        assert_parsed_correctly(
+            r#"{:oi test :a 1 :b 1.0 :c "test" :d #t :e #f :f :keyword}"#,
+        );
     }
 
     #[test]
@@ -153,7 +156,9 @@ mod tests {
     #[test]
     fn nested_objects_are_processed() {
         assert_parsed_correctly(r#"{:a test :b :list :c {:a b :b 1 :c 2}}"#);
-        assert_parsed_correctly(r#"{:a test :b {:a test :b {:a b :b 1 :c 2}}}"#);
+        assert_parsed_correctly(
+            r#"{:a test :b {:a test :b {:a b :b 1 :c 2}}}"#,
+        );
     }
 
     #[test]

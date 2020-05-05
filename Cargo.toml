@@ -18,4 +18,3 @@ nia_basic_assertions = { path = "../nia_basic_assertions" }
 
 [dev-dependencies]
 tempfile = "3.1.0"
-handlebars = "3.0.1"

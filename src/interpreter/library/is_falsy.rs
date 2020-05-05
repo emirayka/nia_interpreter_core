@@ -2,14 +2,17 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn is_falsy(interpreter: &mut Interpreter, value: Value) -> Result<bool, Error> {
+pub fn is_falsy(
+    interpreter: &mut Interpreter,
+    value: Value,
+) -> Result<bool, Error> {
     match value {
         Value::Boolean(false) => Ok(true),
         Value::Symbol(symbol_id) => {
             let result = interpreter.symbol_is_nil(symbol_id)?;
 
             Ok(result)
-        }
+        },
         _ => Ok(false),
     }
 }

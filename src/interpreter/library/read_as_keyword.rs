@@ -3,7 +3,10 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Keyword;
 use crate::interpreter::value::Value;
 
-pub fn read_as_keyword(interpreter: &Interpreter, value: Value) -> Result<&Keyword, Error> {
+pub fn read_as_keyword(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<&Keyword, Error> {
     let keyword = match value {
         Value::Keyword(keyword_id) => interpreter.get_keyword(keyword_id)?,
         _ => return Error::invalid_argument_error("Expected keyword.").into(),

@@ -126,7 +126,8 @@ mod func__bind {
         }
 
         #[test]
-        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided() {
+        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided(
+        ) {
             let mut interpreter = Interpreter::new();
 
             let code_vector = vec![
@@ -134,7 +135,10 @@ mod func__bind {
                 "(func:bind (flookup 'cond) '())",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
 
         #[test]
@@ -153,7 +157,10 @@ mod func__bind {
                 "(func:bind {})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
     }
 }
@@ -194,46 +201,111 @@ mod func__curry {
         fn calls_a_function_with_provided_arguments() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
+            let pairs = vec![
                 ("((func:curry #(+ %1 %2 %3) 3) 1 2 3)", "6"),
                 ("(((func:curry #(+ %1 %2 %3) 3) 1) 2 3)", "6"),
                 ("((((func:curry #(+ %1 %2 %3) 3) 1) 2) 3)", "6"),
                 ("(((func:curry #(+ %1 %2 %3) 3) 1 2) 3)", "6"),
-
-                ("((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1) 1)", "1"),
-                ("((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1 2)", "3"),
-                ("(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1) 2)", "3"),
-                ("((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2 3)", "6"),
-                ("(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2 3)", "6"),
-                ("((((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2) 3)", "6"),
-                ("(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2) 3)", "6"),
-
-                ("((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)", "6"),
-                ("(((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1) 2 3)", "6"),
-                ("((((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1) 2) 3)", "6"),
-                ("(((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1 2) 3)", "6"),
-
-                ("((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a 1)", "1"),
-                ("(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a) 1)", "1"),
-
-                ("((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a 1 :b 2)", "3"),
-                ("(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1 :b 2)", "3"),
-                ("((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b 2)", "3"),
-                ("(((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b) 2)", "3"),
-
-                ("((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
-                ("(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1 :b 2 :c 3)", "6"),
-                ("((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b 2 :c 3)", "6"),
-                ("(((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2 :c 3)", "6"),
-                ("((((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c 3)", "6"),
-                ("(((((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c) 3)", "6"),
-            );
+                (
+                    "((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1) 1)",
+                    "1",
+                ),
+                (
+                    "((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1 2)",
+                    "3",
+                ),
+                (
+                    "(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1) 2)",
+                    "3",
+                ),
+                (
+                    "((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2) 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2) 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1) 2 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1) 2) 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry (fn (#rest a) (func:apply #'+ a)) 3) 1 2) 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a 1)",
+                    "1",
+                ),
+                (
+                    "(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a) 1)",
+                    "1",
+                ),
+                (
+                    "((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a 1 :b 2)",
+                    "3",
+                ),
+                (
+                    "(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1 :b 2)",
+                    "3",
+                ),
+                (
+                    "((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b 2)",
+                    "3",
+                ),
+                (
+                    "(((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b) 2)",
+                    "3",
+                ),
+                (
+                    "((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "(((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c 3)",
+                    "6",
+                ),
+                (
+                    "(((((((func:curry (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c) 3)",
+                    "6",
+                ),
+            ];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
-        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided() {
+        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided(
+        ) {
             let mut interpreter = Interpreter::new();
 
             let code_vector = vec![
@@ -241,12 +313,15 @@ mod func__curry {
                 "(func:curry (flookup 'cond) 2)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
 
         #[test]
-        fn returns_invalid_argument_error_when_curried_function_was_called_with_too_many_arguments()
-        {
+        fn returns_invalid_argument_error_when_curried_function_was_called_with_too_many_arguments(
+        ) {
             let mut interpreter = Interpreter::new();
 
             let code_vector = vec![
@@ -256,7 +331,10 @@ mod func__curry {
                 "(((func:curry (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3 4)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
 
         #[test]
@@ -284,7 +362,10 @@ mod func__curry {
                 "(func:curry #(+ %1 %2) #{})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
     }
 }
@@ -323,60 +404,152 @@ mod func__curry_star {
         fn calls_a_function_with_provided_arguments() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
+            let pairs = vec![
                 ("((func:curry* #(+ %1 %2 %3) 3) 1 2 3)", "6"),
                 ("(((func:curry* #(+ %1 %2 %3) 3) 1) 2 3)", "6"),
                 ("((((func:curry* #(+ %1 %2 %3) 3) 1) 2) 3)", "6"),
                 ("(((func:curry* #(+ %1 %2 %3) 3) 1 2) 3)", "6"),
-
-                ("((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1) 1)", "1"),
-                ("((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1 2)", "3"),
-                ("(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1) 2)", "3"),
-                ("((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2 3)", "6"),
-                ("(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2 3)", "6"),
-                ("((((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2) 3)", "6"),
-                ("(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2) 3)", "6"),
-
-                ("((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)", "6"),
-                ("(((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1) 2 3)", "6"),
-                ("((((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1) 2) 3)", "6"),
-                ("(((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2) 3)", "6"),
-
-                ("((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a 1)", "1"),
-                ("(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a) 1)", "1"),
-
-                ("((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a 1 :b 2)", "3"),
-                ("(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1 :b 2)", "3"),
-                ("((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b 2)", "3"),
-                ("(((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b) 2)", "3"),
-
-                ("((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
-                ("(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1 :b 2 :c 3)", "6"),
-                ("((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b 2 :c 3)", "6"),
-                ("(((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2 :c 3)", "6"),
-                ("((((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c 3)", "6"),
-                ("(((((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c) 3)", "6"),
-
+                (
+                    "((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 1) 1)",
+                    "1",
+                ),
+                (
+                    "((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1 2)",
+                    "3",
+                ),
+                (
+                    "(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 2) 1) 2)",
+                    "3",
+                ),
+                (
+                    "((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1) 2) 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry* (fn (#opt (a 0) (b 0) (c 0)) (+ a b c)) 3) 1 2) 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1) 2 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1) 2) 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry* (fn (#rest a) (func:apply #'+ a)) 3) 1 2) 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a 1)",
+                    "1",
+                ),
+                (
+                    "(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 2) :a) 1)",
+                    "1",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a 1 :b 2)",
+                    "3",
+                ),
+                (
+                    "(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1 :b 2)",
+                    "3",
+                ),
+                (
+                    "((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b 2)",
+                    "3",
+                ),
+                (
+                    "(((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 4) :a) 1) :b) 2)",
+                    "3",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "(((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "(((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c 3)",
+                    "6",
+                ),
+                (
+                    "(((((((func:curry* (fn (#keys (a 0) (b 0) (c 0)) (+ a b c)) 6) :a) 1) :b) 2) :c) 3)",
+                    "6",
+                ),
                 // curry* specific
-                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 1) 1 2 3)", "6"),
-                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 2) 1 2 3)", "6"),
-                ("((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 3) 1 2 3)", "6"),
-
-                ("((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2 3 4)", "10"),
-                ("(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2 3 4)", "10"),
-                ("((((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2) 3 4)", "10"),
-                ("(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3 4)", "10"),
-
-                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 2) :a 1 :b 2 :c 3)", "6"),
-                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 4) :a 1 :b 2 :c 3)", "6"),
-                ("((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 6) :a 1 :b 2 :c 3)", "6"),
-            );
+                (
+                    "((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 1) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 2) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#opt (a 1) (b 2) (c 3)) (+ a b c)) 3) 1 2 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2 3 4)",
+                    "10",
+                ),
+                (
+                    "(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2 3 4)",
+                    "10",
+                ),
+                (
+                    "((((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1) 2) 3 4)",
+                    "10",
+                ),
+                (
+                    "(((func:curry* (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3 4)",
+                    "10",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 2) :a 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 4) :a 1 :b 2 :c 3)",
+                    "6",
+                ),
+                (
+                    "((func:curry* (fn (#keys (a 1) (b 2) (c 3)) (+ a b c)) 6) :a 1 :b 2 :c 3)",
+                    "6",
+                ),
+            ];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
-        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided() {
+        fn returns_invalid_argument_error_when_macro_or_special_form_was_provided(
+        ) {
             let mut interpreter = Interpreter::new();
 
             let code_vector = vec![
@@ -384,7 +557,10 @@ mod func__curry_star {
                 "(func:curry* (flookup 'cond) 2)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
 
         #[test]
@@ -412,7 +588,10 @@ mod func__curry_star {
                 "(func:curry* #(+ %1 %2) #{})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+            assertion::assert_results_are_invalid_argument_errors(
+                &mut interpreter,
+                code_vector,
+            );
         }
     }
 }

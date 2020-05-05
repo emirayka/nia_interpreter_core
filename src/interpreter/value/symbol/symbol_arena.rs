@@ -27,7 +27,7 @@ impl SymbolArena {
                 let vector = Vec::new();
 
                 self.mapping.insert(String::from(symbol_name), vector);
-            }
+            },
         };
     }
 
@@ -43,12 +43,12 @@ impl SymbolArena {
 
                     vector.push(symbol_id);
                     self.arena.insert(symbol_id, symbol);
-                }
+                },
             },
             None => {
                 self.ensure_symbol_defined(symbol_name);
                 self.ensure_symbol_internable(symbol_name);
-            }
+            },
         };
     }
 
@@ -85,7 +85,7 @@ impl SymbolArena {
                 self.arena.insert(symbol_id, symbol);
 
                 symbols[counter]
-            }
+            },
             _ => unreachable!(),
         }
     }
@@ -98,8 +98,8 @@ impl SymbolArena {
                     "Cannot find a symbol with id: {}",
                     symbol_id.get_id()
                 ))
-                .into()
-            }
+                .into();
+            },
         };
 
         self.mapping.remove(symbol.get_name());

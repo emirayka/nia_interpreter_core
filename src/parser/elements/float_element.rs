@@ -1,5 +1,6 @@
 use nom::{
-    alt, character::complete::digit1, complete, map_res, named, opt, pair, recognize, tag, tuple,
+    alt, character::complete::digit1, complete, map_res, named, opt, pair,
+    recognize, tag, tuple,
 };
 
 use crate::parser::ParseError;

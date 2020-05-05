@@ -1,5 +1,7 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::value::{ConsId, FunctionId, KeywordId, ObjectId, StringId, SymbolId};
+use crate::interpreter::value::{
+    ConsId, FunctionId, KeywordId, ObjectId, StringId, SymbolId,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Value {
@@ -95,10 +97,11 @@ macro_rules! make_try_from_value_implementation {
             fn try_from(value: Value) -> Result<Self, Self::Error> {
                 match value {
                     $value_variant(v) => Ok(v),
-                    v => {
-                        Error::failure(format!("Invalid conversion from {} to {}.", v, $type_name))
-                            .into()
-                    }
+                    v => Error::failure(format!(
+                        "Invalid conversion from {} to {}.",
+                        v, $type_name
+                    ))
+                    .into(),
                 }
             }
         }
@@ -109,8 +112,16 @@ make_try_from_value_implementation!(i64, Value::Integer, "Value::Integer");
 make_try_from_value_implementation!(f64, Value::Float, "Value::Float");
 make_try_from_value_implementation!(bool, Value::Boolean, "Value::Boolean");
 make_try_from_value_implementation!(ConsId, Value::Cons, "Value::Cons");
-make_try_from_value_implementation!(FunctionId, Value::Function, "Value::Function");
-make_try_from_value_implementation!(KeywordId, Value::Keyword, "Value::Keyword");
+make_try_from_value_implementation!(
+    FunctionId,
+    Value::Function,
+    "Value::Function"
+);
+make_try_from_value_implementation!(
+    KeywordId,
+    Value::Keyword,
+    "Value::Keyword"
+);
 make_try_from_value_implementation!(ObjectId, Value::Object, "Value::Object");
 make_try_from_value_implementation!(StringId, Value::String, "Value::String");
 make_try_from_value_implementation!(SymbolId, Value::Symbol, "Value::Symbol");

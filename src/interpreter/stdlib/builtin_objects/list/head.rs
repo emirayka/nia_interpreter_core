@@ -11,8 +11,10 @@ pub fn head(
     values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 1 {
-        return Error::invalid_argument_count_error("Built-in function `head' takes one argument.")
-            .into();
+        return Error::invalid_argument_count_error(
+            "Built-in function `head' takes one argument.",
+        )
+        .into();
     }
 
     let mut values = values;
@@ -22,7 +24,10 @@ pub fn head(
     if values.len() > 0 {
         Ok(values.remove(0))
     } else {
-        Error::invalid_argument_error("Built-in function `head' takes one list with values.").into()
+        Error::invalid_argument_error(
+            "Built-in function `head' takes one list with values.",
+        )
+        .into()
     }
 }
 
@@ -56,7 +61,10 @@ mod tests {
 
         let code_vector = vec!["(list:head '())"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -75,15 +83,22 @@ mod tests {
             "(list:head #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(list:head)", "(list:head 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

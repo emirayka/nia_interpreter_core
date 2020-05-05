@@ -19,25 +19,33 @@ pub fn sub(
 
     let result = if values.len() == 2 {
         match (values.remove(0), values.remove(0)) {
-            (Value::Integer(int1), Value::Integer(int2)) => match int1.checked_sub(int2) {
-                Some(int_result) => Value::Integer(int_result),
-                None => {
-                    return Error::overflow_error(&format!(
+            (Value::Integer(int1), Value::Integer(int2)) => {
+                match int1.checked_sub(int2) {
+                    Some(int_result) => Value::Integer(int_result),
+                    None => {
+                        return Error::overflow_error(&format!(
                         "Attempt to subtract values {} {} leads to overflow",
                         int1, int2
                     ))
-                    .into()
+                        .into()
+                    },
                 }
             },
-            (Value::Integer(int1), Value::Float(float2)) => Value::Float((int1 as f64) - float2),
-            (Value::Float(float1), Value::Integer(int2)) => Value::Float(float1 - (int2 as f64)),
-            (Value::Float(float1), Value::Float(float2)) => Value::Float(float1 - float2),
+            (Value::Integer(int1), Value::Float(float2)) => {
+                Value::Float((int1 as f64) - float2)
+            },
+            (Value::Float(float1), Value::Integer(int2)) => {
+                Value::Float(float1 - (int2 as f64))
+            },
+            (Value::Float(float1), Value::Float(float2)) => {
+                Value::Float(float1 - float2)
+            },
             _ => {
                 return Error::invalid_argument_error(
                     "Built-in function `-' takes only integers or float.",
                 )
-                .into()
-            }
+                .into();
+            },
         }
     } else {
         match values.remove(0) {
@@ -47,8 +55,8 @@ pub fn sub(
                 return Error::invalid_argument_error(
                     "Built-in function `-' takes only integers or float.",
                 )
-                .into()
-            }
+                .into();
+            },
         }
     };
 
@@ -82,12 +90,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_invalid_count_of_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_invalid_count_of_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(-)", "(- 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -106,7 +118,10 @@ mod tests {
             "(- 1 (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -120,6 +135,9 @@ mod tests {
             "(- -9223372036854775800 10)",
         ];
 
-        assertion::assert_results_are_overflow_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_overflow_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

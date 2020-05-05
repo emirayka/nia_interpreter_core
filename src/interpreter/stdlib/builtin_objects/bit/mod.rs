@@ -18,7 +18,7 @@ mod xor;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let bit_object_id = interpreter.make_object();
-    let bit_symbol_id = interpreter.intern("bit");
+    let bit_symbol_id = interpreter.intern_symbol_id("bit");
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("and", and::and),

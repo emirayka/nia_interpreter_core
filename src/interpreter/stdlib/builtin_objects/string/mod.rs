@@ -28,7 +28,7 @@ mod upper;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let string_object_id = interpreter.make_object();
-    let string_symbol_id = interpreter.intern("string");
+    let string_symbol_id = interpreter.intern_symbol_id("string");
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![
         ("compare", compare::compare),
@@ -54,7 +54,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, string_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            string_object_id,
+            name,
+            func,
+        )?;
     }
 
     interpreter.define_variable(

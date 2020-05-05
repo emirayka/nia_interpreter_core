@@ -1,5 +1,6 @@
 use nom::{
-    character::complete::multispace0, delimited, many0, map_res, named, preceded, tag, terminated,
+    character::complete::multispace0, delimited, many0, map_res, named,
+    preceded, tag, terminated,
 };
 
 use crate::parser::keyword_element;

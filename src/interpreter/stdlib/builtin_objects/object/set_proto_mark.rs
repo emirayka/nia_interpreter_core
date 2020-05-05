@@ -71,7 +71,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -80,24 +81,37 @@ mod tests {
             "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1 obj-2 'sym2))",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
     fn returns_invalid_argument_when_first_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(let ((obj-1 2) (obj-2 {})) (object:set-proto! obj-1 obj-2))"];
+        let code_vector = vec![
+            "(let ((obj-1 2) (obj-2 {})) (object:set-proto! obj-1 obj-2))",
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
     fn returns_invalid_argument_when_second_argument_is_not_an_object() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(let ((obj-1 {}) (obj-2 2)) (object:set-proto! obj-1 obj-2))"];
+        let code_vector = vec![
+            "(let ((obj-1 {}) (obj-2 2)) (object:set-proto! obj-1 obj-2))",
+        ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

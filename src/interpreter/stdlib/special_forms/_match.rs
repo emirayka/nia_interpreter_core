@@ -36,7 +36,8 @@ pub fn _match(
 
         let mut clause = interpreter.list_to_vec(cons_id)?;
         let pattern = clause.remove(0);
-        let evaluated_pattern = interpreter.execute_value(environment_id, pattern)?;
+        let evaluated_pattern =
+            interpreter.execute_value(environment_id, pattern)?;
 
         match library::match_value(
             interpreter,
@@ -51,15 +52,17 @@ pub fn _match(
 
                 code_to_execute = Some(forms);
                 break;
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
     match child_environment_id {
-        Some(environment_id) => {
-            library::execute_forms(interpreter, environment_id, &code_to_execute.unwrap())
-        }
+        Some(environment_id) => library::execute_forms(
+            interpreter,
+            environment_id,
+            &code_to_execute.unwrap(),
+        ),
         _ => Error::generic_execution_error("").into(),
     }
 }

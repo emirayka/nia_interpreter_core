@@ -9,7 +9,12 @@ pub fn check_interned_symbol_is_expected(
     symbol_id: SymbolId,
     expected_symbol_name: &str,
 ) -> Result<(), Error> {
-    library::check_symbol_is_expected(interpreter, symbol_id, expected_symbol_name, 0)?;
+    library::check_symbol_is_expected(
+        interpreter,
+        symbol_id,
+        expected_symbol_name,
+        0,
+    )?;
 
     Ok(())
 }
@@ -29,8 +34,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
-            (interpreter.intern("test"), "test"),
-            (interpreter.intern("test-2"), "test-2"),
+            (interpreter.intern_symbol_id("test"), "test"),
+            (interpreter.intern_symbol_id("test-2"), "test-2"),
         ];
 
         for (symbol_id, expected_symbol_name) in specs {
@@ -48,7 +53,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
-            (interpreter.intern("test"), "wat"),
+            (interpreter.intern_symbol_id("test"), "wat"),
             (interpreter.gensym("test"), "test"),
             (interpreter.gensym("test"), "test"),
         ];

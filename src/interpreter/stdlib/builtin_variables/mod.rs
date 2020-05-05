@@ -1,9 +1,12 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
-fn define_variable_with_nil(interpreter: &mut Interpreter, name: &str) -> Result<(), Error> {
+fn define_variable_with_nil(
+    interpreter: &mut Interpreter,
+    name: &str,
+) -> Result<(), Error> {
     let root_environment_id = interpreter.get_root_environment_id();
-    let symbol_id = interpreter.intern(name);
+    let symbol_id = interpreter.intern_symbol_id(name);
     let value = interpreter.intern_nil_symbol_value();
 
     interpreter.define_variable(root_environment_id, symbol_id, value)?;
@@ -11,7 +14,10 @@ fn define_variable_with_nil(interpreter: &mut Interpreter, name: &str) -> Result
     Ok(())
 }
 
-fn define_empty_list(interpreter: &mut Interpreter, name: &str) -> Result<(), Error> {
+fn define_empty_list(
+    interpreter: &mut Interpreter,
+    name: &str,
+) -> Result<(), Error> {
     define_variable_with_nil(interpreter, name)
 }
 

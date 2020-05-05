@@ -8,8 +8,7 @@ use crate::interpreter::value::InterpretedFunction;
 use crate::interpreter::value::MacroFunction;
 use crate::interpreter::value::Value;
 
-const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str =
-    "The first argument of special form `function', must be a list of signature \
+const ERROR_MESSAGE_INCORRECT_ARGUMENT: &'static str = "The first argument of special form `function', must be a list of signature \
  (lambda|macro ([arguments]) form1 form2 ...).";
 
 fn construct_interpreted_function(
@@ -18,7 +17,11 @@ fn construct_interpreted_function(
     arguments: FunctionArguments,
     code: Vec<Value>,
 ) -> Value {
-    let function = Function::Interpreted(InterpretedFunction::new(environment, arguments, code));
+    let function = Function::Interpreted(InterpretedFunction::new(
+        environment,
+        arguments,
+        code,
+    ));
 
     let function_id = interpreter.register_function(function);
 
@@ -31,7 +34,8 @@ fn construct_macro_function(
     arguments: FunctionArguments,
     code: Vec<Value>,
 ) -> Value {
-    let function = Function::Macro(MacroFunction::new(environment, arguments, code));
+    let function =
+        Function::Macro(MacroFunction::new(environment, arguments, code));
 
     let function_id = interpreter.register_function(function);
 
@@ -54,14 +58,23 @@ pub fn function(
 
     let mut values = match values.remove(0) {
         Value::Cons(cons_id) => interpreter.list_to_vec(cons_id),
-        _ => return Error::invalid_argument_error(ERROR_MESSAGE_INCORRECT_ARGUMENT).into(),
+        _ => {
+            return Error::invalid_argument_error(
+                ERROR_MESSAGE_INCORRECT_ARGUMENT,
+            )
+            .into();
+        },
     }
     .map_err(|err| {
-        Error::generic_execution_error_caused("Cannot execute function special form", err)
+        Error::generic_execution_error_caused(
+            "Cannot execute function special form",
+            err,
+        )
     })?;
 
     if values.len() < 3 {
-        return Error::invalid_argument_error(ERROR_MESSAGE_INCORRECT_ARGUMENT).into();
+        return Error::invalid_argument_error(ERROR_MESSAGE_INCORRECT_ARGUMENT)
+            .into();
     }
 
     let lambda_or_macro_symbol = values.remove(0);
@@ -190,7 +203,8 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result = interpreter.execute_in_main_environment("(function (lambda () 1))");
+        let result =
+            interpreter.execute_in_main_environment("(function (lambda () 1))");
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -210,7 +224,8 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result = interpreter.execute_in_main_environment("(function (macro () 1))");
+        let result =
+            interpreter.execute_in_main_environment("(function (macro () 1))");
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -225,7 +240,11 @@ mod tests {
             .add_optional_argument(String::from("a"), None, None)
             .unwrap();
         arguments
-            .add_optional_argument(String::from("b"), Some(Value::Integer(1)), None)
+            .add_optional_argument(
+                String::from("b"),
+                Some(Value::Integer(1)),
+                None,
+            )
             .unwrap();
         arguments
             .add_optional_argument(
@@ -244,8 +263,9 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result = interpreter
-            .execute_in_main_environment("(function (lambda (#opt a (b 1) (c 1 c-provided?)) 1))");
+        let result = interpreter.execute_in_main_environment(
+            "(function (lambda (#opt a (b 1) (c 1 c-provided?)) 1))",
+        );
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -267,7 +287,8 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result = interpreter.execute_in_main_environment("(function (lambda (#rest a) 1))");
+        let result = interpreter
+            .execute_in_main_environment("(function (lambda (#rest a) 1))");
 
         let result = result.unwrap();
         assertion::assert_deep_equal(&mut interpreter, expected, result);
@@ -301,8 +322,9 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result = interpreter
-            .execute_in_main_environment("(function (lambda (#keys a (b 1) (c 1 c-provided?)) 1))");
+        let result = interpreter.execute_in_main_environment(
+            "(function (lambda (#keys a (b 1) (c 1 c-provided?)) 1))",
+        );
 
         let result = result.unwrap();
 
@@ -310,7 +332,8 @@ mod tests {
     }
 
     #[test]
-    fn able_to_construct_functions_with_rest_arguments_after_optional_arguments() {
+    fn able_to_construct_functions_with_rest_arguments_after_optional_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
         let mut arguments = FunctionArguments::new();
 
@@ -319,7 +342,11 @@ mod tests {
             .unwrap();
 
         arguments
-            .add_optional_argument(String::from("b"), Some(Value::Integer(1)), None)
+            .add_optional_argument(
+                String::from("b"),
+                Some(Value::Integer(1)),
+                None,
+            )
             .unwrap();
 
         arguments.add_rest_argument(String::from("c")).unwrap();
@@ -333,8 +360,9 @@ mod tests {
         let function_id = interpreter.register_function(function);
 
         let expected = Value::Function(function_id);
-        let result =
-            interpreter.execute_in_main_environment("(function (lambda (#opt a (b 1) #rest c) 1))");
+        let result = interpreter.execute_in_main_environment(
+            "(function (lambda (#opt a (b 1) #rest c) 1))",
+        );
 
         let result = result.unwrap();
 
@@ -347,7 +375,10 @@ mod tests {
 
         let specs = vec!["(function)", "(function 1 2)", "(function 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -364,7 +395,10 @@ mod tests {
             "(function :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -373,20 +407,28 @@ mod tests {
 
         let specs = vec!["(function (special-form () 2))"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided() {
+    fn returns_error_when_incorrect_amount_of_elements_of_first_argument_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let specs = vec!["(function (lambda))", "(function (lambda ()))"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
-    fn returns_error_when_incorrect_constructed_function_arguments_were_provided() {
+    fn returns_error_when_incorrect_constructed_function_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
@@ -406,6 +448,9 @@ mod tests {
             "(function (lambda ({}) 1))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

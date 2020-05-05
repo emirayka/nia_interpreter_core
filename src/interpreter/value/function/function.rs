@@ -15,10 +15,16 @@ pub enum Function {
 impl Function {
     pub fn get_gc_items(&self) -> Option<Vec<Value>> {
         match self {
-            Function::Interpreted(interpreted_function) => interpreted_function.get_gc_items(),
-            Function::Builtin(builtin_function) => builtin_function.get_gc_items(),
+            Function::Interpreted(interpreted_function) => {
+                interpreted_function.get_gc_items()
+            },
+            Function::Builtin(builtin_function) => {
+                builtin_function.get_gc_items()
+            },
             Function::Macro(macro_function) => macro_function.get_gc_items(),
-            Function::SpecialForm(special_form_function) => special_form_function.get_gc_items(),
+            Function::SpecialForm(special_form_function) => {
+                special_form_function.get_gc_items()
+            },
         }
     }
 
@@ -26,12 +32,16 @@ impl Function {
         match self {
             Function::Interpreted(interpreted_function) => {
                 interpreted_function.get_gc_environment()
-            }
-            Function::Builtin(builtin_function) => builtin_function.get_gc_environment(),
-            Function::Macro(macro_function) => macro_function.get_gc_environment(),
+            },
+            Function::Builtin(builtin_function) => {
+                builtin_function.get_gc_environment()
+            },
+            Function::Macro(macro_function) => {
+                macro_function.get_gc_environment()
+            },
             Function::SpecialForm(special_form_function) => {
                 special_form_function.get_gc_environment()
-            }
+            },
         }
     }
 }

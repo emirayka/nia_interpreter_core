@@ -18,33 +18,40 @@ pub fn set(
 
     let mut values = values;
 
-    let variable_symbol_id = match values.remove(0) {
-        Value::Symbol(symbol) => symbol,
-        _ => {
-            return Error::invalid_argument_error(
+    let variable_symbol_id =
+        match values.remove(0) {
+            Value::Symbol(symbol) => symbol,
+            _ => return Error::invalid_argument_error(
                 "The first argument of special form `set!' must be a symbol.",
             )
-            .into()
-        }
-    };
+            .into(),
+        };
 
     library::check_symbol_is_assignable(interpreter, variable_symbol_id)?;
 
     let value = values.remove(0);
 
     //            &format!("Cannot execute value: \"{}\""), // todo: add here value description
-    let value = interpreter
-        .execute_value(environment, value)
-        .map_err(|err| {
-            return Error::generic_execution_error_caused("Cannot execute value: \"{}\"", err);
-        })?;
+    let value =
+        interpreter
+            .execute_value(environment, value)
+            .map_err(|err| {
+                return Error::generic_execution_error_caused(
+                    "Cannot execute value: \"{}\"",
+                    err,
+                );
+            })?;
 
     let target_env = interpreter
         .lookup_environment_by_variable(environment, variable_symbol_id)
         .map_err(|err| Error::generic_execution_error_caused("", err))?;
 
     match target_env {
-        Some(target_env) => match interpreter.set_variable(target_env, variable_symbol_id, value) {
+        Some(target_env) => match interpreter.set_variable(
+            target_env,
+            variable_symbol_id,
+            value,
+        ) {
             Ok(()) => Ok(value),
             Err(error) => {
                 let message = &format!(
@@ -53,7 +60,7 @@ pub fn set(
                 );
 
                 Error::generic_execution_error_caused(message, error).into()
-            }
+            },
         },
         None => {
             let message = &format!(
@@ -62,7 +69,7 @@ pub fn set(
             );
 
             Error::generic_execution_error(message).into()
-        }
+        },
     }
 }
 
@@ -134,7 +141,10 @@ mod tests {
             "(set! super 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -143,7 +153,10 @@ mod tests {
 
         let specs = vec!["(set!)", "(set! a b c)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 
     #[test]
@@ -160,6 +173,9 @@ mod tests {
             "(set! {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, specs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            specs,
+        );
     }
 }

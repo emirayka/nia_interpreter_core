@@ -1,6 +1,6 @@
 use nom::{
-    alt, character::complete::multispace0, character::complete::multispace1, complete, delimited,
-    many0, map_res, named, preceded, tag,
+    alt, character::complete::multispace0, character::complete::multispace1,
+    complete, delimited, many0, map_res, named, preceded, tag,
 };
 
 use crate::parser::element;
@@ -32,15 +32,17 @@ fn make_some(element: Element) -> Result<Option<Element>, ParseError> {
     Ok(Some(element))
 }
 
-fn make_code(probably_elements: Vec<Option<Element>>) -> Result<Code, ParseError> {
+fn make_code(
+    probably_elements: Vec<Option<Element>>,
+) -> Result<Code, ParseError> {
     let mut elements = Vec::new();
 
     for element in probably_elements {
         match element {
             Some(element) => {
                 elements.push(element);
-            }
-            None => {}
+            },
+            None => {},
         }
     }
     Ok(Code::new(elements))
@@ -96,9 +98,13 @@ pub fn parse(s: &str) -> Result<Code, ParseError> {
             }
 
             Ok(parse_result)
-        }
-        Err(nom::Err::Error((s, kind))) => Err(ParseError::NomError((String::from(s), kind))),
-        Err(nom::Err::Failure((s, kind))) => Err(ParseError::NomFailure((String::from(s), kind))),
+        },
+        Err(nom::Err::Error((s, kind))) => {
+            Err(ParseError::NomError((String::from(s), kind)))
+        },
+        Err(nom::Err::Failure((s, kind))) => {
+            Err(ParseError::NomFailure((String::from(s), kind)))
+        },
         Err(nom::Err::Incomplete(_)) => Err(ParseError::NomIncomplete()),
     }
 }

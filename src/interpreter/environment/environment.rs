@@ -23,7 +23,10 @@ impl LexicalEnvironment {
     }
 }
 
-fn has_value(map: &HashMap<SymbolId, EnvironmentValueWrapper>, symbol_id: SymbolId) -> bool {
+fn has_value(
+    map: &HashMap<SymbolId, EnvironmentValueWrapper>,
+    symbol_id: SymbolId,
+) -> bool {
     map.contains_key(&symbol_id)
 }
 
@@ -36,7 +39,8 @@ fn define_value(
         map.insert(symbol_id, environment_value_wrapper);
         Ok(())
     } else {
-        Error::generic_execution_error("Cannot define already defined value.").into()
+        Error::generic_execution_error("Cannot define already defined value.")
+            .into()
     }
 }
 
@@ -50,8 +54,11 @@ fn set_value(
             ref_mut.set_value(value)?;
 
             Ok(())
-        }
-        None => Error::generic_execution_error("Cannot set value that does not exist.").into(),
+        },
+        None => Error::generic_execution_error(
+            "Cannot set value that does not exist.",
+        )
+        .into(),
     }
 }
 
@@ -82,21 +89,36 @@ impl LexicalEnvironment {
         has_value(&self.functions, symbol_id)
     }
 
-    pub fn lookup_variable(&self, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
+    pub fn lookup_variable(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<Option<Value>, Error> {
         lookup_value(&self.variables, symbol_id)
     }
 
-    pub fn lookup_function(&self, symbol_id: SymbolId) -> Result<Option<Value>, Error> {
+    pub fn lookup_function(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Result<Option<Value>, Error> {
         lookup_value(&self.functions, symbol_id)
     }
 
-    pub fn define_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn define_variable(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         define_value(
             &mut self.variables,
             symbol_id,
             EnvironmentValueWrapper::new(value),
         )
-        .map_err(|err| Error::generic_execution_error_caused("Cannot define variable.", err))
+        .map_err(|err| {
+            Error::generic_execution_error_caused(
+                "Cannot define variable.",
+                err,
+            )
+        })
     }
 
     pub fn define_const_variable(
@@ -109,16 +131,30 @@ impl LexicalEnvironment {
             symbol_id,
             EnvironmentValueWrapper::new_const(value),
         )
-        .map_err(|err| Error::generic_execution_error_caused("Cannot define variable.", err))
+        .map_err(|err| {
+            Error::generic_execution_error_caused(
+                "Cannot define variable.",
+                err,
+            )
+        })
     }
 
-    pub fn define_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
+    pub fn define_function(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
         define_value(
             &mut self.functions,
             symbol_id,
             EnvironmentValueWrapper::new(value),
         )
-        .map_err(|err| Error::generic_execution_error_caused("Cannot define function.", err))
+        .map_err(|err| {
+            Error::generic_execution_error_caused(
+                "Cannot define function.",
+                err,
+            )
+        })
     }
 
     pub fn define_const_function(
@@ -131,17 +167,32 @@ impl LexicalEnvironment {
             symbol_id,
             EnvironmentValueWrapper::new_const(value),
         )
-        .map_err(|err| Error::generic_execution_error_caused("Cannot define function.", err))
+        .map_err(|err| {
+            Error::generic_execution_error_caused(
+                "Cannot define function.",
+                err,
+            )
+        })
     }
 
-    pub fn set_variable(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-        set_value(&mut self.variables, symbol_id, value)
-            .map_err(|err| Error::generic_execution_error_caused("Cannot set variable.", err))
+    pub fn set_variable(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
+        set_value(&mut self.variables, symbol_id, value).map_err(|err| {
+            Error::generic_execution_error_caused("Cannot set variable.", err)
+        })
     }
 
-    pub fn set_function(&mut self, symbol_id: SymbolId, value: Value) -> Result<(), Error> {
-        set_value(&mut self.functions, symbol_id, value)
-            .map_err(|err| Error::generic_execution_error_caused("Cannot set function.", err))
+    pub fn set_function(
+        &mut self,
+        symbol_id: SymbolId,
+        value: Value,
+    ) -> Result<(), Error> {
+        set_value(&mut self.functions, symbol_id, value).map_err(|err| {
+            Error::generic_execution_error_caused("Cannot set function.", err)
+        })
     }
 
     pub fn get_gc_items(&self) -> Vec<Value> {
@@ -192,12 +243,18 @@ mod tests {
         nia_assert(!env.has_variable(key));
         env.define_variable(key, Value::Integer(1)).unwrap();
         nia_assert(env.has_variable(key));
-        nia_assert_equal(Some(Value::Integer(1)), env.lookup_variable(key).unwrap());
+        nia_assert_equal(
+            Some(Value::Integer(1)),
+            env.lookup_variable(key).unwrap(),
+        );
 
         nia_assert(!env.has_function(key));
         env.define_function(key, Value::Integer(1)).unwrap();
         nia_assert(env.has_function(key));
-        nia_assert_equal(Some(Value::Integer(1)), env.lookup_function(key).unwrap());
+        nia_assert_equal(
+            Some(Value::Integer(1)),
+            env.lookup_function(key).unwrap(),
+        );
     }
 
     #[test]
@@ -211,8 +268,14 @@ mod tests {
         env.set_variable(key, Value::Integer(2)).unwrap();
         env.set_function(key, Value::Integer(2)).unwrap();
 
-        nia_assert_equal(Some(Value::Integer(2)), env.lookup_variable(key).unwrap());
-        nia_assert_equal(Some(Value::Integer(2)), env.lookup_function(key).unwrap());
+        nia_assert_equal(
+            Some(Value::Integer(2)),
+            env.lookup_variable(key).unwrap(),
+        );
+        nia_assert_equal(
+            Some(Value::Integer(2)),
+            env.lookup_function(key).unwrap(),
+        );
     }
 
     #[test]

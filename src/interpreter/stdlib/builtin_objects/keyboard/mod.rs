@@ -25,10 +25,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, keyboard_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            keyboard_object_id,
+            name,
+            func,
+        )?;
     }
 
-    let keyboard_symbol_id = interpreter.intern("keyboard");
+    let keyboard_symbol_id = interpreter.intern_symbol_id("keyboard");
 
     interpreter.define_variable(
         interpreter.get_root_environment_id(),

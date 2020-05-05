@@ -14,18 +14,18 @@ pub fn match_value_recursive(
     match binding {
         Value::Symbol(symbol_id) => {
             match library::check_symbol_is_assignable(interpreter, symbol_id) {
-                Ok(_) => {}
+                Ok(_) => {},
                 Err(err) => {
                     if library::deep_equal(interpreter, binding, value)? {
                         return Ok(());
                     } else {
                         return Err(err);
                     }
-                }
+                },
             };
 
             interpreter.define_variable(environment_id, symbol_id, value)
-        }
+        },
         Value::Cons(binding_cons_id) => match value {
             Value::Cons(value_cons_id) => {
                 let binding_car = interpreter.get_car(binding_cons_id)?;
@@ -34,18 +34,30 @@ pub fn match_value_recursive(
                 let binding_cdr = interpreter.get_cdr(binding_cons_id)?;
                 let value_cdr = interpreter.get_cdr(value_cons_id)?;
 
-                match_value_recursive(interpreter, environment_id, binding_car, value_car)?;
+                match_value_recursive(
+                    interpreter,
+                    environment_id,
+                    binding_car,
+                    value_car,
+                )?;
 
-                match_value_recursive(interpreter, environment_id, binding_cdr, value_cdr)?;
+                match_value_recursive(
+                    interpreter,
+                    environment_id,
+                    binding_cdr,
+                    value_cdr,
+                )?;
 
                 Ok(())
-            }
+            },
             _ => return Error::generic_execution_error("").into(),
         },
         Value::Object(binding_object_id) => match value {
             Value::Object(value_object_id) => {
-                let binding_keys = interpreter.get_object_items(binding_object_id)?;
-                let value_keys = interpreter.get_object_items(value_object_id)?;
+                let binding_keys =
+                    interpreter.get_object_items(binding_object_id)?;
+                let value_keys =
+                    interpreter.get_object_items(value_object_id)?;
 
                 let mut checkings = Vec::new();
 
@@ -53,7 +65,7 @@ pub fn match_value_recursive(
                     match value_keys.get(symbol_id) {
                         Some(value_value) => {
                             checkings.push((*binding_value, *value_value));
-                        }
+                        },
                         _ => return Error::generic_execution_error("").into(),
                     }
                 }
@@ -68,7 +80,7 @@ pub fn match_value_recursive(
                 }
 
                 Ok(())
-            }
+            },
             _ => return Error::generic_execution_error("").into(),
         },
         Value::Function(_) => return Error::generic_execution_error("").into(),
@@ -78,7 +90,7 @@ pub fn match_value_recursive(
             } else {
                 Error::generic_execution_error("").into()
             }
-        }
+        },
     }
 }
 
@@ -90,14 +102,15 @@ pub fn match_value(
 ) -> Result<EnvironmentId, Error> {
     let environment_id = interpreter.make_environment(parent_environment)?;
 
-    let result = match_value_recursive(interpreter, environment_id, binding, value);
+    let result =
+        match_value_recursive(interpreter, environment_id, binding, value);
 
     match result {
         Ok(_) => Ok(environment_id),
         Err(err) => {
             interpreter.remove_environment(environment_id)?;
             Err(err)
-        }
+        },
     }
 }
 
@@ -115,11 +128,14 @@ mod tests {
         specs: Vec<(&str, &str, &str, &str)>,
     ) {
         for spec in specs {
-            let binding = interpreter.execute_in_main_environment(spec.0).unwrap();
-            let value = interpreter.execute_in_main_environment(spec.1).unwrap();
+            let binding =
+                interpreter.execute_in_main_environment(spec.0).unwrap();
+            let value =
+                interpreter.execute_in_main_environment(spec.1).unwrap();
 
             let form = interpreter.execute_in_main_environment(spec.2).unwrap();
-            let expected = interpreter.execute_in_main_environment(spec.3).unwrap();
+            let expected =
+                interpreter.execute_in_main_environment(spec.3).unwrap();
 
             let environment_id = match_value(
                 interpreter,
@@ -129,16 +145,22 @@ mod tests {
             )
             .unwrap();
 
-            let result = interpreter.execute_value(environment_id, form).unwrap();
+            let result =
+                interpreter.execute_value(environment_id, form).unwrap();
 
             assert_deep_equal(interpreter, expected, result);
         }
     }
 
-    fn assert_match_fails(interpreter: &mut Interpreter, specs: Vec<(&str, &str)>) {
+    fn assert_match_fails(
+        interpreter: &mut Interpreter,
+        specs: Vec<(&str, &str)>,
+    ) {
         for spec in specs {
-            let binding = interpreter.execute_in_main_environment(spec.0).unwrap();
-            let value = interpreter.execute_in_main_environment(spec.1).unwrap();
+            let binding =
+                interpreter.execute_in_main_environment(spec.0).unwrap();
+            let value =
+                interpreter.execute_in_main_environment(spec.1).unwrap();
 
             let environment_id = match_value(
                 interpreter,
@@ -280,7 +302,8 @@ mod tests {
     fn fails_when_list_are_not_equal() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec![("'()", "'(1)"), ("'(a)", "'(1 2)"), ("'(a b)", "'(1 2 3)")];
+        let specs =
+            vec![("'()", "'(1)"), ("'(a)", "'(1 2)"), ("'(a b)", "'(1 2 3)")];
 
         assert_match_fails(&mut interpreter, specs);
     }

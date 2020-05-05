@@ -54,12 +54,17 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_invalid_argument_count_were_provided() {
+    fn returns_invalid_argument_error_count_when_invalid_argument_count_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(logic:nand)", "(logic:nand #t)", "(logic:nand #t #t #t)"];
+        let code_vector =
+            vec!["(logic:nand)", "(logic:nand #t)", "(logic:nand #t #t #t)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -85,6 +90,9 @@ mod tests {
             "(logic:nand #t (function (lambda () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

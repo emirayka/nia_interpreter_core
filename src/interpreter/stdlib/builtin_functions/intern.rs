@@ -19,10 +19,12 @@ pub fn intern(
 
     let mut values = values;
 
-    let symbol_name = library::read_as_string(interpreter, values.remove(0))?.clone();
+    let symbol_name =
+        library::read_as_string(interpreter, values.remove(0))?.clone();
 
     if symbol_name.starts_with("#") {
-        return Error::invalid_argument_error("Cannot intern special symbols.").into();
+        return Error::invalid_argument_error("Cannot intern special symbols.")
+            .into();
     }
 
     Ok(interpreter.intern_symbol_value(&symbol_name))
@@ -54,7 +56,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_attempts_to_intern_special_symbols() {
+    fn returns_invalid_argument_error_when_attempts_to_intern_special_symbols()
+    {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
@@ -64,16 +67,23 @@ mod tests {
             "(intern \"#another-special-symbol\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_incorrect_count_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec!["(intern)", "(intern 1 2)", "(intern 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
@@ -93,6 +103,9 @@ mod tests {
             "(intern (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

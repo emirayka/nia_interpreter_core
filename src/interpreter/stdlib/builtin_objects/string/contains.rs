@@ -60,7 +60,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count() {
+    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -69,7 +70,10 @@ mod tests {
             r#"(string:contains? "a" "b" "c")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -97,6 +101,9 @@ mod tests {
             r#"(string:contains? #(+ %1 %2) "b")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

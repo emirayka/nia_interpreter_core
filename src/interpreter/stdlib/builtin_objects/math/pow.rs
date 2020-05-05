@@ -54,23 +54,29 @@ pub fn pow(
     let mut values = values;
 
     match (values.remove(0), values.remove(0)) {
-        (Value::Integer(int1), Value::Integer(int2)) => match checked_int_pow(int1, int2) {
-            Some(value) => Ok(value),
-            None => {
-                Error::overflow_error(&format!("Cannot compute pow of {} on {}", int1, int2)).into()
+        (Value::Integer(int1), Value::Integer(int2)) => {
+            match checked_int_pow(int1, int2) {
+                Some(value) => Ok(value),
+                None => Error::overflow_error(&format!(
+                    "Cannot compute pow of {} on {}",
+                    int1, int2
+                ))
+                .into(),
             }
         },
         (Value::Integer(int1), Value::Float(float2)) => {
             Ok(Value::Float((int1 as f64).powf(float2)))
-        }
-        (Value::Float(float1), Value::Integer(int2)) => Ok(Value::Float(float1.powf(int2 as f64))),
-        (Value::Float(float1), Value::Float(float2)) => Ok(Value::Float(float1.powf(float2))),
-        _ => {
-            return Error::invalid_argument_error(
-                "Built-in function `math:pow' must take either integers or float.",
-            )
-            .into()
-        }
+        },
+        (Value::Float(float1), Value::Integer(int2)) => {
+            Ok(Value::Float(float1.powf(int2 as f64)))
+        },
+        (Value::Float(float1), Value::Float(float2)) => {
+            Ok(Value::Float(float1.powf(float2)))
+        },
+        _ => return Error::invalid_argument_error(
+            "Built-in function `math:pow' must take either integers or float.",
+        )
+        .into(),
     }
 }
 
@@ -120,12 +126,17 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(math:pow)", "(math:pow 1)", "(math:pow 1 2 3)"];
+        let code_vector =
+            vec!["(math:pow)", "(math:pow 1)", "(math:pow 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -144,7 +155,10 @@ mod tests {
             "(math:pow 1 (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
@@ -153,6 +167,9 @@ mod tests {
 
         let code_vector = vec!["(math:pow 2 65)", "(math:pow 4 33)"];
 
-        assertion::assert_results_are_overflow_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_overflow_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

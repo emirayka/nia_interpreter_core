@@ -3,7 +3,9 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::value::{Function, FunctionArguments, InterpretedFunction};
+use crate::interpreter::value::{
+    Function, FunctionArguments, InterpretedFunction,
+};
 
 pub fn always(
     interpreter: &mut Interpreter,
@@ -29,9 +31,11 @@ pub fn always(
     let code = vec![cons];
     let arguments = FunctionArguments::new();
 
-    let interpreted_function = InterpretedFunction::new(environment_id, arguments, code);
+    let interpreted_function =
+        InterpretedFunction::new(environment_id, arguments, code);
 
-    let function_id = interpreter.register_function(Function::Interpreted(interpreted_function));
+    let function_id = interpreter
+        .register_function(Function::Interpreted(interpreted_function));
 
     Ok(Value::Function(function_id))
 }
@@ -67,11 +71,15 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(func:always)", "(func:always 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

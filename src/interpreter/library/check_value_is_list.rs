@@ -2,7 +2,10 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn check_value_is_list(interpreter: &Interpreter, value: Value) -> Result<(), Error> {
+pub fn check_value_is_list(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<(), Error> {
     match value {
         Value::Cons(_) => Ok(()),
         Value::Symbol(symbol_id) => {
@@ -11,7 +14,7 @@ pub fn check_value_is_list(interpreter: &Interpreter, value: Value) -> Result<()
             } else {
                 Error::invalid_argument_error("Expected list").into()
             }
-        }
+        },
         _ => Error::invalid_argument_error("Expected list").into(),
     }
 }
@@ -37,7 +40,8 @@ mod tests {
         ];
 
         for list_value in list_values {
-            let result = check_value_is_list(&mut interpreter, list_value).unwrap();
+            let result =
+                check_value_is_list(&mut interpreter, list_value).unwrap();
 
             nia_assert_equal((), result);
         }

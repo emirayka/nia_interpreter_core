@@ -14,10 +14,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         vec![("int", int::int), ("float", float::float)];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, rand_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            rand_object_id,
+            name,
+            func,
+        )?;
     }
 
-    let rand_symbol_id = interpreter.intern("rand");
+    let rand_symbol_id = interpreter.intern_symbol_id("rand");
 
     interpreter.define_variable(
         interpreter.get_root_environment_id(),

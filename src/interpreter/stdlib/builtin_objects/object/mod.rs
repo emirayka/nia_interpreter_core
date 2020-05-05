@@ -80,10 +80,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in funcs {
-        infect_object_builtin_function(interpreter, object_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            object_object_id,
+            name,
+            func,
+        )?;
     }
 
-    let object_symbol_id = interpreter.intern("object");
+    let object_symbol_id = interpreter.intern_symbol_id("object");
 
     interpreter.define_variable(
         interpreter.get_root_environment_id(),

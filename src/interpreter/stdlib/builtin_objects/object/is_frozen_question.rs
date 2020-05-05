@@ -52,12 +52,17 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(object:is-frozen?)", "(object:is-frozen? {} 'val)"];
+        let code_vector =
+            vec!["(object:is-frozen?)", "(object:is-frozen? {} 'val)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -76,6 +81,9 @@ mod tests {
             "(object:is-frozen? #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

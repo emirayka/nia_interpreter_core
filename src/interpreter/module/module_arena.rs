@@ -29,13 +29,20 @@ impl ModuleArena {
         module_id
     }
 
-    pub fn make(&mut self, path: String, environment_id: EnvironmentId) -> ModuleId {
+    pub fn make(
+        &mut self,
+        path: String,
+        environment_id: EnvironmentId,
+    ) -> ModuleId {
         let module = Module::new(path.clone(), environment_id);
 
         self.register_module(path, module)
     }
 
-    pub fn make_with_empty_path(&mut self, environment_id: EnvironmentId) -> ModuleId {
+    pub fn make_with_empty_path(
+        &mut self,
+        environment_id: EnvironmentId,
+    ) -> ModuleId {
         let module = Module::new_root_module(environment_id);
 
         self.register_module(String::from(""), module)
@@ -45,16 +52,27 @@ impl ModuleArena {
         self.mapping.get(path).map(|module_id| *module_id)
     }
 
-    pub fn get_module_id_required(&self, path: &str) -> Result<ModuleId, Error> {
+    pub fn get_module_id_required(
+        &self,
+        path: &str,
+    ) -> Result<ModuleId, Error> {
         self.mapping
             .get(path)
             .map(|module_id| *module_id)
-            .ok_or_else(|| Error::failure(format!("Cannot find module with path: {}", path)))
+            .ok_or_else(|| {
+                Error::failure(format!(
+                    "Cannot find module with path: {}",
+                    path
+                ))
+            })
     }
 
     pub fn get_module(&self, module_id: ModuleId) -> Result<&Module, Error> {
         self.modules.get(&module_id).ok_or_else(|| {
-            Error::generic_execution_error(&format!("Cannot find module with id: {}", module_id))
+            Error::generic_execution_error(&format!(
+                "Cannot find module with id: {}",
+                module_id
+            ))
         })
     }
 
@@ -63,7 +81,19 @@ impl ModuleArena {
         module_id: ModuleId,
     ) -> Result<&mut Module, Error> {
         self.modules.get_mut(&module_id).ok_or_else(|| {
-            Error::generic_execution_error(&format!("Cannot find module with id: {}", module_id))
+            Error::generic_execution_error(&format!(
+                "Cannot find module with id: {}",
+                module_id
+            ))
         })
+    }
+
+    pub fn get_gc_environments(
+        &self
+    ) -> Vec<EnvironmentId> {
+        self.modules
+            .iter()
+            .map(|(module_id, module)| module.get_environment_id())
+            .collect()
     }
 }

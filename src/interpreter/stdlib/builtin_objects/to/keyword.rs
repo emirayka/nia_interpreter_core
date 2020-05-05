@@ -19,15 +19,18 @@ pub fn keyword(
 
     match values.remove(0) {
         Value::String(string_id) => {
-            let string = interpreter.get_string(string_id)?.get_string().clone();
+            let string =
+                interpreter.get_string(string_id)?.get_string().clone();
 
             let keyword = interpreter.intern_keyword_value(&string);
 
             Ok(keyword)
-        }
+        },
         keyword @ Value::Keyword(_) => Ok(keyword),
-        _ => Error::invalid_argument_error("Only keywords or strings can be casted to keyword.")
-            .into(),
+        _ => Error::invalid_argument_error(
+            "Only keywords or strings can be casted to keyword.",
+        )
+        .into(),
     }
 }
 
@@ -75,15 +78,22 @@ mod tests {
             "(to:keyword (flookup 'cond))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, pairs);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            pairs,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(to:keyword)", "(to:keyword 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

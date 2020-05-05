@@ -35,7 +35,10 @@ impl Object {
         self.prototype
     }
 
-    pub fn set_prototype(&mut self, prototype_id: ObjectId) -> Result<(), Error> {
+    pub fn set_prototype(
+        &mut self,
+        prototype_id: ObjectId,
+    ) -> Result<(), Error> {
         self.check_is_not_frozen()?;
 
         self.prototype = Some(prototype_id);
@@ -65,7 +68,8 @@ impl Object {
 
     pub fn check_is_not_frozen(&self) -> Result<(), Error> {
         if self.frozen {
-            Error::generic_execution_error("Cannot change frozen object.").into()
+            Error::generic_execution_error("Cannot change frozen object.")
+                .into()
         } else {
             Ok(())
         }
@@ -97,7 +101,9 @@ impl Object {
     ) -> Result<&ObjectValueWrapper, Error> {
         let object_property_wrapper = self
             .get_property_value_wrapper(property_symbol_id)
-            .ok_or_else(|| Error::generic_execution_error("Cannot find object property."))?;
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot find object property.")
+            })?;
 
         Ok(object_property_wrapper)
     }
@@ -108,7 +114,9 @@ impl Object {
     ) -> Result<&mut ObjectValueWrapper, Error> {
         let object_property_wrapper = self
             .get_property_value_wrapper_mut(property_symbol_id)
-            .ok_or_else(|| Error::generic_execution_error("Cannot find object property."))?;
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot find object property.")
+            })?;
 
         Ok(object_property_wrapper)
     }
@@ -117,9 +125,14 @@ impl Object {
         self.properties.contains_key(&symbol_id)
     }
 
-    pub fn get_property_value(&self, property_symbol_id: SymbolId) -> Result<Option<Value>, Error> {
+    pub fn get_property_value(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<Option<Value>, Error> {
         match self.get_property_value_wrapper(property_symbol_id) {
-            Some(object_value_wrapper) => Ok(Some(object_value_wrapper.get_value()?)),
+            Some(object_value_wrapper) => {
+                Ok(Some(object_value_wrapper.get_value()?))
+            },
             None => Ok(None),
         }
     }
@@ -134,29 +147,41 @@ impl Object {
         match self.get_property_value_wrapper_mut(property_symbol_id) {
             Some(object_value_wrapper) => {
                 object_value_wrapper.set_value(value)?;
-            }
+            },
             None => {
                 self.properties
                     .insert(property_symbol_id, ObjectValueWrapper::new(value));
-            }
+            },
         }
 
         Ok(())
     }
 
-    pub fn delete_property(&mut self, property_symbol_id: SymbolId) -> Result<(), Error> {
+    pub fn delete_property(
+        &mut self,
+        property_symbol_id: SymbolId,
+    ) -> Result<(), Error> {
         self.check_is_not_frozen()?;
 
         match self.properties.remove(&property_symbol_id) {
             Some(_) => Ok(()),
-            None => Error::generic_execution_error("Object has no property to delete.").into(),
+            None => Error::generic_execution_error(
+                "Object has no property to delete.",
+            )
+            .into(),
         }
     }
 
-    pub fn get_property_flags(&self, property_symbol_id: SymbolId) -> Result<u8, Error> {
+    pub fn get_property_flags(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<u8, Error> {
         match self.get_property_value_wrapper(property_symbol_id) {
             Some(object_value_wrapper) => Ok(object_value_wrapper.get_flags()),
-            None => Error::generic_execution_error("Cannot find object property.").into(),
+            None => {
+                Error::generic_execution_error("Cannot find object property.")
+                    .into()
+            },
         }
     }
 
@@ -169,12 +194,18 @@ impl Object {
 
         let object_property_wrapper = self
             .get_property_value_wrapper_mut(property_symbol_id)
-            .ok_or_else(|| Error::generic_execution_error("Cannot find object property."))?;
+            .ok_or_else(|| {
+                Error::generic_execution_error("Cannot find object property.")
+            })?;
 
         object_property_wrapper.set_flags(flags)
     }
 
-    pub fn get_property_flag(&self, property_symbol_id: SymbolId, flag: u8) -> Result<bool, Error> {
+    pub fn get_property_flag(
+        &self,
+        property_symbol_id: SymbolId,
+        flag: u8,
+    ) -> Result<bool, Error> {
         let flag = self
             .get_property_value_wrapper_required(property_symbol_id)?
             .get_flag(flag);
@@ -194,28 +225,40 @@ impl Object {
             .set_flag(flag, flag_value)
     }
 
-    pub fn is_property_internable(&self, property_symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn is_property_internable(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let object_property_wrapper =
             self.get_property_value_wrapper_required(property_symbol_id)?;
 
         Ok(object_property_wrapper.is_internable())
     }
 
-    pub fn is_property_writable(&self, property_symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn is_property_writable(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let object_property_wrapper =
             self.get_property_value_wrapper_required(property_symbol_id)?;
 
         Ok(object_property_wrapper.is_writable())
     }
 
-    pub fn is_property_enumerable(&self, property_symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn is_property_enumerable(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let object_property_wrapper =
             self.get_property_value_wrapper_required(property_symbol_id)?;
 
         Ok(object_property_wrapper.is_enumerable())
     }
 
-    pub fn is_property_configurable(&self, property_symbol_id: SymbolId) -> Result<bool, Error> {
+    pub fn is_property_configurable(
+        &self,
+        property_symbol_id: SymbolId,
+    ) -> Result<bool, Error> {
         let object_property_wrapper =
             self.get_property_value_wrapper_required(property_symbol_id)?;
 
@@ -295,7 +338,7 @@ impl Object {
 
         match self.prototype {
             Some(prototype_id) => result.push(Value::Object(prototype_id)),
-            _ => {}
+            _ => {},
         }
 
         result
@@ -359,7 +402,10 @@ mod tests {
             let value = Value::Integer(1);
 
             nia_assert_equal(false, object.has_property(property_symbol_id));
-            nia_assert_equal(Ok(None), object.get_property_value(property_symbol_id));
+            nia_assert_equal(
+                Ok(None),
+                object.get_property_value(property_symbol_id),
+            );
 
             nia_assert_is_ok(&object.set_property(property_symbol_id, value));
             nia_assert_equal(true, object.has_property(property_symbol_id));
@@ -378,7 +424,10 @@ mod tests {
             let value2 = Value::Integer(2);
 
             nia_assert_equal(false, object.has_property(property_symbol_id));
-            nia_assert_equal(Ok(None), object.get_property_value(property_symbol_id));
+            nia_assert_equal(
+                Ok(None),
+                object.get_property_value(property_symbol_id),
+            );
 
             nia_assert_is_ok(&object.set_property(property_symbol_id, value1));
             nia_assert_equal(true, object.has_property(property_symbol_id));
@@ -402,7 +451,10 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
 
             nia_assert_equal(false, object.has_property(property_symbol_id));
-            nia_assert_equal(Ok(None), object.get_property_value(property_symbol_id));
+            nia_assert_equal(
+                Ok(None),
+                object.get_property_value(property_symbol_id),
+            );
         }
 
         #[test]
@@ -434,9 +486,17 @@ mod tests {
             let mut object = Object::new();
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_equal(Ok(None), object.get_property_value(property_symbol_id));
-            nia_assert(object.set_property(property_symbol_id, new_value).is_err());
-            nia_assert_equal(Ok(None), object.get_property_value(property_symbol_id));
+            nia_assert_equal(
+                Ok(None),
+                object.get_property_value(property_symbol_id),
+            );
+            nia_assert(
+                object.set_property(property_symbol_id, new_value).is_err(),
+            );
+            nia_assert_equal(
+                Ok(None),
+                object.get_property_value(property_symbol_id),
+            );
         }
 
         #[test]
@@ -454,7 +514,9 @@ mod tests {
                 Ok(Some(value)),
                 object.get_property_value(property_symbol_id),
             );
-            nia_assert_is_err(&object.set_property(property_symbol_id, new_value));
+            nia_assert_is_err(
+                &object.set_property(property_symbol_id, new_value),
+            );
             nia_assert_equal(
                 Ok(Some(value)),
                 object.get_property_value(property_symbol_id),
@@ -525,8 +587,10 @@ mod tests {
     mod set_property_flags__get_property_flags {
         use super::*;
         use crate::{
-            OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT, OBJECT_VALUE_WRAPPER_FLAGS_NONE,
-            OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+            OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
+            OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+            OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
         };
 
         #[test]
@@ -535,7 +599,10 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
@@ -543,7 +610,10 @@ mod tests {
             );
             nia_assert(
                 object
-                    .set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE)
+                    .set_property_flags(
+                        property_symbol_id,
+                        OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+                    )
                     .is_ok(),
             );
             nia_assert_equal(
@@ -559,12 +629,16 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_is_err(
-                &object.set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE),
-            );
+            nia_assert_is_err(&object.set_property_flags(
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
         }
 
         #[test]
@@ -575,9 +649,10 @@ mod tests {
             let mut object = Object::new();
 
             nia_assert_is_err(&object.get_property_flags(property_symbol_id));
-            nia_assert_is_err(
-                &object.set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE),
-            );
+            nia_assert_is_err(&object.set_property_flags(
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
             nia_assert_is_err(&object.get_property_flags(property_symbol_id));
         }
 
@@ -587,19 +662,24 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
-
-            nia_assert_is_ok(
-                &object.set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_NONE),
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
             );
+
+            nia_assert_is_ok(&object.set_property_flags(
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            ));
 
             nia_assert_equal(
                 Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),
                 object.get_property_flags(property_symbol_id),
             );
-            nia_assert_is_err(
-                &object.set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
-            );
+            nia_assert_is_err(&object.set_property_flags(
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
+            ));
             nia_assert_equal(
                 Ok(OBJECT_VALUE_WRAPPER_FLAGS_NONE),
                 object.get_property_flags(property_symbol_id),
@@ -612,7 +692,8 @@ mod tests {
     mod set_property_flag__get_property_flag {
         use super::*;
         use crate::{
-            OBJECT_VALUE_WRAPPER_FLAGS_NONE, OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+            OBJECT_VALUE_WRAPPER_FLAGS_NONE,
+            OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
             OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
         };
 
@@ -622,16 +703,24 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(()),
-                object
-                    .set_property_flags(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE),
+                object.set_property_flags(
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
+                ),
             );
             nia_assert_equal(
                 Ok(false),
-                object.get_property_flag(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE),
+                object.get_property_flag(
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
             );
             nia_assert_equal(
                 Ok(()),
@@ -643,7 +732,10 @@ mod tests {
             );
             nia_assert_equal(
                 Ok(true),
-                object.get_property_flag(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE),
+                object.get_property_flag(
+                    property_symbol_id,
+                    OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+                ),
             );
         }
 
@@ -654,7 +746,10 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
             nia_assert_is_err(&object.set_property_flag(
@@ -680,9 +775,10 @@ mod tests {
                 OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
                 false,
             ));
-            nia_assert_is_err(
-                &object.get_property_flag(property_symbol_id, OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE),
-            );
+            nia_assert_is_err(&object.get_property_flag(
+                property_symbol_id,
+                OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
+            ));
         }
 
         #[test]
@@ -691,7 +787,10 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_is_ok(&object.set_property_flag(
                 property_symbol_id,
@@ -699,13 +798,19 @@ mod tests {
                 false,
             ));
 
-            nia_assert_equal(Ok(true), object.is_property_internable(property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                object.is_property_internable(property_symbol_id),
+            );
             nia_assert_is_err(&object.set_property_flag(
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
                 false,
             ));
-            nia_assert_equal(Ok(true), object.is_property_internable(property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                object.is_property_internable(property_symbol_id),
+            );
         }
     }
 
@@ -721,14 +826,23 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
-            nia_assert_equal(Ok(true), object.is_property_internable(property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                object.is_property_internable(property_symbol_id),
+            );
             nia_assert_equal(
                 Ok(()),
                 object.set_property_internable(property_symbol_id, false),
             );
-            nia_assert_equal(Ok(false), object.is_property_internable(property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                object.is_property_internable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -738,10 +852,15 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_is_err(&object.set_property_internable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_internable(property_symbol_id, false),
+            );
         }
 
         #[test]
@@ -749,9 +868,15 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let mut object = Object::new();
 
-            nia_assert_is_err(&object.is_property_internable(property_symbol_id));
-            nia_assert_is_err(&object.set_property_internable(property_symbol_id, false));
-            nia_assert_is_err(&object.is_property_internable(property_symbol_id));
+            nia_assert_is_err(
+                &object.is_property_internable(property_symbol_id),
+            );
+            nia_assert_is_err(
+                &object.set_property_internable(property_symbol_id, false),
+            );
+            nia_assert_is_err(
+                &object.is_property_internable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -760,13 +885,18 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(()),
                 object.set_property_configurable(property_symbol_id, false),
             );
-            nia_assert_is_err(&object.set_property_internable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_internable(property_symbol_id, false),
+            );
             nia_assert_equal(
                 Ok((true)),
                 object.is_property_internable(property_symbol_id),
@@ -786,14 +916,23 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
-            nia_assert_equal(Ok(true), object.is_property_writable(property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                object.is_property_writable(property_symbol_id),
+            );
             nia_assert_equal(
                 Ok(()),
                 object.set_property_writable(property_symbol_id, false),
             );
-            nia_assert_equal(Ok(false), object.is_property_writable(property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                object.is_property_writable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -803,10 +942,15 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_is_err(&object.set_property_writable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_writable(property_symbol_id, false),
+            );
         }
 
         #[test]
@@ -815,7 +959,9 @@ mod tests {
             let mut object = Object::new();
 
             nia_assert_is_err(&object.is_property_writable(property_symbol_id));
-            nia_assert_is_err(&object.set_property_writable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_writable(property_symbol_id, false),
+            );
             nia_assert_is_err(&object.is_property_writable(property_symbol_id));
         }
 
@@ -825,14 +971,22 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(()),
                 object.set_property_configurable(property_symbol_id, false),
             );
-            nia_assert_is_err(&object.set_property_writable(property_symbol_id, false));
-            nia_assert_equal(Ok((true)), object.is_property_writable(property_symbol_id));
+            nia_assert_is_err(
+                &object.set_property_writable(property_symbol_id, false),
+            );
+            nia_assert_equal(
+                Ok((true)),
+                object.is_property_writable(property_symbol_id),
+            );
         }
     }
 
@@ -848,14 +1002,23 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
-            nia_assert_equal(Ok(true), object.is_property_enumerable(property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                object.is_property_enumerable(property_symbol_id),
+            );
             nia_assert_equal(
                 Ok(()),
                 object.set_property_enumerable(property_symbol_id, false),
             );
-            nia_assert_equal(Ok(false), object.is_property_enumerable(property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                object.is_property_enumerable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -865,10 +1028,15 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_is_err(&object.set_property_enumerable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_enumerable(property_symbol_id, false),
+            );
         }
 
         #[test]
@@ -876,9 +1044,15 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let mut object = Object::new();
 
-            nia_assert_is_err(&object.is_property_enumerable(property_symbol_id));
-            nia_assert_is_err(&object.set_property_enumerable(property_symbol_id, false));
-            nia_assert_is_err(&object.is_property_enumerable(property_symbol_id));
+            nia_assert_is_err(
+                &object.is_property_enumerable(property_symbol_id),
+            );
+            nia_assert_is_err(
+                &object.set_property_enumerable(property_symbol_id, false),
+            );
+            nia_assert_is_err(
+                &object.is_property_enumerable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -887,13 +1061,18 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(()),
                 object.set_property_configurable(property_symbol_id, false),
             );
-            nia_assert_is_err(&object.set_property_enumerable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_enumerable(property_symbol_id, false),
+            );
             nia_assert_equal(
                 Ok((true)),
                 object.is_property_enumerable(property_symbol_id),
@@ -913,7 +1092,10 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(true),
@@ -936,10 +1118,15 @@ mod tests {
 
             let mut object = Object::new();
 
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, value),
+            );
             nia_assert_equal(Ok(()), object.freeze());
 
-            nia_assert_is_err(&object.set_property_configurable(property_symbol_id, false));
+            nia_assert_is_err(
+                &object.set_property_configurable(property_symbol_id, false),
+            );
         }
 
         #[test]
@@ -947,9 +1134,15 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let mut object = Object::new();
 
-            nia_assert_is_err(&object.is_property_configurable(property_symbol_id));
-            nia_assert_is_err(&object.set_property_configurable(property_symbol_id, false));
-            nia_assert_is_err(&object.is_property_configurable(property_symbol_id));
+            nia_assert_is_err(
+                &object.is_property_configurable(property_symbol_id),
+            );
+            nia_assert_is_err(
+                &object.set_property_configurable(property_symbol_id, false),
+            );
+            nia_assert_is_err(
+                &object.is_property_configurable(property_symbol_id),
+            );
         }
 
         #[test]
@@ -958,13 +1151,18 @@ mod tests {
             let new_value = Value::Integer(1);
 
             let mut object = Object::new();
-            nia_assert_equal(Ok(()), object.set_property(property_symbol_id, new_value));
+            nia_assert_equal(
+                Ok(()),
+                object.set_property(property_symbol_id, new_value),
+            );
 
             nia_assert_equal(
                 Ok(()),
                 object.set_property_configurable(property_symbol_id, false),
             );
-            nia_assert_is_err(&object.set_property_configurable(property_symbol_id, true));
+            nia_assert_is_err(
+                &object.set_property_configurable(property_symbol_id, true),
+            );
             nia_assert_equal(
                 Ok(false),
                 object.is_property_configurable(property_symbol_id),

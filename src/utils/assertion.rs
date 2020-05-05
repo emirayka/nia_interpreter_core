@@ -3,7 +3,11 @@ use nia_basic_assertions::*;
 
 use crate::*;
 
-pub fn assert_deep_equal(interpreter: &Interpreter, value1: Value, value2: Value) {
+pub fn assert_deep_equal(
+    interpreter: &Interpreter,
+    value1: Value,
+    value2: Value,
+) {
     nia_assert(library::deep_equal(interpreter, value1, value2).unwrap());
 }
 
@@ -13,11 +17,13 @@ pub fn assert_option_deep_equal(
     value2: Option<Value>,
 ) {
     match (value1, value2) {
-        (Some(v1), Some(v2)) => nia_assert(library::deep_equal(interpreter, v1, v2).unwrap()),
-        (None, None) => {}
+        (Some(v1), Some(v2)) => {
+            nia_assert(library::deep_equal(interpreter, v1, v2).unwrap())
+        },
+        (None, None) => {},
         _ => {
             nia_assert(false);
-        }
+        },
     }
 }
 
@@ -54,7 +60,10 @@ macro_rules! make_assertion_function {
     };
 }
 
-make_assertion_function!(assert_invalid_argument_error, ErrorKind::InvalidArgument);
+make_assertion_function!(
+    assert_invalid_argument_error,
+    ErrorKind::InvalidArgument
+);
 
 make_assertion_function!(
     assert_invalid_argument_count_error,
@@ -83,12 +92,17 @@ pub fn assert_is_object(param: Value) {
 
 pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
     nia_assert(match param {
-        Value::Symbol(symbol_id) => interpreter.symbol_is_nil(symbol_id).unwrap(),
+        Value::Symbol(symbol_id) => {
+            interpreter.symbol_is_nil(symbol_id).unwrap()
+        },
         _ => false,
     });
 }
 
-pub fn assert_results_are_equal(interpreter: &mut Interpreter, pairs: Vec<(&str, &str)>) {
+pub fn assert_results_are_equal(
+    interpreter: &mut Interpreter,
+    pairs: Vec<(&str, &str)>,
+) {
     for (code, code_expected) in pairs {
         let expected = interpreter
             .execute_in_main_environment(code_expected)
@@ -103,7 +117,10 @@ pub fn assert_results_are_equal(interpreter: &mut Interpreter, pairs: Vec<(&str,
     }
 }
 
-pub fn assert_results_are_correct(interpreter: &mut Interpreter, pairs: Vec<(&str, Value)>) {
+pub fn assert_results_are_correct(
+    interpreter: &mut Interpreter,
+    pairs: Vec<(&str, Value)>,
+) {
     for (code, expected) in pairs {
         let result = interpreter.execute_in_main_environment(code).unwrap();
 
@@ -126,7 +143,8 @@ pub fn assert_results_are_errors(
     for code in code_vector {
         println!("{}", code);
 
-        let error = interpreter.execute_in_main_environment(code).err().unwrap();
+        let error =
+            interpreter.execute_in_main_environment(code).err().unwrap();
         let total_cause = error.get_total_cause();
 
         if total_cause.get_error_kind() == error_kind {
@@ -139,7 +157,10 @@ pub fn assert_results_are_errors(
     }
 }
 
-pub fn assert_results_are_functions(interpreter: &mut Interpreter, code_vector: Vec<&str>) {
+pub fn assert_results_are_functions(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>,
+) {
     for code in code_vector {
         let result = interpreter.execute_in_main_environment(code);
 
@@ -147,7 +168,10 @@ pub fn assert_results_are_functions(interpreter: &mut Interpreter, code_vector: 
     }
 }
 
-pub fn assert_results_are_just_errors(interpreter: &mut Interpreter, code_vector: Vec<&str>) {
+pub fn assert_results_are_just_errors(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>,
+) {
     for code in code_vector {
         let result = interpreter.execute_in_main_environment(code);
 
@@ -203,7 +227,10 @@ pub fn assert_results_are_zero_division_errors(
     )
 }
 
-pub fn assert_results_are_overflow_errors(interpreter: &mut Interpreter, code_vector: Vec<&str>) {
+pub fn assert_results_are_overflow_errors(
+    interpreter: &mut Interpreter,
+    code_vector: Vec<&str>,
+) {
     assert_results_are_errors(
         interpreter,
         code_vector,

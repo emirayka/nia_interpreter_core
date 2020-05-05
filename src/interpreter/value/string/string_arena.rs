@@ -54,8 +54,8 @@ impl StringArena {
                     "Cannot find a string with id: {}",
                     string_id.get_id()
                 ))
-                .into()
-            }
+                .into();
+            },
         };
 
         self.mapping.remove(string.get_string());
@@ -92,7 +92,8 @@ mod tests {
             let expected = "String";
             let string_id = string_arena.make_string(expected);
 
-            let result = string_arena.get_string(string_id).unwrap().get_string();
+            let result =
+                string_arena.get_string(string_id).unwrap().get_string();
 
             nia_assert_equal(expected, result);
         }
@@ -105,7 +106,8 @@ mod tests {
             string_arena.make_string(expected);
             let string_id = string_arena.make_string(expected);
 
-            let result = string_arena.get_string(string_id).unwrap().get_string();
+            let result =
+                string_arena.get_string(string_id).unwrap().get_string();
 
             nia_assert_equal(expected, result);
         }
@@ -122,7 +124,8 @@ mod tests {
             let expected = "String";
             let string_id = string_arena.intern_string(expected);
 
-            let result = string_arena.get_string(string_id).unwrap().get_string();
+            let result =
+                string_arena.get_string(string_id).unwrap().get_string();
 
             nia_assert_equal(expected, result);
         }

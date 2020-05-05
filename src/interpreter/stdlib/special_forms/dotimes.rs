@@ -11,12 +11,13 @@ fn make_dotimes_environment(
     environment_id: EnvironmentId,
     symbol_id: SymbolId,
 ) -> Result<EnvironmentId, Error> {
-    let dotimes_environment_id = interpreter.make_environment(environment_id)?;
+    let dotimes_environment_id =
+        interpreter.make_environment(environment_id)?;
 
-    let break_symbol_id = interpreter.intern("break");
+    let break_symbol_id = interpreter.intern_symbol_id("break");
     let break_function_id = interpreter.get_internal_function("break")?;
 
-    let continue_symbol_id = interpreter.intern("continue");
+    let continue_symbol_id = interpreter.intern_symbol_id("continue");
     let continue_function_id = interpreter.get_internal_function("continue")?;
 
     interpreter.define_function(
@@ -61,17 +62,23 @@ pub fn dotimes(
 
     let binding_symbol_id = library::read_as_symbol_id(binding.remove(0))?;
 
-    let evaluated_count = interpreter.execute_value(environment_id, binding.remove(0))?;
+    let evaluated_count =
+        interpreter.execute_value(environment_id, binding.remove(0))?;
 
     let count = library::read_as_i64(evaluated_count)?;
 
     if count < 0 {
-        return Error::invalid_argument_error("Special form `dotimes' takes positive count.")
-            .into();
+        return Error::invalid_argument_error(
+            "Special form `dotimes' takes positive count.",
+        )
+        .into();
     }
 
-    let dotimes_environment_id =
-        make_dotimes_environment(interpreter, environment_id, binding_symbol_id)?;
+    let dotimes_environment_id = make_dotimes_environment(
+        interpreter,
+        environment_id,
+        binding_symbol_id,
+    )?;
 
     let code = values;
 
@@ -82,13 +89,14 @@ pub fn dotimes(
             Value::Integer(index),
         )?;
 
-        match library::execute_forms(interpreter, dotimes_environment_id, &code) {
-            Ok(_) => {}
+        match library::execute_forms(interpreter, dotimes_environment_id, &code)
+        {
+            Ok(_) => {},
             Err(error) => match error.get_error_kind() {
                 ErrorKind::Break => {
                     break;
-                }
-                ErrorKind::Continue => {}
+                },
+                ErrorKind::Continue => {},
                 _ => return Err(error),
             },
         };
@@ -111,14 +119,26 @@ mod tests {
     fn loops() {
         let mut interpreter = Interpreter::new();
 
-        let pairs = vec!(
+        let pairs = vec![
             ("(dotimes (i 1))", "nil"),
             ("(defv n 1) (dotimes (i n))", "nil"),
-            ("(defv a (list)) (dotimes (i 3) (set! a (cons i a))) a", "'(2 1 0)"),
-            ("(defv b (list)) (dotimes (i 3) (break) (set! b (cons i b))) b", "'()"),
-            ("(defv c (list)) (dotimes (i 3) (set! c (cons i c)) (set! c (cons i c))) c", "'(2 2 1 1 0 0)"),
-            ("(defv d (list)) (dotimes (i 3) (set! d (cons i d)) (continue) (set! d (cons i d))) d", "'(2 1 0)"),
-        );
+            (
+                "(defv a (list)) (dotimes (i 3) (set! a (cons i a))) a",
+                "'(2 1 0)",
+            ),
+            (
+                "(defv b (list)) (dotimes (i 3) (break) (set! b (cons i b))) b",
+                "'()",
+            ),
+            (
+                "(defv c (list)) (dotimes (i 3) (set! c (cons i c)) (set! c (cons i c))) c",
+                "'(2 2 1 1 0 0)",
+            ),
+            (
+                "(defv d (list)) (dotimes (i 3) (set! d (cons i d)) (continue) (set! d (cons i d))) d",
+                "'(2 1 0)",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, pairs)
     }
@@ -140,7 +160,10 @@ mod tests {
             "(dotimes (1 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
@@ -159,7 +182,10 @@ mod tests {
             "(dotimes (#() 5))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
@@ -179,15 +205,22 @@ mod tests {
             "(dotimes (n #()))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_was_called_with_invalid_argument_count() {
+    fn returns_invalid_argument_count_when_was_called_with_invalid_argument_count(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(dotimes)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector)
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        )
     }
 }

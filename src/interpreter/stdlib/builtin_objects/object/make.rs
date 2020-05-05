@@ -23,17 +23,20 @@ pub fn make(
         let value = values.remove(0);
 
         if let Value::Keyword(keyword_id) = key {
-            let keyword = interpreter
-                .get_keyword(keyword_id)
-                .map_err(|err| Error::generic_execution_error_caused("", err))?;
+            let keyword =
+                interpreter.get_keyword(keyword_id).map_err(|err| {
+                    Error::generic_execution_error_caused("", err)
+                })?;
 
             let keyword_name = keyword.get_name().clone(); // todo: fix, looks ugly
 
-            let symbol_id = interpreter.intern(&keyword_name);
+            let symbol_id = interpreter.intern_symbol_id(&keyword_name);
 
             interpreter
                 .set_object_property(object_id, symbol_id, value)
-                .map_err(|err| Error::generic_execution_error_caused("", err))?;
+                .map_err(|err| {
+                    Error::generic_execution_error_caused("", err)
+                })?;
         } else {
             return Error::invalid_argument_error(
                 "Every even argument of built-in function `object:make' must be a keyword.",
@@ -69,7 +72,7 @@ mod tests {
             };
 
             for (key, value) in expected {
-                let symbol_id = interpreter.intern(key);
+                let symbol_id = interpreter.intern_symbol_id(key);
 
                 nia_assert_equal(
                     value,
@@ -89,7 +92,10 @@ mod tests {
 
     #[test]
     fn correctly_sets_object_values() {
-        assert_object_has_values!(vec!(("a", Value::Integer(1)),), "(object:make :a 1)");
+        assert_object_has_values!(
+            vec!(("a", Value::Integer(1)),),
+            "(object:make :a 1)"
+        );
 
         assert_object_has_values!(
             vec!(("a", Value::Integer(1)), ("b", Value::Float(2.2)),),
@@ -98,12 +104,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_odd_count_of_arguments_was_provided() {
+    fn returns_invalid_argument_error_when_odd_count_of_arguments_was_provided()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(object:make :a)", "(object:make :a 1 :b)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -120,6 +130,9 @@ mod tests {
             "(object:make {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

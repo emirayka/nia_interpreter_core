@@ -20,7 +20,8 @@ pub fn call(
 
     let mut values = values;
 
-    let function = library::read_as_function(interpreter, values.remove(0))?.clone();
+    let function =
+        library::read_as_function(interpreter, values.remove(0))?.clone();
 
     let evaluated_arguments = values;
 
@@ -103,7 +104,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_macro_or_special_form_was_provided() {
+    fn returns_invalid_argument_error_when_macro_or_special_form_was_provided()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -111,7 +113,10 @@ mod tests {
             "(func:call (flookup 'cond))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -130,15 +135,22 @@ mod tests {
             "(func:call {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(func:call)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

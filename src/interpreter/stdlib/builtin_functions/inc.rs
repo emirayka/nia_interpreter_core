@@ -20,14 +20,16 @@ pub fn inc(
     match values.remove(0) {
         Value::Integer(int) => match int.checked_add(1) {
             Some(value) => Ok(Value::Integer(value)),
-            _ => Error::overflow_error("Cannot increment maximal value.").into(),
+            _ => {
+                Error::overflow_error("Cannot increment maximal value.").into()
+            },
         },
         _ => {
             return Error::invalid_argument_error(
                 "Built-in function `inc' takes one integer value.",
             )
-            .into()
-        }
+            .into();
+        },
     }
 }
 
@@ -61,16 +63,23 @@ mod tests {
 
         let code_vector = vec!["(inc 9223372036854775807)"];
 
-        assertion::assert_results_are_overflow_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_overflow_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided() {
+    fn returns_invalid_argument_error_count_when_not_enough_arguments_were_provided(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec!["(inc)", "(inc 1 2)", "(inc 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -90,6 +99,9 @@ mod tests {
             "(inc (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

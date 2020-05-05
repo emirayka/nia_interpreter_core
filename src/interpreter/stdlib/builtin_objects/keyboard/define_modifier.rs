@@ -25,9 +25,12 @@ pub fn define_modifier(
         library::read_as_string(interpreter, values.remove(0))?,
         &HashMap::new(), // todo: fix
     )
-    .map_err(|_| Error::invalid_argument_error("Cannot parse key chord part."))?;
+    .map_err(|_| {
+        Error::invalid_argument_error("Cannot parse key chord part.")
+    })?;
 
-    let key_chord_value = library::key_chord_part_to_list(interpreter, key_chord_part);
+    let key_chord_value =
+        library::key_chord_part_to_list(interpreter, key_chord_part);
 
     library::add_value_to_root_list(interpreter, "modifiers", key_chord_value)?;
 
@@ -75,11 +78,15 @@ mod tests {
             "(keyboard:define-modifier #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed() {
+    fn returns_invalid_argument_count_error_when_incorrect_count_of_arguments_were_passed(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -87,6 +94,9 @@ mod tests {
             "(keyboard:define-modifier \"path\" \"name\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

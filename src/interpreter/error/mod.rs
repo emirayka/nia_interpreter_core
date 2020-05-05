@@ -1,20 +1,23 @@
 use std::fmt;
 
 use crate::interpreter::value::{
-    Cons, ConsId, Function, FunctionId, Keyword, KeywordId, NiaString, Object, ObjectId, StringId,
-    Symbol, SymbolId, Value,
+    Cons, ConsId, Function, FunctionId, Keyword, KeywordId, NiaString, Object,
+    ObjectId, StringId, Symbol, SymbolId, Value,
 };
 
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
 pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse-error";
-pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str = "generic-execution-error";
+pub const SYMBOL_NAME_GENERIC_EXECUTION_ERROR: &'static str =
+    "generic-execution-error";
 pub const SYMBOL_NAME_OVERFLOW_ERROR: &'static str = "overflow-error";
 pub const SYMBOL_NAME_ZERO_DIVISION_ERROR: &'static str = "zero-division-error";
 pub const SYMBOL_NAME_INVALID_CONS_ERROR: &'static str = "invalid-cons-error";
 
-pub const SYMBOL_NAME_INVALID_ARGUMENT_ERROR: &'static str = "invalid-argument-error";
-pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR: &'static str = "invalid-argument-count-error";
+pub const SYMBOL_NAME_INVALID_ARGUMENT_ERROR: &'static str =
+    "invalid-argument-error";
+pub const SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR: &'static str =
+    "invalid-argument-count-error";
 
 pub const SYMBOL_NAME_ASSERTION_ERROR: &'static str = "assertion-error";
 pub const SYMBOL_NAME_BREAK_ERROR: &'static str = "break-error";
@@ -122,7 +125,10 @@ impl Error {
             String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR),
         )
     }
-    pub fn generic_execution_error_caused(message: &str, cause: Error) -> Error {
+    pub fn generic_execution_error_caused(
+        message: &str,
+        cause: Error,
+    ) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::GenericExecution,
@@ -211,7 +217,10 @@ impl Error {
         )
     }
 
-    pub fn invalid_argument_count_error_caused(message: &str, cause: Error) -> Error {
+    pub fn invalid_argument_count_error_caused(
+        message: &str,
+        cause: Error,
+    ) -> Error {
         Error::from(
             Some(cause),
             ErrorKind::InvalidArgumentCount,
@@ -250,7 +259,8 @@ impl Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} \"{}\")", self.symbol_name, self.message);
+        write!(f, "({} \"{}\")", self.symbol_name, self.message)
+            .expect("Error: Failed writing.");
 
         if let Some(cause) = &self.caused_by {
             let cause_error = cause.as_ref();
@@ -284,7 +294,8 @@ mod tests {
         let interpreter = Interpreter::new();
 
         let cause_cause_error = Error::invalid_argument_count_error("r");
-        let cause_error = Error::invalid_argument_count_error_caused("r", cause_cause_error);
+        let cause_error =
+            Error::invalid_argument_count_error_caused("r", cause_cause_error);
         let error = Error::generic_execution_error_caused("r", cause_error);
 
         nia_assert(match error.get_total_cause().get_error_kind() {

@@ -11,7 +11,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         _if::infect,
         when::infect,
         unless::infect,
-        //cr::infect,
+        // cr::infect,
         empty::infect,
     ];
 
@@ -224,10 +224,16 @@ mod _if {
         fn works_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
-                ("(defv a 1) (defv b 2) (list (if #t a b) (if #f a b))", "'(1 2)"),
-                ("(defv c 0) (defv d 0) (list (if #t (set! c (inc c)) (set! d (inc d))) (if #f (set! c (inc c)) (set! d (inc d)))) (list c d)", "'(1 1)"),
-            );
+            let pairs = vec![
+                (
+                    "(defv a 1) (defv b 2) (list (if #t a b) (if #f a b))",
+                    "'(1 2)",
+                ),
+                (
+                    "(defv c 0) (defv d 0) (list (if #t (set! c (inc c)) (set! d (inc d))) (if #f (set! c (inc c)) (set! d (inc d)))) (list c d)",
+                    "'(1 1)",
+                ),
+            ];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }
@@ -256,9 +262,10 @@ mod when {
         fn works_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
-                ("(defv a 0) (defv b 0) (list (when #t (set! a (inc a))) (when #f (set! b (inc b)))) (list a b)", "'(1 0)"),
-            );
+            let pairs = vec![(
+                "(defv a 0) (defv b 0) (list (when #t (set! a (inc a))) (when #f (set! b (inc b)))) (list a b)",
+                "'(1 0)",
+            )];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }
@@ -287,9 +294,10 @@ mod unless {
         fn works_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let pairs = vec!(
-                ("(defv a 0) (defv b 0) (list (unless #t (set! a (inc a))) (unless #f (set! b (inc b)))) (list a b)", "'(0 1)"),
-            );
+            let pairs = vec![(
+                "(defv a 0) (defv b 0) (list (unless #t (set! a (inc a))) (unless #f (set! b (inc b)))) (list a b)",
+                "'(0 1)",
+            )];
 
             assertion::assert_results_are_equal(&mut interpreter, pairs);
         }

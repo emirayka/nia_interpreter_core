@@ -28,7 +28,8 @@ mod tests {
     fn returns_correct_keyword_id() {
         let mut interpreter = Interpreter::new();
 
-        let expected = interpreter.intern_keyword_value("test").try_into().unwrap();
+        let expected =
+            interpreter.intern_keyword_value("test").try_into().unwrap();
 
         let value = Value::Keyword(expected);
 

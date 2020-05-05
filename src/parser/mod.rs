@@ -6,7 +6,10 @@ mod elements;
 mod code;
 mod parse_error;
 
-pub use {code::parse, code::Code, element::Element, elements::*, parse_error::ParseError};
+pub use {
+    code::parse, code::Code, element::Element, elements::*,
+    parse_error::ParseError,
+};
 
 #[cfg(test)]
 mod tests {
@@ -72,36 +75,67 @@ mod tests {
     #[test]
     fn parses_complex_s_expression_correctly() {
         assert_code_eq!(
-            vec!(
+            vec!(Element::SExpression(SExpressionElement::new(vec!(
+                Element::Integer(IntegerElement::new(1)),
+                Element::Float(FloatElement::new(1.1)),
+                Element::Boolean(BooleanElement::new(true)),
+                Element::Boolean(BooleanElement::new(false)),
+                Element::Keyword(KeywordElement::new(String::from("keyword"))),
+                Element::String(StringElement::new(String::from("string"))),
+                Element::Symbol(SymbolElement::new(String::from("symbol"))),
                 Element::SExpression(SExpressionElement::new(vec!(
                     Element::Integer(IntegerElement::new(1)),
                     Element::Float(FloatElement::new(1.1)),
                     Element::Boolean(BooleanElement::new(true)),
                     Element::Boolean(BooleanElement::new(false)),
-                    Element::Keyword(KeywordElement::new(String::from("keyword"))),
-                    Element::String(StringElement::new(String::from("string"))),
-                    Element::Symbol(SymbolElement::new(String::from("symbol"))),
-                    Element::SExpression(SExpressionElement::new(vec!(
-                        Element::Integer(IntegerElement::new(1)),
-                        Element::Float(FloatElement::new(1.1)),
-                        Element::Boolean(BooleanElement::new(true)),
-                        Element::Boolean(BooleanElement::new(false)),
-                        Element::Keyword(KeywordElement::new(String::from("nested-keyword"))),
-                        Element::String(StringElement::new(String::from("nested-string"))),
-                        Element::Symbol(SymbolElement::new(String::from("nested-symbol"))),
+                    Element::Keyword(KeywordElement::new(String::from(
+                        "nested-keyword"
                     ))),
-                    Element::Object(ObjectElement::new(vec!(
-                        (KeywordElement::new(String::from("a")), Element::Integer(IntegerElement::new(1))),
-                        (KeywordElement::new(String::from("b")), Element::Float(FloatElement::new(1.1))),
-                        (KeywordElement::new(String::from("c")), Element::Boolean(BooleanElement::new(true))),
-                        (KeywordElement::new(String::from("d")), Element::Boolean(BooleanElement::new(false))),
-                        (KeywordElement::new(String::from("e")), Element::Keyword(KeywordElement::new(String::from("object-keyword")))),
-                        (KeywordElement::new(String::from("f")), Element::String(StringElement::new(String::from("object-string")))),
-                        (KeywordElement::new(String::from("g")), Element::Symbol(SymbolElement::new(String::from("object-symbol")))),
+                    Element::String(StringElement::new(String::from(
+                        "nested-string"
                     ))),
-                    Element::ObjectPattern(ObjectPatternElement::new(vec!()))
-                )))
-            ),
+                    Element::Symbol(SymbolElement::new(String::from(
+                        "nested-symbol"
+                    ))),
+                ))),
+                Element::Object(ObjectElement::new(vec!(
+                    (
+                        KeywordElement::new(String::from("a")),
+                        Element::Integer(IntegerElement::new(1))
+                    ),
+                    (
+                        KeywordElement::new(String::from("b")),
+                        Element::Float(FloatElement::new(1.1))
+                    ),
+                    (
+                        KeywordElement::new(String::from("c")),
+                        Element::Boolean(BooleanElement::new(true))
+                    ),
+                    (
+                        KeywordElement::new(String::from("d")),
+                        Element::Boolean(BooleanElement::new(false))
+                    ),
+                    (
+                        KeywordElement::new(String::from("e")),
+                        Element::Keyword(KeywordElement::new(String::from(
+                            "object-keyword"
+                        )))
+                    ),
+                    (
+                        KeywordElement::new(String::from("f")),
+                        Element::String(StringElement::new(String::from(
+                            "object-string"
+                        )))
+                    ),
+                    (
+                        KeywordElement::new(String::from("g")),
+                        Element::Symbol(SymbolElement::new(String::from(
+                            "object-symbol"
+                        )))
+                    ),
+                ))),
+                Element::ObjectPattern(ObjectPatternElement::new(vec!()))
+            )))),
             "(1 1.1 #t #f :keyword \"string\" symbol (1 1.1 #t #f :nested-keyword \"nested-string\" nested-symbol) {:a 1 :b 1.1 :c #t :d #f :e :object-keyword :f \"object-string\" :g object-symbol} #{})"
         );
     }
@@ -635,8 +669,14 @@ mod tests {
 
     #[test]
     fn parses_comments_correctly() {
-        assert_code_eq!(vec!(Element::Integer(IntegerElement::new(2))), ";arst\n2");
-        assert_code_eq!(vec!(Element::Integer(IntegerElement::new(1)),), "1;arst");
+        assert_code_eq!(
+            vec!(Element::Integer(IntegerElement::new(2))),
+            ";arst\n2"
+        );
+        assert_code_eq!(
+            vec!(Element::Integer(IntegerElement::new(1)),),
+            "1;arst"
+        );
         assert_code_eq!(
             vec!(
                 Element::Integer(IntegerElement::new(1)),

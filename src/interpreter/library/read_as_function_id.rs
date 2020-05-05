@@ -6,7 +6,10 @@ use crate::interpreter::value::Value;
 pub fn read_as_function_id(value: Value) -> Result<FunctionId, Error> {
     let function_id = match value {
         Value::Function(function_id) => function_id,
-        _ => return Error::invalid_argument_error("Expected a function.").into(),
+        _ => {
+            return Error::invalid_argument_error("Expected a function.")
+                .into();
+        },
     };
 
     Ok(function_id)

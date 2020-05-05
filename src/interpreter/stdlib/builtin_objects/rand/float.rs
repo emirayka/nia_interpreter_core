@@ -34,8 +34,10 @@ pub fn float(
     };
 
     if min > max {
-        return Error::invalid_argument_error("Built-in function `rand:float' expects min <= max.")
-            .into();
+        return Error::invalid_argument_error(
+            "Built-in function `rand:float' expects min <= max.",
+        )
+        .into();
     }
 
     let mut rng = rand::thread_rng();
@@ -68,7 +70,10 @@ mod tests {
         ];
 
         for _ in 0..1000 {
-            assertion::assert_results_are_equal(&mut interpreter, pairs.clone());
+            assertion::assert_results_are_equal(
+                &mut interpreter,
+                pairs.clone(),
+            );
         }
     }
 
@@ -76,9 +81,13 @@ mod tests {
     fn returns_invalid_argument_error_when_max_lesser_than_min() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(rand:float 10.0 1.0)", "(rand:float 100.0 1.0)"];
+        let code_vector =
+            vec!["(rand:float 10.0 1.0)", "(rand:float 100.0 1.0)"];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -106,15 +115,23 @@ mod tests {
             "(rand:float 1.1 #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count() {
+    fn returns_invalid_argument_count_error_when_was_called_with_invalid_argument_count(
+    ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(rand:float 1.1 2.2 3.3)", "(rand:float 1.1 2.2 3.3 4.4)"];
+        let code_vector =
+            vec!["(rand:float 1.1 2.2 3.3)", "(rand:float 1.1 2.2 3.3 4.4)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

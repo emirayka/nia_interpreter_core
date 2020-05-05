@@ -1,6 +1,6 @@
 use nom::{
-    character::complete::multispace0, character::complete::multispace1, delimited, many0, map_res,
-    named, preceded, tag, terminated,
+    character::complete::multispace0, character::complete::multispace1,
+    delimited, many0, map_res, named, preceded, tag, terminated,
 };
 
 use crate::parser::element;
@@ -46,7 +46,9 @@ impl PartialEq for SExpressionElement {
 
 impl Eq for SExpressionElement {}
 
-fn make_s_expression_element(values: Vec<Element>) -> Result<SExpressionElement, ParseError> {
+fn make_s_expression_element(
+    values: Vec<Element>,
+) -> Result<SExpressionElement, ParseError> {
     Ok(SExpressionElement::new(values))
 }
 
@@ -92,7 +94,10 @@ mod tests {
     use crate::parser::string_element::StringElement;
     use crate::parser::symbol_element::SymbolElement;
 
-    fn assert_s_expression_parsed_correctly(expected: Vec<Element>, code: &str) {
+    fn assert_s_expression_parsed_correctly(
+        expected: Vec<Element>,
+        code: &str,
+    ) {
         nia_assert_equal(expected, parse(code).ok().unwrap().1.values);
     }
 

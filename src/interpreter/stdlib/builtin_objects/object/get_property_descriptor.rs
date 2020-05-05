@@ -16,12 +16,20 @@ fn extract_property_descriptor_items(
     let mut object = interpreter.get_object_mut(object_id)?;
 
     if !object.has_property(property_symbol_id) {
-        return Error::generic_execution_error("Object has not property to yield.").into();
+        return Error::generic_execution_error(
+            "Object has not property to yield.",
+        )
+        .into();
     }
 
-    let value = object
-        .get_property_value(property_symbol_id)?
-        .ok_or_else(|| Error::generic_execution_error("Object has not property to yield."))?;
+    let value =
+        object
+            .get_property_value(property_symbol_id)?
+            .ok_or_else(|| {
+                Error::generic_execution_error(
+                    "Object has not property to yield.",
+                )
+            })?;
 
     let internable = object.is_property_internable(property_symbol_id)?.into();
 
@@ -29,7 +37,8 @@ fn extract_property_descriptor_items(
 
     let enumerable = object.is_property_enumerable(property_symbol_id)?.into();
 
-    let configurable = object.is_property_configurable(property_symbol_id)?.into();
+    let configurable =
+        object.is_property_configurable(property_symbol_id)?.into();
 
     Ok((name, value, internable, writable, enumerable, configurable))
 }
@@ -39,15 +48,19 @@ fn construct_property_descriptor(
     object_id: ObjectId,
     property_symbol_id: SymbolId,
 ) -> Result<Value, Error> {
-    let name_symbol_id = interpreter.intern("name");
-    let value_symbol_id = interpreter.intern("value");
-    let internable_symbol_id = interpreter.intern("internable");
-    let writable_symbol_id = interpreter.intern("writable");
-    let enumerable_symbol_id = interpreter.intern("enumerable");
-    let configurable_symbol_id = interpreter.intern("configurable");
+    let name_symbol_id = interpreter.intern_symbol_id("name");
+    let value_symbol_id = interpreter.intern_symbol_id("value");
+    let internable_symbol_id = interpreter.intern_symbol_id("internable");
+    let writable_symbol_id = interpreter.intern_symbol_id("writable");
+    let enumerable_symbol_id = interpreter.intern_symbol_id("enumerable");
+    let configurable_symbol_id = interpreter.intern_symbol_id("configurable");
 
     let (name, value, internable, writable, enumerable, configurable) =
-        extract_property_descriptor_items(interpreter, object_id, property_symbol_id)?;
+        extract_property_descriptor_items(
+            interpreter,
+            object_id,
+            property_symbol_id,
+        )?;
 
     let property_descriptor_object_id = interpreter.make_object();
     let object = interpreter.get_object_mut(property_descriptor_object_id)?;
@@ -79,10 +92,16 @@ pub fn get_property_descriptor(
     let object_id = library::read_as_object_id(values.remove(0))?;
 
     let property_symbol_id =
-        library::read_string_keyword_or_symbol_as_symbol_id(interpreter, values.remove(0))?;
+        library::read_string_keyword_or_symbol_as_symbol_id(
+            interpreter,
+            values.remove(0),
+        )?;
 
-    let property_descriptor_object_id =
-        construct_property_descriptor(interpreter, object_id, property_symbol_id)?;
+    let property_descriptor_object_id = construct_property_descriptor(
+        interpreter,
+        object_id,
+        property_symbol_id,
+    )?;
 
     Ok(property_descriptor_object_id)
 }
@@ -101,20 +120,35 @@ mod tests {
     fn returns_property_descriptor() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            ("(let ((obj {:a 1})) (object:get-property-descriptor obj :a))", "{:name 'a :value 1 :internable #t :writable #t :enumerable #t :configurable #t}"),
-
-            ("(let ((obj {:b 2})) (object:set-internable! obj :b #t) (object:get-property-descriptor obj :b))", "{:name 'b :value 2 :internable #t :writable #t :enumerable #t :configurable #t}"),
-            ("(let ((obj {:c 3})) (object:set-writable! obj :c #t) (object:get-property-descriptor obj :c))", "{:name 'c :value 3 :internable #t :writable #t :enumerable #t :configurable #t}"),
-            ("(let ((obj {:d 4})) (object:set-enumerable! obj :d #t) (object:get-property-descriptor obj :d))", "{:name 'd :value 4 :internable #t :writable #t :enumerable #t :configurable #t}"),
-            ("(let ((obj {:e 5})) (object:set-configurable! obj :e #t) (object:get-property-descriptor obj :e))", "{:name 'e :value 5 :internable #t :writable #t :enumerable #t :configurable #t}"),
-        );
+        let code_vector = vec![
+            (
+                "(let ((obj {:a 1})) (object:get-property-descriptor obj :a))",
+                "{:name 'a :value 1 :internable #t :writable #t :enumerable #t :configurable #t}",
+            ),
+            (
+                "(let ((obj {:b 2})) (object:set-internable! obj :b #t) (object:get-property-descriptor obj :b))",
+                "{:name 'b :value 2 :internable #t :writable #t :enumerable #t :configurable #t}",
+            ),
+            (
+                "(let ((obj {:c 3})) (object:set-writable! obj :c #t) (object:get-property-descriptor obj :c))",
+                "{:name 'c :value 3 :internable #t :writable #t :enumerable #t :configurable #t}",
+            ),
+            (
+                "(let ((obj {:d 4})) (object:set-enumerable! obj :d #t) (object:get-property-descriptor obj :d))",
+                "{:name 'd :value 4 :internable #t :writable #t :enumerable #t :configurable #t}",
+            ),
+            (
+                "(let ((obj {:e 5})) (object:set-configurable! obj :e #t) (object:get-property-descriptor obj :e))",
+                "{:name 'e :value 5 :internable #t :writable #t :enumerable #t :configurable #t}",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -123,7 +157,10 @@ mod tests {
             "(object:get-property-descriptor {:prop 1} :prop 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -149,6 +186,9 @@ mod tests {
             "(object:get-property-descriptor {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

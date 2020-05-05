@@ -56,16 +56,19 @@ mod tests {
     use crate::parser::element::Element;
     use crate::parser::integer_element::IntegerElement;
 
-    fn assert_short_lambda_element_parsed_correctly(expected: ShortLambdaElement, code: &str) {
+    fn assert_short_lambda_element_parsed_correctly(
+        expected: ShortLambdaElement,
+        code: &str,
+    ) {
         nia_assert_equal(Ok(("", expected)), parse(code))
     }
 
     #[test]
     fn works_correctly() {
         assert_short_lambda_element_parsed_correctly(
-            ShortLambdaElement::new(SExpressionElement::new(vec![Element::Integer(
-                IntegerElement::new(3),
-            )])),
+            ShortLambdaElement::new(SExpressionElement::new(vec![
+                Element::Integer(IntegerElement::new(3)),
+            ])),
             "#(3)",
         )
     }

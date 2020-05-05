@@ -8,7 +8,7 @@ use crate::interpreter::value::BuiltinFunctionType;
 mod quit;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    let nia_symbol_id = interpreter.intern("nia");
+    let nia_symbol_id = interpreter.intern_symbol_id("nia");
     let nia_object_id = interpreter.make_object();
 
     let bindings: Vec<(&str, BuiltinFunctionType)> = vec![("quit", quit::quit)];

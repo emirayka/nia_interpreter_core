@@ -34,7 +34,7 @@ mod zip;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let list_object_id = interpreter.make_object();
-    let list_symbol_id = interpreter.intern("list");
+    let list_symbol_id = interpreter.intern_symbol_id("list");
 
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec![
         ("all?", all_question::all_question),
@@ -66,7 +66,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in pairs {
-        infect_object_builtin_function(interpreter, list_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            list_object_id,
+            name,
+            func,
+        )?;
     }
 
     interpreter.define_variable(

@@ -6,7 +6,9 @@ use crate::interpreter::value::Value;
 pub fn read_as_object_id(value: Value) -> Result<ObjectId, Error> {
     let object_id = match value {
         Value::Object(object_id) => object_id,
-        _ => return Error::invalid_argument_error("Expected an object.").into(),
+        _ => {
+            return Error::invalid_argument_error("Expected an object.").into();
+        },
     };
 
     Ok(object_id)

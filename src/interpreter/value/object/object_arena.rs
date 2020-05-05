@@ -49,7 +49,11 @@ impl ObjectArena {
         if self.arena.contains_key(&object_id) {
             Ok(())
         } else {
-            Error::failure(format!("Cannot find an object with id: {}", object_id)).into()
+            Error::failure(format!(
+                "Cannot find an object with id: {}",
+                object_id
+            ))
+            .into()
         }
     }
 
@@ -60,7 +64,10 @@ impl ObjectArena {
         )))
     }
 
-    pub fn get_object_mut(&mut self, object_id: ObjectId) -> Result<&mut Object, Error> {
+    pub fn get_object_mut(
+        &mut self,
+        object_id: ObjectId,
+    ) -> Result<&mut Object, Error> {
         self.arena.get_mut(&object_id).ok_or(Error::failure(format!(
             "Cannot find an object with id: {}",
             object_id.get_id()
@@ -78,7 +85,10 @@ impl ObjectArena {
         }
     }
 
-    pub fn get_prototype(&self, object_id: ObjectId) -> Result<Option<ObjectId>, Error> {
+    pub fn get_prototype(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Option<ObjectId>, Error> {
         let object = self.get_object(object_id)?;
 
         Ok(object.get_prototype())
@@ -96,7 +106,10 @@ impl ObjectArena {
         object.set_prototype(prototype_id)
     }
 
-    pub fn clear_prototype(&mut self, object_id: ObjectId) -> Result<(), Error> {
+    pub fn clear_prototype(
+        &mut self,
+        object_id: ObjectId,
+    ) -> Result<(), Error> {
         let object = self.get_object_mut(object_id)?;
 
         object.clear_prototype()
@@ -122,7 +135,9 @@ impl ObjectArena {
         match object.get_property_value(property_symbol_id)? {
             Some(value) => Ok(Some(value)),
             None => match object.get_prototype() {
-                Some(prototype_id) => self.get_property_value(prototype_id, property_symbol_id),
+                Some(prototype_id) => {
+                    self.get_property_value(prototype_id, property_symbol_id)
+                },
                 None => Ok(None),
             },
         }
@@ -305,7 +320,10 @@ impl ObjectArena {
         result
     }
 
-    pub fn get_gc_items(&self, object_id: ObjectId) -> Result<Vec<Value>, Error> {
+    pub fn get_gc_items(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Vec<Value>, Error> {
         match self.arena.get(&object_id) {
             Some(object) => Ok(object.get_gc_items()),
             _ => Error::failure(format!(
@@ -351,7 +369,10 @@ mod tests {
 
             nia_assert_is_ok(&object_arena.get_object(parent_id));
             nia_assert_is_ok(&object_arena.get_object(child_id));
-            nia_assert_equal(Ok(Some(parent_id)), object_arena.get_prototype(child_id));
+            nia_assert_equal(
+                Ok(Some(parent_id)),
+                object_arena.get_prototype(child_id),
+            );
         }
 
         #[test]
@@ -495,7 +516,10 @@ mod tests {
 
             nia_assert_equal(Ok(None), arena.get_prototype(child_id));
             nia_assert_equal(Ok(()), arena.set_prototype(child_id, parent_id));
-            nia_assert_equal(Ok(Some(parent_id)), arena.get_prototype(child_id));
+            nia_assert_equal(
+                Ok(Some(parent_id)),
+                arena.get_prototype(child_id),
+            );
             nia_assert_equal(Ok(()), arena.clear_prototype(child_id));
             nia_assert_equal(Ok(None), arena.get_prototype(child_id));
         }
@@ -553,7 +577,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(Some(value)),
@@ -571,7 +599,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(prototype_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                prototype_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_equal(
                 Ok(Some(value)),
                 arena.get_property_value(child_id, property_symbol_id),
@@ -589,7 +621,11 @@ mod tests {
             let prototype_value = Value::Integer(1);
             let value = Value::Integer(2);
 
-            nia_assert_is_ok(&arena.set_property(child_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                child_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property(
                 prototype_id,
                 property_symbol_id,
@@ -614,11 +650,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_equal(Ok(true), arena.has_property(object_id, property_symbol_id));
-            nia_assert_is_ok(&arena.delete_property(object_id, property_symbol_id));
-            nia_assert_equal(Ok(false), arena.has_property(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(true),
+                arena.has_property(object_id, property_symbol_id),
+            );
+            nia_assert_is_ok(
+                &arena.delete_property(object_id, property_symbol_id),
+            );
+            nia_assert_equal(
+                Ok(false),
+                arena.has_property(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -627,8 +675,13 @@ mod tests {
             let object_id = arena.make();
             let property_symbol_id = SymbolId::new(0);
 
-            nia_assert_equal(Ok(false), arena.has_property(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.delete_property(object_id, property_symbol_id));
+            nia_assert_equal(
+                Ok(false),
+                arena.has_property(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(
+                &arena.delete_property(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -639,10 +692,20 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_is_err(&arena.get_property_value(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.delete_property(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.has_property(object_id, property_symbol_id));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
+            nia_assert_is_err(
+                &arena.get_property_value(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(
+                &arena.delete_property(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(
+                &arena.has_property(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -655,8 +718,15 @@ mod tests {
 
             nia_assert_is_ok(&arena.freeze(object_id));
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
-            nia_assert_equal(Ok(false), arena.has_property(object_id, property_symbol_id));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
+            nia_assert_equal(
+                Ok(false),
+                arena.has_property(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -668,14 +738,22 @@ mod tests {
             let value = Value::Integer(1);
             let new_value = Value::Integer(2);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
                 Ok(Some(value)),
                 arena.get_property_value(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, new_value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                new_value,
+            ));
             nia_assert_equal(
                 Ok(Some(value)),
                 arena.get_property_value(object_id, property_symbol_id),
@@ -698,7 +776,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT),
@@ -726,15 +808,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAGS_NONE,
             ));
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -745,7 +835,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
@@ -771,13 +865,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAGS_NONE,
             ));
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -788,7 +886,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
@@ -826,7 +928,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(true),
@@ -863,15 +969,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAGS_NONE,
             ));
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -882,7 +996,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
@@ -916,13 +1034,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAGS_NONE,
             ));
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -933,13 +1055,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_flags(
                 object_id,
                 property_symbol_id,
                 OBJECT_VALUE_WRAPPER_FLAGS_NONE,
             ));
-            nia_assert_is_err(&arena.get_property_flags(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.get_property_flags(object_id, property_symbol_id),
+            );
         }
     }
 
@@ -959,13 +1085,21 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_internable(object_id, property_symbol_id),
             );
-            nia_assert_is_ok(&arena.set_property_internable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_internable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(false),
                 arena.is_property_internable(object_id, property_symbol_id),
@@ -980,11 +1114,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.is_property_internable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_internable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_internable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_internable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -995,14 +1141,22 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_internable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_internable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_internable(object_id, property_symbol_id),
@@ -1016,9 +1170,17 @@ mod tests {
 
             let property_symbol_id = SymbolId::new(0);
 
-            nia_assert_is_err(&arena.is_property_internable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_internable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_internable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_internable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_internable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1029,7 +1191,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,
@@ -1040,7 +1206,11 @@ mod tests {
                 Ok(true),
                 arena.is_property_internable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_internable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_internable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_internable(object_id, property_symbol_id),
@@ -1064,13 +1234,21 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_writable(object_id, property_symbol_id),
             );
-            nia_assert_is_ok(&arena.set_property_writable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_writable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(false),
                 arena.is_property_writable(object_id, property_symbol_id),
@@ -1085,11 +1263,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.is_property_writable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_writable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_writable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_writable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1100,14 +1290,22 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_writable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_writable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_writable(object_id, property_symbol_id),
@@ -1122,9 +1320,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.is_property_writable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_writable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_writable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_writable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_writable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1135,7 +1341,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,
@@ -1146,7 +1356,11 @@ mod tests {
                 Ok(true),
                 arena.is_property_writable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_writable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_writable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_writable(object_id, property_symbol_id),
@@ -1170,13 +1384,21 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_enumerable(object_id, property_symbol_id),
             );
-            nia_assert_is_ok(&arena.set_property_enumerable(object_id, property_symbol_id, false));
+            nia_assert_is_ok(&arena.set_property_enumerable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(false),
                 arena.is_property_enumerable(object_id, property_symbol_id),
@@ -1191,11 +1413,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.is_property_enumerable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_enumerable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_enumerable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_enumerable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1206,14 +1440,22 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_enumerable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_enumerable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_enumerable(object_id, property_symbol_id),
@@ -1228,9 +1470,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.is_property_enumerable(object_id, property_symbol_id));
-            nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
-            nia_assert_is_err(&arena.is_property_enumerable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_enumerable(object_id, property_symbol_id),
+            );
+            nia_assert_is_err(&arena.set_property_enumerable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
+            nia_assert_is_err(
+                &arena.is_property_enumerable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1241,7 +1491,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,
@@ -1252,7 +1506,11 @@ mod tests {
                 Ok(true),
                 arena.is_property_enumerable(object_id, property_symbol_id),
             );
-            nia_assert_is_err(&arena.set_property_enumerable(object_id, property_symbol_id, false));
+            nia_assert_is_err(&arena.set_property_enumerable(
+                object_id,
+                property_symbol_id,
+                false,
+            ));
             nia_assert_equal(
                 Ok(true),
                 arena.is_property_enumerable(object_id, property_symbol_id),
@@ -1276,7 +1534,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
             nia_assert_equal(
                 Ok(true),
@@ -1301,15 +1563,23 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_err(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
 
-            nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_configurable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,
                 false,
             ));
-            nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_configurable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1320,7 +1590,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.freeze(object_id));
 
             nia_assert_equal(
@@ -1346,13 +1620,17 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_configurable(object_id, property_symbol_id),
+            );
             nia_assert_is_err(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,
                 false,
             ));
-            nia_assert_is_err(&arena.is_property_configurable(object_id, property_symbol_id));
+            nia_assert_is_err(
+                &arena.is_property_configurable(object_id, property_symbol_id),
+            );
         }
 
         #[test]
@@ -1363,7 +1641,11 @@ mod tests {
             let property_symbol_id = SymbolId::new(0);
             let value = Value::Integer(1);
 
-            nia_assert_is_ok(&arena.set_property(object_id, property_symbol_id, value));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                property_symbol_id,
+                value,
+            ));
             nia_assert_is_ok(&arena.set_property_configurable(
                 object_id,
                 property_symbol_id,

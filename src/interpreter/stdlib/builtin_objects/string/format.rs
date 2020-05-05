@@ -103,12 +103,16 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_was_called_with_invalid_count_of_arguments() {
+    fn returns_invalid_argument_count_when_was_called_with_invalid_count_of_arguments(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![r#"(string:format)"#];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -130,11 +134,15 @@ mod tests {
             r#"(string:format (flookup 'cond))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
-    fn returns_invalid_argument_count_when_arguments_not_enough_to_format_string() {
+    fn returns_invalid_argument_count_when_arguments_not_enough_to_format_string(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -149,6 +157,9 @@ mod tests {
             r#"(string:format "{} {} {}" 1 2 3 4)"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

@@ -21,7 +21,10 @@ pub fn is_configurable_question(
     let object_id = library::read_as_object_id(values.remove(0))?;
 
     let property_symbol_id =
-        library::read_string_keyword_or_symbol_as_symbol_id(interpreter, values.remove(0))?;
+        library::read_string_keyword_or_symbol_as_symbol_id(
+            interpreter,
+            values.remove(0),
+        )?;
 
     let object = interpreter.get_object(object_id)?;
 
@@ -44,17 +47,23 @@ mod tests {
     fn returns_configurable_flag_value() {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!(
-            ("(let ((obj {:prop 1})) (object:is-configurable? obj :prop))", "#t"),
-            ("(let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:is-configurable? obj :prop))", "#f")
-            ,
-        );
+        let code_vector = vec![
+            (
+                "(let ((obj {:prop 1})) (object:is-configurable? obj :prop))",
+                "#t",
+            ),
+            (
+                "(let ((obj {:prop 1})) (object:set-configurable! obj :prop #f) (object:is-configurable? obj :prop))",
+                "#f",
+            ),
+        ];
 
         assertion::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
-    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct() {
+    fn returns_invalid_argument_count_error_when_argument_count_is_not_correct()
+    {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -63,7 +72,10 @@ mod tests {
             "(object:is-configurable? {} :a 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_count_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
@@ -89,6 +101,9 @@ mod tests {
             "(object:is-configurable? {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

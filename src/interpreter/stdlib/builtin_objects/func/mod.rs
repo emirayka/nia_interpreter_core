@@ -26,10 +26,15 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, func_object_id, name, func)?;
+        infect_object_builtin_function(
+            interpreter,
+            func_object_id,
+            name,
+            func,
+        )?;
     }
 
-    let func_symbol_id = interpreter.intern("func");
+    let func_symbol_id = interpreter.intern_symbol_id("func");
 
     interpreter.define_variable(
         interpreter.get_root_environment_id(),

@@ -42,7 +42,12 @@ pub fn throw(
 
         string
             .map(|string| String::from(string.get_string()))
-            .map_err(|err| Error::generic_execution_error_caused("Cannot yield a string", err))?
+            .map_err(|err| {
+                Error::generic_execution_error_caused(
+                    "Cannot yield a string",
+                    err,
+                )
+            })?
     } else {
         String::from("")
     };
@@ -82,14 +87,18 @@ mod tests {
 
         let code_vector = vec!["(when #t (throw 'err) 2)"];
 
-        assertion::assert_results_are_just_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_just_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 
     #[test]
     fn returns_error_with_correct_symbol_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter.execute_in_main_environment("(throw 'cute-error-symbol)");
+        let result = interpreter
+            .execute_in_main_environment("(throw 'cute-error-symbol)");
         nia_assert_is_err(&result);
 
         let error = result.err().unwrap();
@@ -101,8 +110,9 @@ mod tests {
     fn returns_error_with_correct_message_when_it_was_provided() {
         let mut interpreter = Interpreter::new();
 
-        let result = interpreter
-            .execute_in_main_environment("(throw 'cute-error-symbol \"Cute error message\")");
+        let result = interpreter.execute_in_main_environment(
+            "(throw 'cute-error-symbol \"Cute error message\")",
+        );
         nia_assert_is_err(&result);
 
         let error = result.err().unwrap();

@@ -20,7 +20,9 @@ pub fn assert(
 
     match result {
         Value::Boolean(true) => Ok(Value::Boolean(true)),
-        Value::Boolean(false) => Error::assertion_error("Assertion failed: ").into(),
+        Value::Boolean(false) => {
+            Error::assertion_error("Assertion failed: ").into()
+        },
         _ => Error::invalid_argument_error(
             "Built-in function `assert' takes exactly one boolean argument.",
         )
@@ -58,7 +60,8 @@ mod tests {
     }
 
     #[test]
-    fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_boolean() {
+    fn returns_invalid_argument_error_when_called_with_a_value_that_is_not_boolean(
+    ) {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
@@ -72,6 +75,9 @@ mod tests {
             "(assert #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(&mut interpreter, code_vector);
+        assertion::assert_results_are_invalid_argument_errors(
+            &mut interpreter,
+            code_vector,
+        );
     }
 }

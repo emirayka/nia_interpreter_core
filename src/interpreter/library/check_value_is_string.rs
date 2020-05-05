@@ -2,7 +2,10 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn check_value_is_string(interpreter: &Interpreter, value: Value) -> Result<(), Error> {
+pub fn check_value_is_string(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<(), Error> {
     match value {
         Value::String(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected string").into(),
@@ -24,8 +27,11 @@ mod tests {
     fn returns_nothing_when_a_string_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result =
-            check_value_is_string(&mut interpreter, Value::String(StringId::new(0))).unwrap();
+        let result = check_value_is_string(
+            &mut interpreter,
+            Value::String(StringId::new(0)),
+        )
+        .unwrap();
 
         nia_assert_equal((), result);
     }
@@ -49,7 +55,8 @@ mod tests {
         ];
 
         for not_string_value in not_string_values {
-            let result = check_value_is_string(&mut interpreter, not_string_value);
+            let result =
+                check_value_is_string(&mut interpreter, not_string_value);
             assertion::assert_invalid_argument_error(&result);
         }
     }
