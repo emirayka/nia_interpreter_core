@@ -730,6 +730,25 @@ mod tests {
     }
 
     #[test]
+    fn respects_special_variables() {
+        let mut interpreter = Interpreter::new();
+
+        let special_variables = vec![
+            // todo: remainder, when new special variables is introduced, add them here
+            interpreter.intern_symbol_id("this"),
+            interpreter.intern_symbol_id("super"),
+        ];
+
+        collect_garbage(&mut interpreter).unwrap();
+
+        for special_variable_symbol_id in special_variables {
+            nia_assert_is_ok(
+                &interpreter.get_symbol(special_variable_symbol_id),
+            );
+        }
+    }
+
+    #[test]
     #[ignore]
     fn respects_module_contents() {
         let content = r#"

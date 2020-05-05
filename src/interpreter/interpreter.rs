@@ -28,6 +28,10 @@ use crate::interpreter::value::{KeywordArena, KeywordId};
 use crate::interpreter::value::{StringArena, StringId};
 use crate::interpreter::value::{Symbol, SymbolArena, SymbolId};
 
+use crate::interpreter::evaluator::evaluate_builtin_function_invocation;
+use crate::interpreter::evaluator::evaluate_interpreted_function_invocation;
+use crate::interpreter::evaluator::evaluate_value;
+use crate::interpreter::evaluator::evaluate_values;
 use crate::interpreter::garbage_collector::{
     collect_garbage, GarbageCollectable,
 };
@@ -205,6 +209,21 @@ impl Interpreter {
             .collect()
     }
 
+    pub fn get_exclusive_nil_symbol_id(&self) -> SymbolId {
+        self.exclusive_nil
+    }
+
+    pub fn get_exclusive_nil_value(&self) -> Value {
+        self.exclusive_nil_value
+    }
+
+    pub fn get_special_variable(
+        &self,
+        symbol_id: SymbolId,
+    ) -> Option<&SpecialVariableFunction> {
+        self.special_variables.get(&symbol_id)
+    }
+
     pub fn get_this_object(&self) -> Option<ObjectId> {
         self.this_object
     }
@@ -361,7 +380,7 @@ impl Interpreter {
         Value::Symbol(self.symbol_arena.intern(symbol_name))
     }
 
-    pub fn intern_nil(&mut self) -> SymbolId {
+    pub fn intern_nil_symbol_id(&mut self) -> SymbolId {
         self.intern_symbol_id("nil")
     }
 
@@ -996,7 +1015,7 @@ impl Interpreter {
         let previous_current_module_id = self.current_module;
 
         self.current_module = module_id;
-        self.evaluate_values(module_environment_id, &values)?;
+        evaluate_values(self, module_environment_id, &values)?;
         self.current_module = previous_current_module_id;
 
         Ok(module_id)
@@ -1079,689 +1098,6 @@ impl Interpreter {
 }
 
 impl Interpreter {
-    fn evaluate_symbol(
-        &self,
-        environment_id: EnvironmentId,
-        symbol_id: SymbolId,
-    ) -> Result<Value, Error> {
-        if self.check_if_symbol_special(symbol_id)? {
-            return Error::generic_execution_error(
-                "Cannot evaluate special symbols.",
-            )
-            .into();
-        }
-
-        let evaluation_result =
-            match self.lookup_variable(environment_id, symbol_id)? {
-                Some(result) => result,
-                None => match self.special_variables.get(&symbol_id) {
-                    Some(func) => return func(self),
-                    None => {
-                        let variable_name = self.get_symbol_name(symbol_id)?;
-
-                        return Error::generic_execution_error(&format!(
-                            "Cannot find variable `{}'.",
-                            variable_name
-                        ))
-                        .into();
-                    },
-                },
-            };
-
-        Ok(evaluation_result)
-    }
-
-    fn extract_arguments(
-        &mut self,
-        cons_id: ConsId,
-    ) -> Result<Vec<Value>, Error> {
-        let cdr = self.cons_arena.get_cdr(cons_id)?;
-
-        match cdr {
-            Value::Cons(cons) => self.list_to_vec(cons),
-            Value::Symbol(symbol_id) => {
-                if self.symbol_is_nil(symbol_id)? {
-                    Ok(Vec::new())
-                } else {
-                    Error::generic_execution_error(
-                        "Cannot extract arguments from not a list.",
-                    )
-                    .into()
-                }
-            },
-            _ => Error::generic_execution_error(
-                "Cannot extract arguments from not a list.",
-            )
-            .into(),
-        }
-    }
-
-    fn evaluate_arguments(
-        &mut self,
-        environment_id: EnvironmentId,
-        arguments: Vec<Value>,
-    ) -> Result<Vec<Value>, Error> {
-        let mut evaluated_arguments = Vec::new();
-
-        for argument in arguments {
-            let evaluated_argument = self
-                .evaluate_value(environment_id, argument)
-                .map_err(|err| {
-                    Error::generic_execution_error_caused(
-                        "Cannot evaluate arguments.",
-                        err,
-                    )
-                })?;
-
-            evaluated_arguments.push(evaluated_argument)
-        }
-
-        Ok(evaluated_arguments)
-    }
-
-    fn define_environment_variables(
-        &mut self,
-        execution_environment_id: EnvironmentId,
-        arguments: &FunctionArguments,
-        values: &Vec<Value>,
-    ) -> Result<(), Error> {
-        let mut current_argument = 0;
-
-        // ordinary
-        for variable_name in arguments.get_ordinary_arguments().iter() {
-            let variable_symbol_id = self.intern_symbol_id(variable_name);
-            let value = values[current_argument];
-
-            self.define_variable(
-                execution_environment_id,
-                variable_symbol_id,
-                value,
-            )?;
-
-            current_argument += 1;
-        }
-
-        // optional
-        for optional_argument in arguments.get_optional_arguments().iter() {
-            let variable_symbol_id =
-                self.intern_symbol_id(optional_argument.get_name());
-
-            if current_argument < values.len() {
-                let value = values[current_argument];
-
-                self.define_variable(
-                    execution_environment_id,
-                    variable_symbol_id,
-                    value,
-                )?;
-
-                if let Some(provided_name) = optional_argument.get_provided() {
-                    let variable_symbol_id =
-                        self.intern_symbol_id(provided_name);
-
-                    self.define_variable(
-                        execution_environment_id,
-                        variable_symbol_id,
-                        Value::Boolean(true),
-                    )?;
-                }
-
-                current_argument += 1;
-            } else {
-                let value = match optional_argument.get_default() {
-                    Some(default_value) => self.evaluate_value(
-                        execution_environment_id,
-                        default_value,
-                    )?,
-                    None => self.intern_nil_symbol_value(),
-                };
-
-                self.define_variable(
-                    execution_environment_id,
-                    variable_symbol_id,
-                    value,
-                )?;
-
-                if let Some(provided_name) = optional_argument.get_provided() {
-                    let variable_symbol_id =
-                        self.intern_symbol_id(provided_name);
-
-                    self.define_variable(
-                        execution_environment_id,
-                        variable_symbol_id,
-                        Value::Boolean(false),
-                    )?;
-                }
-            }
-        }
-
-        // rest
-        if let Some(rest_argument_name) = arguments.get_rest_argument() {
-            let variable_symbol_id = self.intern_symbol_id(rest_argument_name);
-
-            let rest_values_slice = &values[current_argument..];
-            let rest_values = Vec::from(rest_values_slice);
-            let rest_values_cons = self.vec_to_list(rest_values);
-
-            self.define_variable(
-                execution_environment_id,
-                variable_symbol_id,
-                rest_values_cons,
-            )?;
-
-            return Ok(());
-        }
-
-        let values = &values[current_argument..];
-        let mut current_argument = 0;
-
-        // key arguments
-        if arguments.get_key_arguments().len() != 0 {
-            if values.len() % 2 != 0 {
-                return Error::generic_execution_error(
-                    "Invalid usage of key arguments.",
-                )
-                .into();
-            }
-
-            for key_argument in arguments.get_key_arguments() {
-                let variable_symbol_id =
-                    self.intern_symbol_id(key_argument.get_name());
-                let value = self.exclusive_nil_value;
-
-                self.define_variable(
-                    execution_environment_id,
-                    variable_symbol_id,
-                    value,
-                )?;
-            }
-
-            loop {
-                if current_argument >= values.len() {
-                    break;
-                }
-
-                let keyword = values[current_argument];
-
-                let variable_symbol_id =
-                    if let Value::Keyword(keyword_id) = keyword {
-                        let keyword_name =
-                            self.get_keyword(keyword_id)?.get_name().clone();
-
-                        self.intern_symbol_id(&keyword_name)
-                    } else {
-                        return Error::generic_execution_error("").into();
-                    };
-
-                let value = values[current_argument + 1];
-
-                self.set_environment_variable(
-                    execution_environment_id,
-                    variable_symbol_id,
-                    value,
-                )?;
-
-                current_argument += 2;
-            }
-
-            for key_argument in arguments.get_key_arguments() {
-                let variable_symbol_id =
-                    self.intern_symbol_id(key_argument.get_name());
-                let looked_up_variable = match self.lookup_variable(
-                    execution_environment_id,
-                    variable_symbol_id,
-                )? {
-                    Some(variable_value) => variable_value,
-                    None => {
-                        return Error::generic_execution_error(
-                            "Cannot find variable",
-                        )
-                        .into();
-                    },
-                };
-
-                if looked_up_variable == self.exclusive_nil_value {
-                    let value = if let Some(default_value) =
-                        key_argument.get_default()
-                    {
-                        self.evaluate_value(
-                            execution_environment_id,
-                            default_value,
-                        )?
-                    } else {
-                        self.intern_nil_symbol_value()
-                    };
-
-                    self.set_environment_variable(
-                        execution_environment_id,
-                        variable_symbol_id,
-                        value,
-                    )?;
-
-                    if let Some(provided_name) = key_argument.get_provided() {
-                        let variable_symbol_id =
-                            self.intern_symbol_id(provided_name);
-                        let value = Value::Boolean(false);
-
-                        self.define_variable(
-                            execution_environment_id,
-                            variable_symbol_id,
-                            value,
-                        )?;
-                    }
-                } else {
-                    if let Some(provided_name) = key_argument.get_provided() {
-                        let variable_symbol_id =
-                            self.intern_symbol_id(provided_name);
-                        let value = Value::Boolean(true);
-
-                        self.define_variable(
-                            execution_environment_id,
-                            variable_symbol_id,
-                            value,
-                        )?;
-                    }
-                }
-            }
-        }
-
-        if values.len() > current_argument {
-            return Error::generic_execution_error(
-                "Function was called with too many arguments.",
-            )
-            .into();
-        } else if values.len() < current_argument {
-            return Error::generic_execution_error(
-                "Function was called with too little arguments.",
-            )
-            .into();
-        }
-
-        Ok(())
-    }
-
-    fn define_environment_functions(
-        &mut self,
-        execution_environment_id: EnvironmentId,
-        arguments: &FunctionArguments,
-        values: &Vec<Value>,
-    ) -> Result<(), Error> {
-        let mut current_argument = 0;
-
-        // ordinary
-        for function_name in arguments.get_ordinary_arguments().iter() {
-            let function_symbol_id = self.intern_symbol_id(function_name);
-            let value = values[current_argument];
-
-            self.define_function(
-                execution_environment_id,
-                function_symbol_id,
-                value,
-            )?;
-
-            current_argument += 1;
-        }
-
-        // optional
-        for optional_argument in arguments.get_optional_arguments().iter() {
-            let function_symbol_id =
-                self.intern_symbol_id(optional_argument.get_name());
-
-            if current_argument < values.len() {
-                let value = values[current_argument];
-
-                self.define_function(
-                    execution_environment_id,
-                    function_symbol_id,
-                    value,
-                )?;
-
-                if let Some(provided_name) = optional_argument.get_provided() {
-                    let function_symbol_id =
-                        self.intern_symbol_id(provided_name);
-
-                    self.define_function(
-                        execution_environment_id,
-                        function_symbol_id,
-                        Value::Boolean(true),
-                    )?;
-                }
-
-                current_argument += 1;
-            } else {
-                let value = match optional_argument.get_default() {
-                    Some(default_value) => self.evaluate_value(
-                        execution_environment_id,
-                        default_value,
-                    )?,
-                    None => self.intern_nil_symbol_value(),
-                };
-
-                self.define_function(
-                    execution_environment_id,
-                    function_symbol_id,
-                    value,
-                )?;
-
-                if let Some(provided_name) = optional_argument.get_provided() {
-                    let function_symbol_id =
-                        self.intern_symbol_id(provided_name);
-
-                    self.define_function(
-                        execution_environment_id,
-                        function_symbol_id,
-                        Value::Boolean(false),
-                    )?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    fn evaluate_interpreted_function_invocation(
-        &mut self,
-        func: &InterpretedFunction,
-        evaluated_arguments: Vec<Value>,
-    ) -> Result<Value, Error> {
-        if func.get_arguments().required_len() > evaluated_arguments.len() {
-            return Error::generic_execution_error(
-                "Not enough arguments to call a function.",
-            )
-            .into();
-        }
-
-        // 1) make new environment
-        let execution_environment_id =
-            self.make_environment(func.get_environment())?;
-
-        // 2) setup environment variables and functions
-        self.define_environment_variables(
-            execution_environment_id,
-            func.get_arguments(),
-            &evaluated_arguments,
-        )?;
-
-        self.define_environment_functions(
-            execution_environment_id,
-            func.get_arguments(),
-            &evaluated_arguments,
-        )?;
-
-        // 3) execute code
-        let execution_result =
-            self.evaluate_values(execution_environment_id, func.get_code())?;
-
-        // 4) return result
-        let result =
-            execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
-
-        Ok(result)
-    }
-
-    fn evaluate_builtin_function_invocation(
-        &mut self,
-        builtin_function: &BuiltinFunction,
-        execution_environment: EnvironmentId,
-        evaluated_arguments: Vec<Value>,
-    ) -> Result<Value, Error> {
-        (builtin_function.get_func())(
-            self,
-            execution_environment,
-            evaluated_arguments,
-        )
-    }
-
-    fn evaluate_special_form_invocation(
-        &mut self,
-        execution_environment: EnvironmentId,
-        special_form: &SpecialFormFunction,
-        arguments: Vec<Value>,
-    ) -> Result<Value, Error> {
-        (special_form.get_func())(self, execution_environment, arguments)
-    }
-
-    fn evaluate_macro_invocation(
-        &mut self,
-        func: &MacroFunction,
-        arguments: Vec<Value>,
-    ) -> Result<Value, Error> {
-        if func.get_arguments().required_len() > arguments.len() {
-            return Error::generic_execution_error(
-                "Not enough arguments to call a macro.",
-            )
-            .into();
-        }
-
-        // 1) make new environment
-        let execution_environment_id =
-            self.make_environment(func.get_environment())?;
-
-        // 2) set arguments in that environment
-        self.define_environment_variables(
-            execution_environment_id,
-            func.get_arguments(),
-            &arguments,
-        )?;
-
-        self.define_environment_functions(
-            execution_environment_id,
-            func.get_arguments(),
-            &arguments,
-        )?;
-
-        // 3) execute code
-        let execution_result =
-            self.evaluate_values(execution_environment_id, func.get_code())?;
-
-        // 4) return result
-        let result =
-            execution_result.unwrap_or_else(|| self.intern_nil_symbol_value());
-
-        Ok(result)
-    }
-
-    fn evaluate_s_expression_function_invocation(
-        &mut self,
-        environment_id: EnvironmentId,
-        function: FunctionId,
-        cons_id: ConsId,
-    ) -> Result<Value, Error> {
-        let function = self
-            .get_function(function)
-            .map(|function| function.clone())?;
-
-        match function {
-            Function::Builtin(builtin_function) => {
-                // 2) evaluate arguments
-                let arguments = self.extract_arguments(cons_id)?;
-                let evaluated_arguments =
-                    self.evaluate_arguments(environment_id, arguments)?;
-
-                // 3) apply function from step 1 to arguments from step 2
-                self.evaluate_builtin_function_invocation(
-                    &builtin_function,
-                    environment_id,
-                    evaluated_arguments,
-                )
-            },
-            Function::Interpreted(interpreted_function) => {
-                // 2) evaluate arguments
-                let arguments = self.extract_arguments(cons_id)?;
-                let evaluated_arguments =
-                    self.evaluate_arguments(environment_id, arguments)?;
-
-                // 3) apply function from step 1 to arguments from step 2
-                self.evaluate_interpreted_function_invocation(
-                    &interpreted_function,
-                    evaluated_arguments,
-                )
-            },
-            Function::SpecialForm(special_form) => {
-                let arguments = self.extract_arguments(cons_id)?;
-
-                self.evaluate_special_form_invocation(
-                    environment_id,
-                    &special_form,
-                    arguments,
-                )
-            },
-            Function::Macro(macro_function) => {
-                let arguments = self.extract_arguments(cons_id)?;
-                let evaluation_result =
-                    self.evaluate_macro_invocation(&macro_function, arguments)?;
-
-                self.evaluate_value(environment_id, evaluation_result)
-            },
-        }
-    }
-
-    fn evaluate_s_expression_keyword(
-        &mut self,
-        environment_id: EnvironmentId,
-        keyword_id: KeywordId,
-        cons_id: ConsId,
-    ) -> Result<Value, Error> {
-        let keyword_name = self
-            .get_keyword(keyword_id)
-            .map(|keyword| keyword.get_name().clone())?;
-
-        let symbol_id = self.intern_symbol_id(&keyword_name);
-
-        let mut arguments = self.extract_arguments(cons_id)?;
-
-        if arguments.len() != 1 {
-            return Error::generic_execution_error(
-                "Invalid argument count in keyword s-expression.",
-            )
-            .into();
-        }
-
-        let argument = arguments.remove(0);
-
-        let evaluated_argument =
-            self.evaluate_value(environment_id, argument)?;
-
-        match evaluated_argument {
-            Value::Object(object_id) => self
-                .object_arena
-                .get_property_value(object_id, symbol_id)?
-                .ok_or_else(|| {
-                    Error::generic_execution_error(
-                        "Object have not an item to yield.",
-                    )
-                }),
-            _ => {
-                return Error::generic_execution_error(
-                    "Cannot get an item of not an object.",
-                )
-                .into();
-            },
-        }
-    }
-
-    fn evaluate_s_expression(
-        &mut self,
-        environment_id: EnvironmentId,
-        s_expression: ConsId,
-    ) -> Result<Value, Error> {
-        // 1) evaluate first symbol
-        let car = self.cons_arena.get_car(s_expression)?;
-
-        match car {
-            Value::Symbol(func_symbol_id) => {
-                let function_value = match self.lookup_function(
-                    environment_id,
-                    func_symbol_id,
-                )? {
-                    Some(function_value) => function_value,
-                    None => {
-                        let function_name = self.get_symbol_name(func_symbol_id)?;
-
-                        return Error::generic_execution_error(
-                            &format!("Cannot find function `{}'.", function_name)
-                        ).into();
-                    }
-                };
-
-                let function_id = match function_value {
-                    Value::Function(function_id) => function_id,
-                    _ => return Error::generic_execution_error(
-                        "The result of evaluation of first item of an s-expression must be a function or keyword."
-                    ).into(),
-                };
-
-                self.evaluate_s_expression_function_invocation(
-                    environment_id,
-                    function_id,
-                    s_expression,
-                )
-            }
-            Value::Function(function_id) => self.evaluate_s_expression_function_invocation(
-                environment_id,
-                function_id,
-                s_expression,
-            ),
-            Value::Cons(cons_id) => {
-                let evaluation_result = self.evaluate_s_expression(
-                    environment_id,
-                    cons_id,
-                )?;
-
-                let function_id = match evaluation_result {
-                    Value::Function(function_id) => function_id,
-                    _ => return Error::generic_execution_error(
-                        "."
-                    ).into(),
-                };
-
-                self.evaluate_s_expression_function_invocation(
-                    environment_id,
-                    function_id,
-                    s_expression,
-                )
-            }
-            Value::Keyword(keyword_id) => self.evaluate_s_expression_keyword(
-                environment_id,
-                keyword_id,
-                s_expression,
-            ),
-            _ => return Error::generic_execution_error(
-                "The result of evaluation of first item of an s-expression must be a function or keyword."
-            ).into(),
-        }
-    }
-
-    fn evaluate_value(
-        &mut self,
-        environment: EnvironmentId,
-        value: Value,
-    ) -> Result<Value, Error> {
-        match value {
-            Value::Symbol(symbol_name) => {
-                self.evaluate_symbol(environment, symbol_name)
-            },
-            Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
-            _ => Ok(value),
-        }
-    }
-
-    fn evaluate_values(
-        &mut self,
-        execution_environment: EnvironmentId,
-        code: &Vec<Value>,
-    ) -> Result<Option<Value>, Error> {
-        let mut last_result = None;
-
-        for value in code {
-            last_result = self
-                .evaluate_value(execution_environment, *value)
-                .map(|v| Some(v))?;
-        }
-
-        Ok(last_result)
-    }
-
     fn execute_code(
         &mut self,
         execution_environment_id: EnvironmentId,
@@ -1801,7 +1137,7 @@ impl Interpreter {
         environment_id: EnvironmentId,
         value: Value,
     ) -> Result<Value, Error> {
-        self.evaluate_value(environment_id, value)
+        evaluate_value(self, environment_id, value)
     }
 
     pub fn execute_builtin_function(
@@ -1810,7 +1146,8 @@ impl Interpreter {
         execution_environment: EnvironmentId,
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
-        self.evaluate_builtin_function_invocation(
+        evaluate_builtin_function_invocation(
+            self,
             builtin_function,
             execution_environment,
             evaluated_arguments,
@@ -1822,7 +1159,8 @@ impl Interpreter {
         interpreted_function: &InterpretedFunction,
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
-        self.evaluate_interpreted_function_invocation(
+        evaluate_interpreted_function_invocation(
+            self,
             interpreted_function,
             evaluated_arguments,
         )

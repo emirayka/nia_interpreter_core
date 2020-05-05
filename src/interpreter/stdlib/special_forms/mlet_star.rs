@@ -36,7 +36,11 @@ pub fn mlet_star(
         definitions,
     )?;
 
-    library::execute_forms(interpreter, macro_definition_environment, &forms)
+    library::evaluate_forms_return_last(
+        interpreter,
+        macro_definition_environment,
+        &forms,
+    )
 }
 
 #[cfg(test)]

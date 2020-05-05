@@ -30,7 +30,8 @@ pub fn with_this(
 
     interpreter.set_this_object(object_id);
 
-    let result = library::execute_forms(interpreter, environment_id, &code);
+    let result =
+        library::evaluate_forms_return_last(interpreter, environment_id, &code);
 
     match previous_this {
         Some(previous_this_object_id) => {

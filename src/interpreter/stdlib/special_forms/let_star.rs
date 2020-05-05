@@ -37,7 +37,11 @@ pub fn let_star(
         definitions,
     )?;
 
-    library::execute_forms(interpreter, execution_environment, &forms)
+    library::evaluate_forms_return_last(
+        interpreter,
+        execution_environment,
+        &forms,
+    )
 }
 
 #[cfg(test)]

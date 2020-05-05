@@ -133,7 +133,7 @@ pub fn _try(
                                     )
                                 })?;
 
-                            library::execute_forms(
+                            library::evaluate_forms_return_last(
                                 interpreter,
                                 environment_id,
                                 &values,

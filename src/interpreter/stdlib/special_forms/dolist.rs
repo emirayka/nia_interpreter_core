@@ -81,8 +81,11 @@ pub fn dolist(
             value,
         )?;
 
-        match library::execute_forms(interpreter, dolist_environment_id, &code)
-        {
+        match library::evaluate_forms_return_last(
+            interpreter,
+            dolist_environment_id,
+            &code,
+        ) {
             Ok(_) => {},
             Err(error) => match error.get_error_kind() {
                 ErrorKind::Break => {

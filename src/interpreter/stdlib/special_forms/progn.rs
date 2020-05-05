@@ -9,7 +9,7 @@ pub fn progn(
     environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
-    library::execute_forms(interpreter, environment, &values)
+    library::evaluate_forms_return_last(interpreter, environment, &values)
 }
 
 #[cfg(test)]

@@ -89,8 +89,11 @@ pub fn dotimes(
             Value::Integer(index),
         )?;
 
-        match library::execute_forms(interpreter, dotimes_environment_id, &code)
-        {
+        match library::evaluate_forms_return_last(
+            interpreter,
+            dotimes_environment_id,
+            &code,
+        ) {
             Ok(_) => {},
             Err(error) => match error.get_error_kind() {
                 ErrorKind::Break => {

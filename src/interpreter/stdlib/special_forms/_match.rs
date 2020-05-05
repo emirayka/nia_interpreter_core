@@ -58,7 +58,7 @@ pub fn _match(
     }
 
     match child_environment_id {
-        Some(environment_id) => library::execute_forms(
+        Some(environment_id) => library::evaluate_forms_return_last(
             interpreter,
             environment_id,
             &code_to_execute.unwrap(),

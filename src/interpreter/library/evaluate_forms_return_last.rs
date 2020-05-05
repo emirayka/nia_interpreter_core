@@ -3,7 +3,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn execute_forms(
+pub fn evaluate_forms_return_last(
     interpreter: &mut Interpreter,
     execution_environment: EnvironmentId,
     forms: &Vec<Value>,
@@ -48,8 +48,11 @@ mod tests {
 
         let forms = vec![Value::Integer(1), Value::Symbol(symbol_id)];
 
-        let result =
-            execute_forms(&mut interpreter, root_environment_id, &forms);
+        let result = evaluate_forms_return_last(
+            &mut interpreter,
+            root_environment_id,
+            &forms,
+        );
 
         nia_assert_equal(Value::Integer(10), result.unwrap());
     }
@@ -62,8 +65,11 @@ mod tests {
         let forms =
             vec![Value::Integer(1), interpreter.intern_symbol_value("test")];
 
-        let result =
-            execute_forms(&mut interpreter, root_environment_id, &forms);
+        let result = evaluate_forms_return_last(
+            &mut interpreter,
+            root_environment_id,
+            &forms,
+        );
 
         nia_assert_is_err(&result);
     }

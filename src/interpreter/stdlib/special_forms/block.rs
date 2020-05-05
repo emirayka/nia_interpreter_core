@@ -5,17 +5,14 @@ use crate::interpreter::value::Value;
 
 pub fn block(
     interpreter: &mut Interpreter,
-    environment: EnvironmentId,
+    execution_environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
-    let values = values;
-    let mut results = Vec::new();
-
-    for value in values {
-        let result = interpreter.execute_value(environment, value)?;
-
-        results.push(result);
-    }
+    let results = crate::library::evaluate_forms(
+        interpreter,
+        execution_environment,
+        values,
+    )?;
 
     Ok(interpreter.vec_to_list(results))
 }
