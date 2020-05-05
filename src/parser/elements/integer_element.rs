@@ -3,7 +3,7 @@ use nom::{
     alt, character::complete::digit1, map_res, named, opt, pair, recognize, tag,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerElement {
     value: i64,
 }

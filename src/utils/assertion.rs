@@ -1,7 +1,21 @@
 #[allow(unused_imports)]
 use nia_basic_assertions::*;
 
-use crate::*;
+use crate::parser::parse;
+use crate::read_element;
+
+use crate::Error;
+use crate::ErrorKind;
+use crate::Interpreter;
+use crate::Value;
+
+use crate::SYMBOL_NAME_GENERIC_EXECUTION_ERROR;
+use crate::SYMBOL_NAME_INVALID_ARGUMENT_COUNT_ERROR;
+use crate::SYMBOL_NAME_INVALID_ARGUMENT_ERROR;
+use crate::SYMBOL_NAME_OVERFLOW_ERROR;
+use crate::SYMBOL_NAME_ZERO_DIVISION_ERROR;
+
+use crate::library;
 
 pub fn assert_deep_equal(
     interpreter: &Interpreter,
@@ -9,6 +23,19 @@ pub fn assert_deep_equal(
     value2: Value,
 ) {
     nia_assert(library::deep_equal(interpreter, value1, value2).unwrap());
+}
+
+pub fn assert_parsing_reading_result_is_correct(
+    interpreter: &mut Interpreter,
+    expected: Value,
+    code: &str,
+) {
+    let elements = parse(code).unwrap();
+    let first_element = elements.get_elements().remove(0);
+
+    let result = read_element(interpreter, first_element).unwrap();
+
+    crate::utils::assertion::assert_deep_equal(interpreter, expected, result);
 }
 
 pub fn assert_option_deep_equal(
@@ -19,11 +46,11 @@ pub fn assert_option_deep_equal(
     match (value1, value2) {
         (Some(v1), Some(v2)) => {
             nia_assert(library::deep_equal(interpreter, v1, v2).unwrap())
-        },
-        (None, None) => {},
+        }
+        (None, None) => {}
         _ => {
             nia_assert(false);
-        },
+        }
     }
 }
 
@@ -94,7 +121,7 @@ pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
     nia_assert(match param {
         Value::Symbol(symbol_id) => {
             interpreter.symbol_is_nil(symbol_id).unwrap()
-        },
+        }
         _ => false,
     });
 }

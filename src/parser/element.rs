@@ -18,7 +18,7 @@ use super::{
 use crate::parser::lib::end_of_input;
 use crate::parser::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Element {
     Boolean(BooleanElement),
     ShortLambda(ShortLambdaElement),

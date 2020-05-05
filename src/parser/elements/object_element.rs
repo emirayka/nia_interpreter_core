@@ -10,7 +10,7 @@ use crate::parser::keyword_element;
 use crate::parser::keyword_element::KeywordElement;
 use crate::parser::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectElement {
     values: Vec<(KeywordElement, Element)>,
 }

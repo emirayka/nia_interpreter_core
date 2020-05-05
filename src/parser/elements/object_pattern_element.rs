@@ -6,7 +6,7 @@ use nom::{
 use crate::parser::keyword_element;
 use crate::parser::keyword_element::KeywordElement;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectPatternElement {
     values: Vec<KeywordElement>,
 }

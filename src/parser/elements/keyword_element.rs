@@ -3,7 +3,7 @@ use nom::{many1, map_res, named, preceded, tag};
 use crate::parser::lib::parse_keyword_character;
 use crate::parser::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KeywordElement {
     value: String,
 }

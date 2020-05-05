@@ -3,7 +3,7 @@ use nom::{complete, many1, map_res, named, pair, preceded, tag};
 use crate::parser::symbol_element::SymbolElement;
 use crate::parser::{symbol_element, ParseError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DelimitedSymbolsElement {
     values: Vec<SymbolElement>,
 }

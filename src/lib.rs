@@ -1,4 +1,3 @@
-#[cfg(test)]
 pub mod utils;
 
 pub mod interpreter;

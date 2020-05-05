@@ -5,7 +5,7 @@ use nom::{alt, many1, map_res, named, tag};
 use crate::parser::lib::parse_symbol_character;
 use crate::parser::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolElement {
     value: String,
 }

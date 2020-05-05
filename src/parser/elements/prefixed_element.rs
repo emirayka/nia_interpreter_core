@@ -13,7 +13,7 @@ pub enum Prefix {
     GraveAccent,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrefixedElement {
     value: Box<Element>,
     prefix: Prefix,
@@ -31,7 +31,7 @@ impl PrefixedElement {
         self.prefix
     }
 
-    pub fn get_value(self) -> Element {
+    pub fn take_value(self) -> Element {
         *self.value
     }
 

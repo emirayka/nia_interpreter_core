@@ -7,7 +7,7 @@ use crate::parser::element;
 use crate::parser::element::Element;
 use crate::parser::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SExpressionElement {
     values: Vec<Element>,
 }

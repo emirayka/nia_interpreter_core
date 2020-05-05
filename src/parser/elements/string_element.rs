@@ -1,7 +1,7 @@
 use crate::parser::ParseError;
 use nom::{alt, delimited, many0, map_res, named, none_of, tag};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringElement {
     value: String,
 }

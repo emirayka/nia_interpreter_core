@@ -3,7 +3,7 @@ use nom::{map_res, named, preceded, tag};
 use crate::parser::s_expression_element;
 use crate::parser::SExpressionElement;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ShortLambdaElement {
     s_expression: SExpressionElement,
 }
