@@ -1023,35 +1023,10 @@ impl Interpreter {
         let current_module_path =
             self.get_module(self.current_module)?.get_path().clone();
 
-        if current_module_path == "" {
-            return Ok(path);
-        }
-
-        let mut resolved_path = PathBuf::from(current_module_path);
-        let mut path = PathBuf::from(path);
-
-        if path.is_absolute() {
-            let path = path
-                .to_str()
-                .ok_or_else(|| {
-                    Error::generic_execution_error("Cannot resolve path.")
-                })?
-                .to_string();
-
-            return Ok(path);
-        }
-
-        resolved_path.pop();
-        resolved_path.push(path);
-
-        let resolved_path = resolved_path
-            .to_str()
-            .ok_or_else(|| {
-                Error::generic_execution_error("Cannot resolve path.")
-            })?
-            .to_string();
-
-        Ok(resolved_path)
+        crate::utils::resolve_path_with_current_module_path(
+            current_module_path,
+            path,
+        )
     }
 }
 
