@@ -181,7 +181,7 @@ impl Interpreter {
         let mut interpreter = Interpreter::raw();
 
         match infect_stdlib(&mut interpreter) {
-            Ok(()) => {}
+            Ok(()) => {},
             Err(error) => panic!("Cannot construct interpreter: {:?}", error),
         }
 
@@ -244,7 +244,7 @@ impl Interpreter {
                 result.push_str("\"");
 
                 result
-            }
+            },
             _ => match library::value_to_string(self, value) {
                 Ok(string) => string,
                 Err(_) => panic!("Cannot print value"),
@@ -492,7 +492,7 @@ impl Interpreter {
                     "Cannot get car of not a cons value",
                 )
                 .into();
-            }
+            },
         }
     }
 
@@ -506,7 +506,7 @@ impl Interpreter {
                     "Cannot get cdr of not a cons value",
                 )
                 .into();
-            }
+            },
         }
     }
 
@@ -545,8 +545,8 @@ impl Interpreter {
                         vector.remove(vector.len() - 1);
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
 
         Ok(vector)
@@ -1104,7 +1104,7 @@ impl Interpreter {
                             variable_name
                         ))
                         .into();
-                    }
+                    },
                 },
             };
 
@@ -1128,7 +1128,7 @@ impl Interpreter {
                     )
                     .into()
                 }
-            }
+            },
             _ => Error::generic_execution_error(
                 "Cannot extract arguments from not a list.",
             )
@@ -1317,7 +1317,7 @@ impl Interpreter {
                             "Cannot find variable",
                         )
                         .into();
-                    }
+                    },
                 };
 
                 if looked_up_variable == self.exclusive_nil_value {
@@ -1584,7 +1584,7 @@ impl Interpreter {
                     environment_id,
                     evaluated_arguments,
                 )
-            }
+            },
             Function::Interpreted(interpreted_function) => {
                 // 2) evaluate arguments
                 let arguments = self.extract_arguments(cons_id)?;
@@ -1596,7 +1596,7 @@ impl Interpreter {
                     &interpreted_function,
                     evaluated_arguments,
                 )
-            }
+            },
             Function::SpecialForm(special_form) => {
                 let arguments = self.extract_arguments(cons_id)?;
 
@@ -1605,14 +1605,14 @@ impl Interpreter {
                     &special_form,
                     arguments,
                 )
-            }
+            },
             Function::Macro(macro_function) => {
                 let arguments = self.extract_arguments(cons_id)?;
                 let evaluation_result =
                     self.evaluate_macro_invocation(&macro_function, arguments)?;
 
                 self.evaluate_value(environment_id, evaluation_result)
-            }
+            },
         }
     }
 
@@ -1656,7 +1656,7 @@ impl Interpreter {
                     "Cannot get an item of not an object.",
                 )
                 .into();
-            }
+            },
         }
     }
 
@@ -1740,7 +1740,7 @@ impl Interpreter {
         match value {
             Value::Symbol(symbol_name) => {
                 self.evaluate_symbol(environment, symbol_name)
-            }
+            },
             Value::Cons(cons) => self.evaluate_s_expression(environment, cons),
             _ => Ok(value),
         }
@@ -1839,7 +1839,7 @@ impl Interpreter {
                     root_environment_id,
                     function_invocation_cons,
                 )
-            }
+            },
             _ => Error::invalid_argument_error("").into(),
         }
     }

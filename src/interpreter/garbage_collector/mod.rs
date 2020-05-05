@@ -67,14 +67,10 @@ impl GarbageCollector {
         }
 
         // iteration base
-        let mut environment_ids = vec![
-            interpreter.get_root_environment_id(),
-        ];
+        let mut environment_ids = vec![interpreter.get_root_environment_id()];
 
-        environment_ids.extend(
-            interpreter.get_module_arena()
-                .get_gc_environments()
-        );
+        environment_ids
+            .extend(interpreter.get_module_arena().get_gc_environments());
 
         let items = Vec::new();
 

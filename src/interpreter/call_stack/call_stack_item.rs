@@ -51,7 +51,7 @@ impl CallStackItem {
         match &self.0 {
             CallStackItemContent::NamedFunctionInvocation(_, symbol_id, _) => {
                 Some(*symbol_id)
-            }
+            },
             CallStackItemContent::AnonymousFunctionInvocation(_, _) => None,
         }
     }
@@ -60,10 +60,10 @@ impl CallStackItem {
         match &self.0 {
             CallStackItemContent::NamedFunctionInvocation(_, _, arguments) => {
                 arguments
-            }
+            },
             CallStackItemContent::AnonymousFunctionInvocation(_, arguments) => {
                 arguments
-            }
+            },
         }
     }
 }

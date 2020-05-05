@@ -46,11 +46,11 @@ pub fn assert_option_deep_equal(
     match (value1, value2) {
         (Some(v1), Some(v2)) => {
             nia_assert(library::deep_equal(interpreter, v1, v2).unwrap())
-        }
-        (None, None) => {}
+        },
+        (None, None) => {},
         _ => {
             nia_assert(false);
-        }
+        },
     }
 }
 
@@ -121,7 +121,7 @@ pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
     nia_assert(match param {
         Value::Symbol(symbol_id) => {
             interpreter.symbol_is_nil(symbol_id).unwrap()
-        }
+        },
         _ => false,
     });
 }

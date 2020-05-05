@@ -78,19 +78,19 @@ pub fn read_prefixed_element(
     match prefix {
         Prefix::Quote => {
             read_quote_prefixed_element(interpreter, prefixed_element)
-        }
+        },
         Prefix::SharpQuote => {
             read_sharp_quote_prefixed_element(interpreter, prefixed_element)
-        }
+        },
         Prefix::GraveAccent => {
             read_grave_accent_prefixed_element(interpreter, prefixed_element)
-        }
+        },
         Prefix::Comma => {
             read_comma_prefixed_element(interpreter, prefixed_element)
-        }
+        },
         Prefix::CommaDog => {
             read_comma_dog_prefixed_element(interpreter, prefixed_element)
-        }
+        },
     }
 }
 

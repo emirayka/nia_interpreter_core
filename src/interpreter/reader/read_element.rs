@@ -24,41 +24,41 @@ pub fn read_element(
     let value = match element {
         Element::Integer(integer_element) => {
             read_integer_element(integer_element)?
-        }
+        },
         Element::Float(float_element) => read_float_element(float_element)?,
         Element::Boolean(boolean_element) => {
             read_boolean_element(boolean_element)?
-        }
+        },
         Element::String(string_element) => {
             read_string_element(interpreter, string_element)?
-        }
+        },
         Element::Symbol(symbol_element) => {
             read_symbol_element(interpreter, symbol_element)?
-        }
+        },
         Element::Keyword(keyword_element) => {
             read_keyword_element(interpreter, keyword_element)?
-        }
+        },
         Element::SExpression(sexp_element) => {
             read_s_expression_element(interpreter, sexp_element)?
-        }
+        },
         Element::Object(object_element) => {
             read_object_element(interpreter, object_element)?
-        }
+        },
         Element::ObjectPattern(object_pattern_element) => {
             read_object_pattern_element(interpreter, object_pattern_element)?
-        }
+        },
         Element::DelimitedSymbols(delimited_symbols_element) => {
             read_delimited_symbols_element(
                 interpreter,
                 delimited_symbols_element,
             )
-        }
+        },
         Element::Prefix(prefixed_element) => {
             read_prefixed_element(interpreter, prefixed_element)?
-        }
+        },
         Element::ShortLambda(short_lambda_element) => {
             read_short_lambda_element(interpreter, short_lambda_element)?
-        }
+        },
     };
 
     Ok(value)
