@@ -944,7 +944,10 @@ impl Interpreter {
         self.module_arena.get_module_mut(module_id)
     }
 
-    fn load_module(&mut self, module_path: &str) -> Result<ModuleId, Error> {
+    fn read_file_from_path(
+        &mut self,
+        module_path: &str,
+    ) -> Result<Vec<Value>, Error> {
         let path = Path::new(module_path);
 
         if !path.exists() {
@@ -989,6 +992,12 @@ impl Interpreter {
                 Error::generic_execution_error("Error reading module.")
             })?;
 
+        Ok(values)
+    }
+
+    fn load_module(&mut self, module_path: &str) -> Result<ModuleId, Error> {
+        let values = self.read_file_from_path(module_path)?;
+
         let root_environment_id = self.get_root_environment_id();
         let module_environment_id =
             self.make_environment(root_environment_id)?;
@@ -1002,6 +1011,20 @@ impl Interpreter {
         self.current_module = previous_current_module_id;
 
         Ok(module_id)
+    }
+
+    // for config file
+    pub fn execute_file_in_main_environment(
+        &mut self,
+        module_path: &str,
+    ) -> Result<Value, Error> {
+        let main_environment_id = self.get_main_environment_id();
+        let values = self.read_file_from_path(module_path)?;
+
+        match evaluate_values(self, main_environment_id, &values)? {
+            Some(value) => Ok(value),
+            None => Ok(self.intern_nil_symbol_value()),
+        }
     }
 
     pub fn intern_module(
