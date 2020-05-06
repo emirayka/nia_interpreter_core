@@ -32,6 +32,25 @@ struct GarbageCollector {
     items: Vec<Value>,
 }
 
+fn remove_value_from_vector<T>(vector: &mut Vec<T>, value: T)
+where
+    T: Copy + PartialEq + Eq,
+{
+    let mut i = 0;
+    let length = vector.len();
+
+    while i < length {
+        if vector[i] == value {
+            break;
+        }
+        i += 1;
+    }
+
+    if i < length {
+        vector.remove(i);
+    }
+}
+
 impl GarbageCollector {
     pub fn new(interpreter: &mut Interpreter) -> GarbageCollector {
         // these would be ignored
@@ -91,15 +110,15 @@ impl GarbageCollector {
     }
 
     fn retain_string_id(&mut self, string_id: StringId) {
-        self.candidate_string_ids.retain(|id| *id != string_id);
+        remove_value_from_vector(&mut self.candidate_string_ids, string_id);
     }
 
     fn retain_keyword_id(&mut self, keyword_id: KeywordId) {
-        self.candidate_keyword_ids.retain(|id| *id != keyword_id);
+        remove_value_from_vector(&mut self.candidate_keyword_ids, keyword_id);
     }
 
     fn retain_symbol_id(&mut self, symbol_id: SymbolId) {
-        self.candidate_symbol_ids.retain(|id| *id != symbol_id);
+        remove_value_from_vector(&mut self.candidate_symbol_ids, symbol_id);
     }
 
     fn retain_cons_id(
@@ -107,7 +126,7 @@ impl GarbageCollector {
         interpreter: &mut Interpreter,
         cons_id: ConsId,
     ) -> Result<(), Error> {
-        self.candidate_cons_ids.retain(|id| *id != cons_id);
+        remove_value_from_vector(&mut self.candidate_cons_ids, cons_id);
 
         self.items.push(interpreter.get_car(cons_id)?);
         self.items.push(interpreter.get_cdr(cons_id)?);
@@ -120,7 +139,7 @@ impl GarbageCollector {
         interpreter: &mut Interpreter,
         object_id: ObjectId,
     ) -> Result<(), Error> {
-        self.candidate_object_ids.retain(|id| *id != object_id);
+        remove_value_from_vector(&mut self.candidate_object_ids, object_id);
 
         let mut gc_items =
             interpreter.get_object_arena().get_gc_items(object_id)?;
@@ -135,7 +154,7 @@ impl GarbageCollector {
         interpreter: &mut Interpreter,
         function_id: FunctionId,
     ) -> Result<(), Error> {
-        self.candidate_function_ids.retain(|id| *id != function_id);
+        remove_value_from_vector(&mut self.candidate_function_ids, function_id);
 
         match interpreter.get_function_arena().get_gc_items(function_id)? {
             Some(mut gc_items) => self.items.append(&mut gc_items),
@@ -211,8 +230,10 @@ impl GarbageCollector {
         while !self.environment_ids.is_empty() {
             let environment_id = self.environment_ids.remove(0);
 
-            self.candidate_environment_ids
-                .retain(|id| *id != environment_id);
+            remove_value_from_vector(
+                &mut self.candidate_environment_ids,
+                environment_id,
+            );
             self.ignored_environment_ids.push(environment_id);
 
             match interpreter
@@ -294,12 +315,13 @@ mod tests {
     use std::convert::TryInto;
 
     use crate::interpreter::environment::EnvironmentId;
-    use crate::interpreter::value::{
-        BuiltinFunction, Function, SpecialFormFunction,
-    };
-    use crate::utils::{
-        with_named_file, with_tempdir, with_tempfile, with_working_directory,
-    };
+    use crate::interpreter::value::BuiltinFunction;
+    use crate::interpreter::value::Function;
+    use crate::interpreter::value::SpecialFormFunction;
+    use crate::utils::with_named_file;
+    use crate::utils::with_tempdir;
+    use crate::utils::with_tempfile;
+    use crate::utils::with_working_directory;
 
     fn builtin_test_function(
         _interpreter: &mut Interpreter,
