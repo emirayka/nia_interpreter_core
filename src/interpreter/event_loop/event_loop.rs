@@ -1,360 +1,274 @@
 use std::sync::mpsc;
-use std::sync::mpsc::{Sender, TryRecvError};
 use std::thread;
-use std::time::{SystemTime, UNIX_EPOCH};
 
-use nia_events::UinputCommand;
-use nia_events::{ButtonId, Command, KeyId};
+use std::time::Duration;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
-use crate::Action;
-use crate::CommandResult;
+use nia_events::ButtonId;
+use nia_events::Command;
+use nia_events::KeyId;
+use nia_events::UInputWorkerCommand;
+use nia_events::WorkerHandle;
+use nia_events::XorgWorkerCommand;
+
+use crate::Error;
+use crate::EventLoopHandle;
+use crate::ExecutionResult;
+use crate::Interpreter;
 use crate::InterpreterCommand;
-use crate::NiaEventListener;
-use crate::{ExecutionResult, Interpreter, NiaCommandSender, Value};
+use crate::InterpreterCommandResult;
+use crate::NiaActionListener;
+use crate::NiaWorker;
+use crate::Value;
+use crate::{Action, NiaActionListenerHandle};
 
 use crate::interpreter::garbage_collector::collect_garbage;
 use crate::library;
-use crate::parser::prefixed_element::Prefix::GraveAccent;
-use std::time::Duration;
 
 pub struct EventLoop {}
 
 const GARBAGE_COLLECTOR_PERIOD: u64 = 120000;
 
-fn parse_key_id_from_vector(
-    interpreter: &mut Interpreter,
-    event_vector: Vec<Value>,
-) -> Result<KeyId, ()> {
-    if event_vector.len() == 0 {
-        println!("Invalid event description, expected key id");
-        return Err(());
+mod send_events {
+    use super::*;
+
+    fn make_key_down_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let key_id = library::read_key_id_from_vector(event_vector)?;
+
+        Ok(Command::UInput(UInputWorkerCommand::KeyDown(key_id)))
     }
 
-    let mut event_vector = event_vector;
+    fn make_key_press_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let key_id = library::read_key_id_from_vector(event_vector)?;
 
-    let key_id = match library::read_as_i64(event_vector.remove(0)) {
-        Ok(key_id) => key_id,
-        Err(error) => {
-            println!("Cannot parse key id, caused by:");
-            println!("{}", error);
-            return Err(());
-        },
-    };
-
-    Ok(KeyId::new(key_id as u16))
-}
-
-fn parse_button_id_from_vector(
-    interpreter: &mut Interpreter,
-    event_vector: Vec<Value>,
-) -> Result<ButtonId, ()> {
-    if event_vector.len() == 0 {
-        println!("Invalid event description, expected button id");
-        return Err(());
+        Ok(Command::UInput(UInputWorkerCommand::KeyPress(key_id)))
     }
 
-    let mut event_vector = event_vector;
+    fn make_key_up_command(event_vector: Vec<Value>) -> Result<Command, Error> {
+        let key_id = library::read_key_id_from_vector(event_vector)?;
 
-    let button_id = match library::read_as_i64(event_vector.remove(0)) {
-        Ok(button_id) => {
-            if button_id > 0 && button_id <= 8 {
-                button_id
-            } else {
-                println!(
-                    "Invalid button id, expected interval [1-8], got: {}",
-                    button_id
-                );
-                return Err(());
-            }
-        },
-        Err(error) => {
-            println!("Cannot parse button id, caused by:");
-            println!("{}", error);
-            return Err(());
-        },
-    };
+        Ok(Command::UInput(UInputWorkerCommand::KeyUp(key_id)))
+    }
 
-    Ok(ButtonId::new(button_id as u16))
-}
+    fn make_mouse_button_down_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let button_id = library::read_button_id_from_vector(event_vector)?;
 
-fn send_events(
-    interpreter: &mut Interpreter,
-    cmd_sender: &Sender<Command>,
-) -> Result<(), ()> {
-    let actions_value =
-        match library::get_root_variable(interpreter, "--actions") {
-            Ok(actions_value) => actions_value,
-            Err(error) => {
-                println!("Cannot parse event queue, caused by: ");
-                println!("{}", error);
-                return Err(());
+        Ok(Command::UInput(UInputWorkerCommand::MouseButtonDown(
+            button_id,
+        )))
+    }
+
+    fn make_mouse_button_press_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let button_id = library::read_button_id_from_vector(event_vector)?;
+
+        Ok(Command::UInput(UInputWorkerCommand::MouseButtonPress(
+            button_id,
+        )))
+    }
+
+    fn make_mouse_button_up_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let button_id = library::read_button_id_from_vector(event_vector)?;
+
+        Ok(Command::UInput(UInputWorkerCommand::MouseButtonUp(
+            button_id,
+        )))
+    }
+
+    fn make_mouse_button_move_by_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        if event_vector.len() != 2 {
+            return Error::invalid_argument_error(
+                "Cannot parse event, not enough items",
+            )
+            .into();
+        }
+
+        let mut event_vector = event_vector;
+
+        let x = library::read_as_i64(event_vector.remove(0))?;
+        let y = library::read_as_i64(event_vector.remove(0))?;
+
+        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveBy(
+            x as i16, y as i16,
+        )))
+    }
+
+    fn make_mouse_button_move_to_command(
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        if event_vector.len() != 2 {
+            return Error::invalid_argument_error(
+                "Cannot parse event, not enough items",
+            )
+            .into();
+        }
+
+        let mut event_vector = event_vector;
+
+        let x = library::read_as_i64(event_vector.remove(0))?;
+        let y = library::read_as_i64(event_vector.remove(0))?;
+
+        if x < 0 || y < 0 {
+            return Error::invalid_argument_error(
+                "Invalid coordinate specification.",
+            )
+            .into();
+        }
+
+        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveBy(
+            x as i16, y as i16,
+        )))
+    }
+
+    fn make_type_text_command(
+        interpreter: &mut Interpreter,
+        event_vector: Vec<Value>,
+    ) -> Result<Command, Error> {
+        let mut event_vector = event_vector;
+
+        let text =
+            library::read_as_string(interpreter, event_vector.remove(0))?
+                .clone();
+
+        Ok(Command::Xorg(XorgWorkerCommand::TextType(text)))
+    }
+
+    fn make_wait_command(event_vector: Vec<Value>) -> Result<Command, Error> {
+        let mut event_vector = event_vector;
+
+        let milliseconds = match event_vector.remove(0) {
+            Value::Integer(ms) => {
+                if ms > 0 {
+                    ms as u64
+                } else {
+                    return Error::invalid_argument_error(
+                        "Expected duration to be not positive.",
+                    )
+                    .into();
+                }
+            },
+            v => {
+                return Error::invalid_argument_error(
+                    "Unknown value passed as wait.",
+                )
+                .into()
             },
         };
 
-    let events_vector =
-        match library::read_as_vector(interpreter, actions_value) {
-            Ok(vector) => vector.into_iter().rev().collect::<Vec<Value>>(),
-            Err(error) => {
-                println!("Cannot parse event queue, caused by: ");
-                println!("{}", error);
-                return Err(());
-            },
-        };
+        Ok(Command::Wait(milliseconds))
+    }
 
-    let nil = interpreter.intern_nil_symbol_value();
-    match library::set_root_variable(interpreter, "--actions", nil) {
-        Ok(_) => {},
-        Err(error) => {
-            println!("Cannot clear event queue, caused by: ");
-            println!("{}", error);
-            return Err(());
-        },
-    };
-
-    for event in events_vector {
-        let mut event_vector = match library::read_as_vector(interpreter, event)
-        {
-            Ok(vector) => vector,
-            Err(error) => {
-                println!("Cannot parse event, caused by: ");
-                println!("{}", error);
-                continue;
-            },
-        };
+    fn send_event(
+        interpreter: &mut Interpreter,
+        event_vector: Value,
+        worker_handle: &WorkerHandle,
+    ) -> Result<(), Error> {
+        let mut event_vector =
+            library::read_as_vector(interpreter, event_vector)?;
 
         if event_vector.len() == 0 {
-            println!("Invalid event description, expected event name");
-            continue;
+            return Error::generic_execution_error("Event vector is empty.")
+                .into();
         }
 
+        let event_name_symbol_id =
+            library::read_as_symbol_id(event_vector.remove(0))?;
+
         let event_name =
-            match library::read_as_symbol_id(event_vector.remove(0)) {
-                Ok(symbol_id) => match interpreter.get_symbol_name(symbol_id) {
-                    Ok(symbol_name) => symbol_name.clone(),
-                    Err(error) => {
-                        println!("Cannot parse event name");
-                        println!("{}", error);
-                        continue;
-                    },
-                },
-                Err(error) => {
-                    println!("Cannot parse event, caused by: ");
-                    println!("{}", error);
-                    continue;
-                },
-            };
+            interpreter.get_symbol_name(event_name_symbol_id)?.clone();
 
-        let command = if event_name == "key-down" {
-            let key_id =
-                match parse_key_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
+        let command = match event_name.as_str() {
+            "key-down" => make_key_down_command(event_vector)?,
+            "key-press" => make_key_press_command(event_vector)?,
+            "key-up" => make_key_up_command(event_vector)?,
 
-            Command::UinputCommand(UinputCommand::KeyDown(key_id))
-        } else if event_name == "key-press" {
-            let key_id =
-                match parse_key_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
+            "mouse-button-down" => {
+                make_mouse_button_down_command(event_vector)?
+            },
+            "mouse-button-press" => {
+                make_mouse_button_press_command(event_vector)?
+            },
+            "mouse-button-up" => make_mouse_button_up_command(event_vector)?,
 
-            Command::UinputCommand(UinputCommand::KeyPress(key_id))
-        } else if event_name == "key-up" {
-            let key_id =
-                match parse_key_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
+            "mouse-move-by" => make_mouse_button_move_by_command(event_vector)?,
+            "mouse-move-to" => make_mouse_button_move_to_command(event_vector)?,
 
-            Command::UinputCommand(UinputCommand::KeyUp(key_id))
-        } else if event_name == "mouse-button-down" {
-            let button_id =
-                match parse_button_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
+            "text-type" => make_type_text_command(interpreter, event_vector)?,
+            "wait" => make_wait_command(event_vector)?,
 
-            Command::UinputCommand(UinputCommand::MouseButtonDown(button_id))
-        } else if event_name == "mouse-button-press" {
-            let button_id =
-                match parse_button_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
-
-            Command::UinputCommand(UinputCommand::MouseButtonPress(button_id))
-        } else if event_name == "mouse-button-up" {
-            let button_id =
-                match parse_button_id_from_vector(interpreter, event_vector) {
-                    Ok(key_id) => key_id,
-                    Err(()) => continue,
-                };
-
-            Command::UinputCommand(UinputCommand::MouseButtonUp(button_id))
-        } else if event_name == "mouse-move-by" {
-            if event_vector.len() != 2 {
-                println!("Cannot parse event, not enough items");
-                continue;
-            }
-            let x = match library::read_as_i64(event_vector.remove(0)) {
-                Ok(x) => x,
-                Err(error) => {
-                    println!("Cannot parse event, invalid value");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-            let y = match library::read_as_i64(event_vector.remove(0)) {
-                Ok(x) => x,
-                Err(error) => {
-                    println!("Cannot parse event, invalid value");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-            Command::UinputCommand(UinputCommand::MouseMoveBy(
-                x as i16, y as i16,
-            ))
-        } else if event_name == "mouse-move-to" {
-            if event_vector.len() != 2 {
-                println!("Cannot parse event, not enough items");
-                continue;
-            }
-
-            let x = match library::read_as_i64(event_vector.remove(0)) {
-                Ok(x) => x,
-                Err(error) => {
-                    println!("Cannot parse event, invalid value");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-            let y = match library::read_as_i64(event_vector.remove(0)) {
-                Ok(x) => x,
-                Err(error) => {
-                    println!("Cannot parse event, invalid value");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-
-            if x < 0 || y < 0 {
-                println!(
-                    "Invalid move to event description. Expected two positive coordinates. Got: {}, {}",
-                    x, y
-                );
-                continue;
-            }
-
-            Command::UinputCommand(UinputCommand::MouseMoveTo(
-                x as i16, y as i16,
-            ))
-        } else if event_name == "text-type" {
-            if event_vector.len() != 1 {
-                println!("Cannot parse event, not enough items");
-                continue;
-            }
-
-            let text = match library::read_as_string(
-                interpreter,
-                event_vector.remove(0),
-            ) {
-                Ok(string) => string.clone(),
-                Err(error) => {
-                    println!("Cannot parse event cause:");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-
-            Command::UinputCommand(UinputCommand::TextType(text))
-        } else if event_name == "spawn" {
-            if event_vector.len() != 1 {
-                println!("Cannot parse event, not enough items");
-                continue;
-            }
-
-            let path = match library::read_as_string(
-                interpreter,
-                event_vector.remove(0),
-            ) {
-                Ok(string) => string.clone(),
-                Err(error) => {
-                    println!("Cannot parse event cause:");
-                    println!("{}", error);
-                    continue;
-                },
-            };
-
-            Command::Spawn(path)
-        } else if event_name == "wait" {
-            let milliseconds = match event_vector.remove(0) {
-                Value::Integer(ms) => {
-                    if ms >= 0 {
-                        ms as u64
-                    } else {
-                        println!(
-                            "Expected duration to be not negative, got: {}",
-                            ms
-                        );
-                        continue;
-                    }
-                },
-                v => {
-                    println!("Cannot parse event: expected duration, got:");
-                    crate::library::print_value(interpreter, v);
-                    continue;
-                },
-            };
-
-            Command::Wait(milliseconds)
-        } else {
-            println!("Unknown event type: {}", event_name);
-            continue;
+            _ => return Error::invalid_argument_error("Unknown action").into(),
         };
 
-        match cmd_sender.send(command) {
-            Ok(_) => {},
-            Err(_) => {},
+        match worker_handle.send_command(command) {
+            Ok(_) => Ok(()),
+            Err(_) => Ok(()),
         }
     }
 
-    Ok(())
+    pub fn send_events(
+        interpreter: &mut Interpreter,
+        worker_handle: &WorkerHandle,
+    ) -> Result<(), Error> {
+        let actions_value =
+            library::get_root_variable(interpreter, "--actions")?;
+
+        let events_vectors =
+            library::read_as_vector(interpreter, actions_value)?
+                .into_iter()
+                .rev()
+                .collect::<Vec<Value>>();
+
+        let nil = interpreter.intern_nil_symbol_value();
+        library::set_root_variable(interpreter, "--actions", nil)?;
+
+        for event_vector in events_vectors {
+            send_event(interpreter, event_vector, worker_handle)?;
+        }
+
+        Ok(())
+    }
 }
 
 impl EventLoop {
-    pub fn run_event_loop(
-        interpreter: Interpreter,
-    ) -> (
-        mpsc::Sender<InterpreterCommand>,
-        mpsc::Receiver<CommandResult>,
-    ) {
+    pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
         let mut interpreter = interpreter;
 
-        let (command_sender, command_receiver) =
+        let (interpreter_command_sender, interpreter_command_receiver) =
             mpsc::channel::<InterpreterCommand>();
 
-        let (result_sender, result_receiver) = mpsc::channel::<CommandResult>();
+        let (
+            interpreter_command_result_sender,
+            interpreter_command_result_receiver,
+        ) = mpsc::channel::<InterpreterCommandResult>();
+        let worker_handle = NiaWorker::new().start_sending().expect(""); // todo: change
 
-        let (cmd_sender, cmd_stopper) = NiaCommandSender::new().start_sending();
-
-        let mut event_listener_v: Option<(
-            mpsc::Receiver<Action>,
-            mpsc::Sender<()>,
-        )> = None;
+        let mut action_listener_handle: Option<NiaActionListenerHandle> = None;
 
         thread::spawn(move || {
             let current_time = SystemTime::now();
+
             let mut time_for_garbage_collection = current_time
                 .duration_since(UNIX_EPOCH)
                 .expect("Time went backwards");
+
             time_for_garbage_collection +=
                 Duration::from_millis(GARBAGE_COLLECTOR_PERIOD);
 
             loop {
                 // execute command that was received with channel
-                match command_receiver.try_recv() {
+                match interpreter_command_receiver.try_recv() {
                     Ok(command) => match command {
                         InterpreterCommand::Execution(code) => {
                             let result =
@@ -395,8 +309,8 @@ impl EventLoop {
                                 },
                             };
 
-                            match result_sender.send(
-                                CommandResult::ExecutionResult(
+                            match interpreter_command_result_sender.send(
+                                InterpreterCommandResult::ExecutionResult(
                                     execution_result,
                                 ),
                             ) {
@@ -405,71 +319,88 @@ impl EventLoop {
                             }
                         },
                     },
-                    Err(TryRecvError::Disconnected) => {
+                    Err(mpsc::TryRecvError::Disconnected) => {
                         break;
                     },
-                    Err(TryRecvError::Empty) => {},
+                    Err(mpsc::TryRecvError::Empty) => {},
                 };
 
                 // construct/stop key remapping threads
-                if interpreter.is_listening() && event_listener_v.is_none() {
-                    let mut event_listener =
-                        NiaEventListener::from_interpreter(&mut interpreter);
+                if interpreter.is_listening()
+                    && action_listener_handle.is_none()
+                {
+                    let mut action_listener =
+                        match NiaActionListener::from_interpreter(
+                            &mut interpreter,
+                        ) {
+                            Ok(action_listener) => action_listener,
+                            Err(error) => {
+                                break;
+                            },
+                        };
 
-                    match event_listener.start_listening(cmd_sender.clone()) {
-                        Ok(ok) => event_listener_v = Some(ok),
-                        Err(error) => break,
+                    match action_listener.start_listening(worker_handle.clone())
+                    {
+                        Ok(ok) => {
+                            action_listener_handle = Some(ok);
+                        },
+                        Err(error) => {
+                            break;
+                        },
                     }
                 } else if !interpreter.is_listening()
-                    && event_listener_v.is_some()
+                    && action_listener_handle.is_some()
                 {
-                    let (_, stopper) = event_listener_v.unwrap();
+                    match &action_listener_handle {
+                        Some(handle) => {
+                            handle.stop();
+                        },
+                        None => {},
+                    }
 
-                    stopper.send(());
-
-                    event_listener_v = None;
+                    action_listener_handle = None;
                 }
 
-                // execute actions bound on key mappings
-                if event_listener_v.is_some() {
-                    let action_receiver = match &event_listener_v {
-                        Some((action_receiver, _)) => action_receiver,
-                        _ => unreachable!(),
-                    };
-
-                    loop {
-                        match action_receiver.try_recv() {
-                            Ok(action) => match action {
-                                Action::Empty => {},
-                                Action::Execute(value) => {
-                                    match interpreter
-                                        .execute_function_without_arguments(
-                                            value,
-                                        ) {
-                                        Ok(_) => {},
-                                        Err(error) => {
-                                            println!("Error happened:");
-                                            println!("{}", error);
-                                        },
-                                    };
+                // send actions to worker
+                match &action_listener_handle {
+                    Some(handle) => {
+                        loop {
+                            match handle.try_receive_action() {
+                                Ok(action) => match action {
+                                    Action::Empty => {},
+                                    Action::Execute(value) => {
+                                        match interpreter
+                                            .execute_function_without_arguments(
+                                                value,
+                                            ) {
+                                            Ok(_) => {},
+                                            Err(error) => {
+                                                println!("Error happened:");
+                                                println!("{}", error);
+                                            },
+                                        };
+                                    },
                                 },
-                            },
-                            Err(TryRecvError::Empty) => break,
-                            Err(TryRecvError::Disconnected) => {
-                                // event listener is died somehow, so it won't work anyway
-                                // event_listener_v = None;
-                                //
-                                // interpreter.stop_listening();
-                            },
+                                Err(mpsc::TryRecvError::Empty) => {
+                                    break;
+                                },
+                                Err(mpsc::TryRecvError::Disconnected) => {
+                                    // event listener is died somehow, so it won't work anyway
+                                    // event_listener_v = None;
+                                    //
+                                    // interpreter.stop_listening();
+                                },
+                            }
                         }
-                    }
+                    },
+                    _ => {},
                 }
 
                 // send events for execution
-                send_events(&mut interpreter, &cmd_sender)
+                send_events::send_events(&mut interpreter, &worker_handle)
                     .expect("Sending events failed.");
 
-                // collect garbage once in 2 minutes
+                // collect garbage
                 let current_time = SystemTime::now()
                     .duration_since(UNIX_EPOCH)
                     .expect("Time went backwards.");
@@ -478,8 +409,6 @@ impl EventLoop {
                     time_for_garbage_collection = current_time
                         + Duration::from_millis(GARBAGE_COLLECTOR_PERIOD);
 
-                    let root_environment =
-                        interpreter.get_main_environment_id();
                     collect_garbage(&mut interpreter)
                         .expect("Garbage collection failed.");
                 } else {
@@ -487,16 +416,24 @@ impl EventLoop {
                 }
             }
 
-            match event_listener_v {
-                Some((_, stopper)) => {
-                    stopper.send(());
+            match action_listener_handle {
+                Some(handle) => {
+                    handle.stop();
                 },
                 _ => {},
             }
 
-            cmd_stopper.send(());
+            match worker_handle.stop() {
+                Ok(()) => {},
+                Err(()) => {},
+            }
         });
 
-        (command_sender, result_receiver)
+        let event_loop_handle = EventLoopHandle::new(
+            interpreter_command_sender,
+            interpreter_command_result_receiver,
+        );
+
+        event_loop_handle
     }
 }

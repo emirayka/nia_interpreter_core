@@ -1,3 +1,5 @@
+use nia_events::KeyId;
+
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
@@ -24,7 +26,8 @@ pub fn send_key_down(
         Value::String(key_name) => {
             let key_name = interpreter.get_string(key_name)?;
 
-            let key_id = nia_events::str_to_key_id(key_name.get_string())
+            let key_id = key_name.get_string()
+                .parse::<KeyId>()
                 .map_err(|_| {
                     Error::invalid_argument_error(&format!(
                         "Invalid key name: {}",

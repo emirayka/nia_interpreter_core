@@ -7,7 +7,8 @@ use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
 
-use nia_events::{KeyChord, KeyboardId};
+use nia_events::KeyChord;
+use nia_events::KeyboardId;
 
 fn key_chords_to_list(
     interpreter: &mut Interpreter,
@@ -69,11 +70,10 @@ pub fn define_global_mapping(
     let keyboard_name_to_index = read_registered_keyboards(interpreter)?;
 
     for mapping_part in mapping.split(" ") {
-        let key_chord =
-            nia_events::str_to_key_chord(mapping_part, &keyboard_name_to_index)
-                .map_err(|_| {
-                    Error::invalid_argument_error("Invalid key chord.")
-                })?;
+        let key_chord = KeyChord::from(mapping_part, &keyboard_name_to_index)
+            .map_err(|_| {
+            Error::invalid_argument_error("Invalid key chord.")
+        })?;
 
         key_chords.push(key_chord);
     }

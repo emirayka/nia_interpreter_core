@@ -2,7 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::SpecialFormFunctionType;
 
-use crate::interpreter::library::infect::infect_special_form;
+use crate::library;
 
 mod _let;
 mod _match;
@@ -62,7 +62,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in pairs {
-        infect_special_form(interpreter, name, func)?;
+        library::infect_special_form(interpreter, name, func)?;
     }
 
     Ok(())

@@ -1,9 +1,10 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
+use crate::EnvironmentId;
+use crate::{BuiltinFunctionType, EnvironmentArena};
 
-use crate::interpreter::library::infect::infect_object_builtin_function;
-use crate::{EnvironmentArena, EnvironmentId};
+use crate::library;
 
 mod define_property_mark;
 mod delete_property_mark;
@@ -29,10 +30,7 @@ mod update_property_mark;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let object_object_id = interpreter.make_object();
 
-    let funcs: Vec<(
-        &str,
-        fn(&mut Interpreter, EnvironmentId, Vec<Value>) -> Result<Value, Error>,
-    )> = vec![
+    let funcs: Vec<(&str, BuiltinFunctionType)> = vec![
         (
             "define-property!",
             define_property_mark::define_property_mark,
@@ -80,7 +78,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in funcs {
-        infect_object_builtin_function(
+        library::infect_object_builtin_function(
             interpreter,
             object_object_id,
             name,

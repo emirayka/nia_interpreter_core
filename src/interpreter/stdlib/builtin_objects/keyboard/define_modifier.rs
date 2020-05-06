@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use nia_events::KeyChordPart;
+
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
@@ -21,7 +23,7 @@ pub fn define_modifier(
 
     let mut values = values;
 
-    let key_chord_part = nia_events::str_to_key_chord_part(
+    let key_chord_part = KeyChordPart::from(
         library::read_as_string(interpreter, values.remove(0))?,
         &HashMap::new(), // todo: fix
     )

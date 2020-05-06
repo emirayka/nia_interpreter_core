@@ -1,34 +1,35 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::library::infect::infect_object_builtin_function;
 use crate::interpreter::value::BuiltinFunctionType;
 use crate::interpreter::value::Value;
 
-pub mod boolean_question;
-pub mod cons_question;
-pub mod float_question;
-pub mod function_question;
-pub mod int_question;
-pub mod keyword_question;
-pub mod object_question;
-pub mod string_question;
-pub mod symbol_question;
+use crate::library;
 
-pub mod atom_question;
-pub mod builtin_question;
-pub mod even_question;
-pub mod false_question;
-pub mod interpreted_question;
-pub mod list_question;
-pub mod macro_question;
-pub mod negative_question;
-pub mod nil_question;
-pub mod number_question;
-pub mod odd_question;
-pub mod positive_question;
-pub mod special_question;
-pub mod true_question;
-pub mod zero_question;
+mod boolean_question;
+mod cons_question;
+mod float_question;
+mod function_question;
+mod int_question;
+mod keyword_question;
+mod object_question;
+mod string_question;
+mod symbol_question;
+
+mod atom_question;
+mod builtin_question;
+mod even_question;
+mod false_question;
+mod interpreted_question;
+mod list_question;
+mod macro_question;
+mod negative_question;
+mod nil_question;
+mod number_question;
+mod odd_question;
+mod positive_question;
+mod special_question;
+mod true_question;
+mod zero_question;
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let is_object_id = interpreter.make_object();
@@ -61,7 +62,12 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(interpreter, is_object_id, name, func)?;
+        library::infect_object_builtin_function(
+            interpreter,
+            is_object_id,
+            name,
+            func,
+        )?;
     }
 
     let is_symbol_id = interpreter.intern_symbol_id("is");

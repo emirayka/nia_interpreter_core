@@ -25,14 +25,14 @@ impl std::fmt::Display for ExecutionResult {
 }
 
 #[derive(Clone, Debug)]
-pub enum CommandResult {
+pub enum InterpreterCommandResult {
     ExecutionResult(ExecutionResult),
 }
 
-impl std::fmt::Display for CommandResult {
+impl std::fmt::Display for InterpreterCommandResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CommandResult::ExecutionResult(execution_result) => {
+            InterpreterCommandResult::ExecutionResult(execution_result) => {
                 write!(f, "{}", execution_result)
             },
         }

@@ -2,8 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use super::check_value_is_list;
-use super::read_as_vector;
+use crate::library;
 
 pub fn get_last_item_from_root_list(
     interpreter: &mut Interpreter,
@@ -18,9 +17,9 @@ pub fn get_last_item_from_root_list(
             Error::generic_execution_error("Cannot find variable.")
         })?;
 
-    check_value_is_list(interpreter, root_variable)?;
+    library::check_value_is_list(interpreter, root_variable)?;
 
-    let items = read_as_vector(interpreter, root_variable)?;
+    let items = library::read_as_vector(interpreter, root_variable)?;
 
     if items.len() == 0 {
         return Error::generic_execution_error(

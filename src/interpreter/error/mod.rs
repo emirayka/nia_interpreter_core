@@ -1,10 +1,5 @@
 use std::fmt;
 
-use crate::interpreter::value::{
-    Cons, ConsId, Function, FunctionId, Keyword, KeywordId, NiaString, Object,
-    ObjectId, StringId, Symbol, SymbolId, Value,
-};
-
 pub const SYMBOL_NAME_FAILURE: &'static str = "failure";
 
 pub const SYMBOL_NAME_PARSE_ERROR: &'static str = "parse-error";

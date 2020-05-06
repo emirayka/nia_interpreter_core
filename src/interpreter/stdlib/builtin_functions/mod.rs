@@ -1,7 +1,8 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::library::infect::infect_builtin_function;
 use crate::interpreter::value::BuiltinFunctionType;
+
+use crate::library;
 
 mod _println;
 mod _type;
@@ -75,7 +76,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in pairs {
-        infect_builtin_function(interpreter, name, func)?;
+        library::infect_builtin_function(interpreter, name, func)?;
     }
 
     Ok(())

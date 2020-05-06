@@ -1,7 +1,7 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use super::key_chord_part_to_list;
+use crate::library;
 
 use nia_events::KeyChord;
 
@@ -12,10 +12,13 @@ pub fn key_chord_to_list(
     let mut vector = Vec::new();
 
     for modifier in key_chord.get_modifiers() {
-        vector.push(key_chord_part_to_list(interpreter, *modifier));
+        let list = library::key_chord_part_to_list(interpreter, *modifier);
+        vector.push(list);
     }
 
-    vector.push(key_chord_part_to_list(interpreter, *key_chord.get_key()));
+    let list =
+        library::key_chord_part_to_list(interpreter, *key_chord.get_key());
+    vector.push(list);
 
     interpreter.vec_to_list(vector)
 }

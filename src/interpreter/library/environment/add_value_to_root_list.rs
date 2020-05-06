@@ -2,7 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use super::check_value_is_list;
+use crate::library;
 
 pub fn add_value_to_root_list(
     interpreter: &mut Interpreter,
@@ -18,7 +18,7 @@ pub fn add_value_to_root_list(
             Error::generic_execution_error("Cannot find variable.")
         })?;
 
-    check_value_is_list(interpreter, root_variable)?;
+    library::check_value_is_list(interpreter, root_variable)?;
 
     let new_cons = interpreter.make_cons_value(value, root_variable);
 

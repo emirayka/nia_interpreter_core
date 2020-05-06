@@ -4,7 +4,7 @@ use std::path::Path;
 
 use crate::interpreter::ErrorKind;
 use crate::interpreter::Interpreter;
-use crate::{CommandResult, EventLoop, InterpreterCommand};
+use crate::{EventLoop, InterpreterCommand, InterpreterCommandResult};
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";
 
@@ -23,7 +23,7 @@ pub fn run() -> Result<(), std::io::Error> {
 
     let mut interpreter = Interpreter::new();
 
-    let (sender, receiver) = EventLoop::run_event_loop(interpreter);
+    let event_loop_handle = EventLoop::run_event_loop(interpreter);
 
     let mut rl = Editor::<()>::new();
 
@@ -40,10 +40,13 @@ pub fn run() -> Result<(), std::io::Error> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
 
-                sender.send(InterpreterCommand::Execution(line));
+                event_loop_handle
+                    .send_command(InterpreterCommand::Execution(line));
 
-                let result = match receiver.recv() {
-                    Ok(CommandResult::ExecutionResult(result)) => result,
+                let result = match event_loop_handle.receive_result() {
+                    Ok(InterpreterCommandResult::ExecutionResult(result)) => {
+                        result
+                    },
                     Err(_) => break,
                 };
 

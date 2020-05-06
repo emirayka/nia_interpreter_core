@@ -1,8 +1,9 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::library::infect::infect_object_builtin_function;
 use crate::interpreter::value::BuiltinFunctionType;
 use crate::interpreter::value::Value;
+
+use crate::library;
 
 mod define_global_mapping;
 mod define_modifier;
@@ -25,7 +26,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
+        library::infect_object_builtin_function(
             interpreter,
             keyboard_object_id,
             name,

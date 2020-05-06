@@ -31,9 +31,7 @@ mod tests {
 
     fn assert_returns_correct_list(s: &str, key_chord_part: KeyChordPart) {
         let mut interpreter = Interpreter::new();
-
         let expected = interpreter.execute_in_main_environment(s).unwrap();
-
         let result = key_chord_part_to_list(&mut interpreter, key_chord_part);
 
         assertion::assert_deep_equal(&mut interpreter, expected, result);

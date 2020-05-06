@@ -1,9 +1,9 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
+use crate::interpreter::value::BuiltinFunctionType;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::library::infect::infect_object_builtin_function;
-use crate::interpreter::value::BuiltinFunctionType;
+use crate::library;
 
 mod send_key_down;
 mod send_key_press;
@@ -49,7 +49,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     ];
 
     for (name, func) in bindings {
-        infect_object_builtin_function(
+        library::infect_object_builtin_function(
             interpreter,
             action_object_id,
             name,
