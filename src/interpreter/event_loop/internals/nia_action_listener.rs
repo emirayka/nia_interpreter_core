@@ -23,6 +23,7 @@ use crate::Value;
 use crate::{Action, NiaActionListenerHandle};
 
 use crate::library;
+use std::time::Duration;
 
 pub struct NiaActionListener {
     keyboards: Vec<(String, String)>,
@@ -129,21 +130,20 @@ impl NiaActionListener {
 
             thread::spawn(move || {
                 loop {
-                    let event = match listener_handle.read_event() {
-                        Ok(event) => event,
-                        Err(_) => {
+                    let event = match listener_handle.try_receive_event() {
+                        Ok(event) => Some(event),
+                        Err(mpsc::TryRecvError::Disconnected) => {
                             break;
-                        },
+                        }
+                        Err(mpsc::TryRecvError::Empty) => None,
                     };
 
-                    println!("{:?}", event);
-
                     match event {
-                        Event::KeyChordEvent(key_chord) => {
+                        Some(Event::KeyChordEvent(key_chord)) => {
                             match state_machine.excite(key_chord) {
                                 StateMachineResult::Excited(action) => {
                                     action_sender.send(action);
-                                },
+                                }
                                 StateMachineResult::Fallback(previous) => {
                                     for key_chord in previous {
                                         let command =
@@ -156,30 +156,33 @@ impl NiaActionListener {
                                         match worker_handle
                                             .send_command(command)
                                         {
-                                            Ok(_) => {},
+                                            Ok(_) => {}
                                             Err(_) => break,
                                         }
                                     }
-                                },
-                                StateMachineResult::Transition() => {},
+                                }
+                                StateMachineResult::Transition() => {}
                             }
-                        },
+                        }
+                        _ => {}
                     }
 
                     match stop_receiver.try_recv() {
                         Ok(()) => {
                             break;
-                        },
+                        }
                         Err(mpsc::TryRecvError::Disconnected) => {
                             break;
-                        },
-                        Err(mpsc::TryRecvError::Empty) => {},
+                        }
+                        Err(mpsc::TryRecvError::Empty) => {}
                     }
+
+                    thread::sleep(Duration::from_millis(10));
                 }
 
                 match listener_handle.stop() {
-                    Ok(()) => {},
-                    Err(()) => {},
+                    Ok(()) => {}
+                    Err(()) => {}
                 };
             });
         }

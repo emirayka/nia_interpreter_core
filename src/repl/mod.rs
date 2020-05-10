@@ -4,7 +4,7 @@ use std::path::Path;
 
 use crate::interpreter::ErrorKind;
 use crate::interpreter::Interpreter;
-use crate::{EventLoop, InterpreterCommand, InterpreterCommandResult};
+use crate::{EventLoop, NiaInterpreterCommand, NiaInterpreterCommandResult};
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";
 
@@ -41,27 +41,27 @@ pub fn run() -> Result<(), std::io::Error> {
                 rl.add_history_entry(line.as_str());
 
                 event_loop_handle
-                    .send_command(InterpreterCommand::Execution(line));
+                    .send_command(NiaInterpreterCommand::Execution(line));
 
                 let result = match event_loop_handle.receive_result() {
-                    Ok(InterpreterCommandResult::ExecutionResult(result)) => {
-                        result
-                    },
+                    Ok(NiaInterpreterCommandResult::ExecutionResult(
+                        result,
+                    )) => result,
                     Err(_) => break,
                 };
 
                 println!("{}", result);
-            },
+            }
             Err(ReadlineError::Interrupted) => {
                 // break;
-            },
+            }
             Err(ReadlineError::Eof) => {
                 break;
-            },
+            }
             Err(err) => {
                 println!("Error: {:?}", err);
                 break;
-            },
+            }
         }
     }
 

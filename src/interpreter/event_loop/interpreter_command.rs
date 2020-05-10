@@ -1,4 +1,4 @@
 #[derive(Clone, Debug)]
-pub enum InterpreterCommand {
+pub enum NiaInterpreterCommand {
     Execution(String),
 }

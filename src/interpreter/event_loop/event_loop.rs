@@ -14,11 +14,11 @@ use nia_events::XorgWorkerCommand;
 
 use crate::Error;
 use crate::EventLoopHandle;
-use crate::ExecutionResult;
 use crate::Interpreter;
-use crate::InterpreterCommand;
-use crate::InterpreterCommandResult;
 use crate::NiaActionListener;
+use crate::NiaInterpreterCommand;
+use crate::NiaInterpreterCommandResult;
+use crate::NiaInterpreterExecutionCommandResult;
 use crate::NiaWorker;
 use crate::Value;
 use crate::{Action, NiaActionListenerHandle};
@@ -127,7 +127,7 @@ mod send_events {
             .into();
         }
 
-        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveBy(
+        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveTo(
             x as i16, y as i16,
         )))
     }
@@ -158,13 +158,13 @@ mod send_events {
                     )
                     .into();
                 }
-            },
+            }
             v => {
                 return Error::invalid_argument_error(
                     "Unknown value passed as wait.",
                 )
                 .into()
-            },
+            }
         };
 
         Ok(Command::Wait(milliseconds))
@@ -196,10 +196,10 @@ mod send_events {
 
             "mouse-button-down" => {
                 make_mouse_button_down_command(event_vector)?
-            },
+            }
             "mouse-button-press" => {
                 make_mouse_button_press_command(event_vector)?
-            },
+            }
             "mouse-button-up" => make_mouse_button_up_command(event_vector)?,
 
             "mouse-move-by" => make_mouse_button_move_by_command(event_vector)?,
@@ -210,6 +210,8 @@ mod send_events {
 
             _ => return Error::invalid_argument_error("Unknown action").into(),
         };
+
+        println!("{:?}", command);
 
         match worker_handle.send_command(command) {
             Ok(_) => Ok(()),
@@ -246,17 +248,18 @@ impl EventLoop {
         let mut interpreter = interpreter;
 
         let (interpreter_command_sender, interpreter_command_receiver) =
-            mpsc::channel::<InterpreterCommand>();
+            mpsc::channel::<NiaInterpreterCommand>();
 
         let (
             interpreter_command_result_sender,
             interpreter_command_result_receiver,
-        ) = mpsc::channel::<InterpreterCommandResult>();
-        let worker_handle = NiaWorker::new().start_sending().expect(""); // todo: change
-
-        let mut action_listener_handle: Option<NiaActionListenerHandle> = None;
+        ) = mpsc::channel::<NiaInterpreterCommandResult>();
 
         thread::spawn(move || {
+            let worker_handle = NiaWorker::new().start_sending().expect("");
+            // todo: change
+            let mut action_listener_handle: Option<NiaActionListenerHandle> =
+                None;
             let current_time = SystemTime::now();
 
             let mut time_for_garbage_collection = current_time
@@ -270,59 +273,59 @@ impl EventLoop {
                 // execute command that was received with channel
                 match interpreter_command_receiver.try_recv() {
                     Ok(command) => match command {
-                        InterpreterCommand::Execution(code) => {
+                        NiaInterpreterCommand::Execution(code) => {
                             let result =
                                 interpreter.execute_in_main_environment(&code);
 
                             let execution_result = match result {
-                                Ok(value) => {
-                                    match library::value_to_string(
-                                        &mut interpreter,
-                                        value,
-                                    ) {
-                                        Ok(string) => {
-                                            ExecutionResult::Success(string)
-                                        },
-                                        Err(error) => {
-                                            if error.is_failure() {
-                                                ExecutionResult::Failure(
-                                                    error.to_string(),
-                                                )
-                                            } else {
-                                                ExecutionResult::Error(
-                                                    error.to_string(),
-                                                )
-                                            }
-                                        },
+                                Ok(value) => match library::value_to_string(
+                                    &mut interpreter,
+                                    value,
+                                ) {
+                                    Ok(string) => {
+                                        NiaInterpreterExecutionCommandResult::Success(
+                                            string,
+                                        )
+                                    }
+                                    Err(error) => {
+                                        if error.is_failure() {
+                                            NiaInterpreterExecutionCommandResult::Failure(
+                                                error.to_string(),
+                                            )
+                                        } else {
+                                            NiaInterpreterExecutionCommandResult::Error(
+                                                error.to_string(),
+                                            )
+                                        }
                                     }
                                 },
                                 Err(error) => {
                                     if error.is_failure() {
-                                        ExecutionResult::Failure(
+                                        NiaInterpreterExecutionCommandResult::Failure(
                                             error.to_string(),
                                         )
                                     } else {
-                                        ExecutionResult::Error(
+                                        NiaInterpreterExecutionCommandResult::Error(
                                             error.to_string(),
                                         )
                                     }
-                                },
+                                }
                             };
 
                             match interpreter_command_result_sender.send(
-                                InterpreterCommandResult::ExecutionResult(
+                                NiaInterpreterCommandResult::ExecutionResult(
                                     execution_result,
                                 ),
                             ) {
-                                Ok(()) => {},
+                                Ok(()) => {}
                                 Err(_) => break,
                             }
-                        },
+                        }
                     },
                     Err(mpsc::TryRecvError::Disconnected) => {
                         break;
-                    },
-                    Err(mpsc::TryRecvError::Empty) => {},
+                    }
+                    Err(mpsc::TryRecvError::Empty) => {}
                 };
 
                 // construct/stop key remapping threads
@@ -336,17 +339,17 @@ impl EventLoop {
                             Ok(action_listener) => action_listener,
                             Err(error) => {
                                 break;
-                            },
+                            }
                         };
 
                     match action_listener.start_listening(worker_handle.clone())
                     {
                         Ok(ok) => {
                             action_listener_handle = Some(ok);
-                        },
+                        }
                         Err(error) => {
                             break;
-                        },
+                        }
                     }
                 } else if !interpreter.is_listening()
                     && action_listener_handle.is_some()
@@ -354,8 +357,8 @@ impl EventLoop {
                     match &action_listener_handle {
                         Some(handle) => {
                             handle.stop();
-                        },
-                        None => {},
+                        }
+                        None => {}
                     }
 
                     action_listener_handle = None;
@@ -367,33 +370,33 @@ impl EventLoop {
                         loop {
                             match handle.try_receive_action() {
                                 Ok(action) => match action {
-                                    Action::Empty => {},
+                                    Action::Empty => {}
                                     Action::Execute(value) => {
                                         match interpreter
                                             .execute_function_without_arguments(
                                                 value,
                                             ) {
-                                            Ok(_) => {},
+                                            Ok(_) => {}
                                             Err(error) => {
                                                 println!("Error happened:");
                                                 println!("{}", error);
-                                            },
+                                            }
                                         };
-                                    },
+                                    }
                                 },
                                 Err(mpsc::TryRecvError::Empty) => {
                                     break;
-                                },
+                                }
                                 Err(mpsc::TryRecvError::Disconnected) => {
                                     // event listener is died somehow, so it won't work anyway
                                     // event_listener_v = None;
                                     //
                                     // interpreter.stop_listening();
-                                },
+                                }
                             }
                         }
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
 
                 // send events for execution
@@ -419,13 +422,13 @@ impl EventLoop {
             match action_listener_handle {
                 Some(handle) => {
                     handle.stop();
-                },
-                _ => {},
+                }
+                _ => {}
             }
 
             match worker_handle.stop() {
-                Ok(()) => {},
-                Err(()) => {},
+                Ok(()) => {}
+                Err(()) => {}
             }
         });
 
