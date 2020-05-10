@@ -86,7 +86,7 @@ mod tests {
     use crate::interpreter::reader::read_element::read_element;
     use crate::parser::parse;
 
-    use crate::utils::assertion::assert_parsing_reading_result_is_correct;
+    use crate::utils::assert_parsing_reading_result_is_correct;
 
     #[test]
     fn reads_delimited_symbols_element_with_this_correctly() {

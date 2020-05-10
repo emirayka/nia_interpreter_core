@@ -41,11 +41,11 @@ fn deep_equal_export_type(
         (ExportObject(o1), ExportObject(o2))
         | (ExportObjectAsDefault(o1), ExportObjectAsDefault(o2)) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
-        },
+        }
         (ExportObjectAsNamed(o1, s1), ExportObjectAsNamed(o2, s2)) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && library::deep_equal(interpreter, s1.into(), s2.into())?
-        },
+        }
         (ReexportObject(o1, string1), ReexportObject(o2, string2))
         | (
             ReexportObjectAsDefault(o1, string1),
@@ -53,7 +53,7 @@ fn deep_equal_export_type(
         ) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && string1 == string2
-        },
+        }
         (
             ReexportObjectAsNamed(o1, s1, string1),
             ReexportObjectAsNamed(o2, s2, string2),
@@ -61,7 +61,7 @@ fn deep_equal_export_type(
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && library::deep_equal(interpreter, s1.into(), s2.into())?
                 && string1 == string2
-        },
+        }
         (v1, v2) => v1 == v2,
     };
 
@@ -487,7 +487,7 @@ mod read_export_type {
                     if error.is_failure() {
                         return Err(error);
                     }
-                },
+                }
             }
         }
 
@@ -750,7 +750,7 @@ mod eval_export {
                     module_name_symbol_name
                 ))
                 .into()
-            },
+            }
         }
     }
 
@@ -887,7 +887,7 @@ mod eval_export {
                             "Module has no export.",
                         )
                         .into();
-                    },
+                    }
                 };
             result.push((export_name_symbol_id, module_export_value))
         }
@@ -908,7 +908,7 @@ mod eval_export {
                     module_name_symbol_id,
                 )?;
                 vec![Export::Named(module_name_symbol_id, module_name_value)]
-            },
+            }
             ExportType::ExportAsNamed(
                 module_name_symbol_id,
                 export_name_symbol_id,
@@ -920,7 +920,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            },
+            }
             ExportType::ExportAsDefault(module_name_symbol_id) => {
                 let module_name_value = read_value_from_environment(
                     interpreter,
@@ -929,7 +929,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Default(module_name_value)]
-            },
+            }
             ExportType::ExportObject(object_id) => {
                 let object_properties = read_export_object_properties(
                     interpreter,
@@ -941,7 +941,7 @@ mod eval_export {
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            },
+            }
             ExportType::ExportObjectAsNamed(
                 object_id,
                 export_name_symbol_id,
@@ -953,7 +953,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            },
+            }
             ExportType::ExportObjectAsDefault(object_id) => {
                 let export_object_value = construct_exportation_object(
                     interpreter,
@@ -962,7 +962,7 @@ mod eval_export {
                 )?;
 
                 vec![Export::Default(export_object_value)]
-            },
+            }
             ExportType::Reexport(export_name_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
@@ -976,7 +976,7 @@ mod eval_export {
                     })?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            },
+            }
             ExportType::ReexportDefault(module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
@@ -989,7 +989,7 @@ mod eval_export {
                     })?;
 
                 vec![Export::Default(module_name_value)]
-            },
+            }
             ExportType::ReexportAsNamed(
                 module_name_symbol_id,
                 export_name_symbol_id,
@@ -1007,7 +1007,7 @@ mod eval_export {
                     })?;
 
                 vec![Export::Named(export_name_symbol_id, module_name_value)]
-            },
+            }
             ExportType::ReexportAsDefault(
                 module_name_symbol_id,
                 module_path,
@@ -1024,7 +1024,7 @@ mod eval_export {
                     })?;
 
                 vec![Export::Default(module_name_value)]
-            },
+            }
             ExportType::ReexportAll(module_path) => {
                 let module_exports =
                     read_all_exports_of_module(interpreter, &module_path)?;
@@ -1033,7 +1033,7 @@ mod eval_export {
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            },
+            }
             ExportType::ReexportAllAsNamed(
                 export_name_symbol_id,
                 module_path,
@@ -1048,7 +1048,7 @@ mod eval_export {
                     )?;
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            },
+            }
             ExportType::ReexportAllAsDefault(module_path) => {
                 let module_exports =
                     read_all_exports_of_module(interpreter, &module_path)?;
@@ -1060,7 +1060,7 @@ mod eval_export {
                     )?;
 
                 vec![Export::Default(export_object_value)]
-            },
+            }
             ExportType::ReexportObject(object_id, module_path) => {
                 let object_properties =
                     read_key_value_vector_from_object(interpreter, object_id)?;
@@ -1069,7 +1069,7 @@ mod eval_export {
                     .into_iter()
                     .map(|(symbol_id, value)| Export::Named(symbol_id, value))
                     .collect()
-            },
+            }
             ExportType::ReexportObjectAsNamed(
                 object_id,
                 export_name_symbol_id,
@@ -1094,7 +1094,7 @@ mod eval_export {
                 let export_object_value = export_object_id.into();
 
                 vec![Export::Named(export_name_symbol_id, export_object_value)]
-            },
+            }
             ExportType::ReexportObjectAsDefault(object_id, module_path) => {
                 let object_properties =
                     read_key_value_vector_from_object(interpreter, object_id)?;
@@ -1116,7 +1116,7 @@ mod eval_export {
                 let export_object_value = export_object_id.into();
 
                 vec![Export::Default(export_object_value)]
-            },
+            }
         };
 
         Ok(exportation_vector)
@@ -1136,10 +1136,10 @@ mod eval_export {
             match export {
                 Export::Named(symbol_id, value) => {
                     current_module.add_export(symbol_id, value)?
-                },
+                }
                 Export::Default(value) => {
                     current_module.add_default_export(value)?
-                },
+                }
             }
         }
 
@@ -1154,7 +1154,7 @@ mod eval_export {
         use nia_basic_assertions::*;
 
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
         use std::io::Write;
 
         fn assert_export_type_evaluated_correctly(
@@ -1170,7 +1170,7 @@ mod eval_export {
             let default_export =
                 interpreter.get_main_module().get_default_export();
 
-            assertion::assert_option_deep_equal(
+            utils::assert_option_deep_equal(
                 interpreter,
                 expected_default_export,
                 default_export,
@@ -1179,7 +1179,7 @@ mod eval_export {
 
             for (expected_symbol_id, expected_value) in expected_exports {
                 nia_assert(exports.contains_key(&expected_symbol_id));
-                assertion::assert_deep_equal(
+                utils::assert_deep_equal(
                     interpreter,
                     expected_value,
                     *exports.get(&expected_symbol_id).unwrap(),
@@ -1881,7 +1881,6 @@ mod tests {
     use super::*;
 
     use crate::utils;
-    use crate::utils::assertion;
 
     #[test]
     #[ignore]
@@ -2066,7 +2065,7 @@ mod tests {
                                             )
                                             .unwrap();
 
-                                        assertion::assert_deep_equal(
+                                        utils::assert_deep_equal(
                                             &mut interpreter,
                                             expected,
                                             result,
@@ -2119,7 +2118,7 @@ mod tests {
                                                 let expected =
                                                     Value::Integer(1);
 
-                                                assertion::assert_deep_equal(
+                                                utils::assert_deep_equal(
                                                     &mut interpreter,
                                                     expected,
                                                     result,

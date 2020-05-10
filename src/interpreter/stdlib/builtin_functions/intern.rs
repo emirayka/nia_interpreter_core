@@ -38,7 +38,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_interned_symbol() {
@@ -52,7 +52,7 @@ mod tests {
             (r#"(intern "a")"#, interpreter.intern_symbol_value("a")),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -67,7 +67,7 @@ mod tests {
             "(intern \"#another-special-symbol\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             pairs,
         );
@@ -80,7 +80,7 @@ mod tests {
 
         let pairs = vec!["(intern)", "(intern 1 2)", "(intern 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             pairs,
         );
@@ -103,7 +103,7 @@ mod tests {
             "(intern (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

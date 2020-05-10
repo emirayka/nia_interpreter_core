@@ -20,7 +20,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -33,6 +33,6 @@ mod tests {
             ("1", "(progn 3 2 1)"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 }

@@ -180,7 +180,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn sets_symbol_with_executed_value() {
@@ -209,7 +209,7 @@ mod tests {
                 ))
                 .unwrap();
 
-            assertion::assert_deep_equal(&mut interpreter, value, result);
+            utils::assert_deep_equal(&mut interpreter, value, result);
         }
     }
 
@@ -238,7 +238,7 @@ mod tests {
         for (expected, code) in specs {
             let result = interpreter.execute_in_main_environment(code).unwrap();
 
-            assertion::assert_deep_equal(&mut interpreter, expected, result);
+            utils::assert_deep_equal(&mut interpreter, expected, result);
         }
     }
 
@@ -259,7 +259,7 @@ mod tests {
             "(let ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -282,7 +282,7 @@ mod tests {
             "(let (super 2) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -298,7 +298,7 @@ mod tests {
             let result = interpreter
                 .execute_in_main_environment(&format!("(let {})", spec));
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 
@@ -321,7 +321,7 @@ mod tests {
             let result = interpreter
                 .execute_in_main_environment(&format!("(let ({}))", spec));
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 
@@ -345,7 +345,7 @@ mod tests {
                 spec, spec
             ));
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 
@@ -355,7 +355,7 @@ mod tests {
 
         let specs = vec!["(let ((nil 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -368,7 +368,7 @@ mod tests {
 
         let specs = vec!["(let ((sym)) nil)", "(let ((sym 1 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

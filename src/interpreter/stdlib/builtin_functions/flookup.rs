@@ -38,7 +38,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_associated_value() {
@@ -49,7 +49,7 @@ mod tests {
             "(flet ((a () 1)) (flookup 'flookup))",
         ];
 
-        assertion::assert_results_are_functions(&mut interpreter, code_vector);
+        utils::assert_results_are_functions(&mut interpreter, code_vector);
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
 
         let code_vector = vec!["(flet ((a () 1)) (flookup 'b))"];
 
-        assertion::assert_results_are_just_errors(
+        utils::assert_results_are_just_errors(
             &mut interpreter,
             code_vector,
         );
@@ -71,7 +71,7 @@ mod tests {
 
         let code_vector = vec!["(flookup)", "(flookup 1 2)", "(flookup 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -94,7 +94,7 @@ mod tests {
             "(flookup (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

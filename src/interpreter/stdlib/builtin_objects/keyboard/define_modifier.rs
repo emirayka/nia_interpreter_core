@@ -47,7 +47,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn defines_new_modifiers() {
@@ -61,7 +61,7 @@ mod tests {
             ("modifiers", "'((0 125) 29)"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs)
+        utils::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -80,7 +80,7 @@ mod tests {
             "(keyboard:define-modifier #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -96,7 +96,7 @@ mod tests {
             "(keyboard:define-modifier \"path\" \"name\")",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

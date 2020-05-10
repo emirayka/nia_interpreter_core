@@ -55,7 +55,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn sets_this_object_correctly() {
@@ -71,7 +71,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -80,7 +80,7 @@ mod tests {
 
         let specs = vec!["(with-this)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -102,7 +102,7 @@ mod tests {
             "(with-this '() 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

@@ -49,7 +49,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn deletes_property() {
@@ -94,7 +94,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -111,7 +111,7 @@ mod tests {
             "(let ((obj {:prop 1})) (object:delete-property! obj 'prop-2) obj)",
         ];
 
-        assertion::assert_results_are_generic_execution_errors(
+        utils::assert_results_are_generic_execution_errors(
             &mut interpreter,
             specs,
         );
@@ -140,7 +140,7 @@ mod tests {
             "(object:delete-property! {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -157,7 +157,7 @@ mod tests {
             "(object:delete-property! {:item 2} 'item 'sym2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

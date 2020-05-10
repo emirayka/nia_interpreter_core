@@ -22,7 +22,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     const VARIABLE_SYMBOL_NAME: &'static str = "test-symbol";
 
@@ -45,6 +45,6 @@ mod tests {
         let result =
             get_root_variable(&mut interpreter, VARIABLE_SYMBOL_NAME).unwrap();
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 }

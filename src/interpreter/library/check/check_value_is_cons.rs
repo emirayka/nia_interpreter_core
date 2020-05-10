@@ -2,10 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn check_value_is_cons(
-    interpreter: &Interpreter,
-    value: Value,
-) -> Result<(), Error> {
+pub fn check_value_is_cons(value: Value) -> Result<(), Error> {
     match value {
         Value::Cons(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected cons").into(),
@@ -21,15 +18,13 @@ mod tests {
 
     use crate::interpreter::value::ConsId;
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_nothing_when_a_cons_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let result =
-            check_value_is_cons(&mut interpreter, Value::Cons(ConsId::new(0)))
-                .unwrap();
+        let result = check_value_is_cons(Value::Cons(ConsId::new(0))).unwrap();
 
         nia_assert_equal((), result);
     }
@@ -54,8 +49,8 @@ mod tests {
         ];
 
         for not_cons_value in not_cons_values {
-            let result = check_value_is_cons(&mut interpreter, not_cons_value);
-            assertion::assert_invalid_argument_error(&result);
+            let result = check_value_is_cons(not_cons_value);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

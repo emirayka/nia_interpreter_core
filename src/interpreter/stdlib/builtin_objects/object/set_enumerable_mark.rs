@@ -43,7 +43,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn sets_enumerable_flag() {
@@ -61,7 +61,7 @@ mod tests {
             // todo: when iterators would be implemented, add test here
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, code_vector);
+        utils::assert_results_are_equal(&mut interpreter, code_vector);
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod tests {
             "(object:set-enumerable! {} :a #t 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -112,7 +112,7 @@ mod tests {
             "(object:set-enumerable! {} 'a #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

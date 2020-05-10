@@ -40,7 +40,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_integer() {
@@ -54,7 +54,7 @@ mod tests {
             ("(to:int #f)", Value::Integer(0)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod tests {
             "(to:int #())",
         ];
 
-        assertion::assert_results_are_generic_execution_errors(
+        utils::assert_results_are_generic_execution_errors(
             &mut interpreter,
             pairs,
         );
@@ -83,7 +83,7 @@ mod tests {
 
         let code_vector = vec!["(to:int)", "(to:int 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

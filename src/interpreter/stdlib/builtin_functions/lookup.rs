@@ -35,7 +35,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_associated_value() {
@@ -43,7 +43,7 @@ mod tests {
 
         let pairs = vec![("(let ((a 1)) (lookup 'a))", Value::Integer(1))];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -52,7 +52,7 @@ mod tests {
 
         let code_vector = vec!["(let ((a 1)) (lookup 'b))"];
 
-        assertion::assert_results_are_just_errors(
+        utils::assert_results_are_just_errors(
             &mut interpreter,
             code_vector,
         );
@@ -65,7 +65,7 @@ mod tests {
 
         let code_vector = vec!["(lookup)", "(lookup 1 2)", "(lookup 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -88,7 +88,7 @@ mod tests {
             "(lookup (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

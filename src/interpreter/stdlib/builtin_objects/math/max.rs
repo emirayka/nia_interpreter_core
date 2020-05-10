@@ -61,7 +61,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_max_value() {
@@ -78,7 +78,7 @@ mod tests {
             ("(math:max 1.0 2.0 3.0)", Value::Float(3.0)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
 
         let code_vector = vec!["(math:max)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -110,7 +110,7 @@ mod tests {
             "(math:max (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

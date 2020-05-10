@@ -17,7 +17,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_int() {
@@ -61,7 +61,7 @@ mod tests {
 
         for not_string_value in not_string_values {
             let result = read_as_i64(not_string_value);
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

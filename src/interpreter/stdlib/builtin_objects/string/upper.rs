@@ -33,7 +33,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_uppercase_string() {
@@ -48,7 +48,7 @@ mod tests {
             (r#"(string:upper "ὀδυσσεύς")"#, r#""ὈΔΥΣΣΕΎΣ""#),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod tests {
         let code_vector =
             vec![r#"(string:upper)"#, r#"(string:upper "a" "b")"#];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -81,7 +81,7 @@ mod tests {
             r#"(string:upper #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

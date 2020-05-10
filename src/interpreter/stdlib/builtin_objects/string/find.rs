@@ -41,7 +41,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_character_index() {
@@ -60,7 +60,7 @@ mod tests {
             (r#"(string:find "abcc" "abc")"#, Value::Integer(-1)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod tests {
             (r#"(string:find "c月" "猫a钥b匙c月")"#, Value::Integer(5)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -90,7 +90,7 @@ mod tests {
             r#"(string:find "a" "b" "c")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -121,7 +121,7 @@ mod tests {
             r#"(string:find #(+ %1 %2) "b")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

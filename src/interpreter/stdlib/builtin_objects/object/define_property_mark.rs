@@ -231,7 +231,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn defines_new_property() {
@@ -264,7 +264,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -322,7 +322,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -333,7 +333,7 @@ mod tests {
             "(let ((obj {:a 1})) (object:define-property! obj {:name 'a :value 10}) obj)",
         ];
 
-        assertion::assert_results_are_generic_execution_errors(
+        utils::assert_results_are_generic_execution_errors(
             &mut interpreter,
             specs,
         );
@@ -349,7 +349,7 @@ mod tests {
             "(let ((obj {})) (object:define-property! obj {:value 1}) obj)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -380,7 +380,7 @@ mod tests {
             "(object:define-property! {} #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -397,7 +397,7 @@ mod tests {
             "(object:define-property! {} 'item 'sym2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

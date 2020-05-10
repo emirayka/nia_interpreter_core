@@ -54,7 +54,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_random_int() {
@@ -70,7 +70,7 @@ mod tests {
         ];
 
         for _ in 0..1000 {
-            assertion::assert_results_are_equal(
+            utils::assert_results_are_equal(
                 &mut interpreter,
                 pairs.clone(),
             );
@@ -83,7 +83,7 @@ mod tests {
 
         let code_vector = vec!["(rand:int 10 1)", "(rand:int 100 1)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -114,7 +114,7 @@ mod tests {
             "(rand:int 1 #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -127,7 +127,7 @@ mod tests {
 
         let code_vector = vec!["(rand:int 1 2 3)", "(rand:int 1 2 3 4)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

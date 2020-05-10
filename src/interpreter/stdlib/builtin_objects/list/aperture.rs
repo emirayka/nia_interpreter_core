@@ -46,7 +46,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_apertures() {
@@ -67,7 +67,7 @@ mod tests {
             ("(list:aperture 6 '(1 2 3 4 5))", "'()"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs)
+        utils::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -97,7 +97,7 @@ mod tests {
             "(list:aperture #() #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -114,7 +114,7 @@ mod tests {
             "(list:aperture 1 2 3)",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

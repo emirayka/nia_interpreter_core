@@ -38,7 +38,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_true_when_assertion_was_passed() {
@@ -46,7 +46,7 @@ mod tests {
 
         let pairs = vec![("(assert #t)", "#t")];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod tests {
         let code = "(assert #f)";
         let result = interpreter.execute_in_main_environment(code);
 
-        assertion::assert_assertion_error(&result);
+        utils::assert_assertion_error(&result);
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod tests {
             "(assert #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

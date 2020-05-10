@@ -29,7 +29,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_vector_representation() {
@@ -51,7 +51,7 @@ mod tests {
             let value = interpreter.execute_in_main_environment(code).unwrap();
             let result = read_as_vector(&interpreter, value).unwrap();
 
-            assertion::assert_vectors_deep_equal(
+            utils::assert_vectors_deep_equal(
                 &mut interpreter,
                 expected,
                 result,
@@ -79,7 +79,7 @@ mod tests {
             let value = interpreter.execute_in_main_environment(code).unwrap();
             let result = read_as_vector(&interpreter, value);
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

@@ -37,7 +37,7 @@ mod defv {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn defines_variable() {
@@ -45,7 +45,7 @@ mod defv {
 
             let pairs = vec![("(defv a 1) a", "1"), ("(defv b) b", "nil")];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -65,7 +65,7 @@ mod defc {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn defines_const_variable() {
@@ -81,7 +81,7 @@ mod defc {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -101,7 +101,7 @@ mod defn {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn defines_function() {
@@ -117,7 +117,7 @@ mod defn {
                 ("(defn g (#keys b) b) (g :b 1)", "1"),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -137,7 +137,7 @@ mod defm {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn defines_macro() {
@@ -154,7 +154,7 @@ mod defm {
                 ("(defm h (a b) (list 'cons a b)) (h 'a 'b)", "(cons 'a 'b)"),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -174,7 +174,7 @@ mod _fn {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn makes_a_function() {
@@ -197,7 +197,7 @@ mod _fn {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -218,7 +218,7 @@ mod _if {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn works_correctly() {
@@ -235,7 +235,7 @@ mod _if {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -256,7 +256,7 @@ mod when {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn works_correctly() {
@@ -267,7 +267,7 @@ mod when {
                 "'(1 0)",
             )];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }
@@ -288,7 +288,7 @@ mod unless {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn works_correctly() {
@@ -299,7 +299,7 @@ mod unless {
                 "'(0 1)",
             )];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 }

@@ -50,7 +50,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_right_symbols() {
@@ -70,7 +70,7 @@ mod tests {
             (r#"(string:right 5 "abcd")"#, r#""abcd""#),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -91,7 +91,7 @@ mod tests {
             (r#"(string:right 5 "猫a钥b匙c月")"#, r#""钥b匙c月""#),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -105,7 +105,7 @@ mod tests {
             r#"(string:right 3 "b" "c")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -135,7 +135,7 @@ mod tests {
             r#"(string:right 3 #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

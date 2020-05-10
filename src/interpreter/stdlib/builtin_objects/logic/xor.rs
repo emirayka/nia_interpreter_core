@@ -38,7 +38,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_xor_result() {
@@ -51,7 +51,7 @@ mod tests {
             ("(logic:xor #t #t)", "#f"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod tests {
         let code_vector =
             vec!["(logic:xor)", "(logic:xor #t)", "(logic:xor #t #t #t)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -91,7 +91,7 @@ mod tests {
             "(logic:xor #t (function (lambda () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

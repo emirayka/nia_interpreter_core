@@ -60,7 +60,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_integer_multiplication() {
@@ -68,7 +68,7 @@ mod tests {
 
         let pairs = vec![("(* 1 2)", Value::Integer(2))];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod tests {
             ("(* 1.0 2.0)", Value::Float(2.0)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -94,7 +94,7 @@ mod tests {
             ("(* 1 2 3 4)", Value::Integer(24)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -107,7 +107,7 @@ mod tests {
             ("(* 1 2.0 3)", Value::Float(6.0)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -117,7 +117,7 @@ mod tests {
 
         let code_vector = vec!["(*)", "(* 1)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -139,7 +139,7 @@ mod tests {
             "(* 1 (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -155,7 +155,7 @@ mod tests {
             "(* 922337203685477580 10 10)",
         ];
 
-        assertion::assert_results_are_overflow_errors(
+        utils::assert_results_are_overflow_errors(
             &mut interpreter,
             code_vector,
         );

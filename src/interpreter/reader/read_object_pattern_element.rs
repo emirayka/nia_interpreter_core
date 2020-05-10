@@ -111,7 +111,7 @@ mod tests {
                     .unwrap()
                     .unwrap();
 
-                crate::utils::assertion::assert_deep_equal(
+                crate::utils::assert_deep_equal(
                     &mut interpreter,
                     expected_value,
                     result_value,

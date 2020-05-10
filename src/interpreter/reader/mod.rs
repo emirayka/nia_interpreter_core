@@ -34,7 +34,7 @@ pub use read_elements::read_elements;
 //                 let expected = expected[i];
 //                 let result = result[i];
 //
-//                 assertion::assert_deep_equal(
+//                 utils::assert_deep_equal(
 //                     &mut interpreter,
 //                     expected,
 //                     result,

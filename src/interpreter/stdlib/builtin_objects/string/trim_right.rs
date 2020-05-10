@@ -33,7 +33,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_trimmed_from_right_string() {
@@ -57,7 +57,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod tests {
         let code_vector =
             vec![r#"(string:trim-right)"#, r#"(string:trim-right "a" "b")"#];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -90,7 +90,7 @@ mod tests {
             r#"(string:trim-right #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

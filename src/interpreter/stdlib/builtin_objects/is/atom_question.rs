@@ -33,7 +33,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_true_when_an_atom_was_passed() {
@@ -51,7 +51,7 @@ mod tests {
             ("(is:atom? #())", Value::Boolean(true)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod tests {
             ("(is:atom? (cons 1 (cons 2 3)))", Value::Boolean(false)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod tests {
 
         let code_vector = vec!["(is:atom?)", "(is:atom? 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

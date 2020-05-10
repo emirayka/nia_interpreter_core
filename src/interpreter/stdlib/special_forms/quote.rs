@@ -30,7 +30,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn quote_works_correctly_when_used_quote_special_form() {
@@ -54,7 +54,7 @@ mod tests {
             ("(quote (1 2))", cons),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -79,7 +79,7 @@ mod tests {
             ("'(1 2)", cons),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
 
         let specs = vec!["(quote 1 2)", "(quote)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );

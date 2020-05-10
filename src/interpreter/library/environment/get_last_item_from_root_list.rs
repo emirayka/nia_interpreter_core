@@ -39,7 +39,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     const EMPTY_LIST_VARIABLE_SYMBOL_NAME: &'static str = "test-list-symbol";
 
@@ -67,7 +67,7 @@ mod tests {
         )
         .unwrap();
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result)
+        utils::assert_deep_equal(&mut interpreter, expected, result)
     }
 
     #[test]

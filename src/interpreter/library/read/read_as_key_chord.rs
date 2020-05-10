@@ -12,7 +12,7 @@ pub fn read_as_key_chord(
     interpreter: &mut Interpreter,
     key_chord_value: Value,
 ) -> Result<KeyChord, Error> {
-    library::check_value_is_cons(interpreter, key_chord_value)?;
+    library::check_value_is_cons(key_chord_value)?;
 
     let key_chord_cons_id = key_chord_value.try_into()?;
     let key_chord_part_values = interpreter.list_to_vec(key_chord_cons_id)?;

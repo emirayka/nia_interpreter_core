@@ -25,7 +25,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_list_of_execution_results() {
@@ -38,6 +38,6 @@ mod tests {
             ("(block 1 2 3)", "'(1 2 3)"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 }

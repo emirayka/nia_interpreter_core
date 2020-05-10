@@ -33,7 +33,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_false_for_equal_values() {
@@ -52,7 +52,7 @@ mod tests {
             ("(neq? #(+ %1 %2) #(+ %1 %2))", "#t"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -72,7 +72,7 @@ mod tests {
             ("(neq? #(+ %1 %2) #(+ %1 %3))", "#t"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -92,7 +92,7 @@ mod tests {
             ("(neq? #(+ %1 %2) 5)", "#t"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
 
         let code_vector = vec!["(neq?)", "(neq? 1)", "(neq? 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

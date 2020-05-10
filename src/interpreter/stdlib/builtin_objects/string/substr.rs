@@ -65,7 +65,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_substring() {
@@ -87,7 +87,7 @@ mod tests {
             (r#"(string:substr 0 10 "abcdef")"#, r#""abcdef""#),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -105,7 +105,7 @@ mod tests {
             (r#"(string:substr 0 7 "猫a钥b匙c月")"#, r#""猫a钥b匙c月""#),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
     #[test]
     fn returns_invalid_argument_count_error_when_was_called_with_invalid_count_of_arguments(
@@ -119,7 +119,7 @@ mod tests {
             r#"(string:substr 1 2 "test" "")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -159,7 +159,7 @@ mod tests {
             r#"(string:substr 1 2 #(+ %1 %2))"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

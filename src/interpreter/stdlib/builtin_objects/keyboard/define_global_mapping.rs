@@ -28,7 +28,7 @@ fn read_registered_keyboards(
 ) -> Result<HashMap<String, KeyboardId>, Error> {
     let mut result = HashMap::new();
 
-    let registered_keyboards = library::get_registered_keyboards(interpreter)?;
+    let registered_keyboards = library::get_defined_keyboards(interpreter)?;
 
     let registered_keyboards =
         library::read_as_vector(interpreter, registered_keyboards)?;
@@ -93,7 +93,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn defines_new_mappings() {
@@ -116,7 +116,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs)
+        utils::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -143,7 +143,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs)
+        utils::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -181,7 +181,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs)
+        utils::assert_results_are_equal(&mut interpreter, pairs)
     }
 
     #[test]
@@ -209,7 +209,7 @@ mod tests {
             "(keyboard:define-global-mapping \"q\" {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -226,7 +226,7 @@ mod tests {
             "(keyboard:define-global-mapping \"path\" \"name\" '())",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

@@ -37,7 +37,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_the_integer_itself_if_it_was_passed() {
@@ -45,7 +45,7 @@ mod tests {
 
         let pairs = vec![("(math:floor 3)", Value::Integer(3))];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod tests {
             ("(math:floor 1.2)", Value::Integer(1)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod tests {
         let code_vector =
             vec!["(math:floor)", "(math:floor 1 2)", "(math:floor 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -92,7 +92,7 @@ mod tests {
             "(math:floor (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         )

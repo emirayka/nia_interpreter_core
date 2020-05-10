@@ -38,7 +38,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_nil_when_no_proto_exists() {
@@ -49,7 +49,7 @@ mod tests {
             interpreter.intern_nil_symbol_value(),
         )];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -60,7 +60,7 @@ mod tests {
             "(let ((obj-1 {}) (obj-2 {})) (object:set-proto! obj-1 obj-2) (object:get-proto obj-1))"
         );
 
-        assertion::assert_is_object(result.unwrap());
+        utils::assert_is_object(result.unwrap());
     }
 
     #[test]
@@ -73,7 +73,7 @@ mod tests {
             "(let ((obj {:item 1})) (object:get-proto obj 'smth-other))",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -85,7 +85,7 @@ mod tests {
 
         let code_vector = vec!["(let ((obj 2)) (object:get-proto obj))"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

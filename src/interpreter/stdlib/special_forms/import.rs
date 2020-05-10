@@ -27,11 +27,11 @@ fn deep_equal_import_type(
         (ImportDefault(s1, string1), ImportDefault(s2, string2)) => {
             library::deep_equal(interpreter, s1.into(), s2.into())?
                 && string1 == string2
-        },
+        }
         (ImportObject(o1, string1), ImportObject(o2, string2)) => {
             library::deep_equal(interpreter, o1.into(), o2.into())?
                 && string1 == string2
-        },
+        }
         (
             ImportObjectAsNamed(o1, s1, string1),
             ImportObjectAsNamed(o2, s2, string2),
@@ -39,11 +39,11 @@ fn deep_equal_import_type(
             string1 == string2
                 && library::deep_equal(interpreter, o1.into(), o2.into())?
                 && library::deep_equal(interpreter, s1.into(), s2.into())?
-        },
+        }
         (ImportAllAsNamed(s1, string1), ImportAllAsNamed(s2, string2)) => {
             library::deep_equal(interpreter, s1.into(), s2.into())?
                 && string1 == string2
-        },
+        }
         (v1, v2) => v1 == v2,
     };
 
@@ -290,7 +290,7 @@ mod read_import_type {
                     if error.is_failure() {
                         return Err(error);
                     }
-                },
+                }
             }
         }
 
@@ -550,7 +550,7 @@ mod eval_import {
                 interpreter.intern_module(&module_path)?;
 
                 Vec::new()
-            },
+            }
             ImportType::ImportDefault(variable_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
                 let module = interpreter.get_module(module_id)?;
@@ -562,11 +562,11 @@ mod eval_import {
                             "Module has no default export.",
                         )
                         .into();
-                    },
+                    }
                 };
 
                 vec![Import::Named(variable_symbol_id, default_export)]
-            },
+            }
             ImportType::ImportObject(object_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
 
@@ -574,7 +574,7 @@ mod eval_import {
                     .into_iter()
                     .map(|(symbol_id, value)| Import::Named(symbol_id, value))
                     .collect()
-            },
+            }
             ImportType::ImportObjectAsNamed(
                 object_id,
                 variable_symbol_id,
@@ -589,7 +589,7 @@ mod eval_import {
                 )?;
 
                 vec![Import::Named(variable_symbol_id, object_id)]
-            },
+            }
             ImportType::ImportAll(module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
 
@@ -599,7 +599,7 @@ mod eval_import {
                         Import::Named(variable_symbol_id, value)
                     })
                     .collect()
-            },
+            }
             ImportType::ImportAllAsNamed(variable_symbol_id, module_path) => {
                 let module_id = interpreter.intern_module(&module_path)?;
 
@@ -609,7 +609,7 @@ mod eval_import {
                 let object_id = make_object_from_exports(interpreter, exports)?;
 
                 vec![Import::Named(variable_symbol_id, object_id)]
-            },
+            }
         };
 
         Ok(importation_vector)
@@ -631,7 +631,7 @@ mod eval_import {
                         symbol_id,
                         value,
                     )?;
-                },
+                }
             }
         }
 
@@ -646,7 +646,7 @@ mod eval_import {
         use nia_basic_assertions::*;
 
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
         use std::io::Write;
 
         #[test]
@@ -687,7 +687,7 @@ mod eval_import {
                         .unwrap()
                         .unwrap();
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         expected_value,
                         result_value,
@@ -727,7 +727,7 @@ mod eval_import {
                         .unwrap();
 
                     let expected_value = Value::Integer(1);
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         expected_value,
                         result_value,
@@ -802,13 +802,13 @@ mod eval_import {
                         .unwrap()
                         .unwrap();
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         value_1,
                         result_1,
                     );
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         value_2,
                         result_2,
@@ -896,7 +896,7 @@ mod eval_import {
                         .unwrap()
                         .unwrap();
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         expected_object_value,
                         result,
@@ -944,13 +944,13 @@ mod eval_import {
                         .unwrap()
                         .unwrap();
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         value_1,
                         result_1,
                     );
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         value_2,
                         result_2,
@@ -1016,7 +1016,7 @@ mod eval_import {
                         .unwrap()
                         .unwrap();
 
-                    assertion::assert_deep_equal(
+                    utils::assert_deep_equal(
                         &mut interpreter,
                         expected_object_value,
                         result,
@@ -1048,7 +1048,6 @@ pub fn import(
 mod tests {
     use super::*;
     use crate::utils;
-    use crate::utils::assertion;
 
     #[test]
     #[ignore]
@@ -1162,7 +1161,7 @@ mod tests {
                                             )
                                             .unwrap();
 
-                                        assertion::assert_deep_equal(
+                                        utils::assert_deep_equal(
                                             &mut interpreter,
                                             expected,
                                             result,
@@ -1215,7 +1214,7 @@ mod tests {
                                                 let expected =
                                                     Value::Integer(1);
 
-                                                assertion::assert_deep_equal(
+                                                utils::assert_deep_equal(
                                                     &mut interpreter,
                                                     expected,
                                                     result,

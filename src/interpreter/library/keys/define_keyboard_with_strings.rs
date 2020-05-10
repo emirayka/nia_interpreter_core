@@ -4,7 +4,7 @@ use crate::Value;
 
 use crate::library;
 
-pub fn register_keyboard<S>(
+pub fn define_keyboard_with_strings<S>(
     interpreter: &mut Interpreter,
     keyboard_path: S,
     keyboard_name: S,
@@ -12,35 +12,16 @@ pub fn register_keyboard<S>(
 where
     S: AsRef<str>,
 {
-    let root_environment_id = interpreter.get_main_environment_id();
-    let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("nia-registered-keyboards");
-
-    let keyboard_list = interpreter
-        .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?
-        .ok_or_else(|| {
-            Error::generic_execution_error("Cannot find registered_keyboards")
-        })?;
-
-    let keyboard_path_value = keyboard_path.as_ref();
-    let keyboard_name_value = keyboard_name.as_ref();
-
     let keyboard_path_value =
-        interpreter.intern_string_value(keyboard_path_value);
+        interpreter.intern_string_value(keyboard_path.as_ref());
     let keyboard_name_value =
-        interpreter.intern_string_value(keyboard_name_value);
+        interpreter.intern_string_value(keyboard_name.as_ref());
 
-    let new_list =
-        interpreter.vec_to_list(vec![keyboard_path_value, keyboard_name_value]);
-    let cons = interpreter.make_cons_value(new_list, keyboard_list);
-
-    interpreter.set_variable(
-        root_environment_id,
-        symbol_id_registered_keyboards,
-        cons,
-    )?;
-
-    Ok(())
+    library::define_keyboard_with_values(
+        interpreter,
+        keyboard_path_value,
+        keyboard_name_value,
+    )
 }
 
 #[cfg(test)]
@@ -55,7 +36,7 @@ mod tests {
     fn changes_variable_registered_keyboards() {
         let mut interpreter = Interpreter::new();
 
-        nia_assert_is_ok(&register_keyboard(
+        nia_assert_is_ok(&define_keyboard_with_strings(
             &mut interpreter,
             "/dev/input/event6",
             "first",
@@ -78,13 +59,38 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        nia_assert_is_ok(&register_keyboard(
+        nia_assert_is_ok(&define_keyboard_with_strings(
             &mut interpreter,
             "/dev/input/event6",
             "first",
         ));
 
-        let result =
-            register_keyboard(&mut interpreter, "/dev/input/event6", "second");
+        let result = define_keyboard_with_strings(
+            &mut interpreter,
+            "/dev/input/event6",
+            "second",
+        );
+
+        crate::utils::assert_generic_execution_error(&result);
+    }
+
+    #[test]
+    fn returns_generic_error_when_keyboard_with_the_same_name_was_already_defined(
+    ) {
+        let mut interpreter = Interpreter::new();
+
+        nia_assert_is_ok(&define_keyboard_with_strings(
+            &mut interpreter,
+            "/dev/input/event6",
+            "first",
+        ));
+
+        let result = define_keyboard_with_strings(
+            &mut interpreter,
+            "/dev/input/event7",
+            "first",
+        );
+
+        crate::utils::assert_generic_execution_error(&result);
     }
 }

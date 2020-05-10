@@ -28,7 +28,7 @@ mod tests {
 
     use crate::interpreter::value::ConsId;
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_nothing_when_a_cons_was_passed() {
@@ -67,7 +67,7 @@ mod tests {
 
         for not_list_value in not_list_values {
             let result = check_value_is_list(&mut interpreter, not_list_value);
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

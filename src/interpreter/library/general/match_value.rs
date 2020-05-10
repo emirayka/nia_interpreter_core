@@ -121,7 +121,7 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::utils::assertion::assert_deep_equal;
+    use crate::utils::assert_deep_equal;
 
     fn assert_matches_correctly(
         interpreter: &mut Interpreter,

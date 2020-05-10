@@ -19,7 +19,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_nil_when_was_called_with_zero_arguments() {
@@ -27,7 +27,7 @@ mod tests {
 
         let pairs = vec![("(list)", interpreter.intern_nil_symbol_value())];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -46,7 +46,7 @@ mod tests {
             ("(list #())", "(cons #() nil)"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -74,6 +74,6 @@ mod tests {
             //            ("(list #(+ %1 %2) #(+ %2 %1))", "(cons #(+ %1 %2) (cons #(+ %2 %1) nil))"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 }

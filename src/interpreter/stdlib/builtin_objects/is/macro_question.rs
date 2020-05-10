@@ -42,7 +42,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_true_when_an_macro_function_was_passed() {
@@ -51,7 +51,7 @@ mod tests {
         let pairs =
             vec![("(is:macro? (function (macro () 2)))", Value::Boolean(true))];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs)
+        utils::assert_results_are_correct(&mut interpreter, pairs)
     }
 
     #[test]
@@ -73,7 +73,7 @@ mod tests {
             ("(is:macro? #())", Value::Boolean(false)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs)
+        utils::assert_results_are_correct(&mut interpreter, pairs)
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
 
         let code_vector = vec!["(is:macro?)", "(is:macro? 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         )

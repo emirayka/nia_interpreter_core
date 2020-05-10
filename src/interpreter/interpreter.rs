@@ -193,7 +193,7 @@ impl Interpreter {
         let mut interpreter = Interpreter::raw();
 
         match infect_stdlib(&mut interpreter) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(error) => panic!("Cannot construct interpreter: {:?}", error),
         }
 
@@ -494,7 +494,7 @@ impl Interpreter {
                     "Cannot get car of not a cons value",
                 )
                 .into();
-            },
+            }
         }
     }
 
@@ -508,7 +508,7 @@ impl Interpreter {
                     "Cannot get cdr of not a cons value",
                 )
                 .into();
-            },
+            }
         }
     }
 
@@ -547,8 +547,8 @@ impl Interpreter {
                         vector.remove(vector.len() - 1);
                     }
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(vector)
@@ -1195,7 +1195,7 @@ impl Interpreter {
                     root_environment_id,
                     function_invocation_cons,
                 )
-            },
+            }
             _ => Error::invalid_argument_error("").into(),
         }
     }
@@ -1227,8 +1227,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
-    use crate::utils::assertion::assert_deep_equal;
+    use crate::utils;
 
     #[cfg(test)]
     mod evaluation {
@@ -1267,7 +1266,7 @@ mod tests {
             let result =
                 interpreter.execute_in_main_environment(r#""tas""#).unwrap();
 
-            assertion::assert_deep_equal(&mut interpreter, expected, result);
+            utils::assert_deep_equal(&mut interpreter, expected, result);
         }
 
         #[test]
@@ -1373,11 +1372,7 @@ mod tests {
                     .unwrap()
                     .unwrap();
 
-                assertion::assert_deep_equal(
-                    &mut interpreter,
-                    expected,
-                    result,
-                );
+                utils::assert_deep_equal(&mut interpreter, expected, result);
             }
         }
 
@@ -1404,7 +1399,7 @@ mod tests {
                     ("(let ((obj {:value #()})) obj:value)", "#()"),
                 ];
 
-                assertion::assert_results_are_equal(&mut interpreter, specs);
+                utils::assert_results_are_equal(&mut interpreter, specs);
             }
 
             #[test]
@@ -1417,7 +1412,7 @@ mod tests {
                     ("(let ((obj {:a {:b {:c 3}}})) obj:a:b:c)", "3"),
                 ];
 
-                assertion::assert_results_are_equal(&mut interpreter, specs);
+                utils::assert_results_are_equal(&mut interpreter, specs);
             }
 
             #[test]
@@ -1443,7 +1438,7 @@ mod tests {
                     ),
                 ];
 
-                assertion::assert_results_are_equal(&mut interpreter, specs);
+                utils::assert_results_are_equal(&mut interpreter, specs);
             }
 
             #[test]
@@ -1480,7 +1475,7 @@ mod tests {
                     ),
                 ];
 
-                assertion::assert_results_are_equal(&mut interpreter, specs);
+                utils::assert_results_are_equal(&mut interpreter, specs);
             }
 
             // todo: more edge cases
@@ -1497,27 +1492,43 @@ mod tests {
 
                 let result =
                     interpreter.execute_in_main_environment("(#())").unwrap();
-                assert_deep_equal(&mut interpreter, nil, result);
+                utils::assert_deep_equal(&mut interpreter, nil, result);
 
                 let result = interpreter
                     .execute_in_main_environment("(#(+ 3 2))")
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(5),
+                    result,
+                );
 
                 let result = interpreter
                     .execute_in_main_environment("(#(+ %1 2) 1)")
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(3), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(3),
+                    result,
+                );
 
                 let result = interpreter
                     .execute_in_main_environment("(#(+ %1 %2) 1 3)")
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(4), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(4),
+                    result,
+                );
 
                 let result = interpreter
                     .execute_in_main_environment("(#(+ 0 %5) 1 2 3 4 5)")
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(5),
+                    result,
+                );
             }
 
             #[test]
@@ -1529,21 +1540,33 @@ mod tests {
                         "(flet ((test () #((lookup '%1)))) ((test) #(+ 3 2)))",
                     )
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(5),
+                    result,
+                );
 
                 let result = interpreter
                     .execute_in_main_environment(
                         "(flet ((test () #((flookup '%1)))) ((test) #(+ 3 2)))",
                     )
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(5),
+                    result,
+                );
 
                 let result = interpreter
                     .execute_in_main_environment(
                         "(flet ((test () #(%1))) ((test) #(+ 3 2)))",
                     )
                     .unwrap();
-                assert_deep_equal(&mut interpreter, Value::Integer(5), result);
+                utils::assert_deep_equal(
+                    &mut interpreter,
+                    Value::Integer(5),
+                    result,
+                );
             }
         }
 
@@ -1661,7 +1684,7 @@ mod tests {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -1675,7 +1698,7 @@ mod tests {
                 ("((function (lambda (#rest a) a)) 1 2 3)", "(list 1 2 3)"),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -1745,7 +1768,7 @@ mod tests {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -1798,11 +1821,7 @@ mod tests {
                 let result =
                     interpreter.execute_in_main_environment(code).unwrap();
 
-                assertion::assert_deep_equal(
-                    &mut interpreter,
-                    expected,
-                    result,
-                );
+                utils::assert_deep_equal(&mut interpreter, expected, result);
             }
         }
 
@@ -1815,7 +1834,7 @@ mod tests {
                 "(list 'aa 'bb 'cc)",
             )];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
     }
 
@@ -1829,11 +1848,11 @@ mod tests {
 
         let result = interpreter.execute_in_main_environment("(a)");
 
-        assertion::assert_stack_overflow_error(&result);
+        utils::assert_stack_overflow_error(&result);
 
         // and it continues to work
         let result = interpreter.execute_in_main_environment("(a)");
 
-        assertion::assert_stack_overflow_error(&result);
+        utils::assert_stack_overflow_error(&result);
     }
 }

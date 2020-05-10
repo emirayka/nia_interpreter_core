@@ -22,7 +22,7 @@ mod tests {
     use std::convert::TryInto;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_keyword_id() {
@@ -58,7 +58,7 @@ mod tests {
 
         for not_symbol_value in not_symbol_values {
             let result = read_as_keyword_id(not_symbol_value);
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

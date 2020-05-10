@@ -67,7 +67,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_generic_error_when_no_symbol_was_provided() {
@@ -87,7 +87,7 @@ mod tests {
 
         let code_vector = vec!["(when #t (throw 'err) 2)"];
 
-        assertion::assert_results_are_just_errors(
+        utils::assert_results_are_just_errors(
             &mut interpreter,
             code_vector,
         );

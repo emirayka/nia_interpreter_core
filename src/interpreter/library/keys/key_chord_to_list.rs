@@ -31,7 +31,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     use nia_events::{KeyChordPart, KeyId, KeyboardId};
 
@@ -42,7 +42,7 @@ mod tests {
 
         let result = key_chord_to_list(&mut interpreter, key_chord);
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]

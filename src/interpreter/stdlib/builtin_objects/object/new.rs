@@ -50,7 +50,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn makes_new_object() {
@@ -58,7 +58,7 @@ mod tests {
 
         let result = interpreter.execute_in_main_environment("(object:new)");
 
-        assertion::assert_is_object(result.unwrap());
+        utils::assert_is_object(result.unwrap());
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod tests {
             "(let ((proto {})) (object:get-proto (object:new proto)))",
         );
 
-        assertion::assert_is_object(result.unwrap());
+        utils::assert_is_object(result.unwrap());
     }
 
     #[test]
@@ -79,7 +79,7 @@ mod tests {
 
         let code_vector = vec!["(object:new {} 1)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -99,7 +99,7 @@ mod tests {
             "(object:new :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             invalid_arguments,
         );

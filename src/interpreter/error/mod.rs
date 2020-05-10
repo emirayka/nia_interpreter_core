@@ -75,15 +75,18 @@ impl Error {
 }
 
 impl Error {
-    pub fn from(
+    pub fn from<S>(
         caused_by: Option<Error>,
         kind: ErrorKind,
-        message: &str,
+        message: S,
         symbol_name: String,
-    ) -> Error {
+    ) -> Error
+    where
+        S: Into<String>,
+    {
         Error {
             error_kind: kind,
-            message: String::from(message),
+            message: message.into(),
             caused_by: match caused_by {
                 Some(error) => Some(Box::new(error)),
                 None => None,
@@ -92,16 +95,22 @@ impl Error {
         }
     }
 
-    pub fn failure(message: String) -> Error {
+    pub fn failure<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error {
             error_kind: ErrorKind::Failure,
-            message,
+            message: message.into(),
             caused_by: None,
             symbol_name: String::from(SYMBOL_NAME_FAILURE),
         }
     }
 
-    pub fn parse_error(message: &str) -> Error {
+    pub fn parse_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::ParseError,
@@ -110,11 +119,17 @@ impl Error {
         )
     }
 
-    pub fn generic_error(symbol_name: String, message: &str) -> Error {
-        Error::from(None, ErrorKind::GenericError, message, symbol_name)
+    pub fn generic_error<S>(symbol_name: String, message: S) -> Error
+    where
+        S: Into<String>,
+    {
+        Error::from(None, ErrorKind::GenericError, message.into(), symbol_name)
     }
 
-    pub fn generic_execution_error(message: &str) -> Error {
+    pub fn generic_execution_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::GenericExecution,
@@ -122,10 +137,10 @@ impl Error {
             String::from(SYMBOL_NAME_GENERIC_EXECUTION_ERROR),
         )
     }
-    pub fn generic_execution_error_caused(
-        message: &str,
-        cause: Error,
-    ) -> Error {
+    pub fn generic_execution_error_caused<S>(message: S, cause: Error) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::GenericExecution,
@@ -134,7 +149,10 @@ impl Error {
         )
     }
 
-    pub fn overflow_error(message: &str) -> Error {
+    pub fn overflow_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::Overflow,
@@ -143,7 +161,10 @@ impl Error {
         )
     }
 
-    pub fn overflow_error_caused(message: &str, cause: Error) -> Error {
+    pub fn overflow_error_caused<S>(message: S, cause: Error) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::Overflow,
@@ -152,7 +173,10 @@ impl Error {
         )
     }
 
-    pub fn zero_division_error(message: &str) -> Error {
+    pub fn zero_division_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::ZeroDivision,
@@ -161,7 +185,10 @@ impl Error {
         )
     }
 
-    pub fn zero_division_error_caused(message: &str, cause: Error) -> Error {
+    pub fn zero_division_error_caused<S>(message: S, cause: Error) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::ZeroDivision,
@@ -170,7 +197,10 @@ impl Error {
         )
     }
 
-    pub fn invalid_cons_error(message: &str) -> Error {
+    pub fn invalid_cons_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::InvalidCons,
@@ -179,7 +209,10 @@ impl Error {
         )
     }
 
-    pub fn invalid_cons_error_caused(message: &str, cause: Error) -> Error {
+    pub fn invalid_cons_error_caused<S>(message: S, cause: Error) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::InvalidCons,
@@ -188,7 +221,10 @@ impl Error {
         )
     }
 
-    pub fn invalid_argument_error(message: &str) -> Error {
+    pub fn invalid_argument_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::InvalidArgument,
@@ -196,7 +232,10 @@ impl Error {
             String::from(SYMBOL_NAME_INVALID_ARGUMENT_ERROR),
         )
     }
-    pub fn invalid_argument_error_caused(message: &str, cause: Error) -> Error {
+    pub fn invalid_argument_error_caused<S>(message: S, cause: Error) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::InvalidArgument,
@@ -205,7 +244,10 @@ impl Error {
         )
     }
 
-    pub fn invalid_argument_count_error(message: &str) -> Error {
+    pub fn invalid_argument_count_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::InvalidArgumentCount,
@@ -214,10 +256,13 @@ impl Error {
         )
     }
 
-    pub fn invalid_argument_count_error_caused(
-        message: &str,
+    pub fn invalid_argument_count_error_caused<S>(
+        message: S,
         cause: Error,
-    ) -> Error {
+    ) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             Some(cause),
             ErrorKind::InvalidArgumentCount,
@@ -235,7 +280,10 @@ impl Error {
         )
     }
 
-    pub fn assertion_error(message: &str) -> Error {
+    pub fn assertion_error<S>(message: S) -> Error
+    where
+        S: Into<String>,
+    {
         Error::from(
             None,
             ErrorKind::Assertion,

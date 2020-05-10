@@ -19,11 +19,11 @@ pub fn register(
 
     let mut values = values;
 
-    let path = library::read_as_string(interpreter, values.remove(0))?.clone();
-
-    let name = library::read_as_string(interpreter, values.remove(0))?.clone();
-
-    library::register_keyboard(interpreter, path, name)?;
+    library::define_keyboard_with_values(
+        interpreter,
+        values.remove(0),
+        values.remove(0),
+    )?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }
@@ -36,7 +36,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn adds_keyboards() {
@@ -62,7 +62,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -90,7 +90,7 @@ mod tests {
             "(keyboard:register \"path\" #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -107,7 +107,7 @@ mod tests {
             "(keyboard:register \"path\" \"name\" '())",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

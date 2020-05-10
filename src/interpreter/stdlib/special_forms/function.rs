@@ -123,7 +123,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn constructs_simple_function() {
@@ -154,7 +154,7 @@ mod tests {
         );
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod tests {
         );
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -207,7 +207,7 @@ mod tests {
             interpreter.execute_in_main_environment("(function (lambda () 1))");
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -228,7 +228,7 @@ mod tests {
             interpreter.execute_in_main_environment("(function (macro () 1))");
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -268,7 +268,7 @@ mod tests {
         );
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -291,7 +291,7 @@ mod tests {
             .execute_in_main_environment("(function (lambda (#rest a) 1))");
 
         let result = result.unwrap();
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -328,7 +328,7 @@ mod tests {
 
         let result = result.unwrap();
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -366,7 +366,7 @@ mod tests {
 
         let result = result.unwrap();
 
-        assertion::assert_deep_equal(&mut interpreter, expected, result);
+        utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 
     #[test]
@@ -375,7 +375,7 @@ mod tests {
 
         let specs = vec!["(function)", "(function 1 2)", "(function 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -395,7 +395,7 @@ mod tests {
             "(function :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -407,7 +407,7 @@ mod tests {
 
         let specs = vec!["(function (special-form () 2))"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -420,7 +420,7 @@ mod tests {
 
         let specs = vec!["(function (lambda))", "(function (lambda ()))"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -448,7 +448,7 @@ mod tests {
             "(function (lambda ({}) 1))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

@@ -81,7 +81,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_value_that_was_set_to_variable() {
@@ -89,7 +89,7 @@ mod tests {
 
         let specs = vec![("(let ((a 1)) (set! a 2))", Value::Integer(2))];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs)
+        utils::assert_results_are_correct(&mut interpreter, specs)
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod tests {
             ("a", Value::Integer(0)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -122,7 +122,7 @@ mod tests {
 
         let specs = vec![("b", Value::Integer(2))];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -141,7 +141,7 @@ mod tests {
             "(set! super 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -153,7 +153,7 @@ mod tests {
 
         let specs = vec!["(set!)", "(set! a b c)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -173,7 +173,7 @@ mod tests {
             "(set! {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

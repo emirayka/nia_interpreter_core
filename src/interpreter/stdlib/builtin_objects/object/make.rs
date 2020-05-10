@@ -56,7 +56,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     macro_rules! assert_object_has_values {
         ($expected:expr, $code:expr) => {
@@ -110,7 +110,7 @@ mod tests {
 
         let code_vector = vec!["(object:make :a)", "(object:make :a 1 :b)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -130,7 +130,7 @@ mod tests {
             "(object:make {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

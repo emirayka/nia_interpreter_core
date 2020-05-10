@@ -30,7 +30,6 @@ pub fn read_as_let_definitions(
                         let car = vector.remove(0);
 
                         library::check_value_is_symbol(
-                            interpreter,
                             car,
                         )?;
 
@@ -53,14 +52,14 @@ pub fn read_as_let_definitions(
             }
 
             cons_cells
-        },
+        }
         Value::Symbol(symbol_id) => {
             if interpreter.symbol_is_nil(symbol_id)? {
                 Vec::new()
             } else {
                 return Error::invalid_argument_error("").into();
             }
-        },
+        }
         _ => return Error::invalid_argument_error("").into(),
     };
 
@@ -75,7 +74,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_vector_of_cons_cells() {
@@ -141,7 +140,7 @@ mod tests {
             let result =
                 read_as_let_definitions(&mut interpreter, spec.1).unwrap();
 
-            assertion::assert_vectors_deep_equal(
+            utils::assert_vectors_deep_equal(
                 &mut interpreter,
                 expected,
                 result,

@@ -25,7 +25,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_ok_on_ordinary_symbols() {
@@ -56,7 +56,7 @@ mod tests {
         for spec in specs {
             let result = check_symbol_is_assignable(&mut interpreter, spec);
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 
@@ -81,7 +81,7 @@ mod tests {
             let result =
                 check_symbol_is_assignable(&mut interpreter, symbol_id);
 
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

@@ -85,7 +85,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn cond_works_correctly() {
@@ -99,7 +99,7 @@ mod tests {
             ("nil", "(cond)"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
             "(cond :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         )
@@ -136,7 +136,7 @@ mod tests {
             "(cond :keyword)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -156,7 +156,7 @@ mod tests {
             "(cond ((cond (#t 1)) 1))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

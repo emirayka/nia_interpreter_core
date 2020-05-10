@@ -49,7 +49,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_abs_of_the_value() {
@@ -62,7 +62,7 @@ mod tests {
             ("(math:abs -1.1)", Value::Float(1.1)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod tests {
             "(math:abs (function (macro () 1)))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -95,7 +95,7 @@ mod tests {
         let code_vector =
             vec!["(math:abs)", "(math:abs 1 2)", "(math:abs 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

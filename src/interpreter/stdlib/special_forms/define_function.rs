@@ -96,7 +96,7 @@ pub fn define_function(
 mod tests {
     use super::*;
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
@@ -206,7 +206,7 @@ mod tests {
             "(define-function super #(% 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -219,7 +219,7 @@ mod tests {
         let specs =
             vec!["(define-function)", "(define-function test 2 :const 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -231,7 +231,7 @@ mod tests {
 
         let specs = vec!["(define-function 3 2)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

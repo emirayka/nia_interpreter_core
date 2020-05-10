@@ -28,7 +28,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_a_cons_cell() {
@@ -52,7 +52,7 @@ mod tests {
             let result =
                 interpreter.execute_in_main_environment(spec.1).unwrap();
 
-            assertion::assert_deep_equal(&mut interpreter, expected, result)
+            utils::assert_deep_equal(&mut interpreter, expected, result)
         }
     }
 
@@ -63,7 +63,7 @@ mod tests {
 
         let code_vector = vec!["(cons)", "(cons 1)", "(cons 1 2 3)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

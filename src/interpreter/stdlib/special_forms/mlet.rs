@@ -102,7 +102,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -114,7 +114,7 @@ mod tests {
             ("(mlet () 3 2 1)", Value::Integer(1)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -163,7 +163,7 @@ mod tests {
             "'test",
         )];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -206,7 +206,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -225,7 +225,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol(
@@ -244,7 +244,7 @@ mod tests {
             "(mlet ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -266,7 +266,7 @@ mod tests {
             "(mlet #(+ %1 %2))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             incorrect_strings,
         );
@@ -286,7 +286,7 @@ mod tests {
             "(mlet ({}))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -306,7 +306,7 @@ mod tests {
             "(mlet (((quote symbol) () 2)) (quote symbol))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -326,7 +326,7 @@ mod tests {
             "(mlet ((func some-symbol 2)) (func))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -339,7 +339,7 @@ mod tests {
 
         let code_vector = vec!["(mlet ((sym)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -352,7 +352,7 @@ mod tests {
         let code_vector =
             vec!["(mlet ((sym-1 () 1) (sym-2 () (sym-1))) (sym-2))"];
 
-        assertion::assert_results_are_just_errors(
+        utils::assert_results_are_just_errors(
             &mut interpreter,
             code_vector,
         );
@@ -364,7 +364,7 @@ mod tests {
 
         let code_vector = vec!["(mlet ((sym-1 () 1) (sym-1 () 2)) (sym-1))"];
 
-        assertion::assert_results_are_just_errors(
+        utils::assert_results_are_just_errors(
             &mut interpreter,
             code_vector,
         );

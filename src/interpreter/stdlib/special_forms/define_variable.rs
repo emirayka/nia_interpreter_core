@@ -104,7 +104,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn defines_variable_with_evaluation_result_of_the_second_form_when_two_forms_were_provided(
@@ -183,7 +183,7 @@ mod tests {
             "(define-variable super #(% 2 3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -196,7 +196,7 @@ mod tests {
         let specs =
             vec!["(define-variable)", "(define-variable test 2 :const kek)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -208,7 +208,7 @@ mod tests {
 
         let specs = vec!["(define-variable 3 2)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

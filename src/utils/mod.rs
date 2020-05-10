@@ -10,10 +10,10 @@ mod assertion;
 mod file_helpers;
 
 #[cfg(test)]
-pub use file_helpers::*;
+pub use assertion::*;
 
 #[cfg(test)]
-pub use assertion::*;
+pub use file_helpers::*;
 
 use crate::Error;
 pub use stack::*;

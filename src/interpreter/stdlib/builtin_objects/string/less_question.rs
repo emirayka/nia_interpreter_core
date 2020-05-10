@@ -40,7 +40,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_comparison_result() {
@@ -63,7 +63,7 @@ mod tests {
             (r#"(string:less? "abc" "abc")"#, Value::Boolean(false)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod tests {
             r#"(string:less? "a" "b" "c")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );
@@ -108,7 +108,7 @@ mod tests {
             r#"(string:less? #(+ %1 %2) "b")"#,
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );

@@ -36,7 +36,7 @@ mod tests {
     use std::convert::TryInto;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     fn execute_forms(
         interpreter: &mut Interpreter,
@@ -87,7 +87,7 @@ mod tests {
             )
             .unwrap();
 
-            assertion::assert_deep_equal(&mut interpreter, expected, result);
+            utils::assert_deep_equal(&mut interpreter, expected, result);
         }
     }
 

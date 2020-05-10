@@ -83,7 +83,7 @@ mod tests {
     use crate::interpreter::value::FunctionArguments;
     use crate::interpreter::value::InterpretedFunction;
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_value_that_was_set_to_function() {
@@ -103,7 +103,7 @@ mod tests {
             "(define-function a (function (lambda () 1))) (fset! a (function (lambda () 2)))",
         );
 
-        assertion::assert_deep_equal(
+        utils::assert_deep_equal(
             &mut interpreter,
             expected,
             result.unwrap(),
@@ -129,7 +129,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -168,7 +168,7 @@ mod tests {
             "(fset! super 2)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -180,7 +180,7 @@ mod tests {
 
         let specs = vec!["(fset!)", "(fset! a b c)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             specs,
         );
@@ -201,7 +201,7 @@ mod tests {
             "(fset! {} 1)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

@@ -18,7 +18,6 @@ use crate::Interpreter;
 use crate::NiaActionListener;
 use crate::NiaInterpreterCommand;
 use crate::NiaInterpreterCommandResult;
-use crate::NiaInterpreterExecutionCommandResult;
 use crate::NiaWorker;
 use crate::Value;
 use crate::{Action, NiaActionListenerHandle};
@@ -163,7 +162,7 @@ mod send_events {
                 return Error::invalid_argument_error(
                     "Unknown value passed as wait.",
                 )
-                .into()
+                .into();
             }
         };
 
@@ -272,56 +271,74 @@ impl EventLoop {
             loop {
                 // execute command that was received with channel
                 match interpreter_command_receiver.try_recv() {
-                    Ok(command) => match command {
-                        NiaInterpreterCommand::Execution(code) => {
-                            let result =
-                                interpreter.execute_in_main_environment(&code);
+                    Ok(command) => {
+                        let command_result = match command {
+                            NiaInterpreterCommand::ExecuteCode(code) => {
+                                let result = interpreter
+                                    .execute_in_main_environment(&code);
 
-                            let execution_result = match result {
-                                Ok(value) => match library::value_to_string(
-                                    &mut interpreter,
-                                    value,
-                                ) {
-                                    Ok(string) => {
-                                        NiaInterpreterExecutionCommandResult::Success(
-                                            string,
-                                        )
-                                    }
-                                    Err(error) => {
-                                        if error.is_failure() {
-                                            NiaInterpreterExecutionCommandResult::Failure(
-                                                error.to_string(),
-                                            )
-                                        } else {
-                                            NiaInterpreterExecutionCommandResult::Error(
-                                                error.to_string(),
-                                            )
-                                        }
-                                    }
-                                },
-                                Err(error) => {
-                                    if error.is_failure() {
-                                        NiaInterpreterExecutionCommandResult::Failure(
-                                            error.to_string(),
-                                        )
-                                    } else {
-                                        NiaInterpreterExecutionCommandResult::Error(
-                                            error.to_string(),
-                                        )
-                                    }
-                                }
-                            };
+                                let execution_result = match result {
+                                    Ok(value) => library::value_to_string(
+                                        &mut interpreter,
+                                        value,
+                                    ),
+                                    Err(error) => Err(error),
+                                };
 
-                            match interpreter_command_result_sender.send(
-                                NiaInterpreterCommandResult::ExecutionResult(
+                                NiaInterpreterCommandResult::from(
                                     execution_result,
-                                ),
-                            ) {
-                                Ok(()) => {}
-                                Err(_) => break,
+                                )
                             }
+                            NiaInterpreterCommand::DefineKeyboard(
+                                path,
+                                name,
+                            ) => {
+                                let result =
+                                    library::define_keyboard_with_strings(
+                                        &mut interpreter,
+                                        path,
+                                        name,
+                                    );
+                                let result =
+                                    result.map(|_| String::from("Success"));
+
+                                NiaInterpreterCommandResult::from(result)
+                            }
+                            NiaInterpreterCommand::RemoveKeyboardByPath(
+                                path,
+                            ) => {
+                                let result =
+                                    library::remove_keyboard_by_path_with_string(
+                                        &mut interpreter,
+                                        path,
+                                    );
+                                let result =
+                                    result.map(|_| String::from("Success"));
+
+                                NiaInterpreterCommandResult::from(result)
+                            }
+                            NiaInterpreterCommand::RemoveKeyboardByName(
+                                name,
+                            ) => {
+                                let result =
+                                    library::remove_keyboard_by_name_with_string(
+                                        &mut interpreter,
+                                        name,
+                                    );
+                                let result =
+                                    result.map(|_| String::from("Success"));
+
+                                NiaInterpreterCommandResult::from(result)
+                            }
+                        };
+
+                        match interpreter_command_result_sender
+                            .send(command_result)
+                        {
+                            Ok(()) => {}
+                            Err(_) => break,
                         }
-                    },
+                    }
                     Err(mpsc::TryRecvError::Disconnected) => {
                         break;
                     }

@@ -37,7 +37,7 @@ mod func__bind {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {
@@ -122,7 +122,7 @@ mod func__bind {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -135,7 +135,7 @@ mod func__bind {
                 "(func:bind (flookup 'cond) '())",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -157,7 +157,7 @@ mod func__bind {
                 "(func:bind {})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -195,7 +195,7 @@ mod func__curry {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {
@@ -300,7 +300,7 @@ mod func__curry {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -313,7 +313,7 @@ mod func__curry {
                 "(func:curry (flookup 'cond) 2)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -331,7 +331,7 @@ mod func__curry {
                 "(((func:curry (fn (#rest args) (func:apply #'+ args)) 3) 1 2) 3 4)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -362,7 +362,7 @@ mod func__curry {
                 "(func:curry #(+ %1 %2) #{})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -398,7 +398,7 @@ mod func__curry_star {
     mod tests {
         use super::*;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn calls_a_function_with_provided_arguments() {
@@ -544,7 +544,7 @@ mod func__curry_star {
                 ),
             ];
 
-            assertion::assert_results_are_equal(&mut interpreter, pairs);
+            utils::assert_results_are_equal(&mut interpreter, pairs);
         }
 
         #[test]
@@ -557,7 +557,7 @@ mod func__curry_star {
                 "(func:curry* (flookup 'cond) 2)",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );
@@ -588,7 +588,7 @@ mod func__curry_star {
                 "(func:curry* #(+ %1 %2) #{})",
             ];
 
-            assertion::assert_results_are_invalid_argument_errors(
+            utils::assert_results_are_invalid_argument_errors(
                 &mut interpreter,
                 code_vector,
             );

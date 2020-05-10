@@ -4,7 +4,7 @@ use crate::Value;
 
 use crate::library;
 
-pub fn get_registered_keyboards(
+pub fn get_defined_keyboards(
     interpreter: &mut Interpreter,
 ) -> Result<Value, Error> {
     let keyboard_list =
@@ -28,10 +28,10 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[test]
-    fn changes_variable_registered_keyboards() {
+    fn returns_registered_keyboards() {
         let mut interpreter = Interpreter::new();
 
-        nia_assert_is_ok(&library::register_keyboard(
+        nia_assert_is_ok(&library::define_keyboard_with_strings(
             &mut interpreter,
             "/dev/input/event6",
             "first",
@@ -46,10 +46,23 @@ mod tests {
             .execute_in_main_environment(r#"'(("/dev/input/event6" "first"))"#)
             .unwrap();
 
-        crate::utils::assertion::assert_deep_equal(
+        crate::utils::assert_deep_equal(&mut interpreter, expected, result);
+
+        nia_assert_is_ok(&library::define_keyboard_with_strings(
             &mut interpreter,
-            expected,
-            result,
+            "/dev/input/event66",
+            "second",
+        ));
+
+        let result = library::get_root_variable(
+            &mut interpreter,
+            "nia-registered-keyboards",
         )
+        .unwrap();
+        let expected = interpreter
+            .execute_in_main_environment(r#"'(("/dev/input/event66" "second") ("/dev/input/event6" "first"))"#)
+            .unwrap();
+
+        crate::utils::assert_deep_equal(&mut interpreter, expected, result);
     }
 }

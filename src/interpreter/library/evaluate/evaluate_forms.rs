@@ -27,7 +27,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_the_execution_result_of_forms() {
@@ -51,7 +51,7 @@ mod tests {
             evaluate_forms(&mut interpreter, main_environment_id, forms)
                 .unwrap();
 
-        crate::utils::assertion::assert_vectors_deep_equal(
+        crate::utils::assert_vectors_deep_equal(
             &mut interpreter,
             expected,
             result,

@@ -156,7 +156,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_result_of_try_clause_if_it_was_ok() {
@@ -167,7 +167,7 @@ mod tests {
             ("(try (progn 1 2) (catch 'cute-error))", Value::Integer(2)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -219,7 +219,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result = interpreter.execute_in_main_environment("(try 1)");
-        assertion::assert_invalid_argument_count_error(&result);
+        utils::assert_invalid_argument_count_error(&result);
     }
 
     #[test]
@@ -228,7 +228,7 @@ mod tests {
 
         let specs = vec!["(try 1 ())", "(try 1 (catch))"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );

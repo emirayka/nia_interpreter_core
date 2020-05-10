@@ -35,7 +35,7 @@ pub fn assert_parsing_reading_result_is_correct(
 
     let result = read_element(interpreter, first_element).unwrap();
 
-    crate::utils::assertion::assert_deep_equal(interpreter, expected, result);
+    crate::utils::assert_deep_equal(interpreter, expected, result);
 }
 
 pub fn assert_option_deep_equal(
@@ -97,7 +97,10 @@ make_assertion_function!(
     ErrorKind::InvalidArgumentCount
 );
 
-make_assertion_function!(assert_generic_error, ErrorKind::GenericError);
+make_assertion_function!(
+    assert_generic_execution_error,
+    ErrorKind::GenericExecution
+);
 make_assertion_function!(assert_overflow_error, ErrorKind::Overflow);
 make_assertion_function!(assert_zero_division_error, ErrorKind::ZeroDivision);
 make_assertion_function!(assert_assertion_error, ErrorKind::Assertion);

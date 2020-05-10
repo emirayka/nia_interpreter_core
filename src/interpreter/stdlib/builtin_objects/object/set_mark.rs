@@ -41,7 +41,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn sets_item_to_object() {
@@ -58,7 +58,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod tests {
             Value::Integer(2),
         )];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod tests {
             Value::Integer(2),
         )];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs);
+        utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
     #[test]
@@ -101,7 +101,7 @@ mod tests {
             "(let ((obj {:item 1})) (object:set! obj 'super 2))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -131,7 +131,7 @@ mod tests {
             "(let ((obj {:a 1})) (object:set! obj #() 2))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -149,7 +149,7 @@ mod tests {
             "(let ((obj {:item 1})) (object:set! obj 'item 'sym2 'sym3))",
         ];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

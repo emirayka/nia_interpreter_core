@@ -8,9 +8,9 @@ use crate::library;
 pub fn read_keyboards(
     interpreter: &mut Interpreter,
 ) -> Result<Vec<(String, String)>, Error> {
-    let registered_keyboards = library::get_registered_keyboards(interpreter)?;
+    let registered_keyboards = library::get_defined_keyboards(interpreter)?;
 
-    library::check_value_is_cons(interpreter, registered_keyboards)?;
+    library::check_value_is_cons(registered_keyboards)?;
 
     let registered_keyboards =
         interpreter.list_to_vec(registered_keyboards.try_into()?)?;
@@ -18,7 +18,7 @@ pub fn read_keyboards(
     let mut keyboards = Vec::new();
 
     for registered_keyboard in registered_keyboards {
-        library::check_value_is_cons(interpreter, registered_keyboard)?;
+        library::check_value_is_cons(registered_keyboard)?;
 
         let registered_keyboard_cons_id = registered_keyboard.try_into()?;
 

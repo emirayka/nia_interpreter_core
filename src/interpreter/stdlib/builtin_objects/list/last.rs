@@ -39,7 +39,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn return_last_item_of_the_list() {
@@ -52,7 +52,7 @@ mod tests {
             ("(list:last '(1 2 3 4))", "4"),
         ];
 
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
+        utils::assert_results_are_equal(&mut interpreter, pairs);
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
 
         let code_vector = vec!["(list:last '())"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -83,7 +83,7 @@ mod tests {
             "(list:last #())",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             code_vector,
         );
@@ -96,7 +96,7 @@ mod tests {
 
         let code_vector = vec!["(list:last)", "(list:last 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         );

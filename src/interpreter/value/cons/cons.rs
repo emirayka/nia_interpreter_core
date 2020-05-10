@@ -57,7 +57,7 @@ mod tests {
         use super::*;
         use crate::interpreter::interpreter::Interpreter;
         #[allow(unused_imports)]
-        use crate::utils::assertion;
+        use crate::utils;
 
         #[test]
         fn works_correctly() {
@@ -68,7 +68,7 @@ mod tests {
 
             let mut l = Cons::new(string1, string2);
 
-            assertion::assert_vectors_deep_equal(
+            utils::assert_vectors_deep_equal(
                 &mut interpreter,
                 vec![string1, string2],
                 vec![l.get_car(), l.get_cdr()],

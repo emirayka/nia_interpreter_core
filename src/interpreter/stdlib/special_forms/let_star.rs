@@ -52,7 +52,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_the_result_of_execution_of_the_last_form() {
@@ -60,7 +60,7 @@ mod tests {
 
         let specs = vec![("(let* () 3 2 1)", Value::Integer(1))];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -97,7 +97,7 @@ mod tests {
             ),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod tests {
 
         let specs = vec![("nil", "(let* (nil-symbol) nil-symbol)")];
 
-        assertion::assert_results_are_equal(&mut interpreter, specs);
+        utils::assert_results_are_equal(&mut interpreter, specs);
     }
 
     #[test]
@@ -119,7 +119,7 @@ mod tests {
             ("(let* ((a 1)) (let* ((a 2) (b 3)) b))", Value::Integer(3)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     // the only difference between `let' `let*'
@@ -130,7 +130,7 @@ mod tests {
         let specs =
             vec![("(let* ((sym-1 1) (sym-2 sym-1)) sym-2)", Value::Integer(1))];
 
-        assertion::assert_results_are_correct(&mut interpreter, specs);
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]
@@ -150,7 +150,7 @@ mod tests {
             "(let* ((super 2)) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -172,7 +172,7 @@ mod tests {
             "(let* (super 2) nil)",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -192,7 +192,7 @@ mod tests {
             "(let* {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             incorrect_strings,
         );
@@ -214,7 +214,7 @@ mod tests {
             "(let* ({}))",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -235,7 +235,7 @@ mod tests {
             "(let* (({} 2)) {})",
         ];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -247,7 +247,7 @@ mod tests {
 
         let specs = vec!["(let* ((nil 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -260,7 +260,7 @@ mod tests {
 
         let specs = vec!["(let* ((sym)) nil)", "(let* ((sym 1 2)) nil)"];
 
-        assertion::assert_results_are_invalid_argument_errors(
+        utils::assert_results_are_invalid_argument_errors(
             &mut interpreter,
             specs,
         );
@@ -272,6 +272,6 @@ mod tests {
 
         let specs = vec!["(let* ((sym-1 1) (sym-1 2)) sym-1)"];
 
-        assertion::assert_results_are_just_errors(&mut interpreter, specs);
+        utils::assert_results_are_just_errors(&mut interpreter, specs);
     }
 }

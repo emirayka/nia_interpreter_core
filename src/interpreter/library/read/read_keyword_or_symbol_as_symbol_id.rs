@@ -36,7 +36,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_correct_symbol_id_from_symbol() {
@@ -86,7 +86,7 @@ mod tests {
                 &mut interpreter,
                 not_symbol_value,
             );
-            assertion::assert_invalid_argument_error(&result);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

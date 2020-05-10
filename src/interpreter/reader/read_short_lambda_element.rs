@@ -108,7 +108,7 @@ pub fn read_short_lambda_element(
 mod tests {
     use super::*;
 
-    use crate::utils::assertion::assert_parsing_reading_result_is_correct;
+    use crate::utils::assert_parsing_reading_result_is_correct;
 
     fn make_short_lambda(
         interpreter: &mut Interpreter,

@@ -2,10 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-pub fn check_value_is_symbol(
-    interpreter: &Interpreter,
-    value: Value,
-) -> Result<(), Error> {
+pub fn check_value_is_symbol(value: Value) -> Result<(), Error> {
     match value {
         Value::Symbol(_) => Ok(()),
         _ => Error::invalid_argument_error("Expected symbol").into(),
@@ -21,7 +18,7 @@ mod tests {
 
     use crate::interpreter::value::StringId;
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_nothing_when_a_string_was_passed() {
@@ -30,7 +27,7 @@ mod tests {
         let specs = vec![interpreter.intern_symbol_value("test")];
 
         for spec in specs {
-            let result = check_value_is_symbol(&mut interpreter, spec).unwrap();
+            let result = check_value_is_symbol(spec).unwrap();
 
             nia_assert_equal((), result);
         }
@@ -55,8 +52,8 @@ mod tests {
         ];
 
         for spec in specs {
-            let result = check_value_is_symbol(&mut interpreter, spec);
-            assertion::assert_invalid_argument_error(&result);
+            let result = check_value_is_symbol(spec);
+            utils::assert_invalid_argument_error(&result);
         }
     }
 }

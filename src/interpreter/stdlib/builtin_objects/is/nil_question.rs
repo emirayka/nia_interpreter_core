@@ -33,7 +33,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[allow(unused_imports)]
-    use crate::utils::assertion;
+    use crate::utils;
 
     #[test]
     fn returns_true_when_an_symbol_was_passed() {
@@ -41,7 +41,7 @@ mod tests {
 
         let pairs = vec![("(is:nil? nil)", Value::Boolean(true))];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs)
+        utils::assert_results_are_correct(&mut interpreter, pairs)
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
             ("(is:nil? #())", Value::Boolean(false)),
         ];
 
-        assertion::assert_results_are_correct(&mut interpreter, pairs)
+        utils::assert_results_are_correct(&mut interpreter, pairs)
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod tests {
 
         let code_vector = vec!["(is:nil?)", "(is:nil? 1 2)"];
 
-        assertion::assert_results_are_invalid_argument_count_errors(
+        utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
             code_vector,
         )
