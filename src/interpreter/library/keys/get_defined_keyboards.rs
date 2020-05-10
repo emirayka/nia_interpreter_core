@@ -8,7 +8,7 @@ pub fn get_defined_keyboards(
     interpreter: &mut Interpreter,
 ) -> Result<Value, Error> {
     let keyboard_list =
-        library::get_root_variable(interpreter, "nia-registered-keyboards")
+        library::get_root_variable(interpreter, "nia-defined-keyboards")
             .map_err(|err| {
                 Error::generic_execution_error_caused(
                     "Cannot read registered keyboards.",
@@ -39,7 +39,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-registered-keyboards",
+            "nia-defined-keyboards",
         )
         .unwrap();
         let expected = interpreter
@@ -56,7 +56,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-registered-keyboards",
+            "nia-defined-keyboards",
         )
         .unwrap();
         let expected = interpreter

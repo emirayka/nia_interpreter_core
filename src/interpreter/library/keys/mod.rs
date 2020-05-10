@@ -1,5 +1,6 @@
 mod define_keyboard_with_strings;
 mod define_keyboard_with_values;
+mod define_modifier;
 mod get_defined_keyboards;
 mod key_chord_part_to_list;
 mod key_chord_to_list;
@@ -14,9 +15,11 @@ mod remove_keyboard_by_name_with_string;
 mod remove_keyboard_by_name_with_value;
 mod remove_keyboard_by_path_with_string;
 mod remove_keyboard_by_path_with_value;
+mod remove_modifier;
 
 pub use define_keyboard_with_strings::*;
 pub use define_keyboard_with_values::*;
+pub use define_modifier::*;
 pub use get_defined_keyboards::*;
 pub use key_chord_part_to_list::*;
 pub use key_chord_to_list::*;
@@ -31,3 +34,4 @@ pub use remove_keyboard_by_name_with_string::*;
 pub use remove_keyboard_by_name_with_value::*;
 pub use remove_keyboard_by_path_with_string::*;
 pub use remove_keyboard_by_path_with_value::*;
+pub use remove_modifier::*;

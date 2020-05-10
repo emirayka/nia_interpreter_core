@@ -18,7 +18,7 @@ fn check_keyboard_can_be_registered(
 
         if vec.len() != 2 {
             return Error::generic_execution_error(
-                format!("Invariant is violated: `nia-registered-keyboards' must be a list of two-element lists.")
+                format!("Invariant is violated: `nia-defined-keyboards' must be a list of two-element lists.")
             ).into();
         }
 
@@ -52,7 +52,7 @@ pub fn define_keyboard_with_values(
 
     let root_environment_id = interpreter.get_root_environment_id();
     let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("nia-registered-keyboards");
+        interpreter.intern_symbol_id("nia-defined-keyboards");
 
     let keyboard_list = interpreter
         .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?
@@ -106,7 +106,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-registered-keyboards",
+            "nia-defined-keyboards",
         )
         .unwrap();
         let expected = interpreter

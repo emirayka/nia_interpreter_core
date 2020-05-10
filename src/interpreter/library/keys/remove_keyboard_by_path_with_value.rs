@@ -17,7 +17,7 @@ fn find_target_keyboard_index(
 
         if keyboard_vector.len() != 2 {
             return Error::generic_execution_error(
-                format!("Invariant violated: `nia-registered-keyboards' must be a list of two elements list.")
+                format!("Invariant violated: `nia-defined-keyboards' must be a list of two elements list.")
             ).into();
         }
 
@@ -39,7 +39,7 @@ pub fn remove_keyboard_by_path_with_value(
 
     let root_environment_id = interpreter.get_root_environment_id();
     let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("nia-registered-keyboards");
+        interpreter.intern_symbol_id("nia-defined-keyboards");
 
     let keyboard_list = interpreter
         .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?

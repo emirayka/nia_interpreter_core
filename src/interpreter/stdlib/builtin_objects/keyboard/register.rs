@@ -43,14 +43,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            (r#"'()"#, "nia-registered-keyboards"),
+            (r#"'()"#, "nia-defined-keyboards"),
             (
                 r#"nil"#,
                 r#"(keyboard:register "/dev/input/event1" "Keyboard 1")"#,
             ),
             (
                 r#"(list '("/dev/input/event1" "Keyboard 1"))"#,
-                "nia-registered-keyboards",
+                "nia-defined-keyboards",
             ),
             (
                 r#"nil"#,
@@ -58,7 +58,7 @@ mod tests {
             ),
             (
                 r#"(list '("/dev/input/event2" "Keyboard 2") '("/dev/input/event1" "Keyboard 1"))"#,
-                "nia-registered-keyboards",
+                "nia-defined-keyboards",
             ),
         ];
 

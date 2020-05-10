@@ -44,7 +44,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-registered-keyboards",
+            "nia-defined-keyboards",
         )
         .unwrap();
         let expected = interpreter
