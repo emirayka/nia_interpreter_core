@@ -4,13 +4,16 @@ use std::path::PathBuf;
 mod stack;
 
 #[cfg(test)]
-pub mod assertion;
+mod assertion;
 
 #[cfg(test)]
 mod file_helpers;
 
 #[cfg(test)]
 pub use file_helpers::*;
+
+#[cfg(test)]
+pub use assertion::*;
 
 use crate::Error;
 pub use stack::*;

@@ -22,7 +22,7 @@ fn define_empty_list(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    define_empty_list(interpreter, "registered-keyboards")?;
+    define_empty_list(interpreter, "nia-registered-keyboards")?;
     define_empty_list(interpreter, "global-map")?;
     define_empty_list(interpreter, "modifiers")?;
 

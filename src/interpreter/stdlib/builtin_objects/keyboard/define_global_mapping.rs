@@ -28,8 +28,7 @@ fn read_registered_keyboards(
 ) -> Result<HashMap<String, KeyboardId>, Error> {
     let mut result = HashMap::new();
 
-    let registered_keyboards =
-        library::get_root_variable(interpreter, "registered-keyboards")?;
+    let registered_keyboards = library::get_registered_keyboards(interpreter)?;
 
     let registered_keyboards =
         library::read_as_vector(interpreter, registered_keyboards)?;

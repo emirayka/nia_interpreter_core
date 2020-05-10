@@ -46,11 +46,11 @@ pub fn assert_option_deep_equal(
     match (value1, value2) {
         (Some(v1), Some(v2)) => {
             nia_assert(library::deep_equal(interpreter, v1, v2).unwrap())
-        },
-        (None, None) => {},
+        }
+        (None, None) => {}
         _ => {
             nia_assert(false);
-        },
+        }
     }
 }
 
@@ -97,6 +97,7 @@ make_assertion_function!(
     ErrorKind::InvalidArgumentCount
 );
 
+make_assertion_function!(assert_generic_error, ErrorKind::GenericError);
 make_assertion_function!(assert_overflow_error, ErrorKind::Overflow);
 make_assertion_function!(assert_zero_division_error, ErrorKind::ZeroDivision);
 make_assertion_function!(assert_assertion_error, ErrorKind::Assertion);
@@ -120,7 +121,7 @@ pub fn assert_is_nil(interpreter: &mut Interpreter, param: Value) {
     nia_assert(match param {
         Value::Symbol(symbol_id) => {
             interpreter.symbol_is_nil(symbol_id).unwrap()
-        },
+        }
         _ => false,
     });
 }

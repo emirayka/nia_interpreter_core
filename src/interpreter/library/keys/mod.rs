@@ -1,3 +1,5 @@
+mod define_keyboard;
+mod get_defined_keyboards;
 mod key_chord_part_to_list;
 mod key_chord_to_list;
 mod read_button_id_from_vector;
@@ -8,6 +10,8 @@ mod read_keyboards;
 mod read_mapping;
 mod read_mappings;
 
+pub use define_keyboard::*;
+pub use get_defined_keyboards::*;
 pub use key_chord_part_to_list::*;
 pub use key_chord_to_list::*;
 pub use read_button_id_from_vector::*;

@@ -10,7 +10,7 @@ pub fn register(
     _environment_id: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
-    if values.len() < 2 || values.len() > 3 {
+    if values.len() != 2 {
         return Error::invalid_argument_count_error(
             "Built-in function `keyboard:register' takes two or three arguments.",
         )
@@ -19,39 +19,11 @@ pub fn register(
 
     let mut values = values;
 
-    let root_environment_id = interpreter.get_main_environment_id();
-    let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("registered-keyboards");
+    let path = library::read_as_string(interpreter, values.remove(0))?.clone();
 
-    let keyboard_list = interpreter
-        .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?
-        .ok_or_else(|| {
-            Error::generic_execution_error("Cannot find registered_keyboards")
-        })?;
+    let name = library::read_as_string(interpreter, values.remove(0))?.clone();
 
-    let path = values.remove(0);
-    let name = values.remove(0);
-
-    let modifier_keys = if values.len() != 0 {
-        let vec = library::read_as_vector(interpreter, values.remove(0))?;
-
-        interpreter.vec_to_list(vec)
-    } else {
-        interpreter.intern_nil_symbol_value()
-    };
-
-    library::check_value_is_string(interpreter, path)?;
-    library::check_value_is_string(interpreter, name)?;
-
-    let new_list = interpreter.vec_to_list(vec![path, name, modifier_keys]);
-
-    let cons = interpreter.make_cons_value(new_list, keyboard_list);
-
-    interpreter.set_variable(
-        root_environment_id,
-        symbol_id_registered_keyboards,
-        cons,
-    )?;
+    library::register_keyboard(interpreter, path, name)?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }
@@ -71,40 +43,22 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            (r#"'()"#, "registered-keyboards"),
+            (r#"'()"#, "nia-registered-keyboards"),
             (
                 r#"nil"#,
                 r#"(keyboard:register "/dev/input/event1" "Keyboard 1")"#,
             ),
             (
-                r#"(list '("/dev/input/event1" "Keyboard 1" ()))"#,
-                "registered-keyboards",
+                r#"(list '("/dev/input/event1" "Keyboard 1"))"#,
+                "nia-registered-keyboards",
             ),
             (
                 r#"nil"#,
                 r#"(keyboard:register "/dev/input/event2" "Keyboard 2")"#,
             ),
             (
-                r#"(list '("/dev/input/event2" "Keyboard 2" ()) '("/dev/input/event1" "Keyboard 1" ()))"#,
-                "registered-keyboards",
-            ),
-        ];
-
-        assertion::assert_results_are_equal(&mut interpreter, pairs);
-    }
-
-    #[test]
-    fn allows_to_set_modifier_keys() {
-        let mut interpreter = Interpreter::new();
-
-        let pairs = vec![
-            (
-                r#"nil"#,
-                r#"(keyboard:register "/dev/input/event1" "Keyboard 1" '("a" "b"))"#,
-            ),
-            (
-                r#"(list '("/dev/input/event1" "Keyboard 1" ("a" "b")))"#,
-                "registered-keyboards",
+                r#"(list '("/dev/input/event2" "Keyboard 2") '("/dev/input/event1" "Keyboard 1"))"#,
+                "nia-registered-keyboards",
             ),
         ];
 
@@ -134,15 +88,6 @@ mod tests {
             "(keyboard:register \"path\" '(1 2))",
             "(keyboard:register \"path\" {})",
             "(keyboard:register \"path\" #())",
-            "(keyboard:register \"path\" \"name\" 1)",
-            "(keyboard:register \"path\" \"name\" 1.1)",
-            "(keyboard:register \"path\" \"name\" #t)",
-            "(keyboard:register \"path\" \"name\" #f)",
-            "(keyboard:register \"path\" \"name\" \"str\")",
-            "(keyboard:register \"path\" \"name\" :keyword)",
-            "(keyboard:register \"path\" \"name\" 'symbol)",
-            "(keyboard:register \"path\" \"name\" {})",
-            "(keyboard:register \"path\" \"name\" #())",
         ];
 
         assertion::assert_results_are_invalid_argument_errors(
@@ -159,7 +104,7 @@ mod tests {
         let code_vector = vec![
             "(keyboard:register)",
             "(keyboard:register \"path\")",
-            "(keyboard:register \"path\" \"name\" '() '())",
+            "(keyboard:register \"path\" \"name\" '())",
         ];
 
         assertion::assert_results_are_invalid_argument_count_errors(

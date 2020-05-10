@@ -8,8 +8,7 @@ use crate::library;
 pub fn read_keyboards(
     interpreter: &mut Interpreter,
 ) -> Result<Vec<(String, String)>, Error> {
-    let registered_keyboards =
-        library::get_root_variable(interpreter, "registered-keyboards")?;
+    let registered_keyboards = library::get_registered_keyboards(interpreter)?;
 
     library::check_value_is_cons(interpreter, registered_keyboards)?;
 
