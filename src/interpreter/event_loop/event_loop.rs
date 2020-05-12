@@ -12,15 +12,24 @@ use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 
-use crate::Error;
-use crate::EventLoopHandle;
-use crate::Interpreter;
-use crate::NiaActionListener;
 use crate::NiaInterpreterCommand;
 use crate::NiaInterpreterCommandResult;
 use crate::NiaWorker;
 use crate::Value;
 use crate::{Action, NiaActionListenerHandle};
+use crate::{
+    Error, NiaDefineKeyboardCommand, NiaExecuteCodeCommand,
+    NiaExecuteCodeCommandResult,
+};
+use crate::{EventLoopHandle, NiaDefineModifierCommand};
+use crate::{
+    Interpreter, NiaDefineKeyboardCommandResult,
+    NiaDefineModifierCommandResult, NiaGetDefinedModifiersCommand,
+    NiaRemoveKeyboardByNameCommand, NiaRemoveKeyboardByNameCommandResult,
+    NiaRemoveKeyboardByPathCommand, NiaRemoveKeyboardByPathCommandResult,
+    NiaRemoveModifierCommand, NiaRemoveModifierCommandResult,
+};
+use crate::{NiaActionListener, NiaGetDefinedModifiersCommandResult};
 
 use crate::interpreter::garbage_collector::collect_garbage;
 use crate::library;
@@ -243,6 +252,100 @@ mod send_events {
 }
 
 impl EventLoop {
+    fn do_command_define_keyboard(
+        interpreter: &mut Interpreter,
+        command: NiaDefineKeyboardCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::define_keyboard_with_strings(
+            interpreter,
+            command.get_keyboard_path(),
+            command.get_keyboard_name(),
+        );
+
+        let result = result.map(|_| String::from("Success"));
+
+        NiaDefineKeyboardCommandResult::from(result).into()
+    }
+
+    fn do_command_define_modifier(
+        interpreter: &mut Interpreter,
+        command: NiaDefineModifierCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::define_modifier(
+            interpreter,
+            command.get_keyboard_path(),
+            command.get_key_code(),
+            command.get_modifier_alias(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaDefineModifierCommandResult::from(result).into()
+    }
+
+    fn do_command_execute_code(
+        interpreter: &mut Interpreter,
+        command: NiaExecuteCodeCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result =
+            interpreter.execute_in_main_environment(command.get_code());
+
+        let result = match result {
+            Ok(value) => library::value_to_string(interpreter, value),
+            Err(error) => Err(error),
+        };
+
+        NiaExecuteCodeCommandResult::from(result).into()
+    }
+
+    fn do_command_get_defined_modifiers(
+        interpreter: &mut Interpreter,
+        command: NiaGetDefinedModifiersCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::get_defined_modifiers(interpreter);
+
+        NiaGetDefinedModifiersCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_keyboard_by_path(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveKeyboardByPathCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::remove_keyboard_by_path_with_string(
+            interpreter,
+            command.get_keyboard_path(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveKeyboardByPathCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_keyboard_by_name(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveKeyboardByNameCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::remove_keyboard_by_name_with_string(
+            interpreter,
+            command.get_keyboard_name(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveKeyboardByNameCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_modifier(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveModifierCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::remove_modifier(
+            interpreter,
+            command.get_keyboard_path(),
+            command.get_key_code(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveModifierCommandResult::from(result).into()
+    }
+
     pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
         let mut interpreter = interpreter;
 
@@ -273,62 +376,47 @@ impl EventLoop {
                 match interpreter_command_receiver.try_recv() {
                     Ok(command) => {
                         let command_result = match command {
-                            NiaInterpreterCommand::ExecuteCode(code) => {
-                                let result = interpreter
-                                    .execute_in_main_environment(&code);
-
-                                let execution_result = match result {
-                                    Ok(value) => library::value_to_string(
-                                        &mut interpreter,
-                                        value,
-                                    ),
-                                    Err(error) => Err(error),
-                                };
-
-                                NiaInterpreterCommandResult::from(
-                                    execution_result,
+                            NiaInterpreterCommand::DefineKeyboard(command) => {
+                                EventLoop::do_command_define_keyboard(
+                                    &mut interpreter,
+                                    command,
                                 )
                             }
-                            NiaInterpreterCommand::DefineKeyboard(
-                                path,
-                                name,
-                            ) => {
-                                let result =
-                                    library::define_keyboard_with_strings(
-                                        &mut interpreter,
-                                        path,
-                                        name,
-                                    );
-                                let result =
-                                    result.map(|_| String::from("Success"));
-
-                                NiaInterpreterCommandResult::from(result)
+                            NiaInterpreterCommand::DefineModifier(command) => {
+                                EventLoop::do_command_define_modifier(
+                                    &mut interpreter,
+                                    command,
+                                )
                             }
+                            NiaInterpreterCommand::ExecuteCode(command) => {
+                                EventLoop::do_command_execute_code(
+                                    &mut interpreter,
+                                    command,
+                                )
+                            }
+                            NiaInterpreterCommand::GetDefinedModifiers(
+                                command,
+                            ) => EventLoop::do_command_get_defined_modifiers(
+                                &mut interpreter,
+                                command,
+                            ),
                             NiaInterpreterCommand::RemoveKeyboardByPath(
-                                path,
-                            ) => {
-                                let result =
-                                    library::remove_keyboard_by_path_with_string(
-                                        &mut interpreter,
-                                        path,
-                                    );
-                                let result =
-                                    result.map(|_| String::from("Success"));
-
-                                NiaInterpreterCommandResult::from(result)
-                            }
+                                command,
+                            ) => EventLoop::do_command_remove_keyboard_by_path(
+                                &mut interpreter,
+                                command,
+                            ),
                             NiaInterpreterCommand::RemoveKeyboardByName(
-                                name,
-                            ) => {
-                                let result =
-                                    library::remove_keyboard_by_name_with_string(
-                                        &mut interpreter,
-                                        name,
-                                    );
-                                let result =
-                                    result.map(|_| String::from("Success"));
-
-                                NiaInterpreterCommandResult::from(result)
+                                command,
+                            ) => EventLoop::do_command_remove_keyboard_by_name(
+                                &mut interpreter,
+                                command,
+                            ),
+                            NiaInterpreterCommand::RemoveModifier(command) => {
+                                EventLoop::do_command_remove_modifier(
+                                    &mut interpreter,
+                                    command,
+                                )
                             }
                         };
 

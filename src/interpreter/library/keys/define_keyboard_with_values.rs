@@ -22,7 +22,7 @@ fn check_keyboard_can_be_registered(
             ).into();
         }
 
-        if vec[0] == keyboard_path_value {
+        if library::deep_equal(interpreter, vec[0], keyboard_path_value)? {
             return Error::generic_execution_error(format!(
                 "Keyboard with path {} was already defined.",
                 keyboard_path_value
@@ -30,7 +30,7 @@ fn check_keyboard_can_be_registered(
             .into();
         }
 
-        if vec[1] == keyboard_name_value {
+        if library::deep_equal(interpreter, vec[1], keyboard_name_value)? {
             return Error::generic_execution_error(format!(
                 "Keyboard with path {} was already defined.",
                 keyboard_path_value

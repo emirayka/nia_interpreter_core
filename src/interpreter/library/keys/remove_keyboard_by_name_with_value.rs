@@ -21,7 +21,11 @@ fn find_target_keyboard_index(
             ).into();
         }
 
-        if keyboard_vector[1] == keyboard_name_value {
+        if library::deep_equal(
+            interpreter,
+            keyboard_vector[1],
+            keyboard_name_value,
+        )? {
             break;
         }
 

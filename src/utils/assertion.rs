@@ -22,6 +22,8 @@ pub fn assert_deep_equal(
     value1: Value,
     value2: Value,
 ) {
+    library::print_value(interpreter, value1);
+    library::print_value(interpreter, value2);
     nia_assert(library::deep_equal(interpreter, value1, value2).unwrap());
 }
 
