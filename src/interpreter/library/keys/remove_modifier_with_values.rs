@@ -39,7 +39,7 @@ pub fn remove_modifier_with_values(
     keyboard_path: Value,
     key_code: Value,
 ) -> Result<(), Error> {
-    library::check_value_is_string(keyboard_path)?;
+    library::check_value_is_integer(keyboard_path)?;
     library::check_value_is_integer(key_code)?;
 
     let root_environment_id = interpreter.get_root_environment_id();
@@ -81,10 +81,10 @@ mod tests {
     fn removes_defined_modifiers() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec![("keyboard1", 1), ("keyboard2", 2), ("keyboard3", 3)];
+        let specs = vec![(3, 1), (2, 2), (1, 3)];
 
         for spec in specs {
-            let keyboard_path = interpreter.intern_string_value(spec.0);
+            let keyboard_path = Value::Integer(spec.0);
             let key_code = Value::Integer(spec.1);
             let modifier_alias = interpreter.intern_nil_symbol_value();
 
@@ -97,9 +97,7 @@ mod tests {
         }
 
         let expected = interpreter
-            .execute_in_main_environment(
-                r#"'(("keyboard3" 3 ()) ("keyboard2" 2 ()) ("keyboard1" 1 ()))"#,
-            )
+            .execute_in_main_environment(r#"'((1 3 ()) (2 2 ()) (3 1 ()))"#)
             .unwrap();
         let result =
             library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
@@ -107,17 +105,13 @@ mod tests {
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
         let specs = vec![
-            (
-                "keyboard2",
-                2,
-                r#"'(("keyboard3" 3 ()) ("keyboard1" 1 ()))"#,
-            ),
-            ("keyboard3", 3, r#"'(("keyboard1" 1 ()))"#),
-            ("keyboard1", 1, r#"'()"#),
+            (2, 2, r#"'((1 3 ()) (3 1 ()))"#),
+            (1, 3, r#"'((3 1 ()))"#),
+            (3, 1, r#"'()"#),
         ];
 
         for spec in specs {
-            let keyboard_path = interpreter.intern_string_value(spec.0);
+            let keyboard_path = Value::Integer(spec.0);
             let key_code = Value::Integer(spec.1);
 
             nia_assert_is_ok(&remove_modifier_with_values(
@@ -140,26 +134,23 @@ mod tests {
     fn returns_generic_execution_error_when_there_is_no_modifier() {
         let mut interpreter = Interpreter::new();
 
-        let keyboard_path = interpreter.intern_string_value("keyboard2");
+        let device_id = Value::Integer(3);
         let key_code = Value::Integer(23);
         let modifier_alias = interpreter.intern_string_value("mod");
 
         nia_assert_is_ok(&library::define_modifier_with_values(
             &mut interpreter,
-            keyboard_path,
+            device_id,
             key_code,
             modifier_alias,
         ));
 
-        let keyboard_path = interpreter.intern_string_value("keyboard2");
+        let device_id = Value::Integer(3);
         let key_code = Value::Integer(24);
         let modifier_alias = interpreter.intern_string_value("mod");
 
-        let result = remove_modifier_with_values(
-            &mut interpreter,
-            keyboard_path,
-            key_code,
-        );
+        let result =
+            remove_modifier_with_values(&mut interpreter, device_id, key_code);
 
         crate::utils::assert_generic_execution_error(&result);
     }

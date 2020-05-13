@@ -42,18 +42,18 @@ fn check_modifier_can_be_defined(
 
 pub fn define_modifier_with_values(
     interpreter: &mut Interpreter,
-    keyboard_path: Value,
+    device_id: Value,
     key_code: Value,
     modifier_alias: Value,
 ) -> Result<(), Error> {
-    library::check_value_is_string(keyboard_path)?;
+    library::check_value_is_integer(device_id)?;
     library::check_value_is_integer(key_code)?;
     library::check_value_is_string_or_nil(interpreter, modifier_alias)?;
 
-    check_modifier_can_be_defined(interpreter, keyboard_path, key_code)?;
+    check_modifier_can_be_defined(interpreter, device_id, key_code)?;
 
     let new_modifier_list =
-        interpreter.vec_to_list(vec![keyboard_path, key_code, modifier_alias]);
+        interpreter.vec_to_list(vec![device_id, key_code, modifier_alias]);
 
     library::add_value_to_root_list(
         interpreter,
@@ -82,13 +82,13 @@ mod tests {
             interpreter.execute_in_main_environment(r#"'()"#).unwrap();
 
         let specs = vec![
-            ("a", 1, "", r#"'(("a" 1 ()))"#),
-            ("b", 2, "bb", r#"'(("b" 2 "bb") ("a" 1 ()))"#),
-            ("c", 3, "cc", r#"'(("c" 3 "cc") ("b" 2 "bb") ("a" 1 ()))"#),
+            (3, 1, "", r#"'((3 1 ()))"#),
+            (2, 2, "bb", r#"'((2 2 "bb") (3 1 ()))"#),
+            (1, 3, "cc", r#"'((1 3 "cc") (2 2 "bb") (3 1 ()))"#),
         ];
 
         for spec in specs {
-            let keyboard_path = interpreter.intern_string_value(spec.0);
+            let device_id = Value::Integer(spec.0);
             let key_code = Value::Integer(spec.1);
             let modifier_alias = if spec.2.len() == 0 {
                 interpreter.intern_nil_symbol_value()
@@ -98,7 +98,7 @@ mod tests {
 
             nia_assert_is_ok(&define_modifier_with_values(
                 &mut interpreter,
-                keyboard_path,
+                device_id,
                 key_code,
                 modifier_alias,
             ));
@@ -118,20 +118,20 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let keyboard_path = interpreter.intern_string_value("keyboard2");
+        let device_id = Value::Integer(1);
         let key_code = Value::Integer(23);
         let modifier_alias = interpreter.intern_string_value("mod");
 
         nia_assert_is_ok(&define_modifier_with_values(
             &mut interpreter,
-            keyboard_path,
+            device_id,
             key_code,
             modifier_alias,
         ));
 
         let result = &define_modifier_with_values(
             &mut interpreter,
-            keyboard_path,
+            device_id,
             key_code,
             modifier_alias,
         );

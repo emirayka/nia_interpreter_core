@@ -35,7 +35,7 @@ mod tests {
         let expected =
             interpreter.execute_in_main_environment(r#"'()"#).unwrap();
 
-        let keyboard_name = interpreter.intern_string_value("keyboard");
+        let keyboard_name = Value::Integer(3);
         let key_code = Value::Integer(22);
         let modifier_alias = interpreter.intern_nil_symbol_value();
         nia_assert_is_ok(&library::define_modifier_with_values(
@@ -47,12 +47,12 @@ mod tests {
 
         let result = get_defined_modifiers_as_values(&mut interpreter).unwrap();
         let expected = interpreter
-            .execute_in_main_environment(r#"'(("keyboard" 22 ()))"#)
+            .execute_in_main_environment(r#"'((3 22 ()))"#)
             .unwrap();
 
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
-        let keyboard_name = interpreter.intern_string_value("keyboard2");
+        let keyboard_name = Value::Integer(2);
         let key_code = Value::Integer(33);
         let modifier_alias = interpreter.intern_string_value("mod");
         nia_assert_is_ok(&library::define_modifier_with_values(
@@ -64,9 +64,7 @@ mod tests {
 
         let result = get_defined_modifiers_as_values(&mut interpreter).unwrap();
         let expected = interpreter
-            .execute_in_main_environment(
-                r#"'(("keyboard2" 33 "mod") ("keyboard" 22 ()))"#,
-            )
+            .execute_in_main_environment(r#"'((2 33 "mod") (3 22 ()))"#)
             .unwrap();
 
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);

@@ -18,16 +18,16 @@ use crate::NiaWorker;
 use crate::Value;
 use crate::{Action, NiaActionListenerHandle};
 use crate::{
-    Error, NiaDefineKeyboardCommand, NiaExecuteCodeCommand,
+    Error, NiaDefineDeviceCommand, NiaExecuteCodeCommand,
     NiaExecuteCodeCommandResult,
 };
 use crate::{EventLoopHandle, NiaDefineModifierCommand};
 use crate::{
-    Interpreter, NiaDefineKeyboardCommandResult,
-    NiaDefineModifierCommandResult, NiaGetDefinedModifiersCommand,
-    NiaRemoveKeyboardByNameCommand, NiaRemoveKeyboardByNameCommandResult,
-    NiaRemoveKeyboardByPathCommand, NiaRemoveKeyboardByPathCommandResult,
-    NiaRemoveModifierCommand, NiaRemoveModifierCommandResult,
+    Interpreter, NiaDefineDeviceCommandResult, NiaDefineModifierCommandResult,
+    NiaGetDefinedModifiersCommand, NiaRemoveDeviceByNameCommand,
+    NiaRemoveDeviceByNameCommandResult, NiaRemoveDeviceByPathCommand,
+    NiaRemoveDeviceByPathCommandResult, NiaRemoveModifierCommand,
+    NiaRemoveModifierCommandResult,
 };
 use crate::{NiaActionListener, NiaGetDefinedModifiersCommandResult};
 
@@ -254,17 +254,17 @@ mod send_events {
 impl EventLoop {
     fn do_command_define_keyboard(
         interpreter: &mut Interpreter,
-        command: NiaDefineKeyboardCommand,
+        command: NiaDefineDeviceCommand,
     ) -> NiaInterpreterCommandResult {
         let result = library::define_keyboard_with_strings(
             interpreter,
-            command.get_keyboard_path(),
-            command.get_keyboard_name(),
+            command.get_device_path(),
+            command.get_device_name(),
         );
 
         let result = result.map(|_| String::from("Success"));
 
-        NiaDefineKeyboardCommandResult::from(result).into()
+        NiaDefineDeviceCommandResult::from(result).into()
     }
 
     fn do_command_define_modifier(
@@ -273,7 +273,7 @@ impl EventLoop {
     ) -> NiaInterpreterCommandResult {
         let result = library::define_modifier(
             interpreter,
-            command.get_keyboard_path(),
+            command.get_device_id(),
             command.get_key_code(),
             command.get_modifier_alias(),
         );
@@ -308,28 +308,28 @@ impl EventLoop {
 
     fn do_command_remove_keyboard_by_path(
         interpreter: &mut Interpreter,
-        command: NiaRemoveKeyboardByPathCommand,
+        command: NiaRemoveDeviceByPathCommand,
     ) -> NiaInterpreterCommandResult {
         let result = library::remove_keyboard_by_path_with_string(
             interpreter,
-            command.get_keyboard_path(),
+            command.get_device_path(),
         );
         let result = result.map(|_| String::from("Success"));
 
-        NiaRemoveKeyboardByPathCommandResult::from(result).into()
+        NiaRemoveDeviceByPathCommandResult::from(result).into()
     }
 
     fn do_command_remove_keyboard_by_name(
         interpreter: &mut Interpreter,
-        command: NiaRemoveKeyboardByNameCommand,
+        command: NiaRemoveDeviceByNameCommand,
     ) -> NiaInterpreterCommandResult {
         let result = library::remove_keyboard_by_name_with_string(
             interpreter,
-            command.get_keyboard_name(),
+            command.get_device_name(),
         );
         let result = result.map(|_| String::from("Success"));
 
-        NiaRemoveKeyboardByNameCommandResult::from(result).into()
+        NiaRemoveDeviceByNameCommandResult::from(result).into()
     }
 
     fn do_command_remove_modifier(
@@ -338,7 +338,7 @@ impl EventLoop {
     ) -> NiaInterpreterCommandResult {
         let result = library::remove_modifier(
             interpreter,
-            command.get_keyboard_path(),
+            command.get_device_id(),
             command.get_key_code(),
         );
         let result = result.map(|_| String::from("Success"));
@@ -376,7 +376,7 @@ impl EventLoop {
                 match interpreter_command_receiver.try_recv() {
                     Ok(command) => {
                         let command_result = match command {
-                            NiaInterpreterCommand::DefineKeyboard(command) => {
+                            NiaInterpreterCommand::DefineDevice(command) => {
                                 EventLoop::do_command_define_keyboard(
                                     &mut interpreter,
                                     command,
@@ -400,13 +400,13 @@ impl EventLoop {
                                 &mut interpreter,
                                 command,
                             ),
-                            NiaInterpreterCommand::RemoveKeyboardByPath(
+                            NiaInterpreterCommand::RemoveDeviceByPath(
                                 command,
                             ) => EventLoop::do_command_remove_keyboard_by_path(
                                 &mut interpreter,
                                 command,
                             ),
-                            NiaInterpreterCommand::RemoveKeyboardByName(
+                            NiaInterpreterCommand::RemoveDefineDeviceByName(
                                 command,
                             ) => EventLoop::do_command_remove_keyboard_by_name(
                                 &mut interpreter,

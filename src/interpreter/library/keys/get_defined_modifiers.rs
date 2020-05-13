@@ -6,7 +6,7 @@ use crate::library;
 
 pub fn get_defined_modifiers(
     interpreter: &mut Interpreter,
-) -> Result<Vec<(String, i32, String)>, Error> {
+) -> Result<Vec<(i32, i32, String)>, Error> {
     let list = library::get_defined_modifiers_as_values(interpreter)?;
 
     let modifier_lists = library::read_as_vector(interpreter, list)?;
@@ -22,8 +22,7 @@ pub fn get_defined_modifiers(
             ).into();
         }
 
-        let keyboard_path =
-            library::read_as_string(interpreter, modifier[0])?.clone();
+        let device_id = library::read_as_i64(modifier[0])? as i32;
 
         let key_code = library::read_as_i64(modifier[1])? as i32;
 
@@ -46,7 +45,7 @@ pub fn get_defined_modifiers(
             ).into()
         };
 
-        result.push((keyboard_path, key_code, modifier_alias));
+        result.push((device_id, key_code, modifier_alias));
     }
 
     Ok(result)
@@ -61,7 +60,7 @@ mod tests {
     use nia_basic_assertions::*;
 
     #[test]
-    fn returns_registered_keyboards() {
+    fn returns_registered_devices() {
         let mut interpreter = Interpreter::new();
 
         let result = get_defined_modifiers(&mut interpreter);
@@ -70,27 +69,17 @@ mod tests {
         nia_assert_equal(expected, result);
 
         let specs = vec![
+            ((3, 1, "test"), Ok(vec![(3, 1, "test".to_string())])),
             (
-                ("/dev/input/event1", 1, "test"),
-                Ok(vec![(
-                    "/dev/input/event1".to_string(),
-                    1,
-                    "test".to_string(),
-                )]),
+                (2, 2, ""),
+                Ok(vec![(2, 2, "".to_string()), (3, 1, "test".to_string())]),
             ),
             (
-                ("/dev/input/event2", 2, ""),
+                (1, 3, "arst"),
                 Ok(vec![
-                    ("/dev/input/event2".to_string(), 2, "".to_string()),
-                    ("/dev/input/event1".to_string(), 1, "test".to_string()),
-                ]),
-            ),
-            (
-                ("/dev/input/event3", 3, "arst"),
-                Ok(vec![
-                    ("/dev/input/event3".to_string(), 3, "arst".to_string()),
-                    ("/dev/input/event2".to_string(), 2, "".to_string()),
-                    ("/dev/input/event1".to_string(), 1, "test".to_string()),
+                    (1, 3, "arst".to_string()),
+                    (2, 2, "".to_string()),
+                    (3, 1, "test".to_string()),
                 ]),
             ),
         ];

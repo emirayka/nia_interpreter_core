@@ -6,18 +6,16 @@ use crate::library;
 
 pub fn define_modifier<S>(
     interpreter: &mut Interpreter,
-    keyboard_path: S,
+    device_id: i32,
     key_code: i32,
     modifier_alias: S,
 ) -> Result<(), Error>
 where
     S: AsRef<str>,
 {
-    let keyboard_path_str = keyboard_path.as_ref();
     let modifier_alias_str = modifier_alias.as_ref();
 
-    let keyboard_path_value =
-        interpreter.intern_string_value(keyboard_path_str);
+    let device_id_value = Value::Integer(device_id as i64);
     let key_code_value = Value::Integer(key_code as i64);
     let modifier_alias_value = if modifier_alias_str.len() == 0 {
         interpreter.intern_nil_symbol_value()
@@ -27,7 +25,7 @@ where
 
     library::define_modifier_with_values(
         interpreter,
-        keyboard_path_value,
+        device_id_value,
         key_code_value,
         modifier_alias_value,
     )
@@ -51,9 +49,9 @@ mod tests {
             interpreter.execute_in_main_environment(r#"'()"#).unwrap();
 
         let specs = vec![
-            ("a", 1, "", r#"'(("a" 1 ()))"#),
-            ("b", 2, "bb", r#"'(("b" 2 "bb") ("a" 1 ()))"#),
-            ("c", 3, "cc", r#"'(("c" 3 "cc") ("b" 2 "bb") ("a" 1 ()))"#),
+            (3, 1, "", r#"'((3 1 ()))"#),
+            (2, 2, "bb", r#"'((2 2 "bb") (3 1 ()))"#),
+            (1, 3, "cc", r#"'((1 3 "cc") (2 2 "bb") (3 1 ()))"#),
         ];
 
         for spec in specs {
@@ -79,20 +77,20 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let keyboard_path = "keyboard2";
+        let device_id = 1;
         let key_code = 23;
         let modifier_alias = "mod";
 
         nia_assert_is_ok(&define_modifier(
             &mut interpreter,
-            keyboard_path,
+            device_id,
             key_code,
             modifier_alias,
         ));
 
         let result = &define_modifier(
             &mut interpreter,
-            keyboard_path,
+            device_id,
             key_code,
             modifier_alias,
         );

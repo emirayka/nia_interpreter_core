@@ -1,13 +1,13 @@
 #[derive(Clone, Debug)]
 pub struct NiaDefineModifierCommand {
-    keyboard_path: String,
+    device_id: i32,
     key_code: i32,
     modifier_alias: String,
 }
 
 impl NiaDefineModifierCommand {
     pub fn new<S>(
-        keyboard_path: S,
+        device_id: i32,
         key_code: i32,
         modifier_alias: S,
     ) -> NiaDefineModifierCommand
@@ -15,14 +15,14 @@ impl NiaDefineModifierCommand {
         S: Into<String>,
     {
         NiaDefineModifierCommand {
-            keyboard_path: keyboard_path.into(),
+            device_id,
             key_code,
             modifier_alias: modifier_alias.into(),
         }
     }
 
-    pub fn get_keyboard_path(&self) -> &String {
-        &self.keyboard_path
+    pub fn get_device_id(&self) -> i32 {
+        self.device_id
     }
 
     pub fn get_key_code(&self) -> i32 {

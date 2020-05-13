@@ -2,7 +2,7 @@ use crate::Error;
 
 #[derive(Clone, Debug)]
 pub enum NiaGetDefinedModifiersCommandResult {
-    Success(Vec<(String, i32, String)>),
+    Success(Vec<(i32, i32, String)>),
     Error(String),
     Failure(String),
 }
@@ -19,10 +19,10 @@ impl From<Error> for NiaGetDefinedModifiersCommandResult {
     }
 }
 
-impl From<Result<Vec<(String, i32, String)>, Error>>
+impl From<Result<Vec<(i32, i32, String)>, Error>>
     for NiaGetDefinedModifiersCommandResult
 {
-    fn from(result: Result<Vec<(String, i32, String)>, Error>) -> Self {
+    fn from(result: Result<Vec<(i32, i32, String)>, Error>) -> Self {
         match result {
             Ok(modifiers) => {
                 NiaGetDefinedModifiersCommandResult::Success(modifiers)

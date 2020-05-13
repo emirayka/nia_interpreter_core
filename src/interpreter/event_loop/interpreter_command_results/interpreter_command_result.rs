@@ -3,12 +3,12 @@ use crate::Error;
 
 #[derive(Clone, Debug)]
 pub enum NiaInterpreterCommandResult {
-    DefineKeyboard(NiaDefineKeyboardCommandResult),
+    DefineDevice(NiaDefineDeviceCommandResult),
     DefineModifier(NiaDefineModifierCommandResult),
     ExecuteCode(NiaExecuteCodeCommandResult),
     GetDefinedModifiers(NiaGetDefinedModifiersCommandResult),
-    RemoveKeyboardByName(NiaRemoveKeyboardByNameCommandResult),
-    RemoveKeyboardByPath(NiaRemoveKeyboardByPathCommandResult),
+    RemoveDeviceByName(NiaRemoveDeviceByNameCommandResult),
+    RemoveDeviceByPath(NiaRemoveDeviceByPathCommandResult),
     RemoveModifier(NiaRemoveModifierCommandResult),
 }
 
@@ -23,8 +23,8 @@ macro_rules! make_from_impl {
 }
 
 make_from_impl!(
-    NiaDefineKeyboardCommandResult,
-    NiaInterpreterCommandResult::DefineKeyboard
+    NiaDefineDeviceCommandResult,
+    NiaInterpreterCommandResult::DefineDevice
 );
 make_from_impl!(
     NiaDefineModifierCommandResult,
@@ -39,12 +39,12 @@ make_from_impl!(
     NiaInterpreterCommandResult::GetDefinedModifiers
 );
 make_from_impl!(
-    NiaRemoveKeyboardByNameCommandResult,
-    NiaInterpreterCommandResult::RemoveKeyboardByName
+    NiaRemoveDeviceByNameCommandResult,
+    NiaInterpreterCommandResult::RemoveDeviceByName
 );
 make_from_impl!(
-    NiaRemoveKeyboardByPathCommandResult,
-    NiaInterpreterCommandResult::RemoveKeyboardByPath
+    NiaRemoveDeviceByPathCommandResult,
+    NiaInterpreterCommandResult::RemoveDeviceByPath
 );
 make_from_impl!(
     NiaRemoveModifierCommandResult,
