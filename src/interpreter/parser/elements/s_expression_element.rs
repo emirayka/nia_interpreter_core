@@ -1,11 +1,16 @@
-use nom::{
-    character::complete::multispace0, character::complete::multispace1,
-    delimited, many0, map_res, named, preceded, tag, terminated,
-};
+use nom::character::complete::multispace0;
+use nom::character::complete::multispace1;
+use nom::delimited;
+use nom::many0;
+use nom::map_res;
+use nom::named;
+use nom::preceded;
+use nom::tag;
+use nom::terminated;
 
-use crate::parser::element;
-use crate::parser::element::Element;
-use crate::parser::ParseError;
+use crate::interpreter::parser::element;
+use crate::interpreter::parser::element::Element;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct SExpressionElement {
@@ -87,12 +92,12 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::parser::boolean_element::BooleanElement;
-    use crate::parser::float_element::FloatElement;
-    use crate::parser::integer_element::IntegerElement;
-    use crate::parser::keyword_element::KeywordElement;
-    use crate::parser::string_element::StringElement;
-    use crate::parser::symbol_element::SymbolElement;
+    use crate::interpreter::parser::boolean_element::BooleanElement;
+    use crate::interpreter::parser::float_element::FloatElement;
+    use crate::interpreter::parser::integer_element::IntegerElement;
+    use crate::interpreter::parser::keyword_element::KeywordElement;
+    use crate::interpreter::parser::string_element::StringElement;
+    use crate::interpreter::parser::symbol_element::SymbolElement;
 
     fn assert_s_expression_parsed_correctly(
         expected: Vec<Element>,

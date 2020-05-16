@@ -39,7 +39,7 @@ fn read_registered_keyboards(
         let part = library::read_as_vector(interpreter, registered_keyboard)?;
 
         let keyboard_name =
-            library::read_as_string(interpreter, part[1])?.clone();
+            library::read_as_string(interpreter, part[2])?.clone();
 
         result.insert(keyboard_name, KeyboardId::new(index as u16));
     }
@@ -152,12 +152,12 @@ mod tests {
 
         interpreter
             .execute_in_main_environment(
-                "(keyboard:register \"/dev/input/event0\" \"second\")",
+                "(keyboard:register 0 \"/dev/input/event0\" \"second\")",
             )
             .unwrap();
         interpreter
             .execute_in_main_environment(
-                "(keyboard:register \"/dev/input/event1\" \"first\")",
+                "(keyboard:register 1 \"/dev/input/event1\" \"first\")",
             )
             .unwrap();
 

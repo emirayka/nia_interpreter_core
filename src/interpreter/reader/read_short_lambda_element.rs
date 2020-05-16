@@ -1,9 +1,9 @@
 use std::cmp::max;
 
-use crate::interpreter::reader::read_s_expression_element::read_s_expression_element;
+use crate::interpreter::parser::Element;
+use crate::interpreter::parser::ShortLambdaElement;
 
-use crate::parser::Element;
-use crate::parser::ShortLambdaElement;
+use crate::interpreter::reader::read_s_expression_element::read_s_expression_element;
 
 use crate::Error;
 use crate::Interpreter;
@@ -35,24 +35,24 @@ fn count_short_lambda_argument_count(
                 match (&name['%'.len_utf8()..]).parse::<u8>() {
                     Ok(val) => {
                         count = max(count, val);
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
-            },
+            }
             Element::Prefix(prefix_element) => {
                 candidates.push(prefix_element.get_value_ref());
-            },
+            }
             Element::SExpression(s_expression_element) => {
                 for element in s_expression_element.get_values_ref() {
                     candidates.push(element);
                 }
-            },
+            }
             Element::Object(object_element) => {
                 for (_, element) in object_element.get_values_ref() {
                     candidates.push(element)
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 

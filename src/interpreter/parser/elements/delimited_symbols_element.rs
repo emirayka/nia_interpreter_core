@@ -1,7 +1,14 @@
-use nom::{complete, many1, map_res, named, pair, preceded, tag};
+use nom::complete;
+use nom::many1;
+use nom::map_res;
+use nom::named;
+use nom::pair;
+use nom::preceded;
+use nom::tag;
 
-use crate::parser::symbol_element::SymbolElement;
-use crate::parser::{symbol_element, ParseError};
+use crate::interpreter::parser::symbol_element;
+use crate::interpreter::parser::symbol_element::SymbolElement;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct DelimitedSymbolsElement {

@@ -1,30 +1,34 @@
+mod evaluator;
+mod parser;
+mod reader;
+
 mod call_stack;
 mod context;
 mod environment;
 mod error;
-mod evaluator;
 mod event_loop;
 mod garbage_collector;
 mod internal_functions;
 mod interpreter;
 pub mod library;
 mod module;
-mod reader;
 mod special_variables;
 mod stdlib;
 mod value;
+
+use evaluator::*;
+use parser::*;
+use reader::*;
 
 pub use call_stack::*;
 pub use context::*;
 pub use environment::*;
 pub use error::*;
-pub use evaluator::*;
 pub use event_loop::*;
 pub use garbage_collector::*;
 pub use internal_functions::*;
 pub use interpreter::*;
 pub use module::*;
-pub use reader::*;
 pub use special_variables::*;
 pub use stdlib::*;
 pub use value::*;

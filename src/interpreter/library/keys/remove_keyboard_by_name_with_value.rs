@@ -15,15 +15,15 @@ fn find_target_keyboard_index(
         let keyboard_vector =
             library::read_as_vector(interpreter, *keyboard_list)?;
 
-        if keyboard_vector.len() != 2 {
+        if keyboard_vector.len() != 3 {
             return Error::generic_execution_error(
-                format!("Invariant violated: `nia-defined-keyboards' must be a list of two elements list.")
+                format!("Invariant violated: `nia-defined-keyboards' must be a list of three elements list.")
             ).into();
         }
 
         if library::deep_equal(
             interpreter,
-            keyboard_vector[1],
+            keyboard_vector[2],
             keyboard_name_value,
         )? {
             break;
@@ -89,11 +89,12 @@ mod tests {
 
     fn define_keyboards(
         interpreter: &mut Interpreter,
-        keyboards: Vec<(&str, &str)>,
+        keyboards: Vec<(i32, &str, &str)>,
     ) {
-        for (keyboard_path, keyboard_name) in keyboards {
-            nia_assert_is_ok(&library::define_keyboard_with_strings(
+        for (keyboard_id, keyboard_path, keyboard_name) in keyboards {
+            nia_assert_is_ok(&library::define_device(
                 interpreter,
+                keyboard_id,
                 keyboard_path,
                 keyboard_name,
             ))
@@ -116,24 +117,24 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let mut keyboards = vec![
-            ("/dev/input/event3", "third"),
-            ("/dev/input/event2", "second"),
-            ("/dev/input/event1", "first"),
+            (1, "/dev/input/event3", "third"),
+            (2, "/dev/input/event2", "second"),
+            (3, "/dev/input/event1", "first"),
         ];
 
         let mut specs = vec![
             (
                 "first",
-                r#"'(("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+                r#"'((2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
             ),
-            ("third", r#"'(("/dev/input/event2" "second"))"#),
+            ("third", r#"'((2 "/dev/input/event2" "second"))"#),
             ("second", r#"'()"#),
         ];
 
         define_keyboards(&mut interpreter, keyboards);
         assert_defined_keyboards_equal(
             &mut interpreter,
-            r#"'(("/dev/input/event1" "first") ("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+            r#"'((3 "/dev/input/event1" "first") (2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
         );
 
         for (name_for_deletion, expected) in specs {
@@ -151,15 +152,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let mut keyboards = vec![
-            ("/dev/input/event3", "third"),
-            ("/dev/input/event2", "second"),
-            ("/dev/input/event1", "first"),
+            (1, "/dev/input/event3", "third"),
+            (2, "/dev/input/event2", "second"),
+            (3, "/dev/input/event1", "first"),
         ];
 
         define_keyboards(&mut interpreter, keyboards);
         assert_defined_keyboards_equal(
             &mut interpreter,
-            r#"'(("/dev/input/event1" "first") ("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+            r#"'((3 "/dev/input/event1" "first") (2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
         );
 
         let keyboard_name_value = interpreter.intern_string_value("fourth");

@@ -1,7 +1,13 @@
-use crate::parser::ParseError;
-use nom::{
-    alt, character::complete::digit1, map_res, named, opt, pair, recognize, tag,
-};
+use nom::alt;
+use nom::character::complete::digit1;
+use nom::map_res;
+use nom::named;
+use nom::opt;
+use nom::pair;
+use nom::recognize;
+use nom::tag;
+
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct IntegerElement {

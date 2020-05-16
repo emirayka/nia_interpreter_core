@@ -1,9 +1,13 @@
-use nom::{
-    alt, character::complete::multispace1, combinator::all_consuming, map_res,
-    named, peek, tag, terminated,
-};
+use nom::alt;
+use nom::character::complete::multispace1;
+use nom::combinator::all_consuming;
+use nom::map_res;
+use nom::named;
+use nom::peek;
+use nom::tag;
+use nom::terminated;
 
-use crate::parser::ParseError;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct BooleanElement {

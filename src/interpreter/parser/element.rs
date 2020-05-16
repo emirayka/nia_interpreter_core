@@ -15,8 +15,8 @@ use super::{
     ShortLambdaElement, StringElement, SymbolElement,
 };
 
-use crate::parser::lib::end_of_input;
-use crate::parser::ParseError;
+use crate::interpreter::parser::lib::end_of_input;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub enum Element {

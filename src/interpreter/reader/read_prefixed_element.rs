@@ -1,6 +1,8 @@
-use crate::interpreter::reader::read_element::read_element;
+use crate::interpreter::parser::Element;
 
-use crate::parser::{Element, Prefix, PrefixedElement};
+use crate::interpreter::parser::Prefix;
+use crate::interpreter::parser::PrefixedElement;
+use crate::interpreter::reader::read_element::read_element;
 
 use crate::Error;
 use crate::Interpreter;
@@ -78,19 +80,19 @@ pub fn read_prefixed_element(
     match prefix {
         Prefix::Quote => {
             read_quote_prefixed_element(interpreter, prefixed_element)
-        },
+        }
         Prefix::SharpQuote => {
             read_sharp_quote_prefixed_element(interpreter, prefixed_element)
-        },
+        }
         Prefix::GraveAccent => {
             read_grave_accent_prefixed_element(interpreter, prefixed_element)
-        },
+        }
         Prefix::Comma => {
             read_comma_prefixed_element(interpreter, prefixed_element)
-        },
+        }
         Prefix::CommaDog => {
             read_comma_dog_prefixed_element(interpreter, prefixed_element)
-        },
+        }
     }
 }
 

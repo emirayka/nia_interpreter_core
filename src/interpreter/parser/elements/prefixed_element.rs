@@ -1,8 +1,8 @@
 use nom::{alt, map_res, named, opt, pair, recognize, tag};
 
-use crate::parser::element;
-use crate::parser::element::Element;
-use crate::parser::ParseError;
+use crate::interpreter::parser::element;
+use crate::interpreter::parser::element::Element;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Prefix {
@@ -99,12 +99,12 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::parser::boolean_element::BooleanElement;
-    use crate::parser::float_element::FloatElement;
-    use crate::parser::integer_element::IntegerElement;
-    use crate::parser::s_expression_element::SExpressionElement;
-    use crate::parser::string_element::StringElement;
-    use crate::parser::symbol_element::SymbolElement;
+    use crate::interpreter::parser::boolean_element::BooleanElement;
+    use crate::interpreter::parser::float_element::FloatElement;
+    use crate::interpreter::parser::integer_element::IntegerElement;
+    use crate::interpreter::parser::s_expression_element::SExpressionElement;
+    use crate::interpreter::parser::string_element::StringElement;
+    use crate::interpreter::parser::symbol_element::SymbolElement;
 
     fn assert_prefixed_element_parsed_correctly(
         expected_prefix: Prefix,

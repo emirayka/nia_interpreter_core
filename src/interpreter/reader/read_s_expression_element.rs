@@ -1,12 +1,12 @@
 use std::convert::TryInto;
 
+use crate::interpreter::parser::DelimitedSymbolsElement;
+use crate::interpreter::parser::Element;
+use crate::interpreter::parser::SExpressionElement;
+
 use crate::interpreter::reader::read_delimited_symbols_element::read_delimited_symbols_element;
 use crate::interpreter::reader::read_element::read_element;
 use crate::interpreter::reader::read_elements::read_elements;
-
-use crate::parser::DelimitedSymbolsElement;
-use crate::parser::Element;
-use crate::parser::SExpressionElement;
 
 use crate::Error;
 use crate::Interpreter;

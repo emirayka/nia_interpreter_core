@@ -1,9 +1,15 @@
-use nom::{
-    alt, character::complete::digit1, complete, map_res, named, opt, pair,
-    recognize, tag, tuple,
-};
+use nom::alt;
+use nom::character::complete::digit1;
+use nom::complete;
+use nom::map_res;
+use nom::named;
+use nom::opt;
+use nom::pair;
+use nom::recognize;
+use nom::tag;
+use nom::tuple;
 
-use crate::parser::ParseError;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct FloatElement {

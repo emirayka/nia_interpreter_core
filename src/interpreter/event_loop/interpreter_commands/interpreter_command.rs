@@ -13,6 +13,7 @@ pub enum NiaInterpreterCommand {
 
 impl NiaInterpreterCommand {
     pub fn make_define_device_command<S>(
+        device_id: i32,
         device_path: S,
         device_name: S,
     ) -> NiaInterpreterCommand
@@ -20,6 +21,7 @@ impl NiaInterpreterCommand {
         S: Into<String>,
     {
         NiaInterpreterCommand::DefineDevice(NiaDefineDeviceCommand::new(
+            device_id,
             device_path,
             device_name,
         ))
@@ -75,13 +77,10 @@ impl NiaInterpreterCommand {
         )
     }
 
-    pub fn make_remove_modifier_command<S>(
+    pub fn make_remove_modifier_command(
         device_id: i32,
         key_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
+    ) -> NiaInterpreterCommand {
         NiaInterpreterCommand::RemoveModifier(NiaRemoveModifierCommand::new(
             device_id, key_code,
         ))

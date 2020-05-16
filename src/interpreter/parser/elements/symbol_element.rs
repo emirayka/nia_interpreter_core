@@ -1,9 +1,13 @@
+use nom::alt;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::{alt, many1, map_res, named, tag};
+use nom::many1;
+use nom::map_res;
+use nom::named;
+use nom::tag;
 
-use crate::parser::lib::parse_symbol_character;
-use crate::parser::ParseError;
+use crate::interpreter::parser::lib::parse_symbol_character;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct SymbolElement {

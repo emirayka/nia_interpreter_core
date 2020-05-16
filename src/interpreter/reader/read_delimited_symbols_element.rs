@@ -1,5 +1,6 @@
-use crate::parser::DelimitedSymbolsElement;
-use crate::parser::SymbolElement;
+use crate::interpreter::parser::DelimitedSymbolsElement;
+use crate::interpreter::parser::SymbolElement;
+
 use crate::Interpreter;
 use crate::Value;
 
@@ -83,8 +84,9 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::interpreter::parser::parse;
+
     use crate::interpreter::reader::read_element::read_element;
-    use crate::parser::parse;
 
     use crate::utils::assert_parsing_reading_result_is_correct;
 

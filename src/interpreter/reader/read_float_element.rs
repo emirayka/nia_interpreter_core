@@ -1,4 +1,4 @@
-use crate::parser::FloatElement;
+use crate::interpreter::parser::FloatElement;
 
 use crate::Error;
 use crate::Value;

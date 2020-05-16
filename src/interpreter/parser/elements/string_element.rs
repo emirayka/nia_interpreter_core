@@ -1,5 +1,12 @@
-use crate::parser::ParseError;
-use nom::{alt, delimited, many0, map_res, named, none_of, tag};
+use nom::alt;
+use nom::delimited;
+use nom::many0;
+use nom::map_res;
+use nom::named;
+use nom::none_of;
+use nom::tag;
+
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct StringElement {

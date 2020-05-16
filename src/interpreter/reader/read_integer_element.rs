@@ -1,4 +1,4 @@
-use crate::parser::IntegerElement;
+use crate::interpreter::parser::IntegerElement;
 
 use crate::Error;
 use crate::Value;

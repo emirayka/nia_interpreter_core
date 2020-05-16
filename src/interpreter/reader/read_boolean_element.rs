@@ -1,4 +1,4 @@
-use crate::parser::BooleanElement;
+use crate::interpreter::parser::BooleanElement;
 
 use crate::Error;
 use crate::Value;

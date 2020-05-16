@@ -11,6 +11,8 @@ where
     S: AsRef<str>,
 {
     let keyboard_path_string = keyboard_path.as_ref();
+    println!("Removing keyboard by path: {}", keyboard_path_string);
+
     let keyboard_path_value =
         interpreter.intern_string_value(keyboard_path_string);
 
@@ -30,11 +32,12 @@ mod tests {
 
     fn define_keyboards(
         interpreter: &mut Interpreter,
-        keyboards: Vec<(&str, &str)>,
+        keyboards: Vec<(i32, &str, &str)>,
     ) {
-        for (keyboard_path, keyboard_name) in keyboards {
-            nia_assert_is_ok(&library::define_keyboard_with_strings(
+        for (keyboard_id, keyboard_path, keyboard_name) in keyboards {
+            nia_assert_is_ok(&library::define_device(
                 interpreter,
+                keyboard_id,
                 keyboard_path,
                 keyboard_name,
             ))
@@ -57,19 +60,19 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let mut keyboards = vec![
-            ("/dev/input/event3", "third"),
-            ("/dev/input/event2", "second"),
-            ("/dev/input/event1", "first"),
+            (1, "/dev/input/event3", "third"),
+            (2, "/dev/input/event2", "second"),
+            (3, "/dev/input/event1", "first"),
         ];
 
         let mut specs = vec![
             (
                 r#"/dev/input/event1"#,
-                r#"'(("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+                r#"'((2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
             ),
             (
                 r#"/dev/input/event3"#,
-                r#"'(("/dev/input/event2" "second"))"#,
+                r#"'((2 "/dev/input/event2" "second"))"#,
             ),
             (r#"/dev/input/event2"#, r#"'()"#),
         ];
@@ -77,7 +80,7 @@ mod tests {
         define_keyboards(&mut interpreter, keyboards);
         assert_defined_keyboards_equal(
             &mut interpreter,
-            r#"'(("/dev/input/event1" "first") ("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+            r#"'((3 "/dev/input/event1" "first") (2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
         );
 
         for (path_for_deletion, expected) in specs {
@@ -93,15 +96,15 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let mut keyboards = vec![
-            ("/dev/input/event3", "third"),
-            ("/dev/input/event2", "second"),
-            ("/dev/input/event1", "first"),
+            (1, "/dev/input/event3", "third"),
+            (2, "/dev/input/event2", "second"),
+            (3, "/dev/input/event1", "first"),
         ];
 
         define_keyboards(&mut interpreter, keyboards);
         assert_defined_keyboards_equal(
             &mut interpreter,
-            r#"'(("/dev/input/event1" "first") ("/dev/input/event2" "second") ("/dev/input/event3" "third"))"#,
+            r#"'((3 "/dev/input/event1" "first") (2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
         );
 
         let result = remove_keyboard_by_path_with_string(

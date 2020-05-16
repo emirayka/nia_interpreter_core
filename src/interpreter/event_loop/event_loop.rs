@@ -256,8 +256,9 @@ impl EventLoop {
         interpreter: &mut Interpreter,
         command: NiaDefineDeviceCommand,
     ) -> NiaInterpreterCommandResult {
-        let result = library::define_keyboard_with_strings(
+        let result = library::define_device(
             interpreter,
+            command.get_device_id(),
             command.get_device_path(),
             command.get_device_name(),
         );

@@ -3,6 +3,12 @@ use std::convert::TryInto;
 use std::path::Path;
 use std::path::PathBuf;
 
+use crate::interpreter::evaluator::evaluate_value;
+use crate::interpreter::evaluator::evaluate_values;
+use crate::interpreter::garbage_collector::collect_garbage;
+use crate::interpreter::parser::parse;
+use crate::interpreter::reader::read_elements;
+
 use crate::BuiltinFunction;
 use crate::CallStack;
 use crate::ConsArena;
@@ -37,14 +43,9 @@ use crate::SymbolArena;
 use crate::SymbolId;
 use crate::Value;
 
-use crate::interpreter::garbage_collector::collect_garbage;
-use crate::interpreter::reader::read_elements;
-use crate::parser::parse;
+use crate::interpreter::evaluator::evaluate_builtin_function_invocation;
+use crate::interpreter::evaluator::evaluate_interpreted_function_invocation;
 
-use crate::evaluate_builtin_function_invocation;
-use crate::evaluate_interpreted_function_invocation;
-use crate::evaluate_value;
-use crate::evaluate_values;
 use crate::interpreter::stdlib::infect_stdlib;
 
 use crate::library;

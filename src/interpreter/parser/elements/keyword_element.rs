@@ -1,7 +1,11 @@
-use nom::{many1, map_res, named, preceded, tag};
+use nom::many1;
+use nom::map_res;
+use nom::named;
+use nom::preceded;
+use nom::tag;
 
-use crate::parser::lib::parse_keyword_character;
-use crate::parser::ParseError;
+use crate::interpreter::parser::lib::parse_keyword_character;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct KeywordElement {

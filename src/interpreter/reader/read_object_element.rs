@@ -1,5 +1,7 @@
 use crate::interpreter::reader::read_element::read_element;
-use crate::parser::ObjectElement;
+
+use crate::interpreter::parser::ObjectElement;
+
 use crate::Error;
 use crate::Interpreter;
 use crate::Value;
@@ -45,13 +47,13 @@ mod tests {
     mod object {
         use super::*;
 
-        use crate::parser::BooleanElement;
-        use crate::parser::Element;
-        use crate::parser::FloatElement;
-        use crate::parser::IntegerElement;
-        use crate::parser::KeywordElement;
-        use crate::parser::StringElement;
-        use crate::parser::SymbolElement;
+        use crate::interpreter::parser::BooleanElement;
+        use crate::interpreter::parser::Element;
+        use crate::interpreter::parser::FloatElement;
+        use crate::interpreter::parser::IntegerElement;
+        use crate::interpreter::parser::KeywordElement;
+        use crate::interpreter::parser::StringElement;
+        use crate::interpreter::parser::SymbolElement;
 
         use crate::BuiltinFunction;
         use crate::EnvironmentId;

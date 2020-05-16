@@ -5,8 +5,8 @@ use std::path::Path;
 use crate::interpreter::ErrorKind;
 use crate::interpreter::Interpreter;
 use crate::{
-    EventLoop, NiaExecuteCodeCommand, NiaInterpreterCommand,
-    NiaInterpreterCommandResult,
+    EventLoop, NiaExecuteCodeCommand, NiaExecuteCodeCommandResult,
+    NiaInterpreterCommand, NiaInterpreterCommandResult,
 };
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";
@@ -54,7 +54,20 @@ pub fn run() -> Result<(), std::io::Error> {
                     Err(_) => break,
                 };
 
-                println!("{}", result);
+                if let NiaInterpreterCommandResult::ExecuteCode(result) = result
+                {
+                    match result {
+                        NiaExecuteCodeCommandResult::Success(success) => {
+                            println!("{}", success)
+                        }
+                        NiaExecuteCodeCommandResult::Error(error) => {
+                            println!("Error: {}", error)
+                        }
+                        NiaExecuteCodeCommandResult::Failure(failure) => {
+                            println!("Failure: {}", failure)
+                        }
+                    }
+                }
             }
             Err(ReadlineError::Interrupted) => {
                 // break;

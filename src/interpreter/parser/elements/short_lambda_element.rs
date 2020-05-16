@@ -1,7 +1,10 @@
-use nom::{map_res, named, preceded, tag};
+use nom::map_res;
+use nom::named;
+use nom::preceded;
+use nom::tag;
 
-use crate::parser::s_expression_element;
-use crate::parser::SExpressionElement;
+use crate::interpreter::parser::s_expression_element;
+use crate::interpreter::parser::SExpressionElement;
 
 #[derive(Debug, Clone)]
 pub struct ShortLambdaElement {
@@ -53,8 +56,8 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::parser::element::Element;
-    use crate::parser::integer_element::IntegerElement;
+    use crate::interpreter::parser::element::Element;
+    use crate::interpreter::parser::integer_element::IntegerElement;
 
     fn assert_short_lambda_element_parsed_correctly(
         expected: ShortLambdaElement,

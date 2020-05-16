@@ -1,5 +1,5 @@
-mod define_keyboard_with_strings;
-mod define_keyboard_with_values;
+mod define_device;
+mod define_device_with_values;
 mod define_modifier;
 mod define_modifier_with_values;
 mod get_defined_keyboards;
@@ -21,8 +21,8 @@ mod remove_keyboard_by_path_with_value;
 mod remove_modifier;
 mod remove_modifier_with_values;
 
-pub use define_keyboard_with_strings::*;
-pub use define_keyboard_with_values::*;
+pub use define_device::*;
+pub use define_device_with_values::*;
 pub use define_modifier::*;
 pub use define_modifier_with_values::*;
 pub use get_defined_keyboards::*;

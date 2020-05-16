@@ -1,8 +1,8 @@
 #[allow(unused_imports)]
 use nia_basic_assertions::*;
 
-use crate::parser::parse;
-use crate::read_element;
+use crate::interpreter::parser::parse;
+use crate::interpreter::read_element;
 
 use crate::Error;
 use crate::ErrorKind;

@@ -1,13 +1,19 @@
-use nom::{
-    alt, character::complete::multispace0, character::complete::multispace1,
-    complete, delimited, many0, map_res, named, preceded, tag,
-};
+use nom::alt;
+use nom::character::complete::multispace0;
+use nom::character::complete::multispace1;
+use nom::complete;
+use nom::delimited;
+use nom::many0;
+use nom::map_res;
+use nom::named;
+use nom::preceded;
+use nom::tag;
 
-use crate::parser::element;
-use crate::parser::element::Element;
-use crate::parser::ParseError;
+use crate::interpreter::parser::element;
+use crate::interpreter::parser::element::Element;
+use crate::interpreter::parser::ParseError;
 
-use crate::parser::lib::parse_comment_character;
+use crate::interpreter::parser::lib::parse_comment_character;
 
 #[derive(Debug)]
 pub struct Code {
@@ -41,8 +47,8 @@ fn make_code(
         match element {
             Some(element) => {
                 elements.push(element);
-            },
-            None => {},
+            }
+            None => {}
         }
     }
     Ok(Code::new(elements))
@@ -98,13 +104,13 @@ pub fn parse(s: &str) -> Result<Code, ParseError> {
             }
 
             Ok(parse_result)
-        },
+        }
         Err(nom::Err::Error((s, kind))) => {
             Err(ParseError::NomError((String::from(s), kind)))
-        },
+        }
         Err(nom::Err::Failure((s, kind))) => {
             Err(ParseError::NomFailure((String::from(s), kind)))
-        },
+        }
         Err(nom::Err::Incomplete(_)) => Err(ParseError::NomIncomplete()),
     }
 }

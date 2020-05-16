@@ -1,6 +1,6 @@
-use crate::interpreter::reader::read_element::read_element;
+use crate::interpreter::parser::Element;
 
-use crate::parser::Element;
+use crate::interpreter::reader::read_element::read_element;
 
 use crate::Error;
 use crate::Interpreter;

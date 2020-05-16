@@ -3,8 +3,8 @@ use nom::{
     preceded, tag, terminated,
 };
 
-use crate::parser::keyword_element;
-use crate::parser::keyword_element::KeywordElement;
+use crate::interpreter::parser::keyword_element;
+use crate::interpreter::parser::keyword_element::KeywordElement;
 
 #[derive(Debug, Clone)]
 pub struct ObjectPatternElement {

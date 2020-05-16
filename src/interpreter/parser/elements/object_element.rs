@@ -1,14 +1,21 @@
-use nom::{
-    character::complete::multispace0, character::complete::multispace1,
-    delimited, many0, map_res, named, pair, preceded, separated_list,
-    separated_pair, tag, terminated,
-};
+use nom::character::complete::multispace0;
+use nom::character::complete::multispace1;
+use nom::delimited;
+use nom::many0;
+use nom::map_res;
+use nom::named;
+use nom::pair;
+use nom::preceded;
+use nom::separated_list;
+use nom::separated_pair;
+use nom::tag;
+use nom::terminated;
 
-use crate::parser::element;
-use crate::parser::element::Element;
-use crate::parser::keyword_element;
-use crate::parser::keyword_element::KeywordElement;
-use crate::parser::ParseError;
+use crate::interpreter::parser::element;
+use crate::interpreter::parser::element::Element;
+use crate::interpreter::parser::keyword_element;
+use crate::interpreter::parser::keyword_element::KeywordElement;
+use crate::interpreter::parser::ParseError;
 
 #[derive(Debug, Clone)]
 pub struct ObjectElement {

@@ -1,4 +1,5 @@
-use crate::parser::ObjectPatternElement;
+use crate::interpreter::parser::ObjectPatternElement;
+
 use crate::Error;
 use crate::Interpreter;
 use crate::Value;
