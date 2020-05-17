@@ -5,25 +5,26 @@ use crate::Value;
 
 use crate::library;
 
-pub fn alist_contains_key_question(
+pub fn alist_get(
     interpreter: &mut Interpreter,
     key: Value,
     alist: Value,
-) -> Result<bool, Error> {
+) -> Result<Option<Value>, Error> {
     let alist_vector = library::read_as_vector(interpreter, alist)?;
 
-    for alist_key_value_pair in alist_vector {
-        let alist_key_value_cons_id =
-            library::read_as_cons_id(alist_key_value_pair)?;
+    for alist_key_value_pair_value in alist_vector {
+        let alist_key_value_pair_cons_id =
+            library::read_as_cons_id(alist_key_value_pair_value)?;
 
-        let alist_key = interpreter.get_car(alist_key_value_cons_id)?;
+        let alist_key = interpreter.get_car(alist_key_value_pair_cons_id)?;
+        let alist_value = interpreter.get_cdr(alist_key_value_pair_cons_id)?;
 
-        if library::deep_equal(interpreter, alist_key, key)? {
-            return Ok(true);
+        if library::deep_equal(interpreter, key, alist_key)? {
+            return Ok(Some(alist_value));
         }
     }
 
-    Ok(false)
+    Ok(None)
 }
 
 #[cfg(test)]
@@ -38,28 +39,26 @@ mod tests {
     use crate::{FunctionId, KeywordId, ObjectId, StringId};
 
     #[test]
-    fn returns_true_if_key_value_pair_exists() {
+    fn returns_value_associated_with_key_or_none_if_there_are_no_such_key() {
         let mut interpreter = Interpreter::new();
 
         let alist = nia_alist!(
             interpreter,
-            (Value::Integer(1), Value::Boolean(false)),
-            (Value::Integer(2), Value::Boolean(false)),
-            (Value::Integer(3), Value::Boolean(false))
+            (Value::Integer(1), Value::Integer(11)),
+            (Value::Integer(2), Value::Integer(12)),
+            (Value::Integer(3), Value::Integer(13))
         );
 
         let specs = vec![
-            (false, Value::Integer(0)),
-            (true, Value::Integer(1)),
-            (true, Value::Integer(2)),
-            (true, Value::Integer(3)),
-            (false, Value::Integer(4)),
+            (None, Value::Integer(0)),
+            (Some(Value::Integer(11)), Value::Integer(1)),
+            (Some(Value::Integer(12)), Value::Integer(2)),
+            (Some(Value::Integer(13)), Value::Integer(3)),
+            (None, Value::Integer(4)),
         ];
 
         for (expected, key) in specs {
-            let result =
-                alist_contains_key_question(&mut interpreter, key, alist)
-                    .unwrap();
+            let result = alist_get(&mut interpreter, key, alist).unwrap();
 
             nia_assert_equal(expected, result)
         }
@@ -69,7 +68,7 @@ mod tests {
     fn returns_invalid_argument_error_when_not_an_alist_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let alist = nia_alist!(interpreter);
+        let alist = library::alist_new(&mut interpreter).unwrap();
 
         let specs = vec![
             Value::Integer(1),
@@ -84,8 +83,7 @@ mod tests {
         ];
 
         for spec in specs {
-            let result =
-                alist_contains_key_question(&mut interpreter, spec, spec);
+            let result = alist_get(&mut interpreter, spec, spec);
 
             crate::utils::assert_invalid_argument_error(&result);
         }

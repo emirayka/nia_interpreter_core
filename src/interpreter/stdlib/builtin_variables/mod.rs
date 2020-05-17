@@ -1,6 +1,13 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
+pub const DEFINED_DEVICES_ROOT_VARIABLE_NAME: &'static str =
+    "nia-defined-devices";
+pub const DEFINED_MODIFIERS_ROOT_VARIABLE_NAME: &'static str =
+    "nia-defined-modifiers";
+pub const DEFINED_ACTIONS_ROOT_VARIABLE_NAME: &'static str =
+    "nia-defined-actions";
+
 fn define_variable_with_nil(
     interpreter: &mut Interpreter,
     name: &str,
@@ -22,11 +29,11 @@ fn define_empty_list(
 }
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-    define_empty_list(interpreter, "nia-defined-keyboards")?;
-    define_empty_list(interpreter, "nia-defined-modifiers")?;
-    define_empty_list(interpreter, "nia-defined-actions")?;
-    define_empty_list(interpreter, "global-map")?;
+    define_empty_list(interpreter, DEFINED_DEVICES_ROOT_VARIABLE_NAME)?;
+    define_empty_list(interpreter, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME)?;
+    define_empty_list(interpreter, DEFINED_ACTIONS_ROOT_VARIABLE_NAME)?;
 
+    define_empty_list(interpreter, "global-map")?;
     define_empty_list(interpreter, "--actions")?;
 
     Ok(())
