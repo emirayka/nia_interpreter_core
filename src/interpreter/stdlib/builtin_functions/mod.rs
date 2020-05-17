@@ -7,9 +7,6 @@ use crate::library;
 mod _println;
 mod _type;
 mod assert;
-mod car;
-mod cdr;
-mod cons;
 mod dec;
 mod div;
 mod eq_question;
@@ -30,8 +27,6 @@ mod neq_question;
 mod nequal_question;
 mod not;
 mod rem;
-mod set_car_mark;
-mod set_cdr_mark;
 mod string;
 mod sub;
 mod sum;
@@ -39,11 +34,6 @@ mod sum;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec![
         ("assert", assert::assert),
-        ("car", car::car),
-        ("cdr", cdr::cdr),
-        ("set-car!", set_car_mark::set_car_mark),
-        ("set-cdr!", set_cdr_mark::set_cdr_mark),
-        ("cons", cons::cons),
         ("list", list::list),
         ("string", string::string),
         ("flookup", flookup::flookup),

@@ -66,7 +66,7 @@ mod tests {
             ("(is:special? \"string\")", Value::Boolean(false)),
             ("(is:special? 'symbol)", Value::Boolean(false)),
             ("(is:special? :keyword)", Value::Boolean(false)),
-            ("(is:special? (cons 1 2))", Value::Boolean(false)),
+            ("(is:special? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:special? {})", Value::Boolean(false)),
             ("(is:special? #())", Value::Boolean(false)),
             (

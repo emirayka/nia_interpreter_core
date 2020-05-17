@@ -128,7 +128,7 @@ mod tests {
             r#"(string:split "a" 'symbol)"#,
             r#"(string:split "a" :keyword)"#,
             r#"(string:split "a" {:object-key 'value})"#,
-            r#"(string:split "a" (cons 1 2))"#,
+            r#"(string:split "a" (cons:new 1 2))"#,
             r#"(string:split "a" #(+ %1 %2))"#,
             r#"(string:split 1 "b")"#,
             r#"(string:split 1.1 "b")"#,
@@ -137,7 +137,7 @@ mod tests {
             r#"(string:split 'symbol "b")"#,
             r#"(string:split :keyword "b")"#,
             r#"(string:split {:object-key 'value} "b")"#,
-            r#"(string:split (cons 1 2) "b")"#,
+            r#"(string:split (cons:new 1 2) "b")"#,
             r#"(string:split #(+ %1 %2) "b")"#,
         ];
 

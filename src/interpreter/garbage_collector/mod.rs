@@ -388,7 +388,7 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let cons_id = interpreter
-            .execute_in_main_environment("(cons 1 2)")
+            .execute_in_main_environment("(cons:new 1 2)")
             .unwrap()
             .try_into()
             .unwrap();
@@ -488,7 +488,7 @@ mod tests {
 
         let cons_id = interpreter
             .execute_in_main_environment(
-                "(defv kekurus (cons 'some-unused-symbol-1 'some-unused-symbol-2)) kekurus",
+                "(defv kekurus (cons:new 'some-unused-symbol-1 'some-unused-symbol-2)) kekurus",
             )
             .unwrap()
             .try_into()
@@ -670,7 +670,7 @@ mod tests {
             (interpreter.intern_symbol_id("kekurus-1"), interpreter.execute_in_main_environment("\"kekurus-string\"").unwrap()),
             (interpreter.intern_symbol_id("kekurus-2"), interpreter.execute_in_main_environment(":kekurus-keyword").unwrap()),
             (interpreter.intern_symbol_id("kekurus-3"), interpreter.execute_in_main_environment("'kekurus-symbol").unwrap()),
-            (interpreter.intern_symbol_id("kekurus-4"), interpreter.execute_in_main_environment("(cons 1 2)").unwrap()),
+            (interpreter.intern_symbol_id("kekurus-4"), interpreter.execute_in_main_environment("(cons:new 1 2)").unwrap()),
             (interpreter.intern_symbol_id("kekurus-5"), interpreter.execute_in_main_environment("{:a 1}").unwrap()),
             (interpreter.intern_symbol_id("kekurus-6"),
              interpreter.execute_in_main_environment(

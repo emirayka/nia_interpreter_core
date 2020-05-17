@@ -82,7 +82,7 @@ mod tests {
             r#"(string:trim 'symbol)"#,
             r#"(string:trim :keyword)"#,
             r#"(string:trim {:object-key 'value})"#,
-            r#"(string:trim (cons 1 2))"#,
+            r#"(string:trim (cons:new 1 2))"#,
             r#"(string:trim #(+ %1 %2))"#,
         ];
 

@@ -65,7 +65,7 @@ mod tests {
             ("(is:interpreted? \"string\")", Value::Boolean(false)),
             ("(is:interpreted? 'symbol)", Value::Boolean(false)),
             ("(is:interpreted? :keyword)", Value::Boolean(false)),
-            ("(is:interpreted? (cons 1 2))", Value::Boolean(false)),
+            ("(is:interpreted? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:interpreted? {})", Value::Boolean(false)),
             (
                 "(is:interpreted? (flookup 'flookup))",

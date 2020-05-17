@@ -57,7 +57,7 @@ mod tests {
             ("(is:false? :keyword)", Value::Boolean(false)),
             ("(is:false? {})", Value::Boolean(false)),
             ("(is:false? #())", Value::Boolean(false)),
-            ("(is:false? (cons 1 2))", Value::Boolean(false)),
+            ("(is:false? (cons:new 1 2))", Value::Boolean(false)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);

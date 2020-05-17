@@ -66,7 +66,7 @@ mod tests {
             ("(is:builtin? \"string\")", Value::Boolean(false)),
             ("(is:builtin? 'symbol)", Value::Boolean(false)),
             ("(is:builtin? :keyword)", Value::Boolean(false)),
-            ("(is:builtin? (cons 1 2))", Value::Boolean(false)),
+            ("(is:builtin? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:builtin? {})", Value::Boolean(false)),
             ("(is:builtin? #())", Value::Boolean(false)),
             ("(is:builtin? (flookup 'cond))", Value::Boolean(false)),

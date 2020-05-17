@@ -151,7 +151,7 @@ mod tests {
         assert_failed_correctly(r#"#{:key "string"}"#);
         assert_failed_correctly(r#"#{:key symbol}"#);
         assert_failed_correctly(r#"#{:key 'quoted-symbol}"#);
-        assert_failed_correctly(r#"#{:key (cons 1 2)}"#);
+        assert_failed_correctly(r#"#{:key (cons:new 1 2)}"#);
         assert_failed_correctly(r#"#{:key {}}"#);
         assert_failed_correctly(r#"#{:key #()}"#);
     }

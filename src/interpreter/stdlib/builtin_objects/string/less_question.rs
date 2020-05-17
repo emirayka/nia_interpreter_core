@@ -95,7 +95,7 @@ mod tests {
             r#"(string:less? "a" 'symbol)"#,
             r#"(string:less? "a" :keyword)"#,
             r#"(string:less? "a" {:object-key 'value})"#,
-            r#"(string:less? "a" (cons 1 2))"#,
+            r#"(string:less? "a" (cons:new 1 2))"#,
             r#"(string:less? "a" #(+ %1 %2))"#,
             r#"(string:less? 1 "b")"#,
             r#"(string:less? 1.1 "b")"#,
@@ -104,7 +104,7 @@ mod tests {
             r#"(string:less? 'symbol "b")"#,
             r#"(string:less? :keyword "b")"#,
             r#"(string:less? {:object-key 'value} "b")"#,
-            r#"(string:less? (cons 1 2) "b")"#,
+            r#"(string:less? (cons:new 1 2) "b")"#,
             r#"(string:less? #(+ %1 %2) "b")"#,
         ];
 

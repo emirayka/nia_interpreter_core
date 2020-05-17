@@ -119,19 +119,19 @@ mod tests {
             ("(dolist (i '(1 2 3)))", "nil"),
             ("(defv lst (list 1 2 3)) (dolist (i lst))", "nil"),
             (
-                "(defv a (list)) (dolist (i '(1 2 3)) (set! a (cons i a))) a",
+                "(defv a (list)) (dolist (i '(1 2 3)) (set! a (cons:new i a))) a",
                 "'(3 2 1)",
             ),
             (
-                "(defv b (list)) (dolist (i '(1 2 3)) (break) (set! b (cons i b))) b",
+                "(defv b (list)) (dolist (i '(1 2 3)) (break) (set! b (cons:new i b))) b",
                 "'()",
             ),
             (
-                "(defv c (list)) (dolist (i '(1 2 3)) (set! c (cons i c)) (set! c (cons i c))) c",
+                "(defv c (list)) (dolist (i '(1 2 3)) (set! c (cons:new i c)) (set! c (cons:new i c))) c",
                 "'(3 3 2 2 1 1)",
             ),
             (
-                "(defv d (list)) (dolist (i '(1 2 3)) (set! d (cons i d)) (continue) (set! d (cons i d))) d",
+                "(defv d (list)) (dolist (i '(1 2 3)) (set! d (cons:new i d)) (continue) (set! d (cons:new i d))) d",
                 "'(3 2 1)",
             ),
         ];

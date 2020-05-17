@@ -64,7 +64,7 @@ mod tests {
             ("(is:function? \"string\")", Value::Boolean(false)),
             ("(is:function? 'symbol)", Value::Boolean(false)),
             ("(is:function? :keyword)", Value::Boolean(false)),
-            ("(is:function? (cons 1 2))", Value::Boolean(false)),
+            ("(is:function? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:function? {})", Value::Boolean(false)),
         ];
 

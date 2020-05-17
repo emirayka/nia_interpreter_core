@@ -66,7 +66,7 @@ mod tests {
             ("(is:macro? \"string\")", Value::Boolean(false)),
             ("(is:macro? 'symbol)", Value::Boolean(false)),
             ("(is:macro? :keyword)", Value::Boolean(false)),
-            ("(is:macro? (cons 1 2))", Value::Boolean(false)),
+            ("(is:macro? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:macro? {})", Value::Boolean(false)),
             ("(is:macro? (flookup 'flookup))", Value::Boolean(false)),
             ("(is:macro? (flookup 'cond))", Value::Boolean(false)),

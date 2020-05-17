@@ -68,7 +68,7 @@ mod tests {
                 "15",
             ),
             (
-                "(list:fold (function (lambda (acc value) (cons value acc))) '(1 2 3 4 5) nil)",
+                "(list:fold (function (lambda (acc value) (cons:new value acc))) '(1 2 3 4 5) nil)",
                 "(list 5 4 3 2 1)",
             ),
         ];

@@ -95,7 +95,7 @@ mod tests {
             r#"(string:compare "a" 'symbol)"#,
             r#"(string:compare "a" :keyword)"#,
             r#"(string:compare "a" {:object-key 'value})"#,
-            r#"(string:compare "a" (cons 1 2))"#,
+            r#"(string:compare "a" (cons:new 1 2))"#,
             r#"(string:compare "a" #(+ %1 %2))"#,
             r#"(string:compare 1 "b")"#,
             r#"(string:compare 1.1 "b")"#,
@@ -104,7 +104,7 @@ mod tests {
             r#"(string:compare 'symbol "b")"#,
             r#"(string:compare :keyword "b")"#,
             r#"(string:compare {:object-key 'value} "b")"#,
-            r#"(string:compare (cons 1 2) "b")"#,
+            r#"(string:compare (cons:new 1 2) "b")"#,
             r#"(string:compare #(+ %1 %2) "b")"#,
         ];
 

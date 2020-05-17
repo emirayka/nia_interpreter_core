@@ -69,8 +69,8 @@ mod tests {
 
         let pairs = vec![
             ("(is:list? ())", Value::Boolean(true)),
-            ("(is:list? (cons 1 nil))", Value::Boolean(true)),
-            ("(is:list? (cons 1 (cons 2 nil)))", Value::Boolean(true)),
+            ("(is:list? (cons:new 1 nil))", Value::Boolean(true)),
+            ("(is:list? (cons:new 1 (cons:new 2 nil)))", Value::Boolean(true)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);
@@ -90,8 +90,8 @@ mod tests {
             ("(is:list? :keyword)", Value::Boolean(false)),
             ("(is:list? {})", Value::Boolean(false)),
             ("(is:list? #())", Value::Boolean(false)),
-            ("(is:list? (cons 1 2))", Value::Boolean(false)),
-            ("(is:list? (cons 1 (cons 2 3)))", Value::Boolean(false)),
+            ("(is:list? (cons:new 1 2))", Value::Boolean(false)),
+            ("(is:list? (cons:new 1 (cons:new 2 3)))", Value::Boolean(false)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);

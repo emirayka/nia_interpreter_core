@@ -56,7 +56,7 @@ mod tests {
             ("(is:nil? \"string\")", Value::Boolean(false)),
             ("(is:nil? :keyword)", Value::Boolean(false)),
             ("(is:nil? 'symbol)", Value::Boolean(false)),
-            ("(is:nil? (cons 1 2))", Value::Boolean(false)),
+            ("(is:nil? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:nil? {})", Value::Boolean(false)),
             ("(is:nil? #())", Value::Boolean(false)),
         ];

@@ -123,7 +123,7 @@ mod tests {
             r#"(string:join "|" 'symbol)"#,
             r#"(string:join "|" :keyword)"#,
             r#"(string:join "|" {:object-key 'value})"#,
-            r#"(string:join "|" (cons 1 2))"#,
+            r#"(string:join "|" (cons:new 1 2))"#,
             r#"(string:join "|" #(+ %1 %2))"#,
             r#"(string:join "|" '(1))"#,
             r#"(string:join "|" '(1.1))"#,
@@ -132,7 +132,7 @@ mod tests {
             r#"(string:join "|" '(symbol))"#,
             r#"(string:join "|" '(:keyword))"#,
             r#"(string:join "|" '({:object-key 'value}))"#,
-            r#"(string:join "|" (list (cons 1 2)))"#,
+            r#"(string:join "|" (list (cons:new 1 2)))"#,
             r#"(string:join "|" (list #(+ %1 %2)))"#,
         ];
 

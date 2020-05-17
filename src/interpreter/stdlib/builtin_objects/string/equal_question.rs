@@ -91,7 +91,7 @@ mod tests {
             r#"(string:equal? "a" 'symbol)"#,
             r#"(string:equal? "a" :keyword)"#,
             r#"(string:equal? "a" {:object-key 'value})"#,
-            r#"(string:equal? "a" (cons 1 2))"#,
+            r#"(string:equal? "a" (cons:new 1 2))"#,
             r#"(string:equal? "a" #(+ %1 %2))"#,
             r#"(string:equal? 1 "b")"#,
             r#"(string:equal? 1.1 "b")"#,
@@ -100,7 +100,7 @@ mod tests {
             r#"(string:equal? 'symbol "b")"#,
             r#"(string:equal? :keyword "b")"#,
             r#"(string:equal? {:object-key 'value} "b")"#,
-            r#"(string:equal? (cons 1 2) "b")"#,
+            r#"(string:equal? (cons:new 1 2) "b")"#,
             r#"(string:equal? #(+ %1 %2) "b")"#,
         ];
 

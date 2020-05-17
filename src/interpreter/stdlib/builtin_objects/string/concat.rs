@@ -93,7 +93,7 @@ mod tests {
             r#"(string:concat 'symbol)"#,
             r#"(string:concat :keyword)"#,
             r#"(string:concat {:object-key 'value})"#,
-            r#"(string:concat (cons 1 2))"#,
+            r#"(string:concat (cons:new 1 2))"#,
             r#"(string:concat #(+ %1 %2))"#,
             r#"(string:concat "a" 1)"#,
             r#"(string:concat "a" 1.1)"#,
@@ -102,7 +102,7 @@ mod tests {
             r#"(string:concat "a" 'symbol)"#,
             r#"(string:concat "a" :keyword)"#,
             r#"(string:concat "a" {:object-key 'value})"#,
-            r#"(string:concat "a" (cons 1 2))"#,
+            r#"(string:concat "a" (cons:new 1 2))"#,
             r#"(string:concat "a" #(+ %1 %2))"#,
         ];
 

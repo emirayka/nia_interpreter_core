@@ -123,7 +123,7 @@ mod tests {
             r#"(string:repeat 'symbol "test")"#,
             r#"(string:repeat :keyword "test")"#,
             r#"(string:repeat {:object-key 'value} "test")"#,
-            r#"(string:repeat (cons 1 2) "test")"#,
+            r#"(string:repeat (cons:new 1 2) "test")"#,
             r#"(string:repeat #(+ %1 %2) "test")"#,
             r#"(string:repeat 3 1)"#,
             r#"(string:repeat 3 1.1)"#,
@@ -132,7 +132,7 @@ mod tests {
             r#"(string:repeat 3 'symbol)"#,
             r#"(string:repeat 3 :keyword)"#,
             r#"(string:repeat 3 {:object-key 'value})"#,
-            r#"(string:repeat 3 (cons 1 2))"#,
+            r#"(string:repeat 3 (cons:new 1 2))"#,
             r#"(string:repeat 3 #(+ %1 %2))"#,
         ];
 

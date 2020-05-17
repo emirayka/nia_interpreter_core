@@ -55,7 +55,7 @@ mod tests {
             ("(is:float? \"string\")", Value::Boolean(false)),
             ("(is:float? 'symbol)", Value::Boolean(false)),
             ("(is:float? :keyword)", Value::Boolean(false)),
-            ("(is:float? (cons 1 2))", Value::Boolean(false)),
+            ("(is:float? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:float? {})", Value::Boolean(false)),
             ("(is:float? #())", Value::Boolean(false)),
         ];

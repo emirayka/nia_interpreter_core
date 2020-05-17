@@ -62,7 +62,7 @@ mod tests {
             ("(is:positive? \"string\")", Value::Boolean(false)),
             ("(is:positive? 'symbol)", Value::Boolean(false)),
             ("(is:positive? :keyword)", Value::Boolean(false)),
-            ("(is:positive? (cons 1 2))", Value::Boolean(false)),
+            ("(is:positive? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:positive? {})", Value::Boolean(false)),
             ("(is:positive? #())", Value::Boolean(false)),
         ];

@@ -43,25 +43,25 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(cdr (cons 1 1))", Value::Integer(1)),
-            ("(cdr (cons 1 1.1))", Value::Float(1.1)),
-            ("(cdr (cons 1 #t))", Value::Boolean(true)),
-            ("(cdr (cons 1 #f))", Value::Boolean(false)),
+            ("(cdr (cons:new 1 1))", Value::Integer(1)),
+            ("(cdr (cons:new 1 1.1))", Value::Float(1.1)),
+            ("(cdr (cons:new 1 #t))", Value::Boolean(true)),
+            ("(cdr (cons:new 1 #f))", Value::Boolean(false)),
             (
-                "(cdr (cons 1 \"string\"))",
+                "(cdr (cons:new 1 \"string\"))",
                 interpreter.intern_string_value("string"),
             ),
             (
-                "(cdr (cons 1 'symbol))",
+                "(cdr (cons:new 1 'symbol))",
                 interpreter.intern_symbol_value("symbol"),
             ),
             (
-                "(cdr (cons 1 :keyword))",
+                "(cdr (cons:new 1 :keyword))",
                 interpreter.intern_keyword_value("keyword"),
             ),
-            ("(cdr (cons 1 {}))", interpreter.make_object_value()),
+            ("(cdr (cons:new 1 {}))", interpreter.make_object_value()),
             (
-                "(cdr (cons 1 (cons 1 2)))",
+                "(cdr (cons:new 1 (cons:new 1 2)))",
                 interpreter
                     .make_cons_value(Value::Integer(1), Value::Integer(2)),
             ),
@@ -75,7 +75,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(cdr)", "(cdr (cons 1 2) 3)"];
+        let code_vector = vec!["(cdr)", "(cdr (cons:new 1 2) 3)"];
 
         utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,

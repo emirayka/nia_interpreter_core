@@ -58,7 +58,7 @@ mod tests {
             ("(is:even? \"string\")", Value::Boolean(false)),
             ("(is:even? 'symbol)", Value::Boolean(false)),
             ("(is:even? :keyword)", Value::Boolean(false)),
-            ("(is:even? (cons 1 2))", Value::Boolean(false)),
+            ("(is:even? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:even? {})", Value::Boolean(false)),
             ("(is:even? #())", Value::Boolean(false)),
         ];

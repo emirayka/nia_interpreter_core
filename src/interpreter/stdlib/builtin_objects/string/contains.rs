@@ -88,7 +88,7 @@ mod tests {
             r#"(string:contains? "a" 'symbol)"#,
             r#"(string:contains? "a" :keyword)"#,
             r#"(string:contains? "a" {:object-key 'value})"#,
-            r#"(string:contains? "a" (cons 1 2))"#,
+            r#"(string:contains? "a" (cons:new 1 2))"#,
             r#"(string:contains? "a" #(+ %1 %2))"#,
             r#"(string:contains? 1 "b")"#,
             r#"(string:contains? 1.1 "b")"#,
@@ -97,7 +97,7 @@ mod tests {
             r#"(string:contains? 'symbol "b")"#,
             r#"(string:contains? :keyword "b")"#,
             r#"(string:contains? {:object-key 'value} "b")"#,
-            r#"(string:contains? (cons 1 2) "b")"#,
+            r#"(string:contains? (cons:new 1 2) "b")"#,
             r#"(string:contains? #(+ %1 %2) "b")"#,
         ];
 

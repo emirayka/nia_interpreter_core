@@ -108,7 +108,7 @@ mod tests {
             r#"(string:find "a" 'symbol)"#,
             r#"(string:find "a" :keyword)"#,
             r#"(string:find "a" {:object-key 'value})"#,
-            r#"(string:find "a" (cons 1 2))"#,
+            r#"(string:find "a" (cons:new 1 2))"#,
             r#"(string:find "a" #(+ %1 %2))"#,
             r#"(string:find 1 "b")"#,
             r#"(string:find 1.1 "b")"#,
@@ -117,7 +117,7 @@ mod tests {
             r#"(string:find 'symbol "b")"#,
             r#"(string:find :keyword "b")"#,
             r#"(string:find {:object-key 'value} "b")"#,
-            r#"(string:find (cons 1 2) "b")"#,
+            r#"(string:find (cons:new 1 2) "b")"#,
             r#"(string:find #(+ %1 %2) "b")"#,
         ];
 

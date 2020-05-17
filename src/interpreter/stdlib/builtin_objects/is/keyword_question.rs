@@ -57,7 +57,7 @@ mod tests {
             ("(is:keyword? 'symbol)", Value::Boolean(false)),
             ("(is:keyword? {})", Value::Boolean(false)),
             ("(is:keyword? #())", Value::Boolean(false)),
-            ("(is:keyword? (cons 1 2))", Value::Boolean(false)),
+            ("(is:keyword? (cons:new 1 2))", Value::Boolean(false)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);

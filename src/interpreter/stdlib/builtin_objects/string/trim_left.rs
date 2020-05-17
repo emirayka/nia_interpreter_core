@@ -86,7 +86,7 @@ mod tests {
             r#"(string:trim-left 'symbol)"#,
             r#"(string:trim-left :keyword)"#,
             r#"(string:trim-left {:object-key 'value})"#,
-            r#"(string:trim-left (cons 1 2))"#,
+            r#"(string:trim-left (cons:new 1 2))"#,
             r#"(string:trim-left #(+ %1 %2))"#,
         ];
 

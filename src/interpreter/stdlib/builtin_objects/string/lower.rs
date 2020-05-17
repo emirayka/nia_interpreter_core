@@ -77,7 +77,7 @@ mod tests {
             r#"(string:lower 'symbol)"#,
             r#"(string:lower :keyword)"#,
             r#"(string:lower {:object-key 'value})"#,
-            r#"(string:lower (cons 1 2))"#,
+            r#"(string:lower (cons:new 1 2))"#,
             r#"(string:lower #(+ %1 %2))"#,
         ];
 

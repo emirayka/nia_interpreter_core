@@ -58,7 +58,7 @@ mod tests {
             ("(is:odd? \"string\")", Value::Boolean(false)),
             ("(is:odd? 'symbol)", Value::Boolean(false)),
             ("(is:odd? :keyword)", Value::Boolean(false)),
-            ("(is:odd? (cons 1 2))", Value::Boolean(false)),
+            ("(is:odd? (cons:new 1 2))", Value::Boolean(false)),
             ("(is:odd? {})", Value::Boolean(false)),
             ("(is:odd? #())", Value::Boolean(false)),
         ];

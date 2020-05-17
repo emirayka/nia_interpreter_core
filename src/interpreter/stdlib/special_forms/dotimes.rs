@@ -126,19 +126,19 @@ mod tests {
             ("(dotimes (i 1))", "nil"),
             ("(defv n 1) (dotimes (i n))", "nil"),
             (
-                "(defv a (list)) (dotimes (i 3) (set! a (cons i a))) a",
+                "(defv a (list)) (dotimes (i 3) (set! a (cons:new i a))) a",
                 "'(2 1 0)",
             ),
             (
-                "(defv b (list)) (dotimes (i 3) (break) (set! b (cons i b))) b",
+                "(defv b (list)) (dotimes (i 3) (break) (set! b (cons:new i b))) b",
                 "'()",
             ),
             (
-                "(defv c (list)) (dotimes (i 3) (set! c (cons i c)) (set! c (cons i c))) c",
+                "(defv c (list)) (dotimes (i 3) (set! c (cons:new i c)) (set! c (cons:new i c))) c",
                 "'(2 2 1 1 0 0)",
             ),
             (
-                "(defv d (list)) (dotimes (i 3) (set! d (cons i d)) (continue) (set! d (cons i d))) d",
+                "(defv d (list)) (dotimes (i 3) (set! d (cons:new i d)) (continue) (set! d (cons:new i d))) d",
                 "'(2 1 0)",
             ),
         ];

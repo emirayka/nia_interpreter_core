@@ -5,14 +5,14 @@ use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
 
-pub fn set_cdr_mark(
+pub fn set_car_mark(
     interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `set-cdr!' must take exactly one argument.",
+            "Built-in function `set-car!' must take exactly one argument.",
         )
         .into();
     }
@@ -23,7 +23,7 @@ pub fn set_cdr_mark(
 
     let value = values.remove(0);
 
-    interpreter.set_cdr(cons_id, value)?;
+    interpreter.set_car(cons_id, value)?;
 
     Ok(value)
 }
@@ -39,12 +39,12 @@ mod tests {
     use crate::utils;
 
     #[test]
-    fn sets_cdr() {
+    fn sets_car() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(let ((c (cons 1 2))) (cdr c))", "2"),
-            ("(let ((c (cons 1 2))) (set-cdr! c 3) (cdr c))", "3"),
+            ("(let ((c (cons:new 1 2))) (car c))", "1"),
+            ("(let ((c (cons:new 1 2))) (set-car! c 3) (car c))", "3"),
         ];
 
         utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -56,9 +56,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(set-cdr!)",
-            "(set-cdr! (cons 1 2))",
-            "(set-cdr! (cons 1 2) 3 4)",
+            "(set-car!)",
+            "(set-car! (cons:new 1 2))",
+            "(set-car! (cons:new 1 2) 3 4)",
         ];
 
         utils::assert_results_are_invalid_argument_count_errors(
@@ -73,14 +73,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(set-cdr! 1 1)",
-            "(set-cdr! 1.1 1)",
-            "(set-cdr! #t 1)",
-            "(set-cdr! #f 1)",
-            "(set-cdr! \"string\" 1)",
-            "(set-cdr! 'symbol 1)",
-            "(set-cdr! :keyword 1)",
-            "(set-cdr! {} 1)",
+            "(set-car! 1 1)",
+            "(set-car! 1.1 1)",
+            "(set-car! #t 1)",
+            "(set-car! #f 1)",
+            "(set-car! \"string\" 1)",
+            "(set-car! 'symbol 1)",
+            "(set-car! :keyword 1)",
+            "(set-car! {} 1)",
         ];
 
         utils::assert_results_are_invalid_argument_errors(

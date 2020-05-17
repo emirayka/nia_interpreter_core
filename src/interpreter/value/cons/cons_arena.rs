@@ -136,7 +136,7 @@ impl ConsArena {
                 cons.set_car(new_car);
 
                 Ok(())
-            },
+            }
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
@@ -155,7 +155,7 @@ impl ConsArena {
                 cons.set_cdr(new_cdr);
 
                 Ok(())
-            },
+            }
             _ => Error::failure(format!(
                 "Cannot find a cons with id: {}",
                 cons_id.get_id()
@@ -206,7 +206,7 @@ impl ConsArena {
                     results.push(value);
 
                     break;
-                },
+                }
             };
         }
 

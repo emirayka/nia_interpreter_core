@@ -59,10 +59,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(is:atom? (cons 1 nil))", Value::Boolean(false)),
-            ("(is:atom? (cons 1 2))", Value::Boolean(false)),
-            ("(is:atom? (cons 1 (cons 2 nil)))", Value::Boolean(false)),
-            ("(is:atom? (cons 1 (cons 2 3)))", Value::Boolean(false)),
+            ("(is:atom? (cons:new 1 nil))", Value::Boolean(false)),
+            ("(is:atom? (cons:new 1 2))", Value::Boolean(false)),
+            ("(is:atom? (cons:new 1 (cons:new 2 nil)))", Value::Boolean(false)),
+            ("(is:atom? (cons:new 1 (cons:new 2 3)))", Value::Boolean(false)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);

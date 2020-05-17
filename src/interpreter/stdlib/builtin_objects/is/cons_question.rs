@@ -40,10 +40,10 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(is:cons? (cons 1 nil))", Value::Boolean(true)),
-            ("(is:cons? (cons 1 2))", Value::Boolean(true)),
-            ("(is:cons? (cons 1 (cons 2 nil)))", Value::Boolean(true)),
-            ("(is:cons? (cons 1 (cons 2 3)))", Value::Boolean(true)),
+            ("(is:cons? (cons:new 1 nil))", Value::Boolean(true)),
+            ("(is:cons? (cons:new 1 2))", Value::Boolean(true)),
+            ("(is:cons? (cons:new 1 (cons:new 2 nil)))", Value::Boolean(true)),
+            ("(is:cons? (cons:new 1 (cons:new 2 3)))", Value::Boolean(true)),
         ];
 
         utils::assert_results_are_correct(&mut interpreter, pairs);

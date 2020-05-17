@@ -91,7 +91,7 @@ mod defn {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(define-function defn (function (macro (name #rest params) (list 'define-function name (list 'function (cons 'lambda params))))))"
+            "(define-function defn (function (macro (name #rest params) (list 'define-function name (list 'function (cons:new 'lambda params))))))"
         )?;
 
         Ok(())
@@ -127,7 +127,7 @@ mod defm {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(define-function defm (function (macro (name #rest params) (list 'define-function name (list 'function (cons 'macro params))))))"
+            "(define-function defm (function (macro (name #rest params) (list 'define-function name (list 'function (cons:new 'macro params))))))"
         )?;
 
         Ok(())
@@ -151,7 +151,7 @@ mod defm {
                 ("(defm e (#opt b c) (list 'list b c)) (e 2 3)", "'(2 3)"),
                 ("(defm f (#rest b) (list 'quote b)) (f 2 3 4)", "'(2 3 4)"),
                 ("(defm g (#keys b) b) (g :b 1)", "1"),
-                ("(defm h (a b) (list 'cons a b)) (h 'a 'b)", "(cons 'a 'b)"),
+                ("(defm h (a b) (list 'cons a b)) (h 'a 'b)", "(cons:new 'a 'b)"),
             ];
 
             utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -164,7 +164,7 @@ mod _fn {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(defm fn (#rest args) (list 'function (cons 'lambda args)))",
+            "(defm fn (#rest args) (list 'function (cons:new 'lambda args)))",
         )?;
 
         Ok(())

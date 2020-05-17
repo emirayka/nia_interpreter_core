@@ -31,12 +31,12 @@ mod tests {
         let mut resulting_alist = interpreter.intern_nil_symbol_value();
 
         let specs = vec![
-            ("1", "2", "(cons (cons 1 2) nil)"),
-            ("3", "4", "(cons (cons 3 4) (cons (cons 1 2) nil))"),
+            ("1", "2", "(cons:new (cons:new 1 2) nil)"),
+            ("3", "4", "(cons:new (cons:new 3 4) (cons:new (cons:new 1 2) nil))"),
             (
                 "5",
                 "6",
-                "(cons (cons 5 6) (cons (cons 3 4) (cons (cons 1 2) nil)))",
+                "(cons:new (cons:new 5 6) (cons:new (cons:new 3 4) (cons:new (cons:new 1 2) nil)))",
             ),
         ];
 

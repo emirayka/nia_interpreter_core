@@ -3,6 +3,7 @@ use crate::interpreter::interpreter::Interpreter;
 
 mod action;
 mod bit;
+mod cons;
 mod func;
 mod is;
 mod keyboard;
@@ -19,6 +20,7 @@ mod nia; // :3
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     action::infect(interpreter)?;
     bit::infect(interpreter)?;
+    cons::infect(interpreter)?;
     func::infect(interpreter)?;
     is::infect(interpreter)?;
     keyboard::infect(interpreter)?;
