@@ -12,7 +12,7 @@ pub fn cdr(
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `cdr' must take exactly two arguments.",
+            "Built-in function `cons:cdr' must take exactly two arguments.",
         )
         .into();
     }
@@ -43,25 +43,28 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(cdr (cons:new 1 1))", Value::Integer(1)),
-            ("(cdr (cons:new 1 1.1))", Value::Float(1.1)),
-            ("(cdr (cons:new 1 #t))", Value::Boolean(true)),
-            ("(cdr (cons:new 1 #f))", Value::Boolean(false)),
+            ("(cons:cdr (cons:new 1 1))", Value::Integer(1)),
+            ("(cons:cdr (cons:new 1 1.1))", Value::Float(1.1)),
+            ("(cons:cdr (cons:new 1 #t))", Value::Boolean(true)),
+            ("(cons:cdr (cons:new 1 #f))", Value::Boolean(false)),
             (
-                "(cdr (cons:new 1 \"string\"))",
+                "(cons:cdr (cons:new 1 \"string\"))",
                 interpreter.intern_string_value("string"),
             ),
             (
-                "(cdr (cons:new 1 'symbol))",
+                "(cons:cdr (cons:new 1 'symbol))",
                 interpreter.intern_symbol_value("symbol"),
             ),
             (
-                "(cdr (cons:new 1 :keyword))",
+                "(cons:cdr (cons:new 1 :keyword))",
                 interpreter.intern_keyword_value("keyword"),
             ),
-            ("(cdr (cons:new 1 {}))", interpreter.make_object_value()),
             (
-                "(cdr (cons:new 1 (cons:new 1 2)))",
+                "(cons:cdr (cons:new 1 {}))",
+                interpreter.make_object_value(),
+            ),
+            (
+                "(cons:cdr (cons:new 1 (cons:new 1 2)))",
                 interpreter
                     .make_cons_value(Value::Integer(1), Value::Integer(2)),
             ),
@@ -75,7 +78,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(cdr)", "(cdr (cons:new 1 2) 3)"];
+        let code_vector = vec!["(cons:cdr)", "(cons:cdr (cons:new 1 2) 3)"];
 
         utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
@@ -89,14 +92,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(cdr 1)",
-            "(cdr 1.1)",
-            "(cdr #t)",
-            "(cdr #f)",
-            "(cdr \"string\")",
-            "(cdr 'symbol)",
-            "(cdr :keyword)",
-            "(cdr {})",
+            "(cons:cdr 1)",
+            "(cons:cdr 1.1)",
+            "(cons:cdr #t)",
+            "(cons:cdr #f)",
+            "(cons:cdr \"string\")",
+            "(cons:cdr 'symbol)",
+            "(cons:cdr :keyword)",
+            "(cons:cdr {})",
         ];
 
         utils::assert_results_are_invalid_argument_errors(

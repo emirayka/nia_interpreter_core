@@ -12,7 +12,7 @@ pub fn set_car_mark(
 ) -> Result<Value, Error> {
     if values.len() != 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `set-car!' must take exactly one argument.",
+            "Built-in function `cons:set-car!' must take exactly one argument.",
         )
         .into();
     }
@@ -43,8 +43,11 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(let ((c (cons:new 1 2))) (car c))", "1"),
-            ("(let ((c (cons:new 1 2))) (set-car! c 3) (car c))", "3"),
+            ("(let ((c (cons:new 1 2))) (cons:car c))", "1"),
+            (
+                "(let ((c (cons:new 1 2))) (cons:set-car! c 3) (cons:car c))",
+                "3",
+            ),
         ];
 
         utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -56,9 +59,9 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(set-car!)",
-            "(set-car! (cons:new 1 2))",
-            "(set-car! (cons:new 1 2) 3 4)",
+            "(cons:set-car!)",
+            "(cons:set-car! (cons:new 1 2))",
+            "(cons:set-car! (cons:new 1 2) 3 4)",
         ];
 
         utils::assert_results_are_invalid_argument_count_errors(
@@ -73,14 +76,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(set-car! 1 1)",
-            "(set-car! 1.1 1)",
-            "(set-car! #t 1)",
-            "(set-car! #f 1)",
-            "(set-car! \"string\" 1)",
-            "(set-car! 'symbol 1)",
-            "(set-car! :keyword 1)",
-            "(set-car! {} 1)",
+            "(cons:set-car! 1 1)",
+            "(cons:set-car! 1.1 1)",
+            "(cons:set-car! #t 1)",
+            "(cons:set-car! #f 1)",
+            "(cons:set-car! \"string\" 1)",
+            "(cons:set-car! 'symbol 1)",
+            "(cons:set-car! :keyword 1)",
+            "(cons:set-car! {} 1)",
         ];
 
         utils::assert_results_are_invalid_argument_errors(

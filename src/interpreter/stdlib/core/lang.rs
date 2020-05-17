@@ -151,7 +151,7 @@ mod defm {
                 ("(defm e (#opt b c) (list 'list b c)) (e 2 3)", "'(2 3)"),
                 ("(defm f (#rest b) (list 'quote b)) (f 2 3 4)", "'(2 3 4)"),
                 ("(defm g (#keys b) b) (g :b 1)", "1"),
-                ("(defm h (a b) (list 'cons a b)) (h 'a 'b)", "(cons:new 'a 'b)"),
+                ("(defm h (a b) (list 'list a b)) (h 'a 'b)", "(list 'a 'b)"),
             ];
 
             utils::assert_results_are_equal(&mut interpreter, pairs);

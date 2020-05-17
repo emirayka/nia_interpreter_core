@@ -12,7 +12,7 @@ pub fn car(
 ) -> Result<Value, Error> {
     if values.len() != 1 {
         return Error::invalid_argument_count_error(
-            "Built-in function `car' must take exactly one argument.",
+            "Built-in function `cons:car' must take exactly one argument.",
         )
         .into();
     }
@@ -43,25 +43,28 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(car (cons:new 1 1))", Value::Integer(1)),
-            ("(car (cons:new 1.1 1))", Value::Float(1.1)),
-            ("(car (cons:new #t 1))", Value::Boolean(true)),
-            ("(car (cons:new #f 1))", Value::Boolean(false)),
+            ("(cons:car (cons:new 1 1))", Value::Integer(1)),
+            ("(cons:car (cons:new 1.1 1))", Value::Float(1.1)),
+            ("(cons:car (cons:new #t 1))", Value::Boolean(true)),
+            ("(cons:car (cons:new #f 1))", Value::Boolean(false)),
             (
-                "(car (cons:new \"string\" 1))",
+                "(cons:car (cons:new \"string\" 1))",
                 interpreter.intern_string_value("string"),
             ),
             (
-                "(car (cons:new 'symbol 1))",
+                "(cons:car (cons:new 'symbol 1))",
                 interpreter.intern_symbol_value("symbol"),
             ),
             (
-                "(car (cons:new :keyword 1))",
+                "(cons:car (cons:new :keyword 1))",
                 interpreter.intern_keyword_value("keyword"),
             ),
-            ("(car (cons:new {} 1))", interpreter.make_object_value()),
             (
-                "(car (cons:new (cons:new 1 2) 1))",
+                "(cons:car (cons:new {} 1))",
+                interpreter.make_object_value(),
+            ),
+            (
+                "(cons:car (cons:new (cons:new 1 2) 1))",
                 interpreter
                     .make_cons_value(Value::Integer(1), Value::Integer(2)),
             ),
@@ -75,7 +78,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let code_vector = vec!["(car)", "(car (cons:new 1 2) 3)"];
+        let code_vector = vec!["(cons:car)", "(cons:car (cons:new 1 2) 3)"];
 
         utils::assert_results_are_invalid_argument_count_errors(
             &mut interpreter,
@@ -89,14 +92,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let code_vector = vec![
-            "(car 1)",
-            "(car 1.1)",
-            "(car #t)",
-            "(car #f)",
-            "(car \"string\")",
-            "(car 'symbol)",
-            "(car :keyword)",
-            "(car {})",
+            "(cons:car 1)",
+            "(cons:car 1.1)",
+            "(cons:car #t)",
+            "(cons:car #f)",
+            "(cons:car \"string\")",
+            "(cons:car 'symbol)",
+            "(cons:car :keyword)",
+            "(cons:car {})",
         ];
 
         utils::assert_results_are_invalid_argument_errors(
