@@ -105,14 +105,14 @@ mod tests {
                 "(keyboard:define-global-mapping \"LeftControl+b\" #(+ 1 2))",
                 "nil",
             ),
-            ("global-map", "(list (list (list (list 29 48)) #(+ 1 2)))"),
+            ("global-map", "(list:new (list:new (list:new (list:new 29 48)) #(+ 1 2)))"),
             (
                 "(keyboard:define-global-mapping \"LeftControl+c LeftControl+b\" #())",
                 "nil",
             ),
             (
                 "global-map",
-                "(list (list (list (list 29 46) (list 29 48)) #()) (list (list (list 29 48)) #(+ 1 2)))",
+                "(list:new (list:new (list:new (list:new 29 46) (list:new 29 48)) #()) (list:new (list:new (list:new 29 48)) #(+ 1 2)))",
             ),
         ];
 
@@ -131,7 +131,7 @@ mod tests {
             ),
             (
                 "global-map",
-                "(list (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))",
+                "(list:new (list:new (list:new (list:new (list:new 0 29) (list:new 0 48))) #(+ 1 2)))",
             ),
             (
                 "(keyboard:define-global-mapping \"1:LeftControl+1:c 1:LeftControl+1:b\" #())",
@@ -139,7 +139,7 @@ mod tests {
             ),
             (
                 "global-map",
-                "(list (list (list (list (list 1 29) (list 1 46)) (list (list 1 29) (list 1 48))) #()) (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))",
+                "(list:new (list:new (list:new (list:new (list:new 1 29) (list:new 1 46)) (list:new (list:new 1 29) (list:new 1 48))) #()) (list:new (list:new (list:new (list:new 0 29) (list:new 0 48))) #(+ 1 2)))",
             ),
         ];
 
@@ -169,7 +169,7 @@ mod tests {
             ),
             (
                 "global-map",
-                "(list (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))",
+                "(list:new (list:new (list:new (list:new (list:new 0 29) (list:new 0 48))) #(+ 1 2)))",
             ),
             (
                 "(keyboard:define-global-mapping \"second:LeftControl+second:c second:LeftControl+second:b\" #())",
@@ -177,7 +177,7 @@ mod tests {
             ),
             (
                 "global-map",
-                "(list (list (list (list (list 1 29) (list 1 46)) (list (list 1 29) (list 1 48))) #()) (list (list (list (list 0 29) (list 0 48))) #(+ 1 2)))",
+                "(list:new (list:new (list:new (list:new (list:new 1 29) (list:new 1 46)) (list:new (list:new 1 29) (list:new 1 48))) #()) (list:new (list:new (list:new (list:new 0 29) (list:new 0 48))) #(+ 1 2)))",
             ),
         ];
 

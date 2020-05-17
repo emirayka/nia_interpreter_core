@@ -59,7 +59,7 @@ mod tests {
             "(keyboard:define-modifier #f)",
             "(keyboard:define-modifier :keyword)",
             "(keyboard:define-modifier 'symbol)",
-            "(keyboard:define-modifier '(list))",
+            "(keyboard:define-modifier '(list:new))",
             "(keyboard:define-modifier {})",
             "(keyboard:define-modifier #())",
         ];

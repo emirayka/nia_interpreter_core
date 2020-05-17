@@ -62,8 +62,8 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let specs = vec![
-            ("(with-this {:a 1} (list this:a))", "'(1)"),
-            ("(with-this {:a 1 :b 2} (list this:a this:b))", "'(1 2)"),
+            ("(with-this {:a 1} (list:new this:a))", "'(1)"),
+            ("(with-this {:a 1 :b 2} (list:new this:a this:b))", "'(1 2)"),
             ("(with-this {:f1 (fn () 1)} (this:f1))", "1"),
             (
                 "(with-this {:f1 (fn () 1) :f2 (fn () (+ (this:f1) (this:f1)))} (this:f2))",
@@ -98,7 +98,7 @@ mod tests {
             "(with-this \"string\" 1)",
             "(with-this :keyword 1)",
             "(with-this 'symbol 1)",
-            "(with-this '(list) 1)",
+            "(with-this '(list:new) 1)",
             "(with-this '() 1)",
         ];
 

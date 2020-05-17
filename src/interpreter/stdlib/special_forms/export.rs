@@ -557,62 +557,62 @@ mod read_export_type {
                 .unwrap();
 
             let specs = vec![
-                (ExportType::Export(name_symbol_id), "(list 'name)"),
+                (ExportType::Export(name_symbol_id), "(list:new 'name)"),
                 (
                     ExportType::ExportAsNamed(
                         name_symbol_id,
                         exported_name_symbol_id,
                     ),
-                    "(list 'name 'as 'exported-name)",
+                    "(list:new 'name 'as 'exported-name)",
                 ),
                 (
                     ExportType::ExportAsDefault(name_symbol_id),
-                    "(list 'name 'as 'default)",
+                    "(list:new 'name 'as 'default)",
                 ),
                 (
                     ExportType::ExportObject(export_object_1_object_id),
-                    "(list #{:name-1 :name-2})",
+                    "(list:new #{:name-1 :name-2})",
                 ),
                 (
                     ExportType::ExportObject(export_object_2_object_id),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2})",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2})",
                 ),
                 (
                     ExportType::ExportObjectAsNamed(
                         export_object_1_object_id,
                         name_symbol_id,
                     ),
-                    "(list #{:name-1 :name-2} 'as 'name)",
+                    "(list:new #{:name-1 :name-2} 'as 'name)",
                 ),
                 (
                     ExportType::ExportObjectAsNamed(
                         export_object_2_object_id,
                         name_symbol_id,
                     ),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name)",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name)",
                 ),
                 (
                     ExportType::ExportObjectAsDefault(
                         export_object_1_object_id,
                     ),
-                    "(list #{:name-1 :name-2} 'as 'default)",
+                    "(list:new #{:name-1 :name-2} 'as 'default)",
                 ),
                 (
                     ExportType::ExportObjectAsDefault(
                         export_object_2_object_id,
                     ),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default)",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default)",
                 ),
                 (
                     ExportType::Reexport(
                         name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list 'name 'from \"./module\")",
+                    "(list:new 'name 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportDefault(module_path_string.clone()),
-                    "(list 'default 'from \"./module\")",
+                    "(list:new 'default 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportAsNamed(
@@ -620,45 +620,45 @@ mod read_export_type {
                         exported_name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list 'name 'as 'exported-name 'from \"./module\")",
+                    "(list:new 'name 'as 'exported-name 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportAsDefault(
                         name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list 'name 'as 'default 'from \"./module\")",
+                    "(list:new 'name 'as 'default 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportAll(module_path_string.clone()),
-                    "(list '* 'from \"./module\")",
+                    "(list:new '* 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportAllAsNamed(
                         name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list '* 'as 'name 'from \"./module\")",
+                    "(list:new '* 'as 'name 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportAllAsDefault(
                         module_path_string.clone(),
                     ),
-                    "(list '* 'as 'default 'from \"./module\")",
+                    "(list:new '* 'as 'default 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObject(
                         export_object_1_object_id,
                         module_path_string.clone(),
                     ),
-                    "(list #{:name-1 :name-2} 'from \"./module\")",
+                    "(list:new #{:name-1 :name-2} 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObject(
                         export_object_2_object_id,
                         module_path_string.clone(),
                     ),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'from \"./module\")",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2} 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObjectAsNamed(
@@ -666,7 +666,7 @@ mod read_export_type {
                         name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list #{:name-1 :name-2} 'as 'name 'from \"./module\")",
+                    "(list:new #{:name-1 :name-2} 'as 'name 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObjectAsNamed(
@@ -674,21 +674,21 @@ mod read_export_type {
                         name_symbol_id,
                         module_path_string.clone(),
                     ),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name 'from \"./module\")",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'name 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObjectAsDefault(
                         export_object_1_object_id,
                         module_path_string.clone(),
                     ),
-                    "(list #{:name-1 :name-2} 'as 'default 'from \"./module\")",
+                    "(list:new #{:name-1 :name-2} 'as 'default 'from \"./module\")",
                 ),
                 (
                     ExportType::ReexportObjectAsDefault(
                         export_object_2_object_id,
                         module_path_string.clone(),
                     ),
-                    "(list {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default 'from \"./module\")",
+                    "(list:new {:name-1 'exported-name-1 :name-2 'exported-name-2} 'as 'default 'from \"./module\")",
                 ),
             ];
 
@@ -1897,8 +1897,8 @@ mod tests {
                    (defc name-2 2)
                    (export {:name-1 'exported-name-1 :name-2 'exported-name-2})"#,
                 r#"(import #{:exported-name-1 :exported-name-2} from "./module2.nia")"#,
-                r#"(list exported-name-1 exported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new exported-name-1 exported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#""#,
@@ -1979,8 +1979,8 @@ mod tests {
                    (export name-2)"#,
                 r#"(export {:name-1 'exported-name-1 :name-2 'exported-name-2} from "./module1.nia")"#,
                 r#"(import #{:exported-name-1 :exported-name-2} from "./module2.nia")"#,
-                r#"(list exported-name-1 exported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new exported-name-1 exported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#"(defc name-1 1)
@@ -1989,8 +1989,8 @@ mod tests {
                    (export name-2)"#,
                 r#"(export {:name-1 'exported-name-1 :name-2 'exported-name-2} as obj from "./module1.nia")"#,
                 r#"(import #{:obj} from "./module2.nia")"#,
-                r#"(list obj:exported-name-1 obj:exported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new obj:exported-name-1 obj:exported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#"(defc name-1 1)
@@ -1999,8 +1999,8 @@ mod tests {
                    (export name-2)"#,
                 r#"(export {:name-1 'exported-name-1 :name-2 'exported-name-2} as default from "./module1.nia")"#,
                 r#"(import obj from "./module2.nia")"#,
-                r#"(list obj:exported-name-1 obj:exported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new obj:exported-name-1 obj:exported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
         ];
 

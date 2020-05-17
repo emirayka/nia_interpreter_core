@@ -485,7 +485,7 @@ impl EventLoop {
                                     Action::Empty => {}
                                     Action::Execute(value) => {
                                         match interpreter
-                                            .execute_function_without_arguments(
+                                            .execute_function_without_arguments_int_main_environment(
                                                 value,
                                             ) {
                                             Ok(_) => {}

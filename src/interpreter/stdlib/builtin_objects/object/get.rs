@@ -131,7 +131,7 @@ mod tests {
             "(let ((obj {:a 1})) (object:get obj #t))",
             "(let ((obj {:a 1})) (object:get obj #f))",
             "(let ((obj {:a 1})) (object:get obj \"string\"))",
-            "(let ((obj {:a 1})) (object:get obj '(list)))",
+            "(let ((obj {:a 1})) (object:get obj '(list:new)))",
             "(let ((obj {:a 1})) (object:get obj {}))",
             "(let ((obj {:a 1})) (object:get obj #()))",
         ];

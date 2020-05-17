@@ -63,19 +63,19 @@ mod tests {
             ("(func:call #(+ %1 %2 3)  1 2)", "6"),
             ("(func:call #(+ %1 %2 %3) 1 2 3)", "6"),
             (
-                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list a b c)))",
+                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)))",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) 1)",
+                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) 1)",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) 1 2)",
+                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) 1 2)",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) 1 2 3)",
+                "(func:call (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) 1 2 3)",
                 "'(1 2 3)",
             ),
             ("(func:call (fn (#rest a) a))", "'()"),
@@ -83,19 +83,19 @@ mod tests {
             ("(func:call (fn (#rest a) a) 1 2)", "'(1 2)"),
             ("(func:call (fn (#rest a) a) 1 2 3)", "'(1 2 3)"),
             (
-                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list a b c)))",
+                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)))",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) :a 1)",
+                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) :a 1)",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) :a 1 :b 2)",
+                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) :a 1 :b 2)",
                 "'(1 2 3)",
             ),
             (
-                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) :a 1 :b 2 :c 3)",
+                "(func:call (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) :a 1 :b 2 :c 3)",
                 "'(1 2 3)",
             ),
         ];

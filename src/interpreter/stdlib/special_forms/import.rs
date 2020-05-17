@@ -377,28 +377,28 @@ mod read_import_type {
             let specs = vec![
                 (
                     ImportType::Import(module_string.clone()),
-                    "(list \"./module\")",
+                    "(list:new \"./module\")",
                 ),
                 (
                     ImportType::ImportDefault(
                         name_symbol_id,
                         module_string.clone(),
                     ),
-                    "(list 'name 'from \"./module\")",
+                    "(list:new 'name 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportObject(
                         expected_object_id_1,
                         module_string.clone(),
                     ),
-                    "(list #{:name-1 :name-2} 'from \"./module\")",
+                    "(list:new #{:name-1 :name-2} 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportObject(
                         expected_object_id_2,
                         module_string.clone(),
                     ),
-                    "(list {:name-1 'imported-name-1 :name-2 'imported-name-2} 'from \"./module\")",
+                    "(list:new {:name-1 'imported-name-1 :name-2 'imported-name-2} 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportObjectAsNamed(
@@ -406,7 +406,7 @@ mod read_import_type {
                         name_symbol_id,
                         module_string.clone(),
                     ),
-                    "(list #{:name-1 :name-2} 'as 'name 'from \"./module\")",
+                    "(list:new #{:name-1 :name-2} 'as 'name 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportObjectAsNamed(
@@ -414,18 +414,18 @@ mod read_import_type {
                         name_symbol_id,
                         module_string.clone(),
                     ),
-                    "(list {:name-1 'imported-name-1 :name-2 'imported-name-2} 'as 'name 'from \"./module\")",
+                    "(list:new {:name-1 'imported-name-1 :name-2 'imported-name-2} 'as 'name 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportAll(module_string.clone()),
-                    "(list '* 'from \"./module\")",
+                    "(list:new '* 'from \"./module\")",
                 ),
                 (
                     ImportType::ImportAllAsNamed(
                         name_symbol_id,
                         module_string.clone(),
                     ),
-                    "(list '* 'as 'name 'from \"./module\")",
+                    "(list:new '* 'as 'name 'from \"./module\")",
                 ),
             ];
 
@@ -1082,8 +1082,8 @@ mod tests {
                    (defc name-2 2)
                    (export #{:name-1 :name-2})"#,
                 r#"(import {:name-1 'imported-name-1 :name-2 'imported-name-2} from "./module2.nia")"#,
-                r#"(list imported-name-1 imported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new imported-name-1 imported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#""#,
@@ -1092,8 +1092,8 @@ mod tests {
                    (defc name-2 2)
                    (export #{:name-1 :name-2})"#,
                 r#"(import {:name-1 'imported-name-1 :name-2 'imported-name-2} as obj from "./module2.nia")"#,
-                r#"(list obj:imported-name-1 obj:imported-name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new obj:imported-name-1 obj:imported-name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#""#,
@@ -1102,8 +1102,8 @@ mod tests {
                    (defc name-2 2)
                    (export #{:name-1 :name-2})"#,
                 r#"(import * from "./module2.nia")"#,
-                r#"(list name-1 name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new name-1 name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
             (
                 r#""#,
@@ -1112,8 +1112,8 @@ mod tests {
                    (defc name-2 2)
                    (export #{:name-1 :name-2})"#,
                 r#"(import * as obj from "./module2.nia")"#,
-                r#"(list obj:name-1 obj:name-2)"#,
-                r#"(list 1 2)"#,
+                r#"(list:new obj:name-1 obj:name-2)"#,
+                r#"(list:new 1 2)"#,
             ),
         ];
 

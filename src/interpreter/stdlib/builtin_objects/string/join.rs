@@ -132,8 +132,8 @@ mod tests {
             r#"(string:join "|" '(symbol))"#,
             r#"(string:join "|" '(:keyword))"#,
             r#"(string:join "|" '({:object-key 'value}))"#,
-            r#"(string:join "|" (list (cons:new 1 2)))"#,
-            r#"(string:join "|" (list #(+ %1 %2)))"#,
+            r#"(string:join "|" (list:new (cons:new 1 2)))"#,
+            r#"(string:join "|" (list:new #(+ %1 %2)))"#,
         ];
 
         utils::assert_results_are_invalid_argument_errors(

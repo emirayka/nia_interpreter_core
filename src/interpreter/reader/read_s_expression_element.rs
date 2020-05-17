@@ -4,7 +4,10 @@ use crate::interpreter::parser::DelimitedSymbolsElement;
 use crate::interpreter::parser::Element;
 use crate::interpreter::parser::SExpressionElement;
 
-use crate::interpreter::reader::read_delimited_symbols_element::read_delimited_symbols_element;
+use crate::interpreter::reader::read_delimited_symbols_element::{
+    read_delimited_symbols_element,
+    read_delimited_symbols_element_as_object_method_invocation,
+};
 use crate::interpreter::reader::read_element::read_element;
 use crate::interpreter::reader::read_elements::read_elements;
 
@@ -35,40 +38,30 @@ fn read_regular_s_expression(
 fn read_object_method_invocation_s_expression(
     interpreter: &mut Interpreter,
     delimited_symbols_element: DelimitedSymbolsElement,
-    s_expressions: Vec<Element>,
+    arguments: Vec<Element>,
 ) -> Result<Value, Error> {
-    let s_expressions = s_expressions;
+    if delimited_symbols_element.context_needs_to_be_set() {
+        let result =
+            read_delimited_symbols_element_as_object_method_invocation(
+                interpreter,
+                delimited_symbols_element.get_symbols(),
+                arguments,
+            )?;
 
-    let object_method_invocation =
-        read_delimited_symbols_element(interpreter, delimited_symbols_element);
+        Ok(result)
+    } else {
+        let car = read_delimited_symbols_element(
+            interpreter,
+            delimited_symbols_element,
+        );
 
-    let car = interpreter.get_car(object_method_invocation.try_into()?)?;
+        let arguments = read_elements(interpreter, arguments)?;
+        let argument_list = interpreter.vec_to_list(arguments);
 
-    let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
+        let result = interpreter.make_cons_value(car, argument_list);
 
-    let result =
-        if library::deep_equal(interpreter, car, with_this_symbol_value)? {
-            let cdr =
-                interpreter.get_cdr(object_method_invocation.try_into()?)?;
-            let cddr = interpreter.get_cdr(cdr.try_into()?)?;
-            let caddr = interpreter.get_car(cddr.try_into()?)?;
-
-            let cdddr = read_elements(interpreter, s_expressions)?;
-            let cdddr = interpreter.vec_to_list(cdddr);
-
-            let new_caddr = interpreter.make_cons_value(caddr, cdddr);
-
-            interpreter.set_car(cddr.try_into()?, new_caddr)?;
-
-            object_method_invocation
-        } else {
-            let cdr = read_elements(interpreter, s_expressions)?;
-            let cdr = interpreter.vec_to_list(cdr);
-
-            interpreter.make_cons_value(object_method_invocation, cdr)
-        };
-
-    Ok(result)
+        Ok(result)
+    }
 }
 
 pub fn read_s_expression_element(

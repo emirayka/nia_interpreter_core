@@ -23,6 +23,12 @@ impl DelimitedSymbolsElement {
     pub fn get_symbols(&self) -> &Vec<SymbolElement> {
         &self.values
     }
+
+    pub fn context_needs_to_be_set(&self) -> bool {
+        let first_name = &self.values[0];
+
+        first_name.get_value() != "this" && first_name.get_value() != "super"
+    }
 }
 
 impl PartialEq for DelimitedSymbolsElement {

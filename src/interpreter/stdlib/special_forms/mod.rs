@@ -10,6 +10,7 @@ mod _try;
 mod _while;
 mod and;
 mod block;
+mod call_with_this;
 mod cond;
 mod define_function;
 mod define_variable;
@@ -34,6 +35,7 @@ mod with_this;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, SpecialFormFunctionType)> = vec![
         ("and", and::and),
+        ("call-with-this", call_with_this::call_with_this),
         ("cond", cond::cond),
         ("quote", quote::quote),
         ("define-variable", define_variable::define_variable),

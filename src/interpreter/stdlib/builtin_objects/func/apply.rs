@@ -64,19 +64,19 @@ mod tests {
             ("(func:apply #(+ %1 %2 3)  '(1 2))", "6"),
             ("(func:apply #(+ %1 %2 %3) '(1 2 3))", "6"),
             (
-                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) '())",
+                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) '())",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) '(1))",
+                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) '(1))",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) '(1 2))",
+                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) '(1 2))",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list a b c)) '(1 2 3))",
+                "(func:apply (fn (#opt (a 1) (b 2) (c 3)) (list:new a b c)) '(1 2 3))",
                 "'(1 2 3)",
             ),
             ("(func:apply (fn (#rest a) a) '())", "'()"),
@@ -84,19 +84,19 @@ mod tests {
             ("(func:apply (fn (#rest a) a) '(1 2))", "'(1 2)"),
             ("(func:apply (fn (#rest a) a) '(1 2 3))", "'(1 2 3)"),
             (
-                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) '())",
+                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) '())",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) '(:a 1))",
+                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) '(:a 1))",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) '(:a 1 :b 2))",
+                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) '(:a 1 :b 2))",
                 "'(1 2 3)",
             ),
             (
-                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list a b c)) '(:a 1 :b 2 :c 3))",
+                "(func:apply (fn (#keys (a 1) (b 2) (c 3)) (list:new a b c)) '(:a 1 :b 2 :c 3))",
                 "'(1 2 3)",
             ),
         ];

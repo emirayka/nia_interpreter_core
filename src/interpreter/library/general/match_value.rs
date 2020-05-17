@@ -199,21 +199,21 @@ mod tests {
 
         let specs = vec![
             ("'()", "'()", "'nil", "nil"),
-            ("'(a)", "'(1)", "'(list a)", "(list 1)"),
-            ("'(a b)", "'(1 2)", "'(list a b)", "(list 1 2)"),
-            ("'(a b ())", "'(1 2 ())", "'(list a b)", "(list 1 2)"),
-            ("'(a b (c))", "'(1 2 (3))", "'(list a b c)", "(list 1 2 3)"),
+            ("'(a)", "'(1)", "'(list:new a)", "(list:new 1)"),
+            ("'(a b)", "'(1 2)", "'(list:new a b)", "(list:new 1 2)"),
+            ("'(a b ())", "'(1 2 ())", "'(list:new a b)", "(list:new 1 2)"),
+            ("'(a b (c))", "'(1 2 (3))", "'(list:new a b c)", "(list:new 1 2 3)"),
             (
                 "'(a b (c d))",
                 "'(1 2 (3 4))",
-                "'(list a b c d)",
-                "(list 1 2 3 4)",
+                "'(list:new a b c d)",
+                "(list:new 1 2 3 4)",
             ),
             (
                 "'(a b (c d e))",
                 "'(1 2 (3 4 5))",
-                "'(list a b c d e)",
-                "(list 1 2 3 4 5)",
+                "'(list:new a b c d e)",
+                "(list:new 1 2 3 4 5)",
             ),
         ];
 
@@ -227,13 +227,13 @@ mod tests {
         let specs = vec![
             ("{}", "{}", "nil", "nil"),
             ("#{:a}", "{:a 1}", "'a", "1"),
-            ("#{:a :b}", "{:a 1 :b 2}", "'(list a b)", "(list 1 2)"),
-            ("#{:a :b}", "{:b 2 :a 1}", "'(list a b)", "(list 1 2)"),
+            ("#{:a :b}", "{:a 1 :b 2}", "'(list:new a b)", "(list:new 1 2)"),
+            ("#{:a :b}", "{:b 2 :a 1}", "'(list:new a b)", "(list:new 1 2)"),
             (
                 "{:a '(a b c)}",
                 "{:a '(1 2 3)}",
-                "'(list a b c)",
-                "(list 1 2 3)",
+                "'(list:new a b c)",
+                "(list:new 1 2 3)",
             ),
         ];
 

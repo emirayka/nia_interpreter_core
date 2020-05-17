@@ -123,44 +123,44 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(mlet* ((a (#rest a) (list 'quote a))) (a))", "(list)"),
-            ("(mlet* ((a (#rest a) (list 'quote a))) (a 1))", "(list 1)"),
+            ("(mlet* ((a (#rest a) (list:new 'quote a))) (a))", "(list:new)"),
+            ("(mlet* ((a (#rest a) (list:new 'quote a))) (a 1))", "(list:new 1)"),
             (
-                "(mlet* ((a (#rest a) (list 'quote a))) (a 1 2))",
-                "(list 1 2)",
+                "(mlet* ((a (#rest a) (list:new 'quote a))) (a 1 2))",
+                "(list:new 1 2)",
             ),
-            ("(mlet* ((a (#opt a) (list 'list a))) (a))", "(list nil)"),
-            ("(mlet* ((a (#opt (a 1)) (list 'list a))) (a))", "(list 1)"),
+            ("(mlet* ((a (#opt a) (list:new 'list:new a))) (a))", "(list:new nil)"),
+            ("(mlet* ((a (#opt (a 1)) (list:new 'list:new a))) (a))", "(list:new 1)"),
             (
-                "(mlet* ((a (#opt (a 1 a?)) (list 'list a a?))) (a))",
-                "(list 1 #f)",
+                "(mlet* ((a (#opt (a 1 a?)) (list:new 'list:new a a?))) (a))",
+                "(list:new 1 #f)",
             ),
-            ("(mlet* ((a (#opt a) (list 'list a))) (a 2))", "(list 2)"),
+            ("(mlet* ((a (#opt a) (list:new 'list:new a))) (a 2))", "(list:new 2)"),
             (
-                "(mlet* ((a (#opt (a 1)) (list 'list a))) (a 2))",
-                "(list 2)",
-            ),
-            (
-                "(mlet* ((a (#opt (a 1 a?)) (list 'list a a?))) (a 2))",
-                "(list 2 #t)",
-            ),
-            ("(mlet* ((a (#keys a) (list 'list a))) (a))", "(list nil)"),
-            ("(mlet* ((a (#keys (a 1)) (list 'list a))) (a))", "(list 1)"),
-            (
-                "(mlet* ((a (#keys (a 1 a?)) (list 'list a a?))) (a))",
-                "(list 1 #f)",
+                "(mlet* ((a (#opt (a 1)) (list:new 'list:new a))) (a 2))",
+                "(list:new 2)",
             ),
             (
-                "(mlet* ((a (#keys a) (list 'list a))) (a :a 2))",
-                "(list 2)",
+                "(mlet* ((a (#opt (a 1 a?)) (list:new 'list:new a a?))) (a 2))",
+                "(list:new 2 #t)",
+            ),
+            ("(mlet* ((a (#keys a) (list:new 'list:new a))) (a))", "(list:new nil)"),
+            ("(mlet* ((a (#keys (a 1)) (list:new 'list:new a))) (a))", "(list:new 1)"),
+            (
+                "(mlet* ((a (#keys (a 1 a?)) (list:new 'list:new a a?))) (a))",
+                "(list:new 1 #f)",
             ),
             (
-                "(mlet* ((a (#keys (a 1)) (list 'list a))) (a :a 2))",
-                "(list 2)",
+                "(mlet* ((a (#keys a) (list:new 'list:new a))) (a :a 2))",
+                "(list:new 2)",
             ),
             (
-                "(mlet* ((a (#keys (a 1 a?)) (list 'list a a?))) (a :a 2))",
-                "(list 2 #t)",
+                "(mlet* ((a (#keys (a 1)) (list:new 'list:new a))) (a :a 2))",
+                "(list:new 2)",
+            ),
+            (
+                "(mlet* ((a (#keys (a 1 a?)) (list:new 'list:new a a?))) (a :a 2))",
+                "(list:new 2 #t)",
             ),
         ];
 

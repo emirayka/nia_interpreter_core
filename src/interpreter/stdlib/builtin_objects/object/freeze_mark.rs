@@ -60,7 +60,7 @@ mod tests {
                 "#t",
             ),
             (
-                "(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property a :kek)) (catch 'generic-execution-error #t))",
+                "(try (let ((a {:kek nil})) (object:freeze! a) (object:delete-property! a :kek)) (catch 'generic-execution-error #t))",
                 "#t",
             ),
             (
@@ -109,7 +109,7 @@ mod tests {
             "(object:freeze! \"string\")",
             "(object:freeze! :keyword)",
             "(object:freeze! 'symbol)",
-            "(object:freeze! '(list))",
+            "(object:freeze! '(list:new))",
             "(object:freeze! #())",
         ];
 

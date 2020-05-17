@@ -1,8 +1,11 @@
 use crate::interpreter::parser::DelimitedSymbolsElement;
 use crate::interpreter::parser::SymbolElement;
 
+use crate::interpreter::reader::read_elements;
+
 use crate::Interpreter;
 use crate::Value;
+use crate::{Element, Error};
 
 fn expand_delimited_symbols(
     interpreter: &mut Interpreter,
@@ -29,38 +32,32 @@ fn expand_delimited_symbols(
     previous_cons
 }
 
-fn read_delimited_symbols_element_as_this_invocation(
+fn read_delimited_symbols_elements_as_value_internation(
     interpreter: &mut Interpreter,
     values: &Vec<SymbolElement>,
 ) -> Value {
     expand_delimited_symbols(interpreter, values)
 }
 
-fn read_delimited_symbols_element_as_object_method_invocation(
+pub fn read_delimited_symbols_element_as_object_method_invocation(
     interpreter: &mut Interpreter,
     values: &Vec<SymbolElement>,
-) -> Value {
-    let value_of_this_object =
+    method_arguments: Vec<Element>,
+) -> Result<Value, Error> {
+    let call_with_this_symbol_value =
+        interpreter.intern_symbol_value("call-with-this");
+    let context_value =
         expand_delimited_symbols(interpreter, &values[..(values.len() - 1)]);
+    let function_value = expand_delimited_symbols(interpreter, values);
 
-    // construct this invocation
-    let this_symbol_value = interpreter.intern_symbol_value("this");
-    let this_object_property_keyword =
-        interpreter.intern_keyword_value(values.last().unwrap().get_value());
+    let mut arguments = read_elements(interpreter, method_arguments)?;
 
-    let this_invocation_value = interpreter
-        .vec_to_list(vec![this_object_property_keyword, this_symbol_value]);
+    arguments.insert(0, function_value);
+    arguments.insert(0, context_value);
+    arguments.insert(0, call_with_this_symbol_value);
 
-    // construct with-this invocation
-    let with_this_symbol_value = interpreter.intern_symbol_value("with-this");
-
-    let result = interpreter.vec_to_list(vec![
-        with_this_symbol_value,
-        value_of_this_object,
-        this_invocation_value,
-    ]);
-
-    result
+    let result = interpreter.vec_to_list(arguments);
+    Ok(result)
 }
 
 pub fn read_delimited_symbols_element(
@@ -69,14 +66,7 @@ pub fn read_delimited_symbols_element(
 ) -> Value {
     let values = delimited_symbols_element.get_symbols();
 
-    if values[0].get_value() == "this" || values[0].get_value() == "super" {
-        read_delimited_symbols_element_as_this_invocation(interpreter, values)
-    } else {
-        read_delimited_symbols_element_as_object_method_invocation(
-            interpreter,
-            values,
-        )
-    }
+    read_delimited_symbols_elements_as_value_internation(interpreter, values)
 }
 
 #[cfg(test)]
@@ -156,21 +146,14 @@ mod tests {
     fn reads_delimited_symbols_element_object_method_invocation_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let this_symbol_value = interpreter.intern_symbol_value("this");
-        let with_this_symbol_value =
-            interpreter.intern_symbol_value("with-this");
+        let nil_symbol_value = interpreter.intern_nil_symbol_value();
+        let call_with_this = interpreter.intern_symbol_value("call-with-this");
         let object_symbol_value = interpreter.intern_symbol_value("object");
         let value1_keyword_value = interpreter.intern_keyword_value("value1");
         let value2_keyword_value = interpreter.intern_keyword_value("value2");
 
-        let this_invocation = interpreter
-            .vec_to_list(vec![value1_keyword_value, this_symbol_value]);
-
-        let expected = interpreter.vec_to_list(vec![
-            with_this_symbol_value,
-            object_symbol_value,
-            this_invocation,
-        ]);
+        let expected = interpreter
+            .vec_to_list(vec![value1_keyword_value, object_symbol_value]);
 
         assert_parsing_reading_result_is_correct(
             &mut interpreter,
@@ -178,17 +161,8 @@ mod tests {
             "object:value1",
         );
 
-        let this_invocation = interpreter
-            .vec_to_list(vec![value2_keyword_value, this_symbol_value]);
-
-        let this_object_value = interpreter
-            .vec_to_list(vec![value1_keyword_value, object_symbol_value]);
-
-        let expected = interpreter.vec_to_list(vec![
-            with_this_symbol_value,
-            this_object_value,
-            this_invocation,
-        ]);
+        let expected =
+            interpreter.vec_to_list(vec![value2_keyword_value, expected]);
 
         assert_parsing_reading_result_is_correct(
             &mut interpreter,
@@ -196,16 +170,13 @@ mod tests {
             "object:value1:value2",
         );
 
-        let item3 = interpreter
-            .vec_to_list(vec![value2_keyword_value, this_symbol_value]);
-
-        let item3 = interpreter.vec_to_list(vec![item3]);
-
-        let item2 = interpreter
+        let value1 = call_with_this;
+        let value2 = interpreter
             .vec_to_list(vec![value1_keyword_value, object_symbol_value]);
+        let value3 =
+            interpreter.vec_to_list(vec![value2_keyword_value, value2]);
 
-        let expected =
-            interpreter.vec_to_list(vec![with_this_symbol_value, item2, item3]);
+        let expected = interpreter.vec_to_list(vec![value1, value2, value3]);
 
         assert_parsing_reading_result_is_correct(
             &mut interpreter,

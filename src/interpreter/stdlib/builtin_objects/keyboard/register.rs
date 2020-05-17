@@ -50,7 +50,7 @@ mod tests {
                 r#"(keyboard:register 3 "/dev/input/event1" "Keyboard 1")"#,
             ),
             (
-                r#"(list '(3 "/dev/input/event1" "Keyboard 1"))"#,
+                r#"(list:new '(3 "/dev/input/event1" "Keyboard 1"))"#,
                 "nia-defined-keyboards",
             ),
             (
@@ -58,7 +58,7 @@ mod tests {
                 r#"(keyboard:register 2 "/dev/input/event2" "Keyboard 2")"#,
             ),
             (
-                r#"(list '(2 "/dev/input/event2" "Keyboard 2") '(3 "/dev/input/event1" "Keyboard 1"))"#,
+                r#"(list:new '(2 "/dev/input/event2" "Keyboard 2") '(3 "/dev/input/event1" "Keyboard 1"))"#,
                 "nia-defined-keyboards",
             ),
         ];
@@ -76,7 +76,7 @@ mod tests {
             "(keyboard:register #f \"path\" \"name\")",
             "(keyboard:register :keyword \"path\" \"name\")",
             "(keyboard:register 'symbol \"path\" \"name\")",
-            "(keyboard:register '(list) \"path\" \"name\")",
+            "(keyboard:register '(list:new) \"path\" \"name\")",
             "(keyboard:register {} \"path\" \"name\")",
             "(keyboard:register #() \"path\" \"name\")",
             "(keyboard:register 0 1 \"name\")",

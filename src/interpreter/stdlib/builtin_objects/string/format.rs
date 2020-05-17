@@ -126,7 +126,7 @@ mod tests {
             r#"(string:format #f)"#,
             r#"(string:format 'symbol)"#,
             r#"(string:format :keyword)"#,
-            r#"(string:format '(list a b c))"#,
+            r#"(string:format '(list:new a b c))"#,
             r#"(string:format {:key 'value})"#,
             r#"(string:format #(+ %1 %2))"#,
             r#"(string:format (flookup 'flookup))"#,

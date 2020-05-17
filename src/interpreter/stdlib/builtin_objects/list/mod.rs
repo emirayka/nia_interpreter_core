@@ -19,6 +19,7 @@ mod join;
 mod last;
 mod length;
 mod map;
+mod new;
 mod none_question;
 mod nth;
 mod remove;
@@ -51,6 +52,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("last", last::last),
         ("length", length::length),
         ("map", map::map),
+        ("new", new::new),
         ("none?", none_question::none_question),
         ("nth", nth::nth),
         ("remove", remove::remove),

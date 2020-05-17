@@ -19,7 +19,6 @@ mod gt;
 mod inc;
 mod intern;
 mod le;
-mod list;
 mod lookup;
 mod lt;
 mod mul;
@@ -34,7 +33,6 @@ mod sum;
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     let pairs: Vec<(&str, BuiltinFunctionType)> = vec![
         ("assert", assert::assert),
-        ("list", list::list),
         ("string", string::string),
         ("flookup", flookup::flookup),
         ("gensym", gensym::gensym),

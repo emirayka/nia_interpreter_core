@@ -52,23 +52,23 @@ mod tests {
 
         let pairs = vec![
             (
-                "(let ((b (list 1 2 3 4 5))) (list:set-nth! 0 0 b) b)",
+                "(let ((b (list:new 1 2 3 4 5))) (list:set-nth! 0 0 b) b)",
                 "'(0 2 3 4 5)",
             ),
             (
-                "(let ((b (list 1 2 3 4 5))) (list:set-nth! 0 1 b) b)",
+                "(let ((b (list:new 1 2 3 4 5))) (list:set-nth! 0 1 b) b)",
                 "'(1 0 3 4 5)",
             ),
             (
-                "(let ((b (list 1 2 3 4 5))) (list:set-nth! 0 2 b) b)",
+                "(let ((b (list:new 1 2 3 4 5))) (list:set-nth! 0 2 b) b)",
                 "'(1 2 0 4 5)",
             ),
             (
-                "(let ((b (list 1 2 3 4 5))) (list:set-nth! 0 3 b) b)",
+                "(let ((b (list:new 1 2 3 4 5))) (list:set-nth! 0 3 b) b)",
                 "'(1 2 3 0 5)",
             ),
             (
-                "(let ((b (list 1 2 3 4 5))) (list:set-nth! 0 4 b) b)",
+                "(let ((b (list:new 1 2 3 4 5))) (list:set-nth! 0 4 b) b)",
                 "'(1 2 3 4 0)",
             ),
         ];

@@ -77,7 +77,7 @@ mod tests {
             "(object:is-frozen? \"string\")",
             "(object:is-frozen? :keyword)",
             "(object:is-frozen? 'symbol)",
-            "(object:is-frozen? '(list))",
+            "(object:is-frozen? '(list:new))",
             "(object:is-frozen? #())",
         ];
 

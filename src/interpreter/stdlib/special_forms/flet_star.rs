@@ -111,32 +111,32 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(flet* ((a (#rest a) a)) (a))", "(list)"),
-            ("(flet* ((a (#rest a) a)) (a 1))", "(list 1)"),
-            ("(flet* ((a (#rest a) a)) (a 1 2))", "(list 1 2)"),
-            ("(flet* ((a (#opt a) (list a))) (a))", "(list nil)"),
-            ("(flet* ((a (#opt (a 1)) (list a))) (a))", "(list 1)"),
+            ("(flet* ((a (#rest a) a)) (a))", "(list:new)"),
+            ("(flet* ((a (#rest a) a)) (a 1))", "(list:new 1)"),
+            ("(flet* ((a (#rest a) a)) (a 1 2))", "(list:new 1 2)"),
+            ("(flet* ((a (#opt a) (list:new a))) (a))", "(list:new nil)"),
+            ("(flet* ((a (#opt (a 1)) (list:new a))) (a))", "(list:new 1)"),
             (
-                "(flet* ((a (#opt (a 1 a?)) (list a a?))) (a))",
-                "(list 1 #f)",
+                "(flet* ((a (#opt (a 1 a?)) (list:new a a?))) (a))",
+                "(list:new 1 #f)",
             ),
-            ("(flet* ((a (#opt a) (list a))) (a 2))", "(list 2)"),
-            ("(flet* ((a (#opt (a 1)) (list a))) (a 2))", "(list 2)"),
+            ("(flet* ((a (#opt a) (list:new a))) (a 2))", "(list:new 2)"),
+            ("(flet* ((a (#opt (a 1)) (list:new a))) (a 2))", "(list:new 2)"),
             (
-                "(flet* ((a (#opt (a 1 a?)) (list a a?))) (a 2))",
-                "(list 2 #t)",
+                "(flet* ((a (#opt (a 1 a?)) (list:new a a?))) (a 2))",
+                "(list:new 2 #t)",
             ),
-            ("(flet* ((a (#keys a) (list a))) (a))", "(list nil)"),
-            ("(flet* ((a (#keys (a 1)) (list a))) (a))", "(list 1)"),
+            ("(flet* ((a (#keys a) (list:new a))) (a))", "(list:new nil)"),
+            ("(flet* ((a (#keys (a 1)) (list:new a))) (a))", "(list:new 1)"),
             (
-                "(flet* ((a (#keys (a 1 a?)) (list a a?))) (a))",
-                "(list 1 #f)",
+                "(flet* ((a (#keys (a 1 a?)) (list:new a a?))) (a))",
+                "(list:new 1 #f)",
             ),
-            ("(flet* ((a (#keys a) (list a))) (a :a 2))", "(list 2)"),
-            ("(flet* ((a (#keys (a 1)) (list a))) (a :a 2))", "(list 2)"),
+            ("(flet* ((a (#keys a) (list:new a))) (a :a 2))", "(list:new 2)"),
+            ("(flet* ((a (#keys (a 1)) (list:new a))) (a :a 2))", "(list:new 2)"),
             (
-                "(flet* ((a (#keys (a 1 a?)) (list a a?))) (a :a 2))",
-                "(list 2 #t)",
+                "(flet* ((a (#keys (a 1 a?)) (list:new a a?))) (a :a 2))",
+                "(list:new 2 #t)",
             ),
         ];
 

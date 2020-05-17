@@ -52,8 +52,8 @@ pub fn _match(
 
                 code_to_execute = Some(forms);
                 break;
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
@@ -97,9 +97,12 @@ mod tests {
 
         let pairs = vec![
             ("(match '()      ('() nil))", "nil"),
-            ("(match '(1)     ('(a) (list a)))", "(list 1)"),
-            ("(match '(1 2)   ('(a b) (list a b)))", "(list 1 2)"),
-            ("(match '(1 2 3) ('(a b c) (list a b c)))", "(list 1 2 3)"),
+            ("(match '(1)     ('(a) (list:new a)))", "(list:new 1)"),
+            ("(match '(1 2)   ('(a b) (list:new a b)))", "(list:new 1 2)"),
+            (
+                "(match '(1 2 3) ('(a b c) (list:new a b c)))",
+                "(list:new 1 2 3)",
+            ),
         ];
 
         utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -110,14 +113,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(match '(1)     ('(a) (list a)))", "(list 1)"),
-            ("(match '((1))   ('((a)) (list a)))", "(list 1)"),
-            ("(match '(((1))) ('(((a))) (list a)))", "(list 1)"),
-            ("(match '(1)         ('(a) (list a)))", "(list 1)"),
-            ("(match '((1) 2)     ('((a) b) (list a b)))", "(list 1 2)"),
+            ("(match '(1)     ('(a) (list:new a)))", "(list:new 1)"),
+            ("(match '((1))   ('((a)) (list:new a)))", "(list:new 1)"),
+            ("(match '(((1))) ('(((a))) (list:new a)))", "(list:new 1)"),
+            ("(match '(1)         ('(a) (list:new a)))", "(list:new 1)"),
             (
-                "(match '(((1) 2) 3) ('(((a) b) c) (list a b c)))",
-                "(list 1 2 3)",
+                "(match '((1) 2)     ('((a) b) (list:new a b)))",
+                "(list:new 1 2)",
+            ),
+            (
+                "(match '(((1) 2) 3) ('(((a) b) c) (list:new a b c)))",
+                "(list:new 1 2 3)",
             ),
         ];
 
@@ -130,20 +136,20 @@ mod tests {
 
         let pairs = vec![
             (
-                "(match '() (())  ('(a) (list a)) ('(a b) (list a b)) ('(a b c) (list a b c)))",
+                "(match '() (())  ('(a) (list:new a)) ('(a b) (list:new a b)) ('(a b c) (list:new a b c)))",
                 "()",
             ),
             (
-                "(match '(1) (()) ('(a) (list a)) ('(a b) (list a b)) ('(a b c) (list a b c)))",
-                "(list 1)",
+                "(match '(1) (()) ('(a) (list:new a)) ('(a b) (list:new a b)) ('(a b c) (list:new a b c)))",
+                "(list:new 1)",
             ),
             (
-                "(match '(1 2) (()) ('(a) (list a)) ('(a b) (list a b)) ('(a b c) (list a b c)))",
-                "(list 1 2)",
+                "(match '(1 2) (()) ('(a) (list:new a)) ('(a b) (list:new a b)) ('(a b c) (list:new a b c)))",
+                "(list:new 1 2)",
             ),
             (
-                "(match '(1 2 3) (()) ('(a) (list a)) ('(a b) (list a b)) ('(a b c) (list a b c)))",
-                "(list 1 2 3)",
+                "(match '(1 2 3) (()) ('(a) (list:new a)) ('(a b) (list:new a b)) ('(a b c) (list:new a b c)))",
+                "(list:new 1 2 3)",
             ),
         ];
 
@@ -155,14 +161,17 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("(match {:a 1 :b 2 :c 3} (#{:a} (list a)))", "(list 1)"),
             (
-                "(match {:a 1 :b 2 :c 3} (#{:a :b} (list a b)))",
-                "(list 1 2)",
+                "(match {:a 1 :b 2 :c 3} (#{:a} (list:new a)))",
+                "(list:new 1)",
             ),
             (
-                "(match {:a 1 :b 2 :c 3} (#{:a :b :c} (list a b c)))",
-                "(list 1 2 3)",
+                "(match {:a 1 :b 2 :c 3} (#{:a :b} (list:new a b)))",
+                "(list:new 1 2)",
+            ),
+            (
+                "(match {:a 1 :b 2 :c 3} (#{:a :b :c} (list:new a b c)))",
+                "(list:new 1 2 3)",
             ),
         ];
 

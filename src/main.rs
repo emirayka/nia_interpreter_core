@@ -12,6 +12,8 @@ pub use interpreter::*;
 
 fn main() -> std::io::Result<()> {
     repl::run()?;
+    // let code = "(define-function defm (function (macro (name #rest params) (list:new 'define-function name (list:new 'function (cons:new 'macro params))))))";
+    // let mut interpreter = Interpreter::new();
 
     Ok(())
 }

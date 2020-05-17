@@ -32,6 +32,6 @@ mod tests {
     // fn simple_test() {
     //     let mut interpreter = Interpreter::new();
     //
-    //     interpreter.execute_in_main_environment(r#"(keyboard:register "/dev/input/event6" "first") (keyboard:start-listening)"#).unwrap();
+    //     interpreter.execute_in_main_environment(r#"(keyboard:register "/dev/input/event6" "first") (keyboard:start-list:newening)"#).unwrap();
     // }
 }

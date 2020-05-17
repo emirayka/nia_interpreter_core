@@ -1174,7 +1174,7 @@ impl Interpreter {
         )
     }
 
-    pub fn execute_function_without_arguments(
+    pub fn execute_function_without_arguments_int_main_environment(
         &mut self,
         value: Value,
     ) -> Result<Value, Error> {
@@ -1190,6 +1190,32 @@ impl Interpreter {
                 )
             }
             _ => Error::invalid_argument_error("").into(),
+        }
+    }
+
+    pub fn execute_function_with_evaluated_arguments(
+        &mut self,
+        function_id: FunctionId,
+        environment_id: EnvironmentId,
+        evaluated_arguments: Vec<Value>,
+    ) -> Result<Value, Error> {
+        match self.get_function(function_id)? {
+            Function::Builtin(builtin_function) => {
+                evaluate_builtin_function_invocation(
+                    self,
+                    &builtin_function.clone(),
+                    environment_id,
+                    evaluated_arguments,
+                )
+            }
+            Function::Interpreted(interpreter_function) => {
+                evaluate_interpreted_function_invocation(
+                    self,
+                    &interpreter_function.clone(),
+                    evaluated_arguments,
+                )
+            }
+            _ => Error::generic_execution_error("Expected function").into(),
         }
     }
 
@@ -1232,7 +1258,7 @@ mod tests {
         use std::convert::TryInto;
 
         macro_rules! assert_execution_result_eq {
-            ($expected:expr, $code:expr) => {
+            ( $ expected: expr, $ code: expr) => {
                 let mut interpreter = Interpreter::new();
                 let result = interpreter.execute_in_main_environment($code);
 
@@ -1349,7 +1375,7 @@ mod tests {
                 ("{:value \"string\"}", "\"string\""),
                 ("{:value :keyword}", ":keyword"),
                 ("{:value 'symbol}", "'symbol"),
-                ("{:value '(list)}", "'(list)"),
+                ("{:value '(list:new)}", "'(list:new)"),
                 ("{:value {}}", "{}"),
                 ("{:value #()}", "#()"),
             ];
@@ -1637,48 +1663,48 @@ mod tests {
 
             let pairs = vec![
                 (
-                    "((function (lambda (#opt a b c) (list a b c))))",
-                    "(list nil nil nil)",
+                    "((function (lambda (#opt a b c) (list:new a b c))))",
+                    "(list:new nil nil nil)",
                 ),
                 (
-                    "((function (lambda (#opt a b c) (list a b c))) 1)",
-                    "(list 1 nil nil)",
+                    "((function (lambda (#opt a b c) (list:new a b c))) 1)",
+                    "(list:new 1 nil nil)",
                 ),
                 (
-                    "((function (lambda (#opt a b c) (list a b c))) 1 2)",
-                    "(list 1 2 nil)",
+                    "((function (lambda (#opt a b c) (list:new a b c))) 1 2)",
+                    "(list:new 1 2 nil)",
                 ),
                 (
-                    "((function (lambda (#opt a b c) (list a b c))) 1 2 3)",
-                    "(list 1 2 3)",
+                    "((function (lambda (#opt a b c) (list:new a b c))) 1 2 3)",
+                    "(list:new 1 2 3)",
                 ),
                 (
-                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))))",
-                    "(list 4 5 6)",
+                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list:new a b c))))",
+                    "(list:new 4 5 6)",
                 ),
                 (
-                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1)",
-                    "(list 1 5 6)",
+                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list:new a b c))) 1)",
+                    "(list:new 1 5 6)",
                 ),
                 (
-                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2)",
-                    "(list 1 2 6)",
+                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list:new a b c))) 1 2)",
+                    "(list:new 1 2 6)",
                 ),
                 (
-                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list a b c))) 1 2 3)",
-                    "(list 1 2 3)",
+                    "((function (lambda (#opt (a 4) (b 5) (c 6)) (list:new a b c))) 1 2 3)",
+                    "(list:new 1 2 3)",
                 ),
                 (
-                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))))",
-                    "(list 3 #f 4 #f)",
+                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list:new a a? b b?))))",
+                    "(list:new 3 #f 4 #f)",
                 ),
                 (
-                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1)",
-                    "(list 1 #t 4 #f)",
+                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list:new a a? b b?))) 1)",
+                    "(list:new 1 #t 4 #f)",
                 ),
                 (
-                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list a a? b b?))) 1 2)",
-                    "(list 1 #t 2 #t)",
+                    "((function (lambda (#opt (a 3 a?) (b 4 b?)) (list:new a a? b b?))) 1 2)",
+                    "(list:new 1 #t 2 #t)",
                 ),
             ];
 
@@ -1691,9 +1717,12 @@ mod tests {
 
             let pairs = vec![
                 ("((function (lambda (#rest a) a)))", "nil"),
-                ("((function (lambda (#rest a) a)) 1)", "(list 1)"),
-                ("((function (lambda (#rest a) a)) 1 2)", "(list 1 2)"),
-                ("((function (lambda (#rest a) a)) 1 2 3)", "(list 1 2 3)"),
+                ("((function (lambda (#rest a) a)) 1)", "(list:new 1)"),
+                ("((function (lambda (#rest a) a)) 1 2)", "(list:new 1 2)"),
+                (
+                    "((function (lambda (#rest a) a)) 1 2 3)",
+                    "(list:new 1 2 3)",
+                ),
             ];
 
             utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -1705,64 +1734,64 @@ mod tests {
 
             let pairs = vec![
                 (
-                    "((function (lambda (#keys a b) (list a b))))",
-                    "(list nil nil)",
+                    "((function (lambda (#keys a b) (list:new a b))))",
+                    "(list:new nil nil)",
                 ),
                 (
-                    "((function (lambda (#keys a b) (list a b))) :a 1)",
-                    "(list 1 nil)",
+                    "((function (lambda (#keys a b) (list:new a b))) :a 1)",
+                    "(list:new 1 nil)",
                 ),
                 (
-                    "((function (lambda (#keys a b) (list a b))) :b 2)",
-                    "(list nil 2)",
+                    "((function (lambda (#keys a b) (list:new a b))) :b 2)",
+                    "(list:new nil 2)",
                 ),
                 (
-                    "((function (lambda (#keys a b) (list a b))) :a 1 :b 2)",
-                    "(list 1 2)",
+                    "((function (lambda (#keys a b) (list:new a b))) :a 1 :b 2)",
+                    "(list:new 1 2)",
                 ),
                 (
-                    "((function (lambda (#keys a b) (list a b))) :b 2 :a 1)",
-                    "(list 1 2)",
+                    "((function (lambda (#keys a b) (list:new a b))) :b 2 :a 1)",
+                    "(list:new 1 2)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3) (b 4)) (list a b))))",
-                    "(list 3 4)",
+                    "((function (lambda (#keys (a 3) (b 4)) (list:new a b))))",
+                    "(list:new 3 4)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1)",
-                    "(list 1 4)",
+                    "((function (lambda (#keys (a 3) (b 4)) (list:new a b))) :a 1)",
+                    "(list:new 1 4)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2)",
-                    "(list 3 2)",
+                    "((function (lambda (#keys (a 3) (b 4)) (list:new a b))) :b 2)",
+                    "(list:new 3 2)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3) (b 4)) (list a b))) :a 1 :b 2)",
-                    "(list 1 2)",
+                    "((function (lambda (#keys (a 3) (b 4)) (list:new a b))) :a 1 :b 2)",
+                    "(list:new 1 2)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3) (b 4)) (list a b))) :b 2 :a 1)",
-                    "(list 1 2)",
+                    "((function (lambda (#keys (a 3) (b 4)) (list:new a b))) :b 2 :a 1)",
+                    "(list:new 1 2)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))))",
-                    "(list 3 #f 4 #f)",
+                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list:new a a? b b?))))",
+                    "(list:new 3 #f 4 #f)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1)",
-                    "(list 1 #t 4 #f)",
+                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list:new a a? b b?))) :a 1)",
+                    "(list:new 1 #t 4 #f)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2)",
-                    "(list 3 #f 2 #t)",
+                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list:new a a? b b?))) :b 2)",
+                    "(list:new 3 #f 2 #t)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :a 1 :b 2)",
-                    "(list 1 #t 2 #t)",
+                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list:new a a? b b?))) :a 1 :b 2)",
+                    "(list:new 1 #t 2 #t)",
                 ),
                 (
-                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list a a? b b?))) :b 2 :a 1)",
-                    "(list 1 #t 2 #t)",
+                    "((function (lambda (#keys (a 3 a?) (b 4 b?)) (list:new a a? b b?))) :b 2 :a 1)",
+                    "(list:new 1 #t 2 #t)",
                 ),
             ];
 
@@ -1828,8 +1857,8 @@ mod tests {
             let mut interpreter = Interpreter::new();
 
             let pairs = vec![(
-                "((function (macro (a b c) (list 'list (list 'quote a) (list 'quote b) (list 'quote c)))) aa bb cc)",
-                "(list 'aa 'bb 'cc)",
+                "((function (macro (a b c) (list:new 'list:new (list:new 'quote a) (list:new 'quote b) (list:new 'quote c)))) aa bb cc)",
+                "(list:new 'aa 'bb 'cc)",
             )];
 
             utils::assert_results_are_equal(&mut interpreter, pairs);

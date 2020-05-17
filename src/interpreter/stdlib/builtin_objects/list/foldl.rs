@@ -69,7 +69,7 @@ mod tests {
             ),
             (
                 "(list:foldl (function (lambda (acc value) (cons:new value acc))) '(1 2 3 4 5) nil)",
-                "(list 1 2 3 4 5)",
+                "(list:new 1 2 3 4 5)",
             ),
         ];
 

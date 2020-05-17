@@ -27,7 +27,7 @@ mod defv {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(define-function defv (function (macro (name #opt (value nil)) (list 'define-variable name value))))"
+            "(define-function defv (function (macro (name #opt (value nil)) (list:new 'define-variable name value))))"
         )?;
 
         Ok(())
@@ -55,7 +55,7 @@ mod defc {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(define-function defc (function (macro (name #opt (value nil)) (list 'define-variable name value :const))))"
+            "(define-function defc (function (macro (name #opt (value nil)) (list:new 'define-variable name value :const))))"
         )?;
 
         Ok(())
@@ -91,7 +91,7 @@ mod defn {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(define-function defn (function (macro (name #rest params) (list 'define-function name (list 'function (cons:new 'lambda params))))))"
+            "(define-function defn (function (macro (name #rest params) (list:new 'define-function name (list:new 'function (cons:new 'lambda params))))))"
         )?;
 
         Ok(())
@@ -110,9 +110,9 @@ mod defn {
             let pairs = vec![
                 ("(defn a () 1) (a)", "1"),
                 ("(defn b (a) a) (b 2)", "2"),
-                ("(defn c (#opt b c) (list b c)) (c)", "'(nil nil)"),
-                ("(defn d (#opt b c) (list b c)) (d 2)", "'(2 nil)"),
-                ("(defn e (#opt b c) (list b c)) (e 2 3)", "'(2 3)"),
+                ("(defn c (#opt b c) (list:new b c)) (c)", "'(nil nil)"),
+                ("(defn d (#opt b c) (list:new b c)) (d 2)", "'(2 nil)"),
+                ("(defn e (#opt b c) (list:new b c)) (e 2 3)", "'(2 3)"),
                 ("(defn f (#rest b) b) (f 2 3 4)", "'(2 3 4)"),
                 ("(defn g (#keys b) b) (g :b 1)", "1"),
             ];
@@ -125,9 +125,25 @@ mod defn {
 mod defm {
     use super::*;
 
+    use crate::library;
+
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        let value = interpreter
+            .execute_in_root_environment(
+                "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
+            )
+            .unwrap();
+        library::print_value(interpreter, value);
+
+        let value = interpreter
+            .execute_in_root_environment(
+                "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
+            )
+            .unwrap();
+        library::print_value(interpreter, value);
+
         interpreter.execute_in_root_environment(
-            "(define-function defm (function (macro (name #rest params) (list 'define-function name (list 'function (cons:new 'macro params))))))"
+            "(define-function defm (function (macro (name #rest params) (list:new 'define-function name (list:new 'function (cons:new 'macro params))))))"
         )?;
 
         Ok(())
@@ -146,12 +162,27 @@ mod defm {
             let pairs = vec![
                 ("(defm a () 1) (a)", "1"),
                 ("(defm b (a) a) (b 2)", "2"),
-                ("(defm c (#opt b c) (list 'list b c)) (c)", "'(nil nil)"),
-                ("(defm d (#opt b c) (list 'list b c)) (d 2)", "'(2 nil)"),
-                ("(defm e (#opt b c) (list 'list b c)) (e 2 3)", "'(2 3)"),
-                ("(defm f (#rest b) (list 'quote b)) (f 2 3 4)", "'(2 3 4)"),
+                (
+                    "(defm c (#opt b c) (list:new 'list:new b c)) (c)",
+                    "'(nil nil)",
+                ),
+                (
+                    "(defm d (#opt b c) (list:new 'list:new b c)) (d 2)",
+                    "'(2 nil)",
+                ),
+                (
+                    "(defm e (#opt b c) (list:new 'list:new b c)) (e 2 3)",
+                    "'(2 3)",
+                ),
+                (
+                    "(defm f (#rest b) (list:new 'quote b)) (f 2 3 4)",
+                    "'(2 3 4)",
+                ),
                 ("(defm g (#keys b) b) (g :b 1)", "1"),
-                ("(defm h (a b) (list 'list a b)) (h 'a 'b)", "(list 'a 'b)"),
+                (
+                    "(defm h (a b) (list:new 'list:new a b)) (h 'a 'b)",
+                    "(list:new 'a 'b)",
+                ),
             ];
 
             utils::assert_results_are_equal(&mut interpreter, pairs);
@@ -164,7 +195,7 @@ mod _fn {
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
-            "(defm fn (#rest args) (list 'function (cons:new 'lambda args)))",
+            "(defm fn (#rest args) (list:new 'function (cons:new 'lambda args)))",
         )?;
 
         Ok(())
@@ -208,7 +239,7 @@ mod _if {
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
             "(defm if (condition then-clause else-clause)\
-  (list 'cond (list condition then-clause) (list #t else-clause)))",
+  (list:new 'cond (list:new condition then-clause) (list:new #t else-clause)))",
         )?;
 
         Ok(())
@@ -226,11 +257,11 @@ mod _if {
 
             let pairs = vec![
                 (
-                    "(defv a 1) (defv b 2) (list (if #t a b) (if #f a b))",
+                    "(defv a 1) (defv b 2) (list:new (if #t a b) (if #f a b))",
                     "'(1 2)",
                 ),
                 (
-                    "(defv c 0) (defv d 0) (list (if #t (set! c (inc c)) (set! d (inc d))) (if #f (set! c (inc c)) (set! d (inc d)))) (list c d)",
+                    "(defv c 0) (defv d 0) (list:new (if #t (set! c (inc c)) (set! d (inc d))) (if #f (set! c (inc c)) (set! d (inc d)))) (list:new c d)",
                     "'(1 1)",
                 ),
             ];
@@ -246,7 +277,7 @@ mod when {
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
             "(defm when (condition then-clause)\
-  (list 'cond (list condition then-clause)))",
+  (list:new 'cond (list:new condition then-clause)))",
         )?;
 
         Ok(())
@@ -263,7 +294,7 @@ mod when {
             let mut interpreter = Interpreter::new();
 
             let pairs = vec![(
-                "(defv a 0) (defv b 0) (list (when #t (set! a (inc a))) (when #f (set! b (inc b)))) (list a b)",
+                "(defv a 0) (defv b 0) (list:new (when #t (set! a (inc a))) (when #f (set! b (inc b)))) (list:new a b)",
                 "'(1 0)",
             )];
 
@@ -278,7 +309,7 @@ mod unless {
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
             "(defm unless (condition else-clause)\
-  (list 'cond (list (list 'not condition) else-clause)))",
+  (list:new 'cond (list:new (list:new 'not condition) else-clause)))",
         )?;
 
         Ok(())
@@ -295,7 +326,7 @@ mod unless {
             let mut interpreter = Interpreter::new();
 
             let pairs = vec![(
-                "(defv a 0) (defv b 0) (list (unless #t (set! a (inc a))) (unless #f (set! b (inc b)))) (list a b)",
+                "(defv a 0) (defv b 0) (list:new (unless #t (set! a (inc a))) (unless #f (set! b (inc b)))) (list:new a b)",
                 "'(0 1)",
             )];
 
