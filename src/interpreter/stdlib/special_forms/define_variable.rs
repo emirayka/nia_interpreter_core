@@ -48,7 +48,7 @@ pub fn define_variable(
                 "First form of `define-variable' must be a symbol.",
             )
             .into();
-        },
+        }
     };
 
     library::check_symbol_is_assignable(interpreter, variable_symbol_id)?;
@@ -171,7 +171,7 @@ mod tests {
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(define-variable nil #(% 2 3))",
             // todo: when new special symbols will be, add them here

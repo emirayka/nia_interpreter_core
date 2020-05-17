@@ -132,7 +132,7 @@ impl Object {
         match self.get_property_value_wrapper(property_symbol_id) {
             Some(object_value_wrapper) => {
                 Ok(Some(object_value_wrapper.get_value()?))
-            },
+            }
             None => Ok(None),
         }
     }
@@ -147,11 +147,11 @@ impl Object {
         match self.get_property_value_wrapper_mut(property_symbol_id) {
             Some(object_value_wrapper) => {
                 object_value_wrapper.set_value(value)?;
-            },
+            }
             None => {
                 self.properties
                     .insert(property_symbol_id, ObjectValueWrapper::new(value));
-            },
+            }
         }
 
         Ok(())
@@ -181,7 +181,7 @@ impl Object {
             None => {
                 Error::generic_execution_error("Cannot find object property.")
                     .into()
-            },
+            }
         }
     }
 
@@ -338,7 +338,7 @@ impl Object {
 
         match self.prototype {
             Some(prototype_id) => result.push(Value::Object(prototype_id)),
-            _ => {},
+            _ => {}
         }
 
         result
@@ -562,7 +562,6 @@ mod tests {
     #[cfg(test)]
     mod freeze {
         use super::*;
-        use crate::interpreter::value::value::Value::Symbol;
 
         #[test]
         fn freezes_object() {
@@ -586,12 +585,9 @@ mod tests {
     #[cfg(test)]
     mod set_property_flags__get_property_flags {
         use super::*;
-        use crate::{
-            OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
-            OBJECT_VALUE_WRAPPER_FLAGS_NONE,
-            OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
-            OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
-        };
+
+        use crate::OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT;
+        use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
 
         #[test]
         fn gets_and_sets_property_flags() {
@@ -644,7 +640,6 @@ mod tests {
         #[test]
         fn returns_error_when_used_for_non_existing_properties() {
             let property_symbol_id = SymbolId::new(0);
-            let new_value = Value::Integer(1);
 
             let mut object = Object::new();
 
@@ -691,11 +686,9 @@ mod tests {
     #[cfg(test)]
     mod set_property_flag__get_property_flag {
         use super::*;
-        use crate::{
-            OBJECT_VALUE_WRAPPER_FLAGS_NONE,
-            OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE,
-            OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE,
-        };
+
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
+        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn gets_and_sets_property_flag() {
@@ -898,7 +891,7 @@ mod tests {
                 &object.set_property_internable(property_symbol_id, false),
             );
             nia_assert_equal(
-                Ok((true)),
+                Ok(true),
                 object.is_property_internable(property_symbol_id),
             );
         }
@@ -984,7 +977,7 @@ mod tests {
                 &object.set_property_writable(property_symbol_id, false),
             );
             nia_assert_equal(
-                Ok((true)),
+                Ok(true),
                 object.is_property_writable(property_symbol_id),
             );
         }
@@ -1074,7 +1067,7 @@ mod tests {
                 &object.set_property_enumerable(property_symbol_id, false),
             );
             nia_assert_equal(
-                Ok((true)),
+                Ok(true),
                 object.is_property_enumerable(property_symbol_id),
             );
         }

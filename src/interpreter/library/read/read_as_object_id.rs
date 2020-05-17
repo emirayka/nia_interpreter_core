@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::ObjectId;
 use crate::interpreter::value::Value;
 
@@ -8,7 +7,7 @@ pub fn read_as_object_id(value: Value) -> Result<ObjectId, Error> {
         Value::Object(object_id) => object_id,
         _ => {
             return Error::invalid_argument_error("Expected an object.").into();
-        },
+        }
     };
 
     Ok(object_id)
@@ -24,14 +23,13 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::Interpreter;
+
     #[test]
     fn returns_correct_object_id() {
-        let mut interpreter = Interpreter::new();
-
         let expected = ObjectId::new(0);
 
         let value = Value::Object(expected);
-
         let result = read_as_object_id(value).unwrap();
 
         nia_assert_equal(expected, result);

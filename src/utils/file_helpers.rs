@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub fn with_tempfile(content: &str, closure: fn(String) -> ()) {
     let mut file = tempfile::Builder::new()
@@ -38,11 +38,11 @@ pub fn with_named_file(
     content: &str,
     closure: impl Fn() -> (),
 ) {
-    let mut path = PathBuf::from(parent);
+    let mut pathbuf = PathBuf::from(parent);
 
-    path.push(name);
+    pathbuf.push(name);
 
-    let filepath = path.to_str().expect("Cannot make filepath").to_string();
+    let filepath = pathbuf.to_str().expect("Cannot make filepath").to_string();
 
     let mut file =
         std::fs::File::create(&filepath).expect("Cannot create file");
@@ -62,15 +62,15 @@ pub fn with_named_dir(
     name: &str,
     closure: impl Fn(String) -> (),
 ) {
-    let mut path = PathBuf::from(parent);
+    let mut pathbuf = PathBuf::from(parent);
 
-    path.push(name);
+    pathbuf.push(name);
 
-    let filepath = path.to_str().expect("Cannot make filepath").to_string();
+    let filepath = pathbuf.to_str().expect("Cannot make filepath,").to_string();
 
-    let mut dir = std::fs::DirBuilder::new()
+    std::fs::DirBuilder::new()
         .create(&filepath)
-        .expect("Cannot create file");
+        .expect("Cannot create temporary directory.");
 
     closure(filepath.clone());
 

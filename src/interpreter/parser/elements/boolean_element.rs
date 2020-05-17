@@ -1,11 +1,7 @@
 use nom::alt;
-use nom::character::complete::multispace1;
-use nom::combinator::all_consuming;
 use nom::map_res;
 use nom::named;
-use nom::peek;
 use nom::tag;
-use nom::terminated;
 
 use crate::interpreter::parser::ParseError;
 
@@ -32,11 +28,11 @@ impl PartialEq for BooleanElement {
 
 impl Eq for BooleanElement {}
 
-fn make_boolean_true(s: &str) -> Result<BooleanElement, ParseError> {
+fn make_boolean_true(_s: &str) -> Result<BooleanElement, ParseError> {
     Ok(BooleanElement::new(true))
 }
 
-fn make_boolean_false(s: &str) -> Result<BooleanElement, ParseError> {
+fn make_boolean_false(_s: &str) -> Result<BooleanElement, ParseError> {
     Ok(BooleanElement::new(false))
 }
 

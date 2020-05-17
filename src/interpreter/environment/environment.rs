@@ -54,7 +54,7 @@ fn set_value(
             ref_mut.set_value(value)?;
 
             Ok(())
-        },
+        }
         None => Error::generic_execution_error(
             "Cannot set value that does not exist.",
         )
@@ -317,7 +317,7 @@ mod tests {
         let symbol = SymbolId::new(0);
         let value = Value::Integer(1);
 
-        env.define_const_variable(symbol, value);
+        env.define_const_variable(symbol, value).unwrap();
 
         nia_assert_equal(Some(value), env.lookup_variable(symbol).unwrap());
         nia_assert(env.set_variable(symbol, Value::Integer(2)).is_err());
@@ -329,7 +329,7 @@ mod tests {
         let symbol = SymbolId::new(0);
         let value = Value::Integer(1);
 
-        env.define_const_function(symbol, value);
+        env.define_const_function(symbol, value).unwrap();
 
         nia_assert_equal(Some(value), env.lookup_function(symbol).unwrap());
         nia_assert(env.set_function(symbol, Value::Integer(2)).is_err());

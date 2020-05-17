@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::ConsId;
 use crate::interpreter::value::Value;
 
@@ -8,7 +7,7 @@ pub fn read_as_cons_id(value: Value) -> Result<ConsId, Error> {
         Value::Cons(cons_id) => cons_id,
         _ => {
             return Error::invalid_argument_error("Expected cons cell.").into();
-        },
+        }
     };
 
     Ok(cons_id)
@@ -24,10 +23,10 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::Interpreter;
+
     #[test]
     fn returns_correct_cons_cell() {
-        let mut interpreter = Interpreter::new();
-
         let pairs = vec![
             (Value::Cons(ConsId::new(1)), ConsId::new(1)),
             (Value::Cons(ConsId::new(2)), ConsId::new(2)),

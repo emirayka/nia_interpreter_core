@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn odd_question(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {

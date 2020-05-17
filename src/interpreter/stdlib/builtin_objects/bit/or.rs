@@ -6,7 +6,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::library;
 
 pub fn or(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {

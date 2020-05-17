@@ -1,11 +1,7 @@
-use std::collections::HashMap;
-
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-
-use crate::interpreter::library;
 
 pub fn stop_listening(
     interpreter: &mut Interpreter,
@@ -26,6 +22,7 @@ pub fn stop_listening(
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[allow(unused_imports)]

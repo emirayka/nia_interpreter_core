@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn read_as_i64(value: Value) -> Result<i64, Error> {
@@ -19,10 +18,10 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::Interpreter;
+
     #[test]
     fn returns_correct_int() {
-        let mut interpreter = Interpreter::new();
-
         let specs = vec![
             (Value::Integer(-3), -3),
             (Value::Integer(-2), -2),

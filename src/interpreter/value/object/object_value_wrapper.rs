@@ -69,6 +69,7 @@ impl ObjectValueWrapper {
         }
     }
 
+    #[allow(dead_code)]
     fn check_is_enumerable(&self) -> Result<(), Error> {
         if self.is_enumerable() {
             Ok(())
@@ -180,7 +181,7 @@ mod tests {
         use super::*;
         #[test]
         fn gets_value() {
-            let mut value_wrapper = ObjectValueWrapper::with_flags(
+            let value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(1),
                 OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT,
             );
@@ -190,7 +191,7 @@ mod tests {
 
         #[test]
         fn returns_error_during_internation_of_not_internable_binding() {
-            let mut value_wrapper = ObjectValueWrapper::with_flags(
+            let value_wrapper = ObjectValueWrapper::with_flags(
                 Value::Integer(1),
                 OBJECT_VALUE_WRAPPER_FLAGS_DEFAULT
                     ^ OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE,

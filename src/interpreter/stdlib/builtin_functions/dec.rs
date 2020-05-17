@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn dec(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -22,14 +22,14 @@ pub fn dec(
             Some(value) => Ok(Value::Integer(value)),
             _ => {
                 Error::overflow_error("Cannot decrement minimal value.").into()
-            },
+            }
         },
         _ => {
             return Error::invalid_argument_error(
                 "Built-in function `dec' takes one integer value.",
             )
             .into();
-        },
+        }
     }
 }
 

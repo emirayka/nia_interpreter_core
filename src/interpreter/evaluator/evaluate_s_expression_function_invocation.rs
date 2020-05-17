@@ -4,13 +4,15 @@ use crate::interpreter::evaluator::evaluate_macro_invocation::evaluate_macro_inv
 use crate::interpreter::evaluator::evaluate_special_form_invocation::evaluate_special_form_invocation;
 use crate::interpreter::evaluator::evaluate_value::evaluate_value;
 use crate::interpreter::evaluator::extract_arguments::extract_arguments;
+
+use crate::ConsId;
 use crate::EnvironmentId;
 use crate::Error;
 use crate::Function;
 use crate::FunctionId;
 use crate::Interpreter;
+use crate::SymbolId;
 use crate::Value;
-use crate::{CallStackItem, ConsId, SymbolId};
 
 pub fn evaluate_s_expression_function_invocation(
     interpreter: &mut Interpreter,
@@ -57,7 +59,7 @@ pub fn evaluate_s_expression_function_invocation(
 
             interpreter.pop_call();
             result
-        },
+        }
         Function::Interpreted(interpreted_function) => {
             // 2) evaluate arguments
             let arguments = extract_arguments(interpreter, cons_id)?;
@@ -90,7 +92,7 @@ pub fn evaluate_s_expression_function_invocation(
 
             interpreter.pop_call();
             result
-        },
+        }
         Function::SpecialForm(special_form) => {
             let arguments = extract_arguments(interpreter, cons_id)?;
 
@@ -113,7 +115,7 @@ pub fn evaluate_s_expression_function_invocation(
 
             interpreter.pop_call();
             result
-        },
+        }
         Function::Macro(macro_function) => {
             let arguments = extract_arguments(interpreter, cons_id)?;
 
@@ -138,6 +140,6 @@ pub fn evaluate_s_expression_function_invocation(
 
             interpreter.pop_call();
             result
-        },
+        }
     }
 }

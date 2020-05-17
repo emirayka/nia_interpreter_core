@@ -1,10 +1,8 @@
 use nom::character::complete::multispace0;
 use nom::character::complete::multispace1;
 use nom::delimited;
-use nom::many0;
 use nom::map_res;
 use nom::named;
-use nom::pair;
 use nom::preceded;
 use nom::separated_list;
 use nom::separated_pair;

@@ -6,7 +6,7 @@ use crate::interpreter::value::Value;
 use crate::interpreter::library;
 
 pub fn xor(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -20,7 +20,6 @@ pub fn xor(
     let mut values = values;
 
     let v1 = library::read_as_bool(values.remove(0))?;
-
     let v2 = library::read_as_bool(values.remove(0))?;
 
     match (v1, v2) {

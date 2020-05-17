@@ -319,8 +319,8 @@ impl fmt::Display for Error {
         if let Some(cause) = &self.caused_by {
             let cause_error = cause.as_ref();
 
-            write!(f, " caused by:");
-            write!(f, "\n");
+            write!(f, " caused by:")?;
+            write!(f, "\n")?;
             cause_error.fmt(f)
         } else {
             write!(f, "\n")
@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn final_cause_works() {
-        let interpreter = Interpreter::new();
+        let _interpreter = Interpreter::new();
 
         let cause_cause_error = Error::invalid_argument_count_error("r");
         let cause_error =

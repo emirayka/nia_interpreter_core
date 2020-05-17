@@ -1,3 +1,4 @@
+mod alist;
 mod check;
 mod environment;
 mod evaluate;
@@ -7,6 +8,7 @@ mod keys;
 mod list;
 mod read;
 
+pub use alist::*;
 pub use check::*;
 pub use environment::*;
 pub use evaluate::*;

@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn assert(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -22,7 +22,7 @@ pub fn assert(
         Value::Boolean(true) => Ok(Value::Boolean(true)),
         Value::Boolean(false) => {
             Error::assertion_error("Assertion failed: ").into()
-        },
+        }
         _ => Error::invalid_argument_error(
             "Built-in function `assert' takes exactly one boolean argument.",
         )

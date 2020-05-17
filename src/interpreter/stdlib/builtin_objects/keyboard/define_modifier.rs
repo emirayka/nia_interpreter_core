@@ -1,42 +1,23 @@
-use std::collections::HashMap;
-
-use nia_events::KeyChordPart;
-
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::library;
-
 pub fn define_modifier(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
-    if values.len() != 1 {
+    if values.len() < 1 || values.len() > 2 {
         return Error::invalid_argument_count_error(
-            "Built-in function `keyboard:define-modifier' takes one argument exactly.",
+            "Built-in function `keyboard:define-modifier' takes one or two arguments exactly.",
         )
         .into();
     }
 
-    let mut values = values;
+    // let mut values = values;
 
-    let key_chord_part = KeyChordPart::from(
-        library::read_as_string(interpreter, values.remove(0))?,
-        &HashMap::new(), // todo: fix
-    )
-    .map_err(|_| {
-        Error::invalid_argument_error("Cannot parse key chord part.")
-    })?;
-
-    let key_chord_value =
-        library::key_chord_part_to_list(interpreter, key_chord_part);
-
-    library::add_value_to_root_list(interpreter, "modifiers", key_chord_value)?;
-
-    Ok(interpreter.intern_nil_symbol_value())
+    unimplemented!()
 }
 
 #[cfg(test)]
@@ -54,11 +35,14 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("modifiers", "'()"),
-            ("(keyboard:define-modifier \"LeftControl\")", "nil"),
-            ("modifiers", "'(29)"),
-            ("(keyboard:define-modifier \"0:LeftMeta\")", "nil"),
-            ("modifiers", "'((0 125) 29)"),
+            ("nia-defined-modifiers", "'()"),
+            (
+                "(keyboard:define-modifier \"LeftControl\" \"Control\")",
+                "nil",
+            ),
+            ("nia-defined-modifiers", "'(29 \"Control\")"),
+            ("(keyboard:define-modifier \"0:LeftMeta\" \"Meta\")", "nil"),
+            ("nia-defined-modifiers", "'((0 125) (29 \"Control\"))"),
         ];
 
         utils::assert_results_are_equal(&mut interpreter, pairs)

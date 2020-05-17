@@ -90,7 +90,6 @@ mod tests {
 
         let device_id = 2;
         let key_code = 24;
-        let modifier_alias = "mod";
         let result = remove_modifier(&mut interpreter, device_id, key_code);
 
         crate::utils::assert_generic_execution_error(&result);

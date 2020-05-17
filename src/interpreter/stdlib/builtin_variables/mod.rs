@@ -24,8 +24,8 @@ fn define_empty_list(
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     define_empty_list(interpreter, "nia-defined-keyboards")?;
     define_empty_list(interpreter, "nia-defined-modifiers")?;
+    define_empty_list(interpreter, "nia-defined-actions")?;
     define_empty_list(interpreter, "global-map")?;
-    define_empty_list(interpreter, "modifiers")?;
 
     define_empty_list(interpreter, "--actions")?;
 

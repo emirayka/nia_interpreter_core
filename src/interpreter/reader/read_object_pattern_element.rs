@@ -42,10 +42,12 @@ pub fn read_object_pattern_element(
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
-    use crate::parser::KeywordElement;
-    use nia_basic_assertions::nia_assert_equal;
+
     use std::convert::TryInto;
+
+    use crate::interpreter::parser::KeywordElement;
 
     #[test]
     fn reads_elements_correctly() {

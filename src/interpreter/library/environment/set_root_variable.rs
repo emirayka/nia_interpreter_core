@@ -1,6 +1,5 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::Value;
 
 pub fn set_root_variable(

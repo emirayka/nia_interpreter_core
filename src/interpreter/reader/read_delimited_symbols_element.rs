@@ -84,10 +84,6 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
-    use crate::interpreter::parser::parse;
-
-    use crate::interpreter::reader::read_element::read_element;
-
     use crate::utils::assert_parsing_reading_result_is_correct;
 
     #[test]
@@ -160,7 +156,6 @@ mod tests {
     fn reads_delimited_symbols_element_object_method_invocation_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let nil_symbol_value = interpreter.intern_nil_symbol_value();
         let this_symbol_value = interpreter.intern_symbol_value("this");
         let with_this_symbol_value =
             interpreter.intern_symbol_value("with-this");

@@ -1,26 +1,25 @@
 use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::convert::TryInto;
 use std::sync::mpsc;
 use std::thread;
 
+use nia_events::Command;
 use nia_events::Event;
 use nia_events::KeyChord;
 use nia_events::KeyChordPart;
 use nia_events::KeyboardId;
 use nia_events::Listener;
+use nia_events::ListenerSettings;
 use nia_events::ListenerSettingsBuilder;
 use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
-use nia_events::{Command, ListenerSettings};
 
-use nia_state_machine::{StateMachine, StateMachineResult};
+use nia_state_machine::StateMachine;
+use nia_state_machine::StateMachineResult;
 
+use crate::Action;
 use crate::Error;
-use crate::EventLoopHandle;
 use crate::Interpreter;
-use crate::Value;
-use crate::{Action, NiaActionListenerHandle};
+use crate::NiaActionListenerHandle;
 
 use crate::library;
 use std::time::Duration;
@@ -82,7 +81,7 @@ impl NiaActionListener {
     fn build_settings(&self) -> ListenerSettings {
         let mut settings_builder = ListenerSettingsBuilder::new();
         let mut map = HashMap::new();
-        let mut iterator = self.keyboards.iter().enumerate();
+        let iterator = self.keyboards.iter().enumerate();
 
         for (index, (keyboard_path, keyboard_name)) in iterator {
             settings_builder =

@@ -1,14 +1,7 @@
-use nia_state_machine::StateMachineResult;
-
 use nia_events::Worker;
 use nia_events::WorkerHandle;
 
-use crate::interpreter::Action;
 use crate::interpreter::Error;
-use crate::interpreter::Interpreter;
-use crate::interpreter::Value;
-
-use crate::interpreter::library;
 
 pub struct NiaWorker {}
 

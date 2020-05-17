@@ -33,13 +33,13 @@ fn read_catch_clauses(
                         .into()
                     }
                 }
-            },
+            }
             _ => {
                 return Error::invalid_argument_error(
                     "The clauses of special form `try' must be lists.",
                 )
                 .into();
-            },
+            }
         }
     }
 
@@ -123,7 +123,7 @@ pub fn _try(
                                 return Error::generic_execution_error("")
                                     .into();
                             }
-                        },
+                        }
                         Value::Cons(cons_id) => {
                             let values = interpreter
                                 .list_to_vec(cons_id)
@@ -138,13 +138,13 @@ pub fn _try(
                                 environment_id,
                                 &values,
                             )
-                        },
+                        }
                         _ => unreachable!(),
                     }
-                },
+                }
                 None => Err(error),
             }
-        },
+        }
     }
 }
 
@@ -184,6 +184,8 @@ mod tests {
                 Value::Integer(2),
             ),
         ];
+
+        utils::assert_results_are_correct(&mut interpreter, specs);
     }
 
     #[test]

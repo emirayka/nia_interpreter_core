@@ -48,7 +48,7 @@ pub fn define_function(
                 "First form of `define-function' must be a symbol.",
             )
             .into();
-        },
+        }
     };
 
     library::check_symbol_is_assignable(interpreter, function_symbol_id)?;
@@ -194,7 +194,7 @@ mod tests {
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(define-function nil #(% 2 3))",
             // todo: when new special symbols will be, add them here

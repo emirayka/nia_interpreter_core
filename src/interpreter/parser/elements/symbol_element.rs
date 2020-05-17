@@ -1,6 +1,4 @@
 use nom::alt;
-use nom::branch::alt;
-use nom::bytes::complete::tag;
 use nom::many1;
 use nom::map_res;
 use nom::named;

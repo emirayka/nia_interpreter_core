@@ -158,7 +158,7 @@ impl GarbageCollector {
 
         match interpreter.get_function_arena().get_gc_items(function_id)? {
             Some(mut gc_items) => self.items.append(&mut gc_items),
-            _ => {},
+            _ => {}
         }
 
         match interpreter
@@ -169,8 +169,8 @@ impl GarbageCollector {
                 if !self.ignored_environment_ids.contains(&gc_environment_id) {
                     self.environment_ids.push(gc_environment_id)
                 }
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(())
@@ -184,23 +184,23 @@ impl GarbageCollector {
         match value {
             Value::String(string_id) => {
                 self.retain_string_id(string_id);
-            },
+            }
             Value::Keyword(keyword_id) => {
                 self.retain_keyword_id(keyword_id);
-            },
+            }
             Value::Symbol(symbol_id) => {
                 self.retain_symbol_id(symbol_id);
-            },
+            }
             Value::Cons(cons_id) => {
                 self.retain_cons_id(interpreter, cons_id)?;
-            },
+            }
             Value::Object(object_id) => {
                 self.retain_object_id(interpreter, object_id)?;
-            },
+            }
             Value::Function(function_id) => {
                 self.retain_function_id(interpreter, function_id)?;
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         Ok(())
@@ -244,8 +244,8 @@ impl GarbageCollector {
                     if !self.ignored_environment_ids.contains(&parent_id) {
                         self.environment_ids.push(parent_id)
                     }
-                },
-                _ => {},
+                }
+                _ => {}
             }
             let mut items_to_persist = interpreter
                 .get_environment_arena()
@@ -320,7 +320,6 @@ mod tests {
     use crate::interpreter::value::SpecialFormFunction;
     use crate::utils::with_named_file;
     use crate::utils::with_tempdir;
-    use crate::utils::with_tempfile;
     use crate::utils::with_working_directory;
 
     fn builtin_test_function(
@@ -342,7 +341,6 @@ mod tests {
     #[test]
     fn collects_strings() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let string_id = interpreter
             .execute_in_main_environment("\"string\"")
@@ -358,7 +356,6 @@ mod tests {
     #[test]
     fn collects_keywords() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let keyword_id = interpreter
             .execute_in_main_environment(":some-unused-keyword")
@@ -374,7 +371,6 @@ mod tests {
     #[test]
     fn collects_symbols() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let symbol_id = interpreter
             .execute_in_main_environment("'some-not-used-long-named-symbol")
@@ -390,7 +386,6 @@ mod tests {
     #[test]
     fn collects_cons_cells() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let cons_id = interpreter
             .execute_in_main_environment("(cons 1 2)")
@@ -408,7 +403,6 @@ mod tests {
     #[test]
     fn collects_objects() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let object_id = interpreter
             .execute_in_main_environment("{}")
@@ -424,7 +418,6 @@ mod tests {
     #[test]
     fn collects_builtin_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let function =
             Function::Builtin(BuiltinFunction::new(builtin_test_function));
@@ -438,7 +431,6 @@ mod tests {
     #[test]
     fn collects_special_forms() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let function =
             Function::SpecialForm(SpecialFormFunction::new(test_special_form));
@@ -452,7 +444,6 @@ mod tests {
     #[test]
     fn collects_interpreted_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let function_id = interpreter
             .execute_in_main_environment("(fn () 1)")
@@ -468,7 +459,6 @@ mod tests {
     #[test]
     fn collects_macro_functions() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let function_id = interpreter
             .execute_in_main_environment("(function (macro () 1))")
@@ -484,7 +474,6 @@ mod tests {
     #[test]
     fn respects_cons_content() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let symbol_1 = interpreter
             .execute_in_main_environment("'some-unused-symbol-1")
@@ -521,7 +510,6 @@ mod tests {
     #[test]
     fn respects_object_contents() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let item_key = interpreter
             .execute_in_main_environment(":some-unused-keyword-1")
@@ -565,7 +553,6 @@ mod tests {
     #[test]
     fn respects_function_code() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let function_id = interpreter
             .execute_in_main_environment(
@@ -590,7 +577,6 @@ mod tests {
     #[test]
     fn respects_function_environment() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let symbol1 = interpreter
             .execute_in_main_environment("'kekurus-1")
@@ -626,7 +612,6 @@ mod tests {
     #[test]
     fn respects_function_arguments() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let symbol1 = interpreter
             .execute_in_main_environment("'kekurus-arg-1")
@@ -672,7 +657,6 @@ mod tests {
     #[test]
     fn respects_context_values() {
         let mut interpreter = Interpreter::new();
-        let root_environment = interpreter.get_main_environment_id();
 
         let symbols = vec![
             interpreter.intern_symbol_id("kekurus-closure-parameter"),

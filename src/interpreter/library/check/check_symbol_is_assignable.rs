@@ -7,11 +7,11 @@ pub fn check_symbol_is_assignable(
     symbol_id: SymbolId,
 ) -> Result<(), Error> {
     match interpreter.check_if_symbol_assignable(symbol_id) {
-        Ok(true) => {},
+        Ok(true) => {}
         Ok(false) => return Error::invalid_argument_error("").into(),
         Err(error) => {
             return Error::generic_execution_error_caused("", error).into();
-        },
+        }
     }
 
     Ok(())
@@ -41,7 +41,7 @@ mod tests {
     fn returns_error_on_constants() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
             interpreter.intern_symbol_id("nil"),
             // todo: remainder, when new special symbols will be introduced, add them here
@@ -64,7 +64,7 @@ mod tests {
     fn returns_error_on_special_symbols() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
             interpreter.intern_symbol_id("nil"),
             // todo: remainder, when new special symbols will be introduced, add them here

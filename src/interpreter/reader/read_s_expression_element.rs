@@ -37,7 +37,7 @@ fn read_object_method_invocation_s_expression(
     delimited_symbols_element: DelimitedSymbolsElement,
     s_expressions: Vec<Element>,
 ) -> Result<Value, Error> {
-    let mut s_expressions = s_expressions;
+    let s_expressions = s_expressions;
 
     let object_method_invocation =
         read_delimited_symbols_element(interpreter, delimited_symbols_element);
@@ -97,7 +97,7 @@ pub fn read_s_expression_element(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::SymbolElement;
+    use crate::interpreter::parser::SymbolElement;
 
     #[test]
     fn reads_s_expression_elements_correctly() {
@@ -163,9 +163,6 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let nil_symbol_value = interpreter.intern_nil_symbol_value();
-        let a_symbol_value = interpreter.intern_symbol_value("a");
-        let b_symbol_value = interpreter.intern_symbol_value("b");
-        let c_symbol_value = interpreter.intern_symbol_value("c");
 
         let zero_level_list = nil_symbol_value;
         let one_level_list =
@@ -174,13 +171,6 @@ mod tests {
             interpreter.make_cons_value(one_level_list, nil_symbol_value);
         let three_level_list =
             interpreter.make_cons_value(two_level_list, nil_symbol_value);
-
-        let a_symbol_element =
-            Element::Symbol(SymbolElement::new(String::from("a")));
-        let b_symbol_element =
-            Element::Symbol(SymbolElement::new(String::from("b")));
-        let c_symbol_element =
-            Element::Symbol(SymbolElement::new(String::from("c")));
 
         let zero_level_s_expression = SExpressionElement::new(vec![]);
         let one_level_s_expression =

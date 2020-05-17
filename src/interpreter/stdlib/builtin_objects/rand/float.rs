@@ -8,7 +8,7 @@ use rand;
 use rand::Rng;
 
 pub fn float(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -70,10 +70,7 @@ mod tests {
         ];
 
         for _ in 0..1000 {
-            utils::assert_results_are_equal(
-                &mut interpreter,
-                pairs.clone(),
-            );
+            utils::assert_results_are_equal(&mut interpreter, pairs.clone());
         }
     }
 

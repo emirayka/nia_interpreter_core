@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::StringId;
 use crate::interpreter::value::Value;
 
@@ -21,7 +20,8 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use std::convert::TryInto;
+
+    use crate::Interpreter;
 
     #[test]
     fn returns_correct_string() {

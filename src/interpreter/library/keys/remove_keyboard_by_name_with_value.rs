@@ -116,13 +116,13 @@ mod tests {
     fn removes_keyboard_from_registered_keyboards() {
         let mut interpreter = Interpreter::new();
 
-        let mut keyboards = vec![
+        let keyboards = vec![
             (1, "/dev/input/event3", "third"),
             (2, "/dev/input/event2", "second"),
             (3, "/dev/input/event1", "first"),
         ];
 
-        let mut specs = vec![
+        let specs = vec![
             (
                 "first",
                 r#"'((2 "/dev/input/event2" "second") (1 "/dev/input/event3" "third"))"#,
@@ -140,10 +140,13 @@ mod tests {
         for (name_for_deletion, expected) in specs {
             let value_for_deletion =
                 interpreter.intern_string_value(name_for_deletion);
+
             nia_assert_is_ok(&remove_keyboard_by_name_with_value(
                 &mut interpreter,
                 value_for_deletion,
             ));
+
+            assert_defined_keyboards_equal(&mut interpreter, expected);
         }
     }
 
@@ -151,7 +154,7 @@ mod tests {
     fn returns_generic_error_when_there_are_no_keyboard_with_name() {
         let mut interpreter = Interpreter::new();
 
-        let mut keyboards = vec![
+        let keyboards = vec![
             (1, "/dev/input/event3", "third"),
             (2, "/dev/input/event2", "second"),
             (3, "/dev/input/event1", "first"),

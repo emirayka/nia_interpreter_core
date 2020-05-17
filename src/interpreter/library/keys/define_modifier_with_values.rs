@@ -80,6 +80,7 @@ mod tests {
             library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
         let expected =
             interpreter.execute_in_main_environment(r#"'()"#).unwrap();
+        crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
         let specs = vec![
             (3, 1, "", r#"'((3 1 ()))"#),

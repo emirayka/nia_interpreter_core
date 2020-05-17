@@ -27,7 +27,6 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::value::StringId;
     #[allow(unused_imports)]
     use crate::utils;
 

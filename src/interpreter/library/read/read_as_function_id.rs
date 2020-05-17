@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::FunctionId;
 use crate::interpreter::value::Value;
 
@@ -9,7 +8,7 @@ pub fn read_as_function_id(value: Value) -> Result<FunctionId, Error> {
         _ => {
             return Error::invalid_argument_error("Expected a function.")
                 .into();
-        },
+        }
     };
 
     Ok(function_id)
@@ -22,9 +21,11 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::interpreter::library;
     #[allow(unused_imports)]
     use crate::utils;
+
+    use crate::library;
+    use crate::Interpreter;
 
     #[test]
     fn returns_correct_function() {

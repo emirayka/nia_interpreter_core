@@ -16,9 +16,9 @@ mod special_variables;
 mod stdlib;
 mod value;
 
-use evaluator::*;
-use parser::*;
-use reader::*;
+pub use evaluator::*;
+pub use parser::*;
+pub use reader::*;
 
 pub use call_stack::*;
 pub use context::*;

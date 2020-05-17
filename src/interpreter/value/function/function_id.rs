@@ -1,7 +1,5 @@
 use std::fmt;
 
-use crate::interpreter::value::Value;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FunctionId {
     id: usize,

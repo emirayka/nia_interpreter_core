@@ -66,7 +66,7 @@ mod define_optional_arguments {
                             Value::Boolean(true),
                         )?;
                     }
-                },
+                }
                 None => {
                     let value = match optional_argument.get_default() {
                         Some(default_value) => evaluate_value(
@@ -94,7 +94,7 @@ mod define_optional_arguments {
                             Value::Boolean(false),
                         )?;
                     }
-                },
+                }
             }
         }
 
@@ -245,28 +245,28 @@ pub fn define_environment_variables(
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     define_optional_arguments::define_optional_arguments(
         interpreter,
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     define_rest_argument::define_rest_argument(
         interpreter,
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     define_keyword_arguments::define_keyword_arguments(
         interpreter,
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     if iterator.peek().is_some() {
         return Error::generic_execution_error(

@@ -60,7 +60,7 @@ pub fn set(
                 );
 
                 Error::generic_execution_error_caused(message, error).into()
-            },
+            }
         },
         None => {
             let message = &format!(
@@ -69,7 +69,7 @@ pub fn set(
             );
 
             Error::generic_execution_error(message).into()
-        },
+        }
     }
 }
 
@@ -129,7 +129,7 @@ mod tests {
     fn returns_error_when_attempts_to_define_constant_or_special_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(set! nil 2)",
             // todo: when new special symbols will be, add them here

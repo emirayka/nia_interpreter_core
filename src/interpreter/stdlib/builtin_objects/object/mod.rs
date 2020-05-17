@@ -1,8 +1,7 @@
-use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::Value;
-use crate::EnvironmentId;
-use crate::{BuiltinFunctionType, EnvironmentArena};
+use crate::BuiltinFunctionType;
+use crate::Error;
+use crate::Interpreter;
+use crate::Value;
 
 use crate::library;
 

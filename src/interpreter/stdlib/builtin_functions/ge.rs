@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn ge(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -26,22 +26,22 @@ pub fn ge(
                 if int1 < int2 {
                     return Ok(Value::Boolean(false));
                 }
-            },
+            }
             (Value::Integer(int1), Value::Float(float2)) => {
                 if (int1 as f64) < float2 {
                     return Ok(Value::Boolean(false));
                 }
-            },
+            }
             (Value::Float(float1), Value::Integer(int2)) => {
                 if float1 < (int2 as f64) {
                     return Ok(Value::Boolean(false));
                 }
-            },
+            }
             (Value::Float(float1), Value::Float(float2)) => {
                 if float1 < float2 {
                     return Ok(Value::Boolean(false));
                 }
-            },
+            }
             _ => return Error::invalid_argument_error(
                 "Built-in function `>=' takes only integer or float arguments",
             )

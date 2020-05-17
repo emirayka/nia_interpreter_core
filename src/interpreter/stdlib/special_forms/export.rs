@@ -30,6 +30,7 @@ pub enum ExportType {
     ReexportObjectAsDefault(ObjectId, String),
 }
 
+#[allow(dead_code)]
 fn deep_equal_export_type(
     interpreter: &mut Interpreter,
     v1: ExportType,
@@ -83,7 +84,7 @@ fn evaluate_values(
             Value::Cons(_) => {
                 let evaluated_value = interpreter.execute_value(environment_id, value)?;
 
-                if let Value::Object(object_did) = evaluated_value {
+                if let Value::Object(_) = evaluated_value {
                     evaluated_value
                 } else {
                     return Error::invalid_argument_error(
@@ -125,6 +126,7 @@ mod read_export_type {
         )
     }
 
+    #[allow(dead_code)]
     fn check_interned_symbol_is_default(
         interpreter: &mut Interpreter,
         symbol_id: SymbolId,
@@ -169,7 +171,7 @@ mod read_export_type {
     }
 
     fn try_read_export(
-        interpreter: &mut Interpreter,
+        _interpreter: &mut Interpreter,
         values: &Vec<Value>,
     ) -> Result<ExportType, Error> {
         if values.len() != 1 {
@@ -206,7 +208,7 @@ mod read_export_type {
     }
 
     fn try_read_export_object(
-        interpreter: &mut Interpreter,
+        _interpreter: &mut Interpreter,
         values: &Vec<Value>,
     ) -> Result<ExportType, Error> {
         if values.len() != 1 {
@@ -278,6 +280,8 @@ mod read_export_type {
         }
     }
 
+    // todo: fix
+    #[allow(dead_code)]
     fn try_read_reexport_default(
         interpreter: &mut Interpreter,
         values: &Vec<Value>,
@@ -518,10 +522,15 @@ mod read_export_type {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
-        use crate::ConsId;
-        use nia_basic_assertions::{nia_assert, nia_assert_equal};
+
+        #[allow(unused_imports)]
+        use nia_basic_assertions::*;
+
         use std::convert::TryInto;
+
+        use crate::ConsId;
 
         #[test]
         fn reads_export_types_correctly() {
@@ -530,14 +539,6 @@ mod read_export_type {
             let name_symbol_id = interpreter.intern_symbol_id("name");
             let exported_name_symbol_id =
                 interpreter.intern_symbol_id("exported-name");
-
-            let name_1_symbol_id = interpreter.intern_symbol_id("name-1");
-            let exported_name_1_symbol_id =
-                interpreter.intern_symbol_id("exported-name-1");
-
-            let name_2_symbol_id = interpreter.intern_symbol_id("name-2");
-            let exported_name_2_symbol_id =
-                interpreter.intern_symbol_id("exported-name-2");
 
             let module_path_string = String::from("./module");
 
@@ -725,6 +726,8 @@ mod eval_export {
         Default(Value),
     }
 
+    // todo: fix
+    #[allow(dead_code)]
     fn try_intern_module(
         interpreter: &mut Interpreter,
         path: String,
@@ -791,8 +794,7 @@ mod eval_export {
         object_id: ObjectId,
     ) -> Result<Vec<(SymbolId, Value)>, Error> {
         let mut vector = Vec::new();
-
-        let mut object = interpreter.get_object_mut(object_id)?;
+        let object = interpreter.get_object_mut(object_id)?;
 
         for (symbol_id, value) in object.get_properties() {
             let value = value.get_value()?;
@@ -813,11 +815,11 @@ mod eval_export {
             object_id,
         )?;
 
-        let mut export_object_id = interpreter.make_object();
+        let export_object_id = interpreter.make_object();
         let export_object = interpreter.get_object_mut(export_object_id)?;
 
         for (key_symbol_id, value) in object_properties {
-            export_object.set_property(key_symbol_id, value);
+            export_object.set_property(key_symbol_id, value)?;
         }
 
         let export_object_value = export_object_id.into();
@@ -825,6 +827,8 @@ mod eval_export {
         Ok(export_object_value)
     }
 
+    // todo: fix
+    #[allow(dead_code)]
     fn get_module_environment(
         interpreter: &mut Interpreter,
         module_path: &str,
@@ -1155,7 +1159,6 @@ mod eval_export {
 
         #[allow(unused_imports)]
         use crate::utils;
-        use std::io::Write;
 
         fn assert_export_type_evaluated_correctly(
             interpreter: &mut Interpreter,
@@ -1191,7 +1194,6 @@ mod eval_export {
         fn evaluates_export_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
             let module_symbol = interpreter.intern_symbol_id("test-nia-name");
             let value = Value::Integer(1);
 
@@ -1212,7 +1214,6 @@ mod eval_export {
         fn evaluates_export_as_named_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
             let module_symbol = interpreter.intern_symbol_id("test-nia-name");
             let export_symbol =
                 interpreter.intern_symbol_id("test-nia-exported-name");
@@ -1235,7 +1236,6 @@ mod eval_export {
         fn evaluates_export_default_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
             let module_symbol = interpreter.intern_symbol_id("test-nia-name");
             let value = Value::Integer(1);
 
@@ -1256,7 +1256,6 @@ mod eval_export {
         fn evaluates_export_object_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
             let module_symbol_1 =
                 interpreter.intern_symbol_id("test-nia-name-1");
             let module_symbol_2 =
@@ -1277,16 +1276,20 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_1,
-                export_symbol_1.into(),
-            );
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_2,
-                export_symbol_2.into(),
-            );
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_1,
+                    export_symbol_1.into(),
+                )
+                .unwrap();
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_2,
+                    export_symbol_2.into(),
+                )
+                .unwrap();
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1300,8 +1303,6 @@ mod eval_export {
         fn evaluates_export_object_as_named_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
-
             let object_name_symbol =
                 interpreter.intern_symbol_id("test-nia-object");
             let module_symbol_1 =
@@ -1324,28 +1325,36 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_1,
-                export_symbol_1.into(),
-            );
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_2,
-                export_symbol_2.into(),
-            );
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_1,
+                    export_symbol_1.into(),
+                )
+                .unwrap();
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_2,
+                    export_symbol_2.into(),
+                )
+                .unwrap();
 
             let expected_object_id = interpreter.make_object();
-            interpreter.set_object_property(
-                expected_object_id,
-                export_symbol_1,
-                value_1,
-            );
-            interpreter.set_object_property(
-                expected_object_id,
-                export_symbol_2,
-                value_2,
-            );
+            interpreter
+                .set_object_property(
+                    expected_object_id,
+                    export_symbol_1,
+                    value_1,
+                )
+                .unwrap();
+            interpreter
+                .set_object_property(
+                    expected_object_id,
+                    export_symbol_2,
+                    value_2,
+                )
+                .unwrap();
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1359,10 +1368,6 @@ mod eval_export {
         fn evaluates_export_object_default_correctly() {
             let mut interpreter = Interpreter::new();
 
-            let main_environment_id = interpreter.get_main_environment_id();
-
-            let object_name_symbol =
-                interpreter.intern_symbol_id("test-nia-object");
             let module_symbol_1 =
                 interpreter.intern_symbol_id("test-nia-name-1");
             let module_symbol_2 =
@@ -1383,28 +1388,36 @@ mod eval_export {
                 .unwrap();
 
             let object_id = interpreter.make_object();
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_1,
-                export_symbol_1.into(),
-            );
-            interpreter.set_object_property(
-                object_id,
-                module_symbol_2,
-                export_symbol_2.into(),
-            );
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_1,
+                    export_symbol_1.into(),
+                )
+                .unwrap();
+            interpreter
+                .set_object_property(
+                    object_id,
+                    module_symbol_2,
+                    export_symbol_2.into(),
+                )
+                .unwrap();
 
             let expected_object_id = interpreter.make_object();
-            interpreter.set_object_property(
-                expected_object_id,
-                export_symbol_1,
-                value_1,
-            );
-            interpreter.set_object_property(
-                expected_object_id,
-                export_symbol_2,
-                value_2,
-            );
+            interpreter
+                .set_object_property(
+                    expected_object_id,
+                    export_symbol_1,
+                    value_1,
+                )
+                .unwrap();
+            interpreter
+                .set_object_property(
+                    expected_object_id,
+                    export_symbol_2,
+                    value_2,
+                )
+                .unwrap();
 
             assert_export_type_evaluated_correctly(
                 &mut interpreter,
@@ -1421,14 +1434,9 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
                     let module_symbol =
                         interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
-
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1447,14 +1455,7 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-                    let module_symbol =
-                        interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
-
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1473,16 +1474,13 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
                     let module_symbol =
                         interpreter.intern_symbol_id("test-nia-name");
+
                     let export_symbol =
                         interpreter.intern_symbol_id("test-nia-exported-name");
-                    let value = Value::Integer(1);
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
+                    let value = Value::Integer(1);
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1505,14 +1503,9 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
                     let module_symbol =
                         interpreter.intern_symbol_id("test-nia-name");
                     let value = Value::Integer(1);
-
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1537,9 +1530,6 @@ mod eval_export {
         (export test-nia-name-2)"#,
                 |module_path| {
                     let mut interpreter = Interpreter::new();
-
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
 
                     let module_symbol_1 =
                         interpreter.intern_symbol_id("test-nia-name-1");
@@ -1572,9 +1562,6 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
                     let object_name_symbol =
                         interpreter.intern_symbol_id("test-nia-object");
                     let module_symbol_1 =
@@ -1585,16 +1572,20 @@ mod eval_export {
                     let value_2 = Value::Integer(2);
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(
-                        expected_object_id,
-                        module_symbol_1,
-                        value_1,
-                    );
-                    interpreter.set_object_property(
-                        expected_object_id,
-                        module_symbol_2,
-                        value_2,
-                    );
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            module_symbol_1,
+                            value_1,
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            module_symbol_2,
+                            value_2,
+                        )
+                        .unwrap();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1620,9 +1611,6 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
                     let module_symbol_1 =
                         interpreter.intern_symbol_id("test-nia-name-1");
                     let module_symbol_2 =
@@ -1631,16 +1619,20 @@ mod eval_export {
                     let value_2 = Value::Integer(2);
 
                     let expected_object_id = interpreter.make_object();
-                    interpreter.set_object_property(
-                        expected_object_id,
-                        module_symbol_1,
-                        value_1,
-                    );
-                    interpreter.set_object_property(
-                        expected_object_id,
-                        module_symbol_2,
-                        value_2,
-                    );
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            module_symbol_1,
+                            value_1,
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            expected_object_id,
+                            module_symbol_2,
+                            value_2,
+                        )
+                        .unwrap();
 
                     let expected_object_value = expected_object_id.into();
 
@@ -1665,8 +1657,6 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
                     let module_symbol_1 =
                         interpreter.intern_symbol_id("test-nia-name-1");
                     let module_symbol_2 =
@@ -1678,20 +1668,21 @@ mod eval_export {
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
                     let object_id = interpreter.make_object();
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_1,
-                        export_symbol_1.into(),
-                    );
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_2,
-                        export_symbol_2.into(),
-                    );
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_1,
+                            export_symbol_1.into(),
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_2,
+                            export_symbol_2.into(),
+                        )
+                        .unwrap();
 
                     assert_export_type_evaluated_correctly(
                         &mut interpreter,
@@ -1717,9 +1708,6 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
                     let object_name_symbol =
                         interpreter.intern_symbol_id("test-nia-object");
                     let module_symbol_1 =
@@ -1733,20 +1721,21 @@ mod eval_export {
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
                     let object_id = interpreter.make_object();
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_1,
-                        export_symbol_1.into(),
-                    );
-                    interpreter.set_object_property(
-                        object_id,
-                        module_symbol_2,
-                        export_symbol_2.into(),
-                    );
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_1,
+                            export_symbol_1.into(),
+                        )
+                        .unwrap();
+                    interpreter
+                        .set_object_property(
+                            object_id,
+                            module_symbol_2,
+                            export_symbol_2.into(),
+                        )
+                        .unwrap();
 
                     let expected_object_id = interpreter.make_object();
                     interpreter
@@ -1791,11 +1780,6 @@ mod eval_export {
                 |module_path| {
                     let mut interpreter = Interpreter::new();
 
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
-
-                    let object_name_symbol =
-                        interpreter.intern_symbol_id("test-nia-object");
                     let module_symbol_1 =
                         interpreter.intern_symbol_id("test-nia-name-1");
                     let module_symbol_2 =
@@ -1806,9 +1790,6 @@ mod eval_export {
                         .intern_symbol_id("test-nia-exported-name-2");
                     let value_1 = Value::Integer(1);
                     let value_2 = Value::Integer(2);
-
-                    let main_environment_id =
-                        interpreter.get_main_environment_id();
 
                     let object_id = interpreter.make_object();
                     interpreter
@@ -1885,7 +1866,7 @@ mod tests {
     #[test]
     #[ignore]
     fn exports_correctly() {
-        let mut specs = vec![
+        let specs = vec![
             (
                 r#""#,
                 r#"(defc name 1)

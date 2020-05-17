@@ -198,11 +198,12 @@ mod tests {
         utils::assert_results_are_correct(&mut interpreter, pairs);
     }
 
+    #[test]
     fn returns_error_when_first_symbol_of_a_definition_is_constant_or_special_symbol(
     ) {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(mlet* ((nil 2)) nil)",
             // todo: when new special symbols will be, add them here
@@ -321,9 +322,6 @@ mod tests {
 
         let code_vector = vec!["(mlet* ((sym-1 () 1) (sym-1 () 2)) (sym-1))"];
 
-        utils::assert_results_are_just_errors(
-            &mut interpreter,
-            code_vector,
-        );
+        utils::assert_results_are_just_errors(&mut interpreter, code_vector);
     }
 }

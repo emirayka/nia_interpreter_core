@@ -19,9 +19,8 @@ pub fn send_mouse_move_by(
 
     let mut values = values;
 
-    let mut move_by_x = library::read_as_i64(values.remove(0))?;
-
-    let mut move_by_y = library::read_as_i64(values.remove(0))?;
+    let move_by_x = library::read_as_i64(values.remove(0))?;
+    let move_by_y = library::read_as_i64(values.remove(0))?;
 
     let mouse_move_by_symbol_value =
         interpreter.intern_symbol_value("mouse-move-by");

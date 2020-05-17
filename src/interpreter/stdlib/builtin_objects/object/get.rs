@@ -41,7 +41,7 @@ pub fn get(
             );
 
             return Error::generic_execution_error(message).into();
-        },
+        }
     }
 }
 
@@ -77,7 +77,7 @@ mod tests {
     fn returns_invalid_argument_when_attempt_get_item_by_special_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
             "(let ((obj {:item 1})) (object:get obj 'nil))",
             // todo: remainder, when new special symbols will be introduced, add them here
@@ -149,9 +149,6 @@ mod tests {
         let code_vector =
             vec!["(let ((obj {:item 1})) (object:get obj 'not-item))"];
 
-        utils::assert_results_are_just_errors(
-            &mut interpreter,
-            code_vector,
-        );
+        utils::assert_results_are_just_errors(&mut interpreter, code_vector);
     }
 }

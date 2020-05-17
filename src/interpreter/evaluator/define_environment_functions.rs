@@ -66,7 +66,7 @@ mod define_optional_arguments {
                             Value::Boolean(true),
                         )?;
                     }
-                },
+                }
                 None => {
                     let value = match optional_argument.get_default() {
                         Some(default_value) => evaluate_value(
@@ -94,7 +94,7 @@ mod define_optional_arguments {
                             Value::Boolean(false),
                         )?;
                     }
-                },
+                }
             }
         }
 
@@ -115,14 +115,14 @@ pub fn define_environment_functions(
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     define_optional_arguments::define_optional_arguments(
         interpreter,
         execution_environment_id,
         arguments,
         &mut iterator,
-    );
+    )?;
 
     Ok(())
 }

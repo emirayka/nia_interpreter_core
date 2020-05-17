@@ -1,16 +1,8 @@
-use std::convert::TryInto;
-
 use crate::EnvironmentId;
 use crate::Error;
 use crate::Interpreter;
 use crate::ObjectId;
-use crate::SymbolId;
 use crate::Value;
-
-use crate::OBJECT_VALUE_WRAPPER_FLAG_CONFIGURABLE;
-use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
-use crate::OBJECT_VALUE_WRAPPER_FLAG_INTERNABLE;
-use crate::OBJECT_VALUE_WRAPPER_FLAG_WRITABLE;
 
 use crate::library;
 

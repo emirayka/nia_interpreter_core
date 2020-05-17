@@ -13,7 +13,7 @@ fn extract_property_descriptor_items(
     property_symbol_id: SymbolId,
 ) -> Result<(Value, Value, Value, Value, Value, Value), Error> {
     let name = property_symbol_id.into();
-    let mut object = interpreter.get_object_mut(object_id)?;
+    let object = interpreter.get_object_mut(object_id)?;
 
     if !object.has_property(property_symbol_id) {
         return Error::generic_execution_error(

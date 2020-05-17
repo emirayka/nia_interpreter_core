@@ -45,23 +45,19 @@ mod tests {
 
     #[cfg(test)]
     mod object {
+        #[allow(unused_imports)]
         use super::*;
+
+        use std::convert::TryInto;
 
         use crate::interpreter::parser::BooleanElement;
         use crate::interpreter::parser::Element;
         use crate::interpreter::parser::FloatElement;
         use crate::interpreter::parser::IntegerElement;
         use crate::interpreter::parser::KeywordElement;
-        use crate::interpreter::parser::StringElement;
-        use crate::interpreter::parser::SymbolElement;
-
-        use crate::BuiltinFunction;
-        use crate::EnvironmentId;
-        use crate::Function;
 
         #[allow(unused_imports)]
         use nia_basic_assertions::*;
-        use std::convert::TryInto;
 
         #[test]
         fn reads_object_element_correctly() {

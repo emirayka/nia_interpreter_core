@@ -137,7 +137,7 @@ impl ObjectArena {
             None => match object.get_prototype() {
                 Some(prototype_id) => {
                     self.get_property_value(prototype_id, property_symbol_id)
-                },
+                }
                 None => Ok(None),
             },
         }
@@ -467,7 +467,6 @@ mod tests {
     #[cfg(test)]
     mod freeze {
         use super::*;
-        use crate::interpreter::value::value::Value::Symbol;
 
         #[test]
         fn freezes_object() {
@@ -863,7 +862,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.get_property_flags(object_id, property_symbol_id),
@@ -1032,7 +1030,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.get_property_flags(object_id, property_symbol_id),
@@ -1053,7 +1050,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.get_property_flags(object_id, property_symbol_id),
@@ -1073,9 +1069,6 @@ mod tests {
     #[cfg(test)]
     mod set_property_internable__is_property_internable {
         use super::*;
-
-        use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_internable_flag() {
@@ -1223,9 +1216,6 @@ mod tests {
     mod set_property_writable__is_property_writable {
         use super::*;
 
-        use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
-
         #[test]
         fn sets_and_gets_writable_flag() {
             let mut arena = ObjectArena::new();
@@ -1318,7 +1308,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.is_property_writable(object_id, property_symbol_id),
@@ -1372,9 +1361,6 @@ mod tests {
     #[cfg(test)]
     mod set_property_enumerable__is_property_enumerable {
         use super::*;
-
-        use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_enumerable_flag() {
@@ -1468,7 +1454,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.is_property_enumerable(object_id, property_symbol_id),
@@ -1522,9 +1507,6 @@ mod tests {
     #[cfg(test)]
     mod set_property_configurable__is_property_configurable {
         use super::*;
-
-        use crate::OBJECT_VALUE_WRAPPER_FLAGS_NONE;
-        use crate::OBJECT_VALUE_WRAPPER_FLAG_ENUMERABLE;
 
         #[test]
         fn sets_and_gets_configurable_flag() {
@@ -1618,7 +1600,6 @@ mod tests {
             let object_id = arena.make();
 
             let property_symbol_id = SymbolId::new(0);
-            let value = Value::Integer(1);
 
             nia_assert_is_err(
                 &arena.is_property_configurable(object_id, property_symbol_id),

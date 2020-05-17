@@ -1,10 +1,10 @@
 use crate::interpreter::evaluator::evaluate_s_expression_function_invocation::evaluate_s_expression_function_invocation;
 use crate::interpreter::evaluator::evaluate_s_expression_keyword_invocation::evaluate_s_expression_keyword;
+use crate::ConsId;
 use crate::EnvironmentId;
 use crate::Error;
 use crate::Interpreter;
 use crate::Value;
-use crate::{CallStackItem, ConsId};
 
 pub fn evaluate_s_expression(
     interpreter: &mut Interpreter,

@@ -1,8 +1,6 @@
 use crate::EnvironmentId;
 use crate::Error;
 use crate::Interpreter;
-use crate::ObjectId;
-use crate::SymbolId;
 use crate::Value;
 
 use crate::library;

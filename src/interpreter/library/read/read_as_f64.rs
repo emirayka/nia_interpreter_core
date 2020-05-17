@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn read_as_f64(value: Value) -> Result<f64, Error> {
@@ -19,10 +18,10 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::Interpreter;
+
     #[test]
     fn returns_correct_float() {
-        let mut interpreter = Interpreter::new();
-
         let value = Value::Float(3.0);
         let result = read_as_f64(value);
 

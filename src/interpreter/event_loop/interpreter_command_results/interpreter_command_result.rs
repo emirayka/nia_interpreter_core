@@ -1,5 +1,4 @@
 use crate::interpreter::event_loop::interpreter_command_results::*;
-use crate::Error;
 
 #[derive(Clone, Debug)]
 pub enum NiaInterpreterCommandResult {

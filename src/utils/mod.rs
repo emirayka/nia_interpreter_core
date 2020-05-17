@@ -51,10 +51,10 @@ pub fn resolve_path_with_current_module_path(
     }
 
     let mut resolved_path = PathBuf::from(current_module_path);
-    let mut path = PathBuf::from(path);
+    let pathbuf = PathBuf::from(path);
 
-    if path.is_absolute() {
-        let path = path
+    if pathbuf.is_absolute() {
+        let path = pathbuf
             .to_str()
             .ok_or_else(|| {
                 Error::generic_execution_error("Cannot resolve path.")
@@ -65,7 +65,7 @@ pub fn resolve_path_with_current_module_path(
     }
 
     resolved_path.pop();
-    resolved_path.push(path);
+    resolved_path.push(pathbuf);
 
     let resolved_path = resolved_path
         .to_str()

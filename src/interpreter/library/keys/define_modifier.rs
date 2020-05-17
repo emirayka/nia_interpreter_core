@@ -43,10 +43,8 @@ mod tests {
     fn defines_new_modifiers() {
         let mut interpreter = Interpreter::new();
 
-        let result =
-            library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
-        let expected =
-            interpreter.execute_in_main_environment(r#"'()"#).unwrap();
+        library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
+        interpreter.execute_in_main_environment(r#"'()"#).unwrap();
 
         let specs = vec![
             (3, 1, "", r#"'((3 1 ()))"#),

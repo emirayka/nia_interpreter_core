@@ -1,6 +1,5 @@
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
-use crate::interpreter::value::Value;
 
 use crate::library;
 
@@ -46,7 +45,7 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use std::panic::resume_unwind;
+    use crate::Value;
 
     const EMPTY_LIST_VARIABLE_SYMBOL_NAME: &'static str = "test-list-symbol";
 

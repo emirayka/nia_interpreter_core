@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn f(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {

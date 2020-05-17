@@ -307,6 +307,7 @@ mod unless {
 mod cr {
     use super::*;
 
+    #[allow(dead_code)]
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         interpreter.execute_in_root_environment(
             r#"

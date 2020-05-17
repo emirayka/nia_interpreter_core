@@ -16,6 +16,8 @@ pub enum ImportType {
     ImportAllAsNamed(SymbolId, String),
 }
 
+// todo: fix
+#[allow(dead_code)]
 fn deep_equal_import_type(
     interpreter: &mut Interpreter,
     v1: ImportType,
@@ -65,7 +67,7 @@ fn evaluate_values(
             Value::Cons(_) => {
                 let evaluated_value = interpreter.execute_value(environment_id, value)?;
 
-                if let Value::Object(object_did) = evaluated_value {
+                if let Value::Object(_) = evaluated_value {
                     evaluated_value
                 } else {
                     return Error::invalid_argument_error(
@@ -317,10 +319,15 @@ mod read_import_type {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
-        use crate::ConsId;
-        use nia_basic_assertions::{nia_assert, nia_assert_equal};
+
+        #[allow(unused_imports)]
+        use nia_basic_assertions::*;
+
         use std::convert::TryInto;
+
+        use crate::ConsId;
 
         #[test]
         fn reads_import_types_correctly() {
@@ -501,7 +508,6 @@ mod eval_import {
         exports: Vec<(SymbolId, Value)>,
     ) -> Result<Value, Error> {
         let object_id = interpreter.make_object();
-        let mut object = interpreter.get_object(object_id)?;
 
         for (variable_symbol_id, value) in exports {
             interpreter.set_object_property(
@@ -542,7 +548,7 @@ mod eval_import {
 
     fn read_importation_vector(
         interpreter: &mut Interpreter,
-        current_module_environment: EnvironmentId,
+        _current_module_environment: EnvironmentId,
         import_type: ImportType,
     ) -> Result<Vec<Import>, Error> {
         let importation_vector = match import_type {
@@ -647,7 +653,6 @@ mod eval_import {
 
         #[allow(unused_imports)]
         use crate::utils;
-        use std::io::Write;
 
         #[test]
         fn evaluates_import_correctly() {
@@ -1052,7 +1057,7 @@ mod tests {
     #[test]
     #[ignore]
     fn imports_correctly() {
-        let mut specs = vec![
+        let specs = vec![
             (
                 r#"(defv nia-test 1)"#,
                 r#""#,

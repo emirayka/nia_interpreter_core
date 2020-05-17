@@ -1,3 +1,4 @@
+mod define_action_execute_code;
 mod define_device;
 mod define_device_with_values;
 mod define_modifier;
@@ -21,6 +22,7 @@ mod remove_keyboard_by_path_with_value;
 mod remove_modifier;
 mod remove_modifier_with_values;
 
+pub use define_action_execute_code::*;
 pub use define_device::*;
 pub use define_device_with_values::*;
 pub use define_modifier::*;

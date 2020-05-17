@@ -91,7 +91,7 @@ impl ModuleArena {
     pub fn get_gc_environments(&self) -> Vec<EnvironmentId> {
         self.modules
             .iter()
-            .map(|(module_id, module)| module.get_environment_id())
+            .map(|(_, module)| module.get_environment_id())
             .collect()
     }
 }

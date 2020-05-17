@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn read_as_bool(value: Value) -> Result<bool, Error> {
@@ -11,6 +10,7 @@ pub fn read_as_bool(value: Value) -> Result<bool, Error> {
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[allow(unused_imports)]
@@ -19,10 +19,10 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::Interpreter;
+
     #[test]
     fn returns_correct_int() {
-        let mut interpreter = Interpreter::new();
-
         let pairs =
             vec![(Value::Boolean(true), true), (Value::Boolean(false), false)];
 

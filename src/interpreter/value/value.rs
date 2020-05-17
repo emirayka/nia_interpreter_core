@@ -125,3 +125,26 @@ make_try_from_value_implementation!(
 make_try_from_value_implementation!(ObjectId, Value::Object, "Value::Object");
 make_try_from_value_implementation!(StringId, Value::String, "Value::String");
 make_try_from_value_implementation!(SymbolId, Value::Symbol, "Value::Symbol");
+
+macro_rules! make_value_type_predicate {
+    ($name:ident, $variant:path) => {
+        impl Value {
+            pub fn $name(&self) -> bool {
+                match self {
+                    $variant(_) => true,
+                    _ => false,
+                }
+            }
+        }
+    };
+}
+
+make_value_type_predicate!(is_integer, Value::Integer);
+make_value_type_predicate!(is_float, Value::Float);
+make_value_type_predicate!(is_boolean, Value::Boolean);
+make_value_type_predicate!(is_string, Value::String);
+make_value_type_predicate!(is_keyword, Value::Keyword);
+make_value_type_predicate!(is_symbol, Value::Symbol);
+make_value_type_predicate!(is_cons, Value::Cons);
+make_value_type_predicate!(is_object, Value::Object);
+make_value_type_predicate!(is_function, Value::Function);

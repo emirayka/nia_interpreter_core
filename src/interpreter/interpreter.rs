@@ -1,11 +1,8 @@
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::path::Path;
-use std::path::PathBuf;
 
 use crate::interpreter::evaluator::evaluate_value;
 use crate::interpreter::evaluator::evaluate_values;
-use crate::interpreter::garbage_collector::collect_garbage;
 use crate::interpreter::parser::parse;
 use crate::interpreter::reader::read_elements;
 
@@ -19,13 +16,11 @@ use crate::EnvironmentId;
 use crate::Error;
 use crate::Function;
 use crate::FunctionArena;
-use crate::FunctionArguments;
 use crate::FunctionId;
 use crate::InterpretedFunction;
 use crate::Keyword;
 use crate::KeywordArena;
 use crate::KeywordId;
-use crate::MacroFunction;
 use crate::Module;
 use crate::ModuleArena;
 use crate::ModuleId;
@@ -34,7 +29,6 @@ use crate::Object;
 use crate::ObjectArena;
 use crate::ObjectId;
 use crate::ObjectValueWrapper;
-use crate::SpecialFormFunction;
 use crate::SpecialVariableFunction;
 use crate::StringArena;
 use crate::StringId;
@@ -47,8 +41,6 @@ use crate::interpreter::evaluator::evaluate_builtin_function_invocation;
 use crate::interpreter::evaluator::evaluate_interpreted_function_invocation;
 
 use crate::interpreter::stdlib::infect_stdlib;
-
-use crate::library;
 
 #[derive(Clone)]
 pub struct Interpreter {
@@ -989,7 +981,7 @@ impl Interpreter {
         })?;
 
         let values =
-            read_elements(self, code.get_elements()).map_err(|error| {
+            read_elements(self, code.get_elements()).map_err(|_| {
                 Error::generic_execution_error("Error reading module.")
             })?;
 
@@ -1187,7 +1179,7 @@ impl Interpreter {
         value: Value,
     ) -> Result<Value, Error> {
         match value {
-            Value::Function(function_id) => {
+            Value::Function(_) => {
                 let nil = self.intern_nil_symbol_value();
                 let function_invocation_cons = self.make_cons_value(value, nil);
                 let root_environment_id = self.get_main_environment_id();
@@ -1230,9 +1222,14 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::FunctionArguments;
+
     #[cfg(test)]
     mod evaluation {
         use super::*;
+        use crate::SpecialFormFunction;
+
+        use std::convert::TryInto;
 
         macro_rules! assert_execution_result_eq {
             ($expected:expr, $code:expr) => {

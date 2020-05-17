@@ -99,7 +99,7 @@ pub fn read_prefixed_element(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::IntegerElement;
+    use crate::interpreter::parser::IntegerElement;
 
     #[test]
     fn reads_prefixed_value_correctly() {

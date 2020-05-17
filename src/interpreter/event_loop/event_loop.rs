@@ -5,31 +5,37 @@ use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
-use nia_events::ButtonId;
 use nia_events::Command;
-use nia_events::KeyId;
 use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 
+use crate::NiaDefineDeviceCommand;
+use crate::NiaDefineDeviceCommandResult;
+use crate::NiaDefineModifierCommand;
+use crate::NiaDefineModifierCommandResult;
+use crate::NiaExecuteCodeCommand;
+use crate::NiaExecuteCodeCommandResult;
+use crate::NiaGetDefinedModifiersCommand;
+use crate::NiaGetDefinedModifiersCommandResult;
 use crate::NiaInterpreterCommand;
 use crate::NiaInterpreterCommandResult;
+use crate::NiaRemoveDeviceByNameCommand;
+use crate::NiaRemoveDeviceByNameCommandResult;
+use crate::NiaRemoveDeviceByPathCommand;
+use crate::NiaRemoveDeviceByPathCommandResult;
+use crate::NiaRemoveModifierCommand;
+use crate::NiaRemoveModifierCommandResult;
+
+use crate::Action;
+use crate::EventLoopHandle;
+use crate::NiaActionListener;
+use crate::NiaActionListenerHandle;
 use crate::NiaWorker;
+
+use crate::Error;
+use crate::Interpreter;
 use crate::Value;
-use crate::{Action, NiaActionListenerHandle};
-use crate::{
-    Error, NiaDefineDeviceCommand, NiaExecuteCodeCommand,
-    NiaExecuteCodeCommandResult,
-};
-use crate::{EventLoopHandle, NiaDefineModifierCommand};
-use crate::{
-    Interpreter, NiaDefineDeviceCommandResult, NiaDefineModifierCommandResult,
-    NiaGetDefinedModifiersCommand, NiaRemoveDeviceByNameCommand,
-    NiaRemoveDeviceByNameCommandResult, NiaRemoveDeviceByPathCommand,
-    NiaRemoveDeviceByPathCommandResult, NiaRemoveModifierCommand,
-    NiaRemoveModifierCommandResult,
-};
-use crate::{NiaActionListener, NiaGetDefinedModifiersCommandResult};
 
 use crate::interpreter::garbage_collector::collect_garbage;
 use crate::library;
@@ -167,7 +173,7 @@ mod send_events {
                     .into();
                 }
             }
-            v => {
+            _ => {
                 return Error::invalid_argument_error(
                     "Unknown value passed as wait.",
                 )
@@ -300,7 +306,7 @@ impl EventLoop {
 
     fn do_command_get_defined_modifiers(
         interpreter: &mut Interpreter,
-        command: NiaGetDefinedModifiersCommand,
+        _command: NiaGetDefinedModifiersCommand,
     ) -> NiaInterpreterCommandResult {
         let result = library::get_defined_modifiers(interpreter);
 
@@ -438,12 +444,12 @@ impl EventLoop {
                 if interpreter.is_listening()
                     && action_listener_handle.is_none()
                 {
-                    let mut action_listener =
+                    let action_listener =
                         match NiaActionListener::from_interpreter(
                             &mut interpreter,
                         ) {
                             Ok(action_listener) => action_listener,
-                            Err(error) => {
+                            Err(_error) => {
                                 break;
                             }
                         };
@@ -453,7 +459,7 @@ impl EventLoop {
                         Ok(ok) => {
                             action_listener_handle = Some(ok);
                         }
-                        Err(error) => {
+                        Err(_error) => {
                             break;
                         }
                     }

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::EnvironmentId;
-use crate::Interpreter;
 use crate::Value;
 use crate::{Error, SymbolId};
 
@@ -68,12 +67,14 @@ impl Module {
                     "Default export was already defined.",
                 )
                 .into();
-            },
+            }
             None => {
                 self.default_export = Some(value);
-            },
+            }
         }
 
         Ok(())
     }
 }
+
+// todo: tests

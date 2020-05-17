@@ -179,7 +179,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(flet* ((nil 2)) nil)",
             // todo: when new special symbols will be, add them here
@@ -298,9 +298,6 @@ mod tests {
 
         let code_vector = vec!["(flet* ((sym-1 () 1) (sym-1 () 2)) (sym-1))"];
 
-        utils::assert_results_are_just_errors(
-            &mut interpreter,
-            code_vector,
-        );
+        utils::assert_results_are_just_errors(&mut interpreter, code_vector);
     }
 }

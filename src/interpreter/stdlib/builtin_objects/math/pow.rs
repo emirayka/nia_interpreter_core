@@ -40,7 +40,7 @@ fn checked_int_pow(a: i64, b: i64) -> Option<Value> {
 }
 
 pub fn pow(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -63,16 +63,16 @@ pub fn pow(
                 ))
                 .into(),
             }
-        },
+        }
         (Value::Integer(int1), Value::Float(float2)) => {
             Ok(Value::Float((int1 as f64).powf(float2)))
-        },
+        }
         (Value::Float(float1), Value::Integer(int2)) => {
             Ok(Value::Float(float1.powf(int2 as f64)))
-        },
+        }
         (Value::Float(float1), Value::Float(float2)) => {
             Ok(Value::Float(float1.powf(float2)))
-        },
+        }
         _ => return Error::invalid_argument_error(
             "Built-in function `math:pow' must take either integers or float.",
         )

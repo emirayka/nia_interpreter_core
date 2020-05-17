@@ -147,7 +147,6 @@ mod tests {
 
         let device_id = Value::Integer(3);
         let key_code = Value::Integer(24);
-        let modifier_alias = interpreter.intern_string_value("mod");
 
         let result =
             remove_modifier_with_values(&mut interpreter, device_id, key_code);

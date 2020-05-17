@@ -18,9 +18,9 @@ pub fn freeze_mark(
     }
 
     let mut values = values;
-    let object_id = library::read_as_object_id(values.remove(0))?;
 
-    let mut object = interpreter.get_object_mut(object_id)?;
+    let object_id = library::read_as_object_id(values.remove(0))?;
+    let object = interpreter.get_object_mut(object_id)?;
 
     object.freeze()?;
 

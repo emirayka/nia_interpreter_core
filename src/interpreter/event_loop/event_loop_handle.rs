@@ -1,6 +1,5 @@
 use std::sync::mpsc;
 
-use crate::Error;
 use crate::NiaInterpreterCommand;
 use crate::NiaInterpreterCommandResult;
 

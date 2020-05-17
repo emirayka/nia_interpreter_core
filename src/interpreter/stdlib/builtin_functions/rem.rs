@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn rem(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -26,7 +26,7 @@ pub fn rem(
                         int1, int2
                     ))
                     .into();
-                },
+                }
                 _ => Value::Integer(int1 % int2),
             },
             (Value::Integer(int1), Value::Float(float2)) => {
@@ -39,7 +39,7 @@ pub fn rem(
                 } else {
                     Value::Float((int1 as f64) % float2)
                 }
-            },
+            }
             (Value::Float(float1), Value::Integer(int2)) => match int2 {
                 0 => {
                     return Error::zero_division_error(&format!(
@@ -47,7 +47,7 @@ pub fn rem(
                         float1, int2
                     ))
                     .into();
-                },
+                }
                 _ => Value::Float(float1 % (int2 as f64)),
             },
             (Value::Float(float1), Value::Float(float2)) => {
@@ -60,7 +60,7 @@ pub fn rem(
                 } else {
                     Value::Float(float1 % float2)
                 }
-            },
+            }
             _ => return Error::invalid_argument_error(
                 "Built-in function `%' must take only integer or float values.",
             )

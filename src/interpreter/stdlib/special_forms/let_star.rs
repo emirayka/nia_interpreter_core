@@ -138,7 +138,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(let* ((nil 2)) nil)",
             // todo: when new special symbols will be, add them here
@@ -160,7 +160,7 @@ mod tests {
     fn returns_error_when_definition_is_constant_or_special_symbol() {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
             "(let* (nil 2) nil)",
             // todo: remainder, when new special symbols will be introduced, add them here

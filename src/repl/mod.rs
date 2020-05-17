@@ -1,13 +1,12 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
-use std::path::Path;
 
-use crate::interpreter::ErrorKind;
 use crate::interpreter::Interpreter;
-use crate::{
-    EventLoop, NiaExecuteCodeCommand, NiaExecuteCodeCommandResult,
-    NiaInterpreterCommand, NiaInterpreterCommandResult,
-};
+use crate::EventLoop;
+use crate::NiaExecuteCodeCommand;
+use crate::NiaExecuteCodeCommandResult;
+use crate::NiaInterpreterCommand;
+use crate::NiaInterpreterCommandResult;
 
 const HISTORY_FILE_NAME: &'static str = ".nia-interpreter.history";
 
@@ -22,16 +21,16 @@ fn get_history_file_path() -> Option<String> {
 }
 
 pub fn run() -> Result<(), std::io::Error> {
+    let interpreter = Interpreter::new();
     let history_file = get_history_file_path();
-
-    let mut interpreter = Interpreter::new();
 
     let event_loop_handle = EventLoop::run_event_loop(interpreter);
 
     let mut rl = Editor::<()>::new();
 
     if let Some(history) = &history_file {
-        rl.load_history(history);
+        rl.load_history(history)
+            .expect("Failure reading history file.");
     } else {
         println!("History file can't be constructed.");
     }

@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::KeywordId;
 use crate::interpreter::value::Value;
 
@@ -19,17 +18,16 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use std::convert::TryInto;
-
     #[allow(unused_imports)]
     use crate::utils;
+
+    use crate::Interpreter;
 
     #[test]
     fn returns_correct_keyword_id() {
         let mut interpreter = Interpreter::new();
 
-        let expected =
-            interpreter.intern_keyword_value("test").try_into().unwrap();
+        let expected = interpreter.intern_keyword_id("test");
 
         let value = Value::Keyword(expected);
 

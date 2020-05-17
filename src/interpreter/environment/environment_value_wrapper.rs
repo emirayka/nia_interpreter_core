@@ -128,7 +128,7 @@ mod tests {
         use super::*;
         #[test]
         fn gets_value() {
-            let mut value_wrapper = EnvironmentValueWrapper::with_flags(
+            let value_wrapper = EnvironmentValueWrapper::with_flags(
                 Value::Integer(1),
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT,
             );
@@ -138,7 +138,7 @@ mod tests {
 
         #[test]
         fn returns_error_during_internation_of_not_internable_binding() {
-            let mut value_wrapper = EnvironmentValueWrapper::with_flags(
+            let value_wrapper = EnvironmentValueWrapper::with_flags(
                 Value::Integer(1),
                 ENVIRONMENT_VALUE_WRAPPER_FLAG_DEFAULT
                     ^ ENVIRONMENT_VALUE_WRAPPER_FLAG_INTERNABLE,

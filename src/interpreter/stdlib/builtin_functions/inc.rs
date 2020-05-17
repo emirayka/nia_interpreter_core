@@ -4,7 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn inc(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     _environment: EnvironmentId,
     values: Vec<Value>,
 ) -> Result<Value, Error> {
@@ -22,14 +22,14 @@ pub fn inc(
             Some(value) => Ok(Value::Integer(value)),
             _ => {
                 Error::overflow_error("Cannot increment maximal value.").into()
-            },
+            }
         },
         _ => {
             return Error::invalid_argument_error(
                 "Built-in function `inc' takes one integer value.",
             )
             .into();
-        },
+        }
     }
 }
 

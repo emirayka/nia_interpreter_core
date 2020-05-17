@@ -104,13 +104,13 @@ fn set_definition(
                     symbol_id,
                 )
             }
-        },
+        }
         _ => {
             return Error::invalid_argument_error(
                 "Invalid `let*' definitions.",
             )
             .into();
-        },
+        }
     }
 }
 
@@ -247,7 +247,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: when new constants will be, add them here
             "(let ((nil 2)) nil)",
             // todo: when new special symbols will be, add them here
@@ -270,7 +270,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let mut specs = vec![
+        let specs = vec![
             // todo: remainder, when new constants will be introduced, add them here
             "(let (nil 2) nil)",
             // todo: remainder, when new special symbols will be introduced, add them here

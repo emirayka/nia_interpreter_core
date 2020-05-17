@@ -69,6 +69,16 @@ mod tests {
             (interpreter.intern_symbol_id("wat"), "wat", 1),
         ];
 
-        for spec in specs {}
+        for (symbol_id, expected_symbol_name, expected_symbol_gensym_id) in
+            specs
+        {
+            let result = check_symbol_is_expected(
+                &mut interpreter,
+                symbol_id,
+                expected_symbol_name,
+                expected_symbol_gensym_id,
+            );
+            nia_assert_is_err(&result);
+        }
     }
 }
