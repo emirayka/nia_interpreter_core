@@ -9,6 +9,9 @@ pub enum NiaInterpreterCommandResult {
     RemoveDeviceByName(NiaRemoveDeviceByNameCommandResult),
     RemoveDeviceByPath(NiaRemoveDeviceByPathCommandResult),
     RemoveModifier(NiaRemoveModifierCommandResult),
+    GetDefinedActions(NiaGetDefinedActionsCommandResult),
+    DefineAction(NiaDefineActionCommandResult),
+    RemoveAction(NiaRemoveActionCommandResult),
 }
 
 macro_rules! make_from_impl {
@@ -48,6 +51,18 @@ make_from_impl!(
 make_from_impl!(
     NiaRemoveModifierCommandResult,
     NiaInterpreterCommandResult::RemoveModifier
+);
+make_from_impl!(
+    NiaGetDefinedActionsCommandResult,
+    NiaInterpreterCommandResult::GetDefinedActions
+);
+make_from_impl!(
+    NiaDefineActionCommandResult,
+    NiaInterpreterCommandResult::DefineAction
+);
+make_from_impl!(
+    NiaRemoveActionCommandResult,
+    NiaInterpreterCommandResult::RemoveAction
 );
 
 impl std::fmt::Display for NiaInterpreterCommandResult {

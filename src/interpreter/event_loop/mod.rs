@@ -1,9 +1,11 @@
+mod action;
 mod event_loop;
 mod event_loop_handle;
 mod internals;
 mod interpreter_command_results;
 mod interpreter_commands;
 
+pub use action::*;
 pub use event_loop::*;
 pub use event_loop_handle::*;
 pub use internals::*;

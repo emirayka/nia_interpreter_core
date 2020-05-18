@@ -16,17 +16,29 @@ pub fn value_to_string(
             } else {
                 Ok(String::from("#f"))
             }
-        },
+        }
         Value::String(string_id) => {
-            let string = interpreter.get_string(string_id)?;
+            // let value_string =
+            //     String::from(interpreter.get_string(string_id)?.get_string());
+            // let value_string = value_string.replace("\\", "\\\\");
+            // let value_string = value_string.replace("\"", "\\\"");
+            //
+            // let mut string = String::new();
+            // string.push_str("\"");
+            // string.push_str(&value_string);
+            // string.push_str("\"");
+            //
+            // Ok(string)
+            let string =
+                interpreter.get_string(string_id)?.get_string().clone();
 
-            Ok(String::from(string.get_string()))
-        },
+            Ok(String::from(string))
+        }
         Value::Symbol(symbol_id) => {
             let string = interpreter.get_symbol_name(symbol_id)?;
 
             Ok(String::from(string))
-        },
+        }
         Value::Keyword(keyword_id) => {
             let keyword = interpreter.get_keyword(keyword_id)?;
 
@@ -34,7 +46,7 @@ pub fn value_to_string(
             string.push_str(keyword.get_name());
 
             Ok(string)
-        },
+        }
         Value::Cons(cons_id) => {
             let values = interpreter.list_to_vec(cons_id)?;
 
@@ -50,7 +62,7 @@ pub fn value_to_string(
 
             result.push_str(")");
             Ok(result)
-        },
+        }
         Value::Object(object_id) => {
             let items = interpreter.get_object_items(object_id)?;
 
@@ -75,7 +87,7 @@ pub fn value_to_string(
             result.push_str("}");
 
             Ok(result)
-        },
+        }
         Value::Function(function_id) => {
             let function = interpreter.get_function(function_id)?;
 
@@ -87,7 +99,7 @@ pub fn value_to_string(
             };
 
             Ok(string)
-        },
+        }
     }
 }
 

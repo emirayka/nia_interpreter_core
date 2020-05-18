@@ -133,14 +133,14 @@ mod defm {
                 "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
             )
             .unwrap();
-        library::print_value(interpreter, value);
+        library::print_value(interpreter, value).unwrap();
 
         let value = interpreter
             .execute_in_root_environment(
                 "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
             )
             .unwrap();
-        library::print_value(interpreter, value);
+        library::print_value(interpreter, value).unwrap();
 
         interpreter.execute_in_root_environment(
             "(define-function defm (function (macro (name #rest params) (list:new 'define-function name (list:new 'function (cons:new 'macro params))))))"

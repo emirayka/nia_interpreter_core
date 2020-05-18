@@ -1,14 +1,14 @@
-use crate::{Action, Error};
+use crate::{Error, StateMachineAction};
 use std::sync::mpsc;
 
 pub struct NiaActionListenerHandle {
-    action_receiver: mpsc::Receiver<Action>,
+    action_receiver: mpsc::Receiver<StateMachineAction>,
     stop_sender: mpsc::Sender<()>,
 }
 
 impl NiaActionListenerHandle {
     pub fn new(
-        action_receiver: mpsc::Receiver<Action>,
+        action_receiver: mpsc::Receiver<StateMachineAction>,
         stop_sender: mpsc::Sender<()>,
     ) -> NiaActionListenerHandle {
         NiaActionListenerHandle {
@@ -17,14 +17,16 @@ impl NiaActionListenerHandle {
         }
     }
 
-    pub fn receive_action(&self) -> Result<Action, Error> {
+    pub fn receive_action(&self) -> Result<StateMachineAction, Error> {
         match self.action_receiver.recv() {
             Ok(action) => Ok(action),
             Err(_) => Error::generic_execution_error("").into(),
         }
     }
 
-    pub fn try_receive_action(&self) -> Result<Action, mpsc::TryRecvError> {
+    pub fn try_receive_action(
+        &self,
+    ) -> Result<StateMachineAction, mpsc::TryRecvError> {
         match self.action_receiver.try_recv() {
             Ok(action) => Ok(action),
             Err(try_recv_error) => Err(try_recv_error),

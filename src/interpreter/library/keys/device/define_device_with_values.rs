@@ -1,6 +1,6 @@
-use crate::Error;
 use crate::Interpreter;
 use crate::Value;
+use crate::{Error, DEFINED_DEVICES_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
@@ -63,7 +63,7 @@ pub fn define_keyboard_with_values(
 
     let root_environment_id = interpreter.get_root_environment_id();
     let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("nia-defined-keyboards");
+        interpreter.intern_symbol_id(DEFINED_DEVICES_ROOT_VARIABLE_NAME);
 
     let keyboard_list = interpreter
         .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?
@@ -121,7 +121,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-defined-keyboards",
+            DEFINED_DEVICES_ROOT_VARIABLE_NAME,
         )
         .unwrap();
         let expected = interpreter

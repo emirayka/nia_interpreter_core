@@ -1,5 +1,5 @@
-use crate::Value;
 use crate::{Error, Interpreter};
+use crate::{Value, DEFINED_DEVICES_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
@@ -43,7 +43,7 @@ pub fn remove_keyboard_by_name_with_value(
 
     let root_environment_id = interpreter.get_root_environment_id();
     let symbol_id_registered_keyboards =
-        interpreter.intern_symbol_id("nia-defined-keyboards");
+        interpreter.intern_symbol_id(DEFINED_DEVICES_ROOT_VARIABLE_NAME);
 
     let keyboard_list = interpreter
         .lookup_variable(root_environment_id, symbol_id_registered_keyboards)?

@@ -10,10 +10,6 @@ use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 
-use crate::NiaDefineDeviceCommand;
-use crate::NiaDefineDeviceCommandResult;
-use crate::NiaDefineModifierCommand;
-use crate::NiaDefineModifierCommandResult;
 use crate::NiaExecuteCodeCommand;
 use crate::NiaExecuteCodeCommandResult;
 use crate::NiaGetDefinedModifiersCommand;
@@ -26,12 +22,21 @@ use crate::NiaRemoveDeviceByPathCommand;
 use crate::NiaRemoveDeviceByPathCommandResult;
 use crate::NiaRemoveModifierCommand;
 use crate::NiaRemoveModifierCommandResult;
+use crate::{
+    Action, NiaDefineActionCommand, NiaDefineActionCommandResult,
+    NiaDefineDeviceCommand,
+};
+use crate::{NiaDefineDeviceCommandResult, NiaRemoveActionCommand};
+use crate::{NiaDefineModifierCommand, NiaGetDefinedActionsCommand};
+use crate::{
+    NiaDefineModifierCommandResult, NiaGetDefinedActionsCommandResult,
+};
 
-use crate::Action;
 use crate::EventLoopHandle;
 use crate::NiaActionListener;
 use crate::NiaActionListenerHandle;
 use crate::NiaWorker;
+use crate::StateMachineAction;
 
 use crate::Error;
 use crate::Interpreter;
@@ -353,6 +358,123 @@ impl EventLoop {
         NiaRemoveModifierCommandResult::from(result).into()
     }
 
+    fn do_command_get_defined_actions(
+        interpreter: &mut Interpreter,
+        _command: NiaGetDefinedActionsCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::get_defined_actions(interpreter);
+
+        NiaGetDefinedActionsCommandResult::from(result).into()
+    }
+
+    fn do_command_define_action(
+        interpreter: &mut Interpreter,
+        command: NiaDefineActionCommand,
+    ) -> NiaInterpreterCommandResult {
+        let action_name = command.get_action_name();
+
+        let result = match command.get_action() {
+            Action::KeyPress(key_code) => library::define_action_key_press(
+                interpreter,
+                action_name,
+                *key_code,
+            ),
+            Action::KeyClick(key_code) => library::define_action_key_click(
+                interpreter,
+                action_name,
+                *key_code,
+            ),
+            Action::KeyRelease(key_code) => library::define_action_key_release(
+                interpreter,
+                action_name,
+                *key_code,
+            ),
+            Action::MouseButtonPress(mouse_button_code) => {
+                library::define_action_mouse_button_press(
+                    interpreter,
+                    action_name,
+                    *mouse_button_code,
+                )
+            }
+            Action::MouseButtonClick(mouse_button_code) => {
+                library::define_action_mouse_button_click(
+                    interpreter,
+                    action_name,
+                    *mouse_button_code,
+                )
+            }
+            Action::MouseButtonRelease(mouse_button_code) => {
+                library::define_action_mouse_button_release(
+                    interpreter,
+                    action_name,
+                    *mouse_button_code,
+                )
+            }
+            Action::MouseAbsoluteMove(x, y) => {
+                library::define_action_mouse_absolute_move(
+                    interpreter,
+                    action_name,
+                    *x,
+                    *y,
+                )
+            }
+            Action::MouseRelativeMove(dx, dy) => {
+                library::define_action_mouse_relative_move(
+                    interpreter,
+                    action_name,
+                    *dx,
+                    *dy,
+                )
+            }
+            Action::TextType(text_to_type) => library::define_action_text_type(
+                interpreter,
+                action_name,
+                text_to_type,
+            ),
+            Action::Wait(ms_amount) => library::define_action_wait(
+                interpreter,
+                action_name,
+                *ms_amount,
+            ),
+            Action::ExecuteCode(code_to_execute) => {
+                library::define_action_execute_code(
+                    interpreter,
+                    action_name,
+                    code_to_execute,
+                )
+            }
+            Action::ExecuteFunction(function_name) => {
+                library::define_action_execute_function(
+                    interpreter,
+                    action_name,
+                    function_name,
+                )
+            }
+            Action::ExecuteOSCommand(os_command) => {
+                library::define_action_execute_os_command(
+                    interpreter,
+                    action_name,
+                    os_command,
+                )
+            }
+        };
+
+        let result = result.map(|_| String::from("Success"));
+
+        NiaDefineActionCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_action(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveActionCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result =
+            library::remove_action(interpreter, command.get_action_name());
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveModifierCommandResult::from(result).into()
+    }
+
     pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
         let mut interpreter = interpreter;
 
@@ -425,6 +547,24 @@ impl EventLoop {
                                     command,
                                 )
                             }
+                            NiaInterpreterCommand::GetDefinedActions(
+                                command,
+                            ) => EventLoop::do_command_get_defined_actions(
+                                &mut interpreter,
+                                command,
+                            ),
+                            NiaInterpreterCommand::DefineAction(command) => {
+                                EventLoop::do_command_define_action(
+                                    &mut interpreter,
+                                    command,
+                                )
+                            }
+                            NiaInterpreterCommand::RemoveAction(command) => {
+                                EventLoop::do_command_remove_action(
+                                    &mut interpreter,
+                                    command,
+                                )
+                            }
                         };
 
                         match interpreter_command_result_sender
@@ -482,8 +622,8 @@ impl EventLoop {
                         loop {
                             match handle.try_receive_action() {
                                 Ok(action) => match action {
-                                    Action::Empty => {}
-                                    Action::Execute(value) => {
+                                    StateMachineAction::Empty => {}
+                                    StateMachineAction::Execute(value) => {
                                         match interpreter
                                             .execute_function_without_arguments_int_main_environment(
                                                 value,

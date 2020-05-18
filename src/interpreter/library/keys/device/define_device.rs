@@ -32,6 +32,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::DEFINED_DEVICES_ROOT_VARIABLE_NAME;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
@@ -48,7 +49,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-defined-keyboards",
+            DEFINED_DEVICES_ROOT_VARIABLE_NAME,
         )
         .unwrap();
         let expected = interpreter

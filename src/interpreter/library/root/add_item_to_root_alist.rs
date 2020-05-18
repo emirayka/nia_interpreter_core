@@ -6,9 +6,9 @@ use crate::library;
 
 pub fn add_item_to_root_alist(
     interpreter: &mut Interpreter,
-    name: &str,
     key: Value,
     value: Value,
+    name: &str,
 ) -> Result<(), Error> {
     let root_alist_value = library::get_root_variable(interpreter, name)?;
 
@@ -81,9 +81,9 @@ mod tests {
         for ((key, value), expected) in specs {
             nia_assert_is_ok(&add_item_to_root_alist(
                 &mut interpreter,
-                EMPTY_ALIST_VARIABLE_SYMBOL_NAME,
                 key,
                 value,
+                EMPTY_ALIST_VARIABLE_SYMBOL_NAME,
             ));
 
             let result = library::get_root_variable(

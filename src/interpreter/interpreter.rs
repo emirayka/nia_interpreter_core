@@ -1199,11 +1199,11 @@ impl Interpreter {
         environment_id: EnvironmentId,
         evaluated_arguments: Vec<Value>,
     ) -> Result<Value, Error> {
-        match self.get_function(function_id)? {
+        match self.get_function(function_id)?.clone() {
             Function::Builtin(builtin_function) => {
                 evaluate_builtin_function_invocation(
                     self,
-                    &builtin_function.clone(),
+                    &builtin_function,
                     environment_id,
                     evaluated_arguments,
                 )
@@ -1211,7 +1211,7 @@ impl Interpreter {
             Function::Interpreted(interpreter_function) => {
                 evaluate_interpreted_function_invocation(
                     self,
-                    &interpreter_function.clone(),
+                    &interpreter_function,
                     evaluated_arguments,
                 )
             }

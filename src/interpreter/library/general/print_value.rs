@@ -1,27 +1,15 @@
-use crate::Interpreter;
 use crate::Value;
+use crate::{Error, Interpreter};
 
 use crate::library;
 
-pub fn print_value(interpreter: &Interpreter, value: Value) {
-    let string = match value {
-        Value::String(string_id) => {
-            let vstring = match interpreter.get_string(string_id) {
-                Ok(string) => string,
-                _ => panic!("Cannot print value"),
-            };
+pub fn print_value(
+    interpreter: &Interpreter,
+    value: Value,
+) -> Result<(), Error> {
+    let string = library::value_to_string(interpreter, value)?;
 
-            let mut result = String::from("\"");
-            result.push_str(vstring.get_string());
-            result.push_str("\"");
+    println!("{}", string);
 
-            result
-        }
-        _ => match library::value_to_string(interpreter, value) {
-            Ok(string) => string,
-            Err(_) => panic!("Cannot print value"),
-        },
-    };
-
-    println!("{}", string)
+    Ok(())
 }

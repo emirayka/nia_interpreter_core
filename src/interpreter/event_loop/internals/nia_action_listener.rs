@@ -16,10 +16,10 @@ use nia_events::WorkerHandle;
 use nia_state_machine::StateMachine;
 use nia_state_machine::StateMachineResult;
 
-use crate::Action;
 use crate::Error;
 use crate::Interpreter;
 use crate::NiaActionListenerHandle;
+use crate::StateMachineAction;
 
 use crate::library;
 use std::time::Duration;
@@ -27,7 +27,7 @@ use std::time::Duration;
 pub struct NiaActionListener {
     keyboards: Vec<(String, String)>,
     modifiers: Vec<KeyChordPart>,
-    mappings: Vec<(Vec<KeyChord>, Action)>,
+    mappings: Vec<(Vec<KeyChord>, StateMachineAction)>,
 }
 
 impl NiaActionListener {
@@ -57,7 +57,7 @@ impl NiaActionListener {
         }
 
         for mapping in mappings {
-            let action = Action::from(mapping.1);
+            let action = StateMachineAction::from(mapping.1);
 
             event_listener.add_mapping(mapping.0, action);
         }
@@ -74,7 +74,11 @@ impl NiaActionListener {
         self.modifiers.push(modifier)
     }
 
-    pub fn add_mapping(&mut self, key_chords: Vec<KeyChord>, action: Action) {
+    pub fn add_mapping(
+        &mut self,
+        key_chords: Vec<KeyChord>,
+        action: StateMachineAction,
+    ) {
         self.mappings.push((key_chords, action))
     }
 
@@ -98,7 +102,7 @@ impl NiaActionListener {
 
     fn construct_state_machine(
         &self,
-    ) -> Result<StateMachine<KeyChord, Action>, Error> {
+    ) -> Result<StateMachine<KeyChord, StateMachineAction>, Error> {
         let mut state_machine = nia_state_machine::StateMachine::new();
 
         for (path, action) in self.mappings.iter() {

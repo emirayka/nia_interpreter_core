@@ -1,20 +1,22 @@
-use crate::Error;
 use crate::Interpreter;
 use crate::Value;
+use crate::{Error, DEFINED_DEVICES_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
 pub fn get_defined_keyboards(
     interpreter: &mut Interpreter,
 ) -> Result<Value, Error> {
-    let keyboard_list =
-        library::get_root_variable(interpreter, "nia-defined-keyboards")
-            .map_err(|err| {
-                Error::generic_execution_error_caused(
-                    "Cannot read registered keyboards.",
-                    err,
-                )
-            })?;
+    let keyboard_list = library::get_root_variable(
+        interpreter,
+        DEFINED_DEVICES_ROOT_VARIABLE_NAME,
+    )
+    .map_err(|err| {
+        Error::generic_execution_error_caused(
+            "Cannot read registered keyboards.",
+            err,
+        )
+    })?;
 
     Ok(keyboard_list)
 }
@@ -40,7 +42,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-defined-keyboards",
+            DEFINED_DEVICES_ROOT_VARIABLE_NAME,
         )
         .unwrap();
         let expected = interpreter
@@ -60,7 +62,7 @@ mod tests {
 
         let result = library::get_root_variable(
             &mut interpreter,
-            "nia-defined-keyboards",
+            DEFINED_DEVICES_ROOT_VARIABLE_NAME,
         )
         .unwrap();
         let expected = interpreter

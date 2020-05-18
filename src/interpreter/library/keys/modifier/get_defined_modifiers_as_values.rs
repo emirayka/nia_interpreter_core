@@ -1,20 +1,22 @@
-use crate::Error;
 use crate::Interpreter;
 use crate::Value;
+use crate::{Error, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
 pub fn get_defined_modifiers_as_values(
     interpreter: &mut Interpreter,
 ) -> Result<Value, Error> {
-    let keyboard_list =
-        library::get_root_variable(interpreter, "nia-defined-modifiers")
-            .map_err(|err| {
-                Error::generic_execution_error_caused(
-                    "Cannot read registered keyboards.",
-                    err,
-                )
-            })?;
+    let keyboard_list = library::get_root_variable(
+        interpreter,
+        DEFINED_MODIFIERS_ROOT_VARIABLE_NAME,
+    )
+    .map_err(|err| {
+        Error::generic_execution_error_caused(
+            "Cannot read registered keyboards.",
+            err,
+        )
+    })?;
 
     Ok(keyboard_list)
 }

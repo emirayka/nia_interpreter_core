@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 use crate::interpreter::parser::DelimitedSymbolsElement;
 use crate::interpreter::parser::Element;
 use crate::interpreter::parser::SExpressionElement;
@@ -14,8 +12,6 @@ use crate::interpreter::reader::read_elements::read_elements;
 use crate::Error;
 use crate::Interpreter;
 use crate::Value;
-
-use crate::library;
 
 fn read_regular_s_expression(
     interpreter: &mut Interpreter,

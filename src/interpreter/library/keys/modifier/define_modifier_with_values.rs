@@ -1,6 +1,6 @@
-use crate::Error;
 use crate::Interpreter;
 use crate::Value;
+use crate::{Error, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
@@ -57,7 +57,7 @@ pub fn define_modifier_with_values(
 
     library::add_value_to_root_list(
         interpreter,
-        "nia-defined-modifiers",
+        DEFINED_MODIFIERS_ROOT_VARIABLE_NAME,
         new_modifier_list,
     )?;
 

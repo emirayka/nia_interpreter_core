@@ -1,6 +1,6 @@
-use crate::Error;
 use crate::Interpreter;
 use crate::Value;
+use crate::{Error, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME};
 
 use crate::library;
 
@@ -44,7 +44,7 @@ pub fn remove_modifier_with_values(
 
     let root_environment_id = interpreter.get_root_environment_id();
     let symbol_id_defined_modifiers =
-        interpreter.intern_symbol_id("nia-defined-modifiers");
+        interpreter.intern_symbol_id(DEFINED_MODIFIERS_ROOT_VARIABLE_NAME);
     let modifiers_list = library::get_defined_modifiers_as_values(interpreter)?;
     let mut modifiers_vector =
         library::read_as_vector(interpreter, modifiers_list)?;

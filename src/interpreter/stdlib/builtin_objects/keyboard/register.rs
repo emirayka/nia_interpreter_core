@@ -38,20 +38,21 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
+    use crate::DEFINED_DEVICES_ROOT_VARIABLE_NAME;
 
     #[test]
     fn adds_keyboards() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            (r#"'()"#, "nia-defined-keyboards"),
+            (r#"'()"#, DEFINED_DEVICES_ROOT_VARIABLE_NAME),
             (
                 r#"nil"#,
                 r#"(keyboard:register 3 "/dev/input/event1" "Keyboard 1")"#,
             ),
             (
                 r#"(list:new '(3 "/dev/input/event1" "Keyboard 1"))"#,
-                "nia-defined-keyboards",
+                DEFINED_DEVICES_ROOT_VARIABLE_NAME,
             ),
             (
                 r#"nil"#,
@@ -59,7 +60,7 @@ mod tests {
             ),
             (
                 r#"(list:new '(2 "/dev/input/event2" "Keyboard 2") '(3 "/dev/input/event1" "Keyboard 1"))"#,
-                "nia-defined-keyboards",
+                DEFINED_DEVICES_ROOT_VARIABLE_NAME,
             ),
         ];
 

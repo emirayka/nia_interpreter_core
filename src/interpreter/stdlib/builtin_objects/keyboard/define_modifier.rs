@@ -29,20 +29,24 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
+    use crate::DEFINED_MODIFIERS_ROOT_VARIABLE_NAME;
 
     #[test]
     fn defines_new_modifiers() {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("nia-defined-modifiers", "'()"),
+            (DEFINED_MODIFIERS_ROOT_VARIABLE_NAME, "'()"),
             (
                 "(keyboard:define-modifier \"LeftControl\" \"Control\")",
                 "nil",
             ),
-            ("nia-defined-modifiers", "'(29 \"Control\")"),
+            (DEFINED_MODIFIERS_ROOT_VARIABLE_NAME, "'(29 \"Control\")"),
             ("(keyboard:define-modifier \"0:LeftMeta\" \"Meta\")", "nil"),
-            ("nia-defined-modifiers", "'((0 125) (29 \"Control\"))"),
+            (
+                DEFINED_MODIFIERS_ROOT_VARIABLE_NAME,
+                "'((0 125) (29 \"Control\"))",
+            ),
         ];
 
         utils::assert_results_are_equal(&mut interpreter, pairs)
