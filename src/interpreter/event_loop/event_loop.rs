@@ -10,7 +10,6 @@ use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 
-use crate::NiaExecuteCodeCommand;
 use crate::NiaExecuteCodeCommandResult;
 use crate::NiaGetDefinedModifiersCommand;
 use crate::NiaGetDefinedModifiersCommandResult;
@@ -31,6 +30,7 @@ use crate::{NiaDefineModifierCommand, NiaGetDefinedActionsCommand};
 use crate::{
     NiaDefineModifierCommandResult, NiaGetDefinedActionsCommandResult,
 };
+use crate::{NiaExecuteCodeCommand, NiaRemoveActionCommandResult};
 
 use crate::EventLoopHandle;
 use crate::NiaActionListener;
@@ -472,7 +472,7 @@ impl EventLoop {
             library::remove_action(interpreter, command.get_action_name());
         let result = result.map(|_| String::from("Success"));
 
-        NiaRemoveModifierCommandResult::from(result).into()
+        NiaRemoveActionCommandResult::from(result).into()
     }
 
     pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
