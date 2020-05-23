@@ -32,11 +32,11 @@ mod tests {
 
         let specs = vec![
             ("1", "2", "(cons:new (cons:new 1 2) nil)"),
-            ("3", "4", "(cons:new (cons:new 3 4) (cons:new (cons:new 1 2) nil))"),
+            ("3", "4", "(list:new (cons:new 3 4) (cons:new 1 2))"),
             (
                 "5",
                 "6",
-                "(cons:new (cons:new 5 6) (cons:new (cons:new 3 4) (cons:new (cons:new 1 2) nil)))",
+                "(list:new (cons:new 5 6) (cons:new 3 4) (cons:new 1 2))",
             ),
         ];
 

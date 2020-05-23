@@ -1,22 +1,24 @@
 use crate::Error;
 use crate::Interpreter;
+use crate::ModifierDescription;
 use crate::Value;
 
 use crate::library;
 
-pub fn define_modifier<S>(
+pub fn define_modifier(
     interpreter: &mut Interpreter,
-    device_id: i32,
-    key_code: i32,
-    modifier_alias: S,
-) -> Result<(), Error>
-where
-    S: AsRef<str>,
-{
-    let modifier_alias_str = modifier_alias.as_ref();
+    modifier: &ModifierDescription,
+) -> Result<(), Error> {
+    let modifier_alias_str = modifier.get_alias();
 
-    let device_id_value = Value::Integer(device_id as i64);
-    let key_code_value = Value::Integer(key_code as i64);
+    let key = modifier.get_key();
+
+    let device_id_value = modifier
+        .get_key()
+        .get_device_id()
+        .map(|device_id| Value::Integer(device_id as i64));
+    let key_code_value = Value::Integer(modifier.get_key().get_key_id() as i64);
+
     let modifier_alias_value = if modifier_alias_str.len() == 0 {
         interpreter.intern_nil_symbol_value()
     } else {
@@ -43,27 +45,25 @@ mod tests {
     fn defines_new_modifiers() {
         let mut interpreter = Interpreter::new();
 
-        library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
+        library::get_defined_modifiers_as_value(&mut interpreter).unwrap();
         interpreter.execute_in_main_environment(r#"'()"#).unwrap();
 
         let specs = vec![
-            (3, 1, "", r#"'((3 1 ()))"#),
-            (2, 2, "bb", r#"'((2 2 "bb") (3 1 ()))"#),
-            (1, 3, "cc", r#"'((1 3 "cc") (2 2 "bb") (3 1 ()))"#),
+            (nia_modifier!(3, 1, ""), r#"'((3 1 ()))"#),
+            (nia_modifier!(2, "bb"), r#"'((2 "bb") (3 1 ()))"#),
+            (
+                nia_modifier!(1, 3, "cc"),
+                r#"'((1 3 "cc") (2 "bb") (3 1 ()))"#,
+            ),
         ];
 
-        for spec in specs {
-            nia_assert_is_ok(&define_modifier(
-                &mut interpreter,
-                spec.0,
-                spec.1,
-                spec.2,
-            ));
+        for (modifier, code) in specs {
+            nia_assert_is_ok(&define_modifier(&mut interpreter, &modifier));
 
             let expected =
-                interpreter.execute_in_main_environment(spec.3).unwrap();
+                interpreter.execute_in_main_environment(code).unwrap();
             let result =
-                library::get_defined_modifiers_as_values(&mut interpreter)
+                library::get_defined_modifiers_as_value(&mut interpreter)
                     .unwrap();
 
             crate::utils::assert_deep_equal(&mut interpreter, expected, result)
@@ -74,25 +74,11 @@ mod tests {
     fn returns_generic_execution_error_when_attempts_to_define_already_defined_modifier(
     ) {
         let mut interpreter = Interpreter::new();
+        let modifier = nia_modifier!(1, 3, "kek");
 
-        let device_id = 1;
-        let key_code = 23;
-        let modifier_alias = "mod";
+        nia_assert_is_ok(&define_modifier(&mut interpreter, &modifier));
 
-        nia_assert_is_ok(&define_modifier(
-            &mut interpreter,
-            device_id,
-            key_code,
-            modifier_alias,
-        ));
-
-        let result = &define_modifier(
-            &mut interpreter,
-            device_id,
-            key_code,
-            modifier_alias,
-        );
-
+        let result = &define_modifier(&mut interpreter, &modifier);
         crate::utils::assert_generic_execution_error(&result);
     }
 }

@@ -32,7 +32,7 @@ mod tests {
     fn returns_invalid_argument_when_not_a_cons_value_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let not_cons_values = vec![
+        let specs = vec![
             Value::Integer(1),
             Value::Float(1.1),
             Value::Boolean(true),
@@ -47,8 +47,8 @@ mod tests {
                 .unwrap(),
         ];
 
-        for not_cons_value in not_cons_values {
-            let result = check_value_is_cons(not_cons_value);
+        for spec in specs {
+            let result = check_value_is_cons(spec);
             utils::assert_invalid_argument_error(&result);
         }
     }

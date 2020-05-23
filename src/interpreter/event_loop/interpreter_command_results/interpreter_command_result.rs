@@ -1,4 +1,5 @@
 use crate::interpreter::event_loop::interpreter_command_results::*;
+use crate::interpreter::event_loop::interpreter_command_results::get_defined_mappings_command_result::NiaGetDefinedMappingsCommandResult;
 
 #[derive(Clone, Debug)]
 pub enum NiaInterpreterCommandResult {
@@ -12,6 +13,10 @@ pub enum NiaInterpreterCommandResult {
     GetDefinedActions(NiaGetDefinedActionsCommandResult),
     DefineAction(NiaDefineActionCommandResult),
     RemoveAction(NiaRemoveActionCommandResult),
+    GetDefinedMappings(NiaGetDefinedMappingsCommandResult),
+    DefineMapping(NiaDefineMappingCommandResult),
+    ChangeMapping(NiaChangeMappingCommandResult),
+    RemoveMapping(NiaRemoveMappingCommandResult),
 }
 
 macro_rules! make_from_impl {
@@ -63,6 +68,22 @@ make_from_impl!(
 make_from_impl!(
     NiaRemoveActionCommandResult,
     NiaInterpreterCommandResult::RemoveAction
+);
+make_from_impl!(
+    NiaGetDefinedMappingsCommandResult,
+    NiaInterpreterCommandResult::GetDefinedMappings
+);
+make_from_impl!(
+    NiaDefineMappingCommandResult,
+    NiaInterpreterCommandResult::DefineMapping
+);
+make_from_impl!(
+    NiaChangeMappingCommandResult,
+    NiaInterpreterCommandResult::ChangeMapping
+);
+make_from_impl!(
+    NiaRemoveMappingCommandResult,
+    NiaInterpreterCommandResult::RemoveMapping
 );
 
 impl std::fmt::Display for NiaInterpreterCommandResult {

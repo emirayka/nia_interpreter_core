@@ -6,10 +6,10 @@ use crate::library;
 
 fn check_modifier_can_be_defined(
     interpreter: &mut Interpreter,
-    keyboard_path: Value,
+    device_id: Option<Value>,
     key_code: Value,
 ) -> Result<(), Error> {
-    let modifiers_list = library::get_defined_modifiers_as_values(interpreter)?;
+    let modifiers_list = library::get_defined_modifiers_as_value(interpreter)?;
 
     let modifiers_vector =
         library::read_as_vector(interpreter, modifiers_list)?;
@@ -18,18 +18,23 @@ fn check_modifier_can_be_defined(
         let modifier_vector =
             library::read_as_vector(interpreter, modifier_list)?;
 
-        if modifier_vector.len() != 3 {
-            return Error::generic_execution_error(
-                "Invariant violation: `nia-defined-modifiers' must be a list of three-element lists."
-            ).into();
-        }
-
-        if !library::deep_equal(interpreter, keyboard_path, modifier_vector[0])?
+        let (modifier_device_id, modifier_key_code) = match modifier_vector
+            .len()
         {
+            2 => (None, modifier_vector[0]),
+            3 => (Some(modifier_vector[0]), modifier_vector[1]),
+            _ => {
+                return Error::generic_execution_error(
+                    "Invariant violation: `nia-defined-modifiers' must be a list of three-element lists."
+                ).into();
+            }
+        };
+
+        if modifier_device_id != device_id {
             continue;
         }
 
-        if !library::deep_equal(interpreter, key_code, modifier_vector[1])? {
+        if modifier_key_code != key_code {
             continue;
         }
 
@@ -42,18 +47,25 @@ fn check_modifier_can_be_defined(
 
 pub fn define_modifier_with_values(
     interpreter: &mut Interpreter,
-    device_id: Value,
+    device_id: Option<Value>,
     key_code: Value,
     modifier_alias: Value,
 ) -> Result<(), Error> {
-    library::check_value_is_integer(device_id)?;
+    if let Some(device_id) = device_id {
+        library::check_value_is_integer(device_id)?;
+    }
+
     library::check_value_is_integer(key_code)?;
     library::check_value_is_string_or_nil(interpreter, modifier_alias)?;
 
     check_modifier_can_be_defined(interpreter, device_id, key_code)?;
 
-    let new_modifier_list =
-        interpreter.vec_to_list(vec![device_id, key_code, modifier_alias]);
+    let new_modifier_list = match device_id {
+        Some(device_id) => {
+            interpreter.vec_to_list(vec![device_id, key_code, modifier_alias])
+        }
+        None => interpreter.vec_to_list(vec![key_code, modifier_alias]),
+    };
 
     library::add_value_to_root_list(
         interpreter,
@@ -77,26 +89,33 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let result =
-            library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
+            library::get_defined_modifiers_as_value(&mut interpreter).unwrap();
         let expected =
             interpreter.execute_in_main_environment(r#"'()"#).unwrap();
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
         let specs = vec![
-            (3, 1, "", r#"'((3 1 ()))"#),
-            (2, 2, "bb", r#"'((2 2 "bb") (3 1 ()))"#),
-            (1, 3, "cc", r#"'((1 3 "cc") (2 2 "bb") (3 1 ()))"#),
+            (
+                Some(Value::Integer(3)),
+                Value::Integer(1),
+                interpreter.intern_nil_symbol_value(),
+                r#"'((3 1 ()))"#,
+            ),
+            (
+                None,
+                Value::Integer(2),
+                interpreter.intern_string_value("bb"),
+                r#"'((2 "bb") (3 1 ()))"#,
+            ),
+            (
+                Some(Value::Integer(1)),
+                Value::Integer(3),
+                interpreter.intern_string_value("cc"),
+                r#"'((1 3 "cc") (2 "bb") (3 1 ()))"#,
+            ),
         ];
 
-        for spec in specs {
-            let device_id = Value::Integer(spec.0);
-            let key_code = Value::Integer(spec.1);
-            let modifier_alias = if spec.2.len() == 0 {
-                interpreter.intern_nil_symbol_value()
-            } else {
-                interpreter.intern_string_value(spec.2)
-            };
-
+        for (device_id, key_code, modifier_alias, code) in specs {
             nia_assert_is_ok(&define_modifier_with_values(
                 &mut interpreter,
                 device_id,
@@ -105,9 +124,9 @@ mod tests {
             ));
 
             let expected =
-                interpreter.execute_in_main_environment(spec.3).unwrap();
+                interpreter.execute_in_main_environment(code).unwrap();
             let result =
-                library::get_defined_modifiers_as_values(&mut interpreter)
+                library::get_defined_modifiers_as_value(&mut interpreter)
                     .unwrap();
 
             crate::utils::assert_deep_equal(&mut interpreter, expected, result)
@@ -119,7 +138,7 @@ mod tests {
     ) {
         let mut interpreter = Interpreter::new();
 
-        let device_id = Value::Integer(1);
+        let device_id = Some(Value::Integer(1));
         let key_code = Value::Integer(23);
         let modifier_alias = interpreter.intern_string_value("mod");
 

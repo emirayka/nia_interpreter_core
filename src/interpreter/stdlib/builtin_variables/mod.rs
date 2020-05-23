@@ -7,6 +7,9 @@ pub const DEFINED_MODIFIERS_ROOT_VARIABLE_NAME: &'static str =
     "nia-defined-modifiers";
 pub const DEFINED_ACTIONS_ROOT_VARIABLE_NAME: &'static str =
     "nia-defined-actions";
+pub const GLOBAL_MAP_ROOT_VARIABLE_NAME: &'static str = "nia-global-map";
+pub const PRIMITIVE_ACTIONS_VARIABLE_NAME: &'static str =
+    "nia-primitive-actions";
 
 fn define_variable_with_nil(
     interpreter: &mut Interpreter,
@@ -32,9 +35,9 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
     define_empty_list(interpreter, DEFINED_DEVICES_ROOT_VARIABLE_NAME)?;
     define_empty_list(interpreter, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME)?;
     define_empty_list(interpreter, DEFINED_ACTIONS_ROOT_VARIABLE_NAME)?;
+    define_empty_list(interpreter, GLOBAL_MAP_ROOT_VARIABLE_NAME)?;
 
-    define_empty_list(interpreter, "global-map")?;
-    define_empty_list(interpreter, "--actions")?;
+    define_empty_list(interpreter, PRIMITIVE_ACTIONS_VARIABLE_NAME)?;
 
     Ok(())
 }

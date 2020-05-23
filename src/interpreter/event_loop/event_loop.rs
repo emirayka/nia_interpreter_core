@@ -5,36 +5,46 @@ use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
-use nia_events::Command;
 use nia_events::UInputWorkerCommand;
 use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
+use nia_events::{ButtonId, Command, KeyId};
 
-use crate::NiaExecuteCodeCommandResult;
-use crate::NiaGetDefinedModifiersCommand;
-use crate::NiaGetDefinedModifiersCommandResult;
-use crate::NiaInterpreterCommand;
-use crate::NiaInterpreterCommandResult;
-use crate::NiaRemoveDeviceByNameCommand;
-use crate::NiaRemoveDeviceByNameCommandResult;
-use crate::NiaRemoveDeviceByPathCommand;
-use crate::NiaRemoveDeviceByPathCommandResult;
-use crate::NiaRemoveModifierCommand;
-use crate::NiaRemoveModifierCommandResult;
-use crate::{
-    Action, NiaDefineActionCommand, NiaDefineActionCommandResult,
-    NiaDefineDeviceCommand,
-};
-use crate::{NiaDefineDeviceCommandResult, NiaRemoveActionCommand};
-use crate::{NiaDefineModifierCommand, NiaGetDefinedActionsCommand};
-use crate::{
-    NiaDefineModifierCommandResult, NiaGetDefinedActionsCommandResult,
-};
-use crate::{NiaExecuteCodeCommand, NiaRemoveActionCommandResult};
+use crate::{Action, ActionDeque, GarbageCollectorWrapper};
 
 use crate::EventLoopHandle;
 use crate::NiaActionListener;
 use crate::NiaActionListenerHandle;
+use crate::NiaChangeMappingCommand;
+use crate::NiaChangeMappingCommandResult;
+use crate::NiaDefineActionCommand;
+use crate::NiaDefineActionCommandResult;
+use crate::NiaDefineDeviceCommand;
+use crate::NiaDefineDeviceCommandResult;
+use crate::NiaDefineMappingCommand;
+use crate::NiaDefineMappingCommandResult;
+use crate::NiaDefineModifierCommand;
+use crate::NiaDefineModifierCommandResult;
+use crate::NiaExecuteCodeCommand;
+use crate::NiaExecuteCodeCommandResult;
+use crate::NiaGetDefinedActionsCommand;
+use crate::NiaGetDefinedActionsCommandResult;
+use crate::NiaGetDefinedMappingsCommand;
+use crate::NiaGetDefinedMappingsCommandResult;
+use crate::NiaGetDefinedModifiersCommand;
+use crate::NiaGetDefinedModifiersCommandResult;
+use crate::NiaInterpreterCommand;
+use crate::NiaInterpreterCommandResult;
+use crate::NiaRemoveActionCommand;
+use crate::NiaRemoveActionCommandResult;
+use crate::NiaRemoveDeviceByNameCommand;
+use crate::NiaRemoveDeviceByNameCommandResult;
+use crate::NiaRemoveDeviceByPathCommand;
+use crate::NiaRemoveDeviceByPathCommandResult;
+use crate::NiaRemoveMappingCommand;
+use crate::NiaRemoveMappingCommandResult;
+use crate::NiaRemoveModifierCommand;
+use crate::NiaRemoveModifierCommandResult;
 use crate::NiaWorker;
 use crate::StateMachineAction;
 
@@ -43,226 +53,17 @@ use crate::Interpreter;
 use crate::Value;
 
 use crate::interpreter::garbage_collector::collect_garbage;
+use crate::interpreter::PRIMITIVE_ACTIONS_VARIABLE_NAME;
+
 use crate::library;
 
 pub struct EventLoop {}
 
 const GARBAGE_COLLECTOR_PERIOD: u64 = 120000;
 
-mod send_events {
-    use super::*;
+mod do_command {
+    pub use super::*;
 
-    fn make_key_down_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let key_id = library::read_key_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::KeyDown(key_id)))
-    }
-
-    fn make_key_press_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let key_id = library::read_key_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::KeyPress(key_id)))
-    }
-
-    fn make_key_up_command(event_vector: Vec<Value>) -> Result<Command, Error> {
-        let key_id = library::read_key_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::KeyUp(key_id)))
-    }
-
-    fn make_mouse_button_down_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let button_id = library::read_button_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::MouseButtonDown(
-            button_id,
-        )))
-    }
-
-    fn make_mouse_button_press_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let button_id = library::read_button_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::MouseButtonPress(
-            button_id,
-        )))
-    }
-
-    fn make_mouse_button_up_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let button_id = library::read_button_id_from_vector(event_vector)?;
-
-        Ok(Command::UInput(UInputWorkerCommand::MouseButtonUp(
-            button_id,
-        )))
-    }
-
-    fn make_mouse_button_move_by_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        if event_vector.len() != 2 {
-            return Error::invalid_argument_error(
-                "Cannot parse event, not enough items",
-            )
-            .into();
-        }
-
-        let mut event_vector = event_vector;
-
-        let x = library::read_as_i64(event_vector.remove(0))?;
-        let y = library::read_as_i64(event_vector.remove(0))?;
-
-        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveBy(
-            x as i16, y as i16,
-        )))
-    }
-
-    fn make_mouse_button_move_to_command(
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        if event_vector.len() != 2 {
-            return Error::invalid_argument_error(
-                "Cannot parse event, not enough items",
-            )
-            .into();
-        }
-
-        let mut event_vector = event_vector;
-
-        let x = library::read_as_i64(event_vector.remove(0))?;
-        let y = library::read_as_i64(event_vector.remove(0))?;
-
-        if x < 0 || y < 0 {
-            return Error::invalid_argument_error(
-                "Invalid coordinate specification.",
-            )
-            .into();
-        }
-
-        Ok(Command::Xorg(XorgWorkerCommand::MouseMoveTo(
-            x as i16, y as i16,
-        )))
-    }
-
-    fn make_type_text_command(
-        interpreter: &mut Interpreter,
-        event_vector: Vec<Value>,
-    ) -> Result<Command, Error> {
-        let mut event_vector = event_vector;
-
-        let text =
-            library::read_as_string(interpreter, event_vector.remove(0))?
-                .clone();
-
-        Ok(Command::Xorg(XorgWorkerCommand::TextType(text)))
-    }
-
-    fn make_wait_command(event_vector: Vec<Value>) -> Result<Command, Error> {
-        let mut event_vector = event_vector;
-
-        let milliseconds = match event_vector.remove(0) {
-            Value::Integer(ms) => {
-                if ms > 0 {
-                    ms as u64
-                } else {
-                    return Error::invalid_argument_error(
-                        "Expected duration to be not positive.",
-                    )
-                    .into();
-                }
-            }
-            _ => {
-                return Error::invalid_argument_error(
-                    "Unknown value passed as wait.",
-                )
-                .into();
-            }
-        };
-
-        Ok(Command::Wait(milliseconds))
-    }
-
-    fn send_event(
-        interpreter: &mut Interpreter,
-        event_vector: Value,
-        worker_handle: &WorkerHandle,
-    ) -> Result<(), Error> {
-        let mut event_vector =
-            library::read_as_vector(interpreter, event_vector)?;
-
-        if event_vector.len() == 0 {
-            return Error::generic_execution_error("Event vector is empty.")
-                .into();
-        }
-
-        let event_name_symbol_id =
-            library::read_as_symbol_id(event_vector.remove(0))?;
-
-        let event_name =
-            interpreter.get_symbol_name(event_name_symbol_id)?.clone();
-
-        let command = match event_name.as_str() {
-            "key-down" => make_key_down_command(event_vector)?,
-            "key-press" => make_key_press_command(event_vector)?,
-            "key-up" => make_key_up_command(event_vector)?,
-
-            "mouse-button-down" => {
-                make_mouse_button_down_command(event_vector)?
-            }
-            "mouse-button-press" => {
-                make_mouse_button_press_command(event_vector)?
-            }
-            "mouse-button-up" => make_mouse_button_up_command(event_vector)?,
-
-            "mouse-move-by" => make_mouse_button_move_by_command(event_vector)?,
-            "mouse-move-to" => make_mouse_button_move_to_command(event_vector)?,
-
-            "text-type" => make_type_text_command(interpreter, event_vector)?,
-            "wait" => make_wait_command(event_vector)?,
-
-            _ => return Error::invalid_argument_error("Unknown action").into(),
-        };
-
-        println!("{:?}", command);
-
-        match worker_handle.send_command(command) {
-            Ok(_) => Ok(()),
-            Err(_) => Ok(()),
-        }
-    }
-
-    pub fn send_events(
-        interpreter: &mut Interpreter,
-        worker_handle: &WorkerHandle,
-    ) -> Result<(), Error> {
-        let actions_value =
-            library::get_root_variable(interpreter, "--actions")?;
-
-        let events_vectors =
-            library::read_as_vector(interpreter, actions_value)?
-                .into_iter()
-                .rev()
-                .collect::<Vec<Value>>();
-
-        let nil = interpreter.intern_nil_symbol_value();
-        library::set_root_variable(interpreter, "--actions", nil)?;
-
-        for event_vector in events_vectors {
-            send_event(interpreter, event_vector, worker_handle)?;
-        }
-
-        Ok(())
-    }
-}
-
-impl EventLoop {
     fn do_command_define_keyboard(
         interpreter: &mut Interpreter,
         command: NiaDefineDeviceCommand,
@@ -283,12 +84,8 @@ impl EventLoop {
         interpreter: &mut Interpreter,
         command: NiaDefineModifierCommand,
     ) -> NiaInterpreterCommandResult {
-        let result = library::define_modifier(
-            interpreter,
-            command.get_device_id(),
-            command.get_key_code(),
-            command.get_modifier_alias(),
-        );
+        let result =
+            library::define_modifier(interpreter, command.get_modifier());
         let result = result.map(|_| String::from("Success"));
 
         NiaDefineModifierCommandResult::from(result).into()
@@ -348,11 +145,7 @@ impl EventLoop {
         interpreter: &mut Interpreter,
         command: NiaRemoveModifierCommand,
     ) -> NiaInterpreterCommandResult {
-        let result = library::remove_modifier(
-            interpreter,
-            command.get_device_id(),
-            command.get_key_code(),
-        );
+        let result = library::remove_modifier(interpreter, command.get_key());
         let result = result.map(|_| String::from("Success"));
 
         NiaRemoveModifierCommandResult::from(result).into()
@@ -457,6 +250,9 @@ impl EventLoop {
                     os_command,
                 )
             }
+            Action::ExecuteFunctionValue(_) => panic!(
+                "Invariant violation Action::ExecuteFunctionValue must not be able to be defined."
+            ),
         };
 
         let result = result.map(|_| String::from("Success"));
@@ -475,8 +271,216 @@ impl EventLoop {
         NiaRemoveActionCommandResult::from(result).into()
     }
 
+    fn do_command_get_defined_mappings(
+        interpreter: &mut Interpreter,
+        command: NiaGetDefinedMappingsCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::get_defined_mappings(interpreter);
+
+        NiaGetDefinedMappingsCommandResult::from(result).into()
+    }
+
+    fn do_command_define_mapping(
+        interpreter: &mut Interpreter,
+        command: NiaDefineMappingCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result =
+            library::define_global_mapping(interpreter, command.get_mapping());
+        let result = result.map(|_| String::from("Success"));
+
+        NiaDefineMappingCommandResult::from(result).into()
+    }
+
+    fn do_command_change_mapping(
+        interpreter: &mut Interpreter,
+        command: NiaChangeMappingCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::change_global_mapping(
+            interpreter,
+            command.get_key_chords(),
+            command.get_action(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaChangeMappingCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_mapping(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveMappingCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::remove_global_mapping(
+            interpreter,
+            command.get_key_chords(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveMappingCommandResult::from(result).into()
+    }
+
+    pub fn do_command(
+        interpreter: &mut Interpreter,
+        command: NiaInterpreterCommand,
+    ) -> NiaInterpreterCommandResult {
+        match command {
+            NiaInterpreterCommand::DefineDevice(command) => {
+                do_command_define_keyboard(interpreter, command)
+            }
+            NiaInterpreterCommand::DefineModifier(command) => {
+                do_command_define_modifier(interpreter, command)
+            }
+            NiaInterpreterCommand::ExecuteCode(command) => {
+                do_command_execute_code(interpreter, command)
+            }
+            NiaInterpreterCommand::GetDefinedModifiers(command) => {
+                do_command_get_defined_modifiers(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveDeviceByPath(command) => {
+                do_command_remove_keyboard_by_path(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveDefineDeviceByName(command) => {
+                do_command_remove_keyboard_by_name(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveModifier(command) => {
+                do_command_remove_modifier(interpreter, command)
+            }
+            NiaInterpreterCommand::GetDefinedActions(command) => {
+                do_command_get_defined_actions(interpreter, command)
+            }
+            NiaInterpreterCommand::DefineAction(command) => {
+                do_command_define_action(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveAction(command) => {
+                do_command_remove_action(interpreter, command)
+            }
+            NiaInterpreterCommand::GetDefinedMappings(command) => {
+                do_command_get_defined_mappings(interpreter, command)
+            }
+            NiaInterpreterCommand::DefineMapping(command) => {
+                do_command_define_mapping(interpreter, command)
+            }
+            NiaInterpreterCommand::ChangeMapping(command) => {
+                do_command_change_mapping(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveMapping(command) => {
+                do_command_remove_mapping(interpreter, command)
+            }
+        }
+    }
+}
+
+impl EventLoop {
+    fn take_actions_from_interpreter(
+        interpreter: &mut Interpreter,
+    ) -> Result<Vec<Action>, Error> {
+        let action_list_value = library::get_root_variable(
+            interpreter,
+            PRIMITIVE_ACTIONS_VARIABLE_NAME,
+        )?;
+
+        let action_vector =
+            library::read_as_vector(interpreter, action_list_value)?;
+
+        let actions = action_vector
+            .into_iter()
+            .rev()
+            .map(|action_value| {
+                library::list_to_action(interpreter, action_value)
+            })
+            .collect::<Result<Vec<Action>, Error>>();
+
+        let nil = interpreter.intern_nil_symbol_value();
+        library::set_root_variable(
+            interpreter,
+            PRIMITIVE_ACTIONS_VARIABLE_NAME,
+            nil,
+        )?;
+
+        actions
+    }
+
+    fn handle_action(
+        interpreter: &mut Interpreter,
+        action: Action,
+    ) -> Result<Option<Command>, Error> {
+        let command = match action {
+            Action::KeyPress(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyDown(KeyId::new(key_code as u16)),
+            ),
+            Action::KeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::KeyRelease(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyUp(KeyId::new(key_code as u16)),
+            ),
+            Action::MouseButtonPress(button_code) => {
+                Command::UInput(UInputWorkerCommand::MouseButtonDown(
+                    ButtonId::new(button_code as u16),
+                ))
+            }
+            Action::MouseButtonClick(button_code) => {
+                Command::UInput(UInputWorkerCommand::MouseButtonPress(
+                    ButtonId::new(button_code as u16),
+                ))
+            }
+            Action::MouseButtonRelease(button_code) => {
+                Command::UInput(UInputWorkerCommand::MouseButtonUp(
+                    ButtonId::new(button_code as u16),
+                ))
+            }
+            Action::MouseAbsoluteMove(x, y) => Command::Xorg(
+                XorgWorkerCommand::MouseMoveTo(x as i16, y as i16),
+            ),
+            Action::MouseRelativeMove(dx, dy) => Command::Xorg(
+                XorgWorkerCommand::MouseMoveBy(dx as i16, dy as i16),
+            ),
+            Action::TextType(text) => {
+                Command::Xorg(XorgWorkerCommand::TextType(text))
+            }
+            Action::ExecuteOSCommand(os_command) => Command::Spawn(os_command),
+            Action::ExecuteCode(code) => {
+                interpreter.execute_in_main_environment(&code)?;
+
+                return Ok(None);
+            }
+            Action::ExecuteFunction(function_name) => {
+                let main_environment_id = interpreter.get_main_environment_id();
+                let symbol_id = interpreter.intern_symbol_id(&function_name);
+
+                let function = interpreter
+                    .lookup_function(main_environment_id, symbol_id)?;
+
+                match function {
+                    Some(value) => {
+                        interpreter.execute_function_without_arguments_int_main_environment(value)?;
+                    }
+                    None => {
+                        return Error::generic_execution_error(
+                            "Cannot find function",
+                        )
+                        .into();
+                    }
+                }
+
+                return Ok(None);
+            }
+            Action::ExecuteFunctionValue(function_value) => {
+                interpreter
+                    .execute_function_without_arguments_int_main_environment(
+                        function_value,
+                    )?;
+
+                return Ok(None);
+            }
+            Action::Wait(_) => return Ok(None),
+        };
+
+        Ok(Some(command))
+    }
+
     pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
         let mut interpreter = interpreter;
+        let mut gc = GarbageCollectorWrapper::new(GARBAGE_COLLECTOR_PERIOD);
 
         let (interpreter_command_sender, interpreter_command_receiver) =
             mpsc::channel::<NiaInterpreterCommand>();
@@ -491,81 +495,15 @@ impl EventLoop {
             // todo: change
             let mut action_listener_handle: Option<NiaActionListenerHandle> =
                 None;
-            let current_time = SystemTime::now();
 
-            let mut time_for_garbage_collection = current_time
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards");
-
-            time_for_garbage_collection +=
-                Duration::from_millis(GARBAGE_COLLECTOR_PERIOD);
+            let mut action_deque = ActionDeque::new();
 
             loop {
                 // execute command that was received with channel
                 match interpreter_command_receiver.try_recv() {
                     Ok(command) => {
-                        let command_result = match command {
-                            NiaInterpreterCommand::DefineDevice(command) => {
-                                EventLoop::do_command_define_keyboard(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                            NiaInterpreterCommand::DefineModifier(command) => {
-                                EventLoop::do_command_define_modifier(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                            NiaInterpreterCommand::ExecuteCode(command) => {
-                                EventLoop::do_command_execute_code(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                            NiaInterpreterCommand::GetDefinedModifiers(
-                                command,
-                            ) => EventLoop::do_command_get_defined_modifiers(
-                                &mut interpreter,
-                                command,
-                            ),
-                            NiaInterpreterCommand::RemoveDeviceByPath(
-                                command,
-                            ) => EventLoop::do_command_remove_keyboard_by_path(
-                                &mut interpreter,
-                                command,
-                            ),
-                            NiaInterpreterCommand::RemoveDefineDeviceByName(
-                                command,
-                            ) => EventLoop::do_command_remove_keyboard_by_name(
-                                &mut interpreter,
-                                command,
-                            ),
-                            NiaInterpreterCommand::RemoveModifier(command) => {
-                                EventLoop::do_command_remove_modifier(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                            NiaInterpreterCommand::GetDefinedActions(
-                                command,
-                            ) => EventLoop::do_command_get_defined_actions(
-                                &mut interpreter,
-                                command,
-                            ),
-                            NiaInterpreterCommand::DefineAction(command) => {
-                                EventLoop::do_command_define_action(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                            NiaInterpreterCommand::RemoveAction(command) => {
-                                EventLoop::do_command_remove_action(
-                                    &mut interpreter,
-                                    command,
-                                )
-                            }
-                        };
+                        let command_result =
+                            do_command::do_command(&mut interpreter, command);
 
                         match interpreter_command_result_sender
                             .send(command_result)
@@ -616,57 +554,73 @@ impl EventLoop {
                     action_listener_handle = None;
                 }
 
-                // send actions to worker
-                match &action_listener_handle {
-                    Some(handle) => {
-                        loop {
-                            match handle.try_receive_action() {
-                                Ok(action) => match action {
-                                    StateMachineAction::Empty => {}
-                                    StateMachineAction::Execute(value) => {
-                                        match interpreter
-                                            .execute_function_without_arguments_int_main_environment(
-                                                value,
-                                            ) {
-                                            Ok(_) => {}
-                                            Err(error) => {
-                                                println!("Error happened:");
-                                                println!("{}", error);
-                                            }
-                                        };
-                                    }
-                                },
-                                Err(mpsc::TryRecvError::Empty) => {
-                                    break;
+                // add actions to queue from state machine
+                if let Some(handle) = &action_listener_handle {
+                    loop {
+                        match handle.try_receive_action() {
+                            Ok(action) => match action {
+                                StateMachineAction::Empty => {}
+                                StateMachineAction::Execute(action) => {
+                                    action_deque.push_action(action);
                                 }
-                                Err(mpsc::TryRecvError::Disconnected) => {
-                                    // event listener is died somehow, so it won't work anyway
-                                    // event_listener_v = None;
-                                    //
-                                    // interpreter.stop_listening();
-                                }
+                            },
+                            Err(mpsc::TryRecvError::Empty) => {
+                                break;
+                            }
+                            Err(mpsc::TryRecvError::Disconnected) => {
+                                // event listener is died somehow, so it won't work anyway
+                                // event_listener_v = None;
+                                //
+                                // interpreter.stop_listening();
                             }
                         }
                     }
-                    _ => {}
                 }
 
-                // send events for execution
-                send_events::send_events(&mut interpreter, &worker_handle)
-                    .expect("Sending events failed.");
+                // add actions to queue from interpreter
+                let actions =
+                    EventLoop::take_actions_from_interpreter(&mut interpreter)
+                        .expect("");
+
+                action_deque.push_actions(actions);
+
+                // handle actions from queue
+                while let Some(action) = action_deque.take_action() {
+                    match EventLoop::handle_action(&mut interpreter, action) {
+                        Ok(Some(command)) => {
+                            match worker_handle.send_command(command) {
+                                Ok(_) => {}
+                                Err(error) => {
+                                    // worker is dead
+                                }
+                            }
+                        }
+                        Ok(None) => {}
+                        Err(error) => {
+                            println!("{:?}", error);
+
+                            if error.is_failure() {
+                                // handle failure
+                            }
+                        }
+                    };
+                }
 
                 // collect garbage
-                let current_time = SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .expect("Time went backwards.");
+                let was_collected = match gc.probably_collect(&mut interpreter)
+                {
+                    Ok(was_collected) => was_collected,
+                    Err(error) => {
+                        println!("{:?}", error);
 
-                if current_time >= time_for_garbage_collection {
-                    time_for_garbage_collection = current_time
-                        + Duration::from_millis(GARBAGE_COLLECTOR_PERIOD);
+                        if error.is_failure() {
+                            // handle failure
+                        }
+                        false
+                    }
+                };
 
-                    collect_garbage(&mut interpreter)
-                        .expect("Garbage collection failed.");
-                } else {
+                if !was_collected {
                     thread::sleep(Duration::from_millis(10));
                 }
             }

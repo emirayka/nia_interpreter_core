@@ -15,13 +15,13 @@ where
 {
     let action_name = action_name.as_ref();
 
-    let action_mouse_relative_move_string_value =
-        interpreter.intern_string_value("mouse-relative-move");
+    let action_mouse_relative_move_value =
+        interpreter.intern_symbol_value("mouse-relative-move");
     let x_value = Value::Integer(x as i64);
     let y_value = Value::Integer(y as i64);
 
     let action_value = interpreter.vec_to_list(vec![
-        action_mouse_relative_move_string_value,
+        action_mouse_relative_move_value,
         x_value,
         y_value,
     ]);
@@ -48,19 +48,19 @@ mod tests {
                 "mouse-relative-move-1",
                 100,
                 100,
-                r#"(list:new (cons:new "mouse-relative-move-1" (list:new "mouse-relative-move" 100 100)))"#,
+                r#"(list:new (cons:new "mouse-relative-move-1" (list:new 'mouse-relative-move 100 100)))"#,
             ),
             (
                 "mouse-relative-move-2",
                 200,
                 200,
-                r#"(list:new (cons:new "mouse-relative-move-2" (list:new "mouse-relative-move" 200 200)) (cons:new "mouse-relative-move-1" (list:new "mouse-relative-move" 100 100)))"#,
+                r#"(list:new (cons:new "mouse-relative-move-2" (list:new 'mouse-relative-move 200 200)) (cons:new "mouse-relative-move-1" (list:new 'mouse-relative-move 100 100)))"#,
             ),
             (
                 "mouse-relative-move-3",
                 300,
                 300,
-                r#"(list:new (cons:new "mouse-relative-move-3" (list:new "mouse-relative-move" 300 300)) (cons:new "mouse-relative-move-2" (list:new "mouse-relative-move" 200 200)) (cons:new "mouse-relative-move-1" (list:new "mouse-relative-move" 100 100)))"#,
+                r#"(list:new (cons:new "mouse-relative-move-3" (list:new 'mouse-relative-move 300 300)) (cons:new "mouse-relative-move-2" (list:new 'mouse-relative-move 200 200)) (cons:new "mouse-relative-move-1" (list:new 'mouse-relative-move 100 100)))"#,
             ),
         ];
 

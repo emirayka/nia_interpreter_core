@@ -14,15 +14,13 @@ where
     let action_name = action_name.as_ref();
     let code_to_execute = code_to_execute.as_ref();
 
-    let action_execute_code_string_value =
-        interpreter.intern_string_value("execute-code");
+    let action_execute_code_value =
+        interpreter.intern_symbol_value("execute-code");
     let code_to_execute_value =
         interpreter.intern_string_value(code_to_execute);
 
-    let action_value = interpreter.vec_to_list(vec![
-        action_execute_code_string_value,
-        code_to_execute_value,
-    ]);
+    let action_value = interpreter
+        .vec_to_list(vec![action_execute_code_value, code_to_execute_value]);
 
     library::define_action(interpreter, action_name, action_value)
 }
@@ -45,17 +43,17 @@ mod tests {
             (
                 "print-eh",
                 r#"(println "eh")"#,
-                r#"(list:new (cons:new "print-eh" (list:new "execute-code" "(println \"eh\")")))"#,
+                r#"(list:new (cons:new "print-eh" (list:new 'execute-code "(println \"eh\")")))"#,
             ),
             (
                 "print-nya",
                 r#"(println "nya")"#,
-                r#"(list:new (cons:new "print-nya" (list:new "execute-code" "(println \"nya\")")) (cons:new "print-eh" (list:new "execute-code" "(println \"eh\")")))"#,
+                r#"(list:new (cons:new "print-nya" (list:new 'execute-code "(println \"nya\")")) (cons:new "print-eh" (list:new 'execute-code "(println \"eh\")")))"#,
             ),
             (
                 "print-nia",
                 r#"(println "nia")"#,
-                r#"(list:new (cons:new "print-nia" (list:new "execute-code" "(println \"nia\")")) (cons:new "print-nya" (list:new "execute-code" "(println \"nya\")")) (cons:new "print-eh" (list:new "execute-code" "(println \"eh\")")))"#,
+                r#"(list:new (cons:new "print-nia" (list:new 'execute-code "(println \"nia\")")) (cons:new "print-nya" (list:new 'execute-code "(println \"nya\")")) (cons:new "print-eh" (list:new 'execute-code "(println \"eh\")")))"#,
             ),
         ];
 

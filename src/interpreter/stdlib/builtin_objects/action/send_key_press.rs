@@ -6,6 +6,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
+use crate::PRIMITIVE_ACTIONS_VARIABLE_NAME;
 
 pub fn send_key_press(
     interpreter: &mut Interpreter,
@@ -23,21 +24,6 @@ pub fn send_key_press(
 
     let key_code = match values.remove(0) {
         Value::Integer(key_code) => key_code,
-        Value::String(key_name) => {
-            let key_name = interpreter.get_string(key_name)?;
-
-            let key_id = key_name.get_string()
-                .parse::<KeyId>()
-                .map_err(|_| {
-                    Error::invalid_argument_error(&format!(
-                        "Invalid key name: {}",
-                        key_name.get_string()
-                    ))
-                })?
-                .get_id() as i64;
-
-            key_id
-        }
         _ => {
             return Error::invalid_argument_error(
                 "Built-in function `action:send-key-press' takes only an integer or string.",
@@ -50,7 +36,11 @@ pub fn send_key_press(
     let key_press = interpreter
         .vec_to_list(vec![key_press_symbol_value, Value::Integer(key_code)]);
 
-    library::add_value_to_root_list(interpreter, "--actions", key_press)?;
+    library::add_value_to_root_list(
+        interpreter,
+        PRIMITIVE_ACTIONS_VARIABLE_NAME,
+        key_press,
+    )?;
 
     Ok(Value::Boolean(true))
 }
@@ -70,10 +60,13 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("--actions", "'()"),
-            ("(action:send-key-press 2) --actions", "'((key-press 2))"),
+            (PRIMITIVE_ACTIONS_VARIABLE_NAME, "'()"),
             (
-                "(action:send-key-press 3) --actions",
+                "(action:send-key-press 2) nia-primitive-actions",
+                "'((key-press 2))",
+            ),
+            (
+                "(action:send-key-press 3) nia-primitive-actions",
                 "'((key-press 3) (key-press 2))",
             ),
         ];

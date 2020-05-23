@@ -15,7 +15,7 @@ where
     let text_to_type = text_to_type.as_ref();
 
     let action_type_text_type_value =
-        interpreter.intern_string_value("text-type");
+        interpreter.intern_symbol_value("text-type");
     let text_to_type_value = interpreter.intern_string_value(text_to_type);
 
     let action_value = interpreter
@@ -42,17 +42,17 @@ mod tests {
             (
                 "type-nia",
                 r#"nia"#,
-                r#"(list:new (cons:new "type-nia" (list:new "text-type" "nia")))"#,
+                r#"(list:new (cons:new "type-nia" (list:new 'text-type "nia")))"#,
             ),
             (
                 "type-nya",
                 r#"nya"#,
-                r#"(list:new (cons:new "type-nya" (list:new "text-type" "nya")) (cons:new "type-nia" (list:new "text-type" "nia")))"#,
+                r#"(list:new (cons:new "type-nya" (list:new 'text-type "nya")) (cons:new "type-nia" (list:new 'text-type "nia")))"#,
             ),
             (
                 "type-eh",
                 r#"eh"#,
-                r#"(list:new (cons:new "type-eh" (list:new "text-type" "eh")) (cons:new "type-nya" (list:new "text-type" "nya")) (cons:new "type-nia" (list:new "text-type" "nia")))"#,
+                r#"(list:new (cons:new "type-eh" (list:new 'text-type "eh")) (cons:new "type-nya" (list:new 'text-type "nya")) (cons:new "type-nia" (list:new 'text-type "nia")))"#,
             ),
         ];
 

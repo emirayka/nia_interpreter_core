@@ -50,10 +50,11 @@ fn parse_action(
     }
 
     let action_type_value = action_vector.remove(0);
-    let action_type_string =
-        library::read_as_string(interpreter, action_type_value)?.clone();
+    let action_type_symbol_id = library::read_as_symbol_id(action_type_value)?;
+    let action_type_symbol_name =
+        interpreter.get_symbol_name(action_type_symbol_id)?.clone();
 
-    match action_type_string.as_str() {
+    match action_type_symbol_name.as_str() {
         "execute-code" => {
             let code =
                 read_string_from_vector(interpreter, &mut action_vector)?;
@@ -129,7 +130,7 @@ fn parse_action(
         }
         _ => Error::generic_execution_error(format!(
             "Invalid action type: {}.",
-            action_type_string
+            action_type_symbol_name
         ))
         .into(),
     }

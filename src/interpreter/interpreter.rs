@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::interpreter::evaluator::evaluate_value;
-use crate::interpreter::evaluator::evaluate_values;
+use crate::interpreter::evaluate_value;
+use crate::interpreter::evaluate_values;
 use crate::interpreter::parser::parse;
 use crate::interpreter::reader::read_elements;
 
@@ -266,12 +266,18 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn intern_string_id(&mut self, string: &str) -> StringId {
-        self.string_arena.intern_string(string)
+    pub fn intern_string_id<S>(&mut self, string: S) -> StringId
+    where
+        S: AsRef<str>,
+    {
+        self.string_arena.intern_string(string.as_ref())
     }
 
-    pub fn intern_string_value(&mut self, string: &str) -> Value {
-        Value::String(self.intern_string_id(string))
+    pub fn intern_string_value<S>(&mut self, string: S) -> Value
+    where
+        S: AsRef<str>,
+    {
+        Value::String(self.intern_string_id(string.as_ref()))
     }
 
     pub fn get_string(&self, string_id: StringId) -> Result<&NiaString, Error> {
@@ -391,7 +397,7 @@ impl Interpreter {
     }
 
     pub fn symbol_is_not_nil(
-        &mut self,
+        &self,
         symbol_id: SymbolId,
     ) -> Result<bool, Error> {
         let symbol = self.get_symbol(symbol_id)?;

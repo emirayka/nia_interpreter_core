@@ -1,5 +1,7 @@
 use crate::interpreter::event_loop::interpreter_commands::*;
-use crate::Action;
+
+use crate::{Action, Key, Mapping};
+use crate::{KeyChord, ModifierDescription};
 
 #[derive(Clone, Debug)]
 pub enum NiaInterpreterCommand {
@@ -13,6 +15,10 @@ pub enum NiaInterpreterCommand {
     GetDefinedActions(NiaGetDefinedActionsCommand),
     DefineAction(NiaDefineActionCommand),
     RemoveAction(NiaRemoveActionCommand),
+    GetDefinedMappings(NiaGetDefinedMappingsCommand),
+    DefineMapping(NiaDefineMappingCommand),
+    ChangeMapping(NiaChangeMappingCommand),
+    RemoveMapping(NiaRemoveMappingCommand),
 }
 
 impl NiaInterpreterCommand {
@@ -31,18 +37,11 @@ impl NiaInterpreterCommand {
         ))
     }
 
-    pub fn make_define_modifier_command<S>(
-        device_id: i32,
-        key_code: i32,
-        modifier_alias: S,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
+    pub fn make_define_modifier_command(
+        modifier: ModifierDescription,
+    ) -> NiaInterpreterCommand {
         NiaInterpreterCommand::DefineModifier(NiaDefineModifierCommand::new(
-            device_id,
-            key_code,
-            modifier_alias,
+            modifier,
         ))
     }
 
@@ -81,16 +80,13 @@ impl NiaInterpreterCommand {
         )
     }
 
-    pub fn make_remove_modifier_command(
-        device_id: i32,
-        key_code: i32,
-    ) -> NiaInterpreterCommand {
+    pub fn make_remove_modifier_command(key: Key) -> NiaInterpreterCommand {
         NiaInterpreterCommand::RemoveModifier(NiaRemoveModifierCommand::new(
-            device_id, key_code,
+            key,
         ))
     }
 
-    pub fn make_get_defined_actions() -> NiaInterpreterCommand {
+    pub fn make_get_defined_actions_command() -> NiaInterpreterCommand {
         let get_defined_actions_command = NiaGetDefinedActionsCommand::new();
 
         NiaInterpreterCommand::GetDefinedActions(get_defined_actions_command)
@@ -106,9 +102,41 @@ impl NiaInterpreterCommand {
 
         NiaInterpreterCommand::RemoveAction(remove_action_command)
     }
+
+    pub fn make_get_defined_mappings_command() -> NiaInterpreterCommand {
+        let get_defined_mappings_command = NiaGetDefinedMappingsCommand::new();
+
+        NiaInterpreterCommand::GetDefinedMappings(get_defined_mappings_command)
+    }
+
+    pub fn make_define_mapping_command(
+        mapping: Mapping,
+    ) -> NiaInterpreterCommand {
+        let define_mapping_command = NiaDefineMappingCommand::new(mapping);
+
+        NiaInterpreterCommand::DefineMapping(define_mapping_command)
+    }
+    pub fn make_change_mapping_command(
+        key_chords: Vec<KeyChord>,
+        action: Action,
+    ) -> NiaInterpreterCommand {
+        let change_mapping_command =
+            NiaChangeMappingCommand::new(key_chords, action);
+
+        NiaInterpreterCommand::ChangeMapping(change_mapping_command)
+    }
+
+    pub fn make_remove_mapping_command(
+        key_chord_sequence: Vec<KeyChord>,
+    ) -> NiaInterpreterCommand {
+        let remove_mapping_command =
+            NiaRemoveMappingCommand::new(key_chord_sequence);
+
+        NiaInterpreterCommand::RemoveMapping(remove_mapping_command)
+    }
 }
 
-// define action
+// define action commands
 impl NiaInterpreterCommand {
     pub fn make_define_key_press_action_command<S>(
         action_name: S,

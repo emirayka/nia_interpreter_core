@@ -4,6 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
+use crate::PRIMITIVE_ACTIONS_VARIABLE_NAME;
 
 pub fn send_text_type(
     interpreter: &mut Interpreter,
@@ -25,7 +26,11 @@ pub fn send_text_type(
     let text_type = interpreter
         .vec_to_list(vec![text_type_symbol_value, Value::String(text)]);
 
-    library::add_value_to_root_list(interpreter, "--actions", text_type)?;
+    library::add_value_to_root_list(
+        interpreter,
+        PRIMITIVE_ACTIONS_VARIABLE_NAME,
+        text_type,
+    )?;
 
     Ok(Value::Boolean(true))
 }
@@ -45,13 +50,13 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("--actions", "'()"),
+            (PRIMITIVE_ACTIONS_VARIABLE_NAME, "'()"),
             (
-                "(action:send-text-type \"first\") --actions",
+                "(action:send-text-type \"first\") nia-primitive-actions",
                 "'((text-type \"first\"))",
             ),
             (
-                "(action:send-text-type \"second\") --actions",
+                "(action:send-text-type \"second\") nia-primitive-actions",
                 "'((text-type \"second\") (text-type \"first\"))",
             ),
         ];

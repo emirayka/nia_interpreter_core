@@ -15,7 +15,7 @@ where
     let action_os_command = os_command.as_ref();
 
     let action_type_execute_os_command_value =
-        interpreter.intern_string_value("execute-os-command");
+        interpreter.intern_symbol_value("execute-os-command");
     let action_os_command_value =
         interpreter.intern_string_value(action_os_command);
 
@@ -45,17 +45,17 @@ mod tests {
             (
                 "execute-eh",
                 r#"eh"#,
-                r#"(list:new (cons:new "execute-eh" (list:new "execute-os-command" "eh")))"#,
+                r#"(list:new (cons:new "execute-eh" (list:new 'execute-os-command "eh")))"#,
             ),
             (
                 "execute-nya",
                 r#"nya"#,
-                r#"(list:new (cons:new "execute-nya" (list:new "execute-os-command" "nya")) (cons:new "execute-eh" (list:new "execute-os-command" "eh")))"#,
+                r#"(list:new (cons:new "execute-nya" (list:new 'execute-os-command "nya")) (cons:new "execute-eh" (list:new 'execute-os-command "eh")))"#,
             ),
             (
                 "execute-nia",
                 r#"nia"#,
-                r#"(list:new (cons:new "execute-nia" (list:new "execute-os-command" "nia")) (cons:new "execute-nya" (list:new "execute-os-command" "nya")) (cons:new "execute-eh" (list:new "execute-os-command" "eh")))"#,
+                r#"(list:new (cons:new "execute-nia" (list:new 'execute-os-command "nia")) (cons:new "execute-nya" (list:new 'execute-os-command "nya")) (cons:new "execute-eh" (list:new 'execute-os-command "eh")))"#,
             ),
         ];
 

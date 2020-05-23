@@ -48,17 +48,44 @@ pub fn value_to_string(
             Ok(string)
         }
         Value::Cons(cons_id) => {
-            let values = interpreter.list_to_vec(cons_id)?;
-
             let mut result = String::new();
             result.push_str("(");
 
-            for value in values {
-                result.push_str(&value_to_string(interpreter, value)?);
-                result.push_str(" ");
-            }
+            let mut car_value = interpreter.get_car(cons_id)?;
+            let mut cdr_value = interpreter.get_cdr(cons_id)?;
 
-            result.remove(result.len() - 1);
+            loop {
+                let car_string = value_to_string(interpreter, car_value)?;
+
+                result.push_str(&car_string);
+
+                match cdr_value {
+                    Value::Cons(cons_id) => {
+                        car_value = interpreter.get_car(cons_id)?;
+                        cdr_value = interpreter.get_cdr(cons_id)?;
+                        result.push_str(" ");
+                    }
+                    Value::Symbol(symbol_id) => {
+                        if interpreter.symbol_is_not_nil(symbol_id)? {
+                            let cdr_string =
+                                value_to_string(interpreter, cdr_value)?;
+
+                            result.push_str(" #. ");
+                            result.push_str(&cdr_string);
+                        }
+
+                        break;
+                    }
+                    _ => {
+                        let cdr_string =
+                            value_to_string(interpreter, cdr_value)?;
+
+                        result.push_str(" #. ");
+                        result.push_str(&cdr_string);
+                        break;
+                    }
+                }
+            }
 
             result.push_str(")");
             Ok(result)

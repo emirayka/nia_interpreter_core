@@ -4,6 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
+use crate::PRIMITIVE_ACTIONS_VARIABLE_NAME;
 
 pub fn send_mouse_button_press(
     interpreter: &mut Interpreter,
@@ -31,15 +32,15 @@ pub fn send_mouse_button_press(
 
     let mouse_button_press_symbol_value =
         interpreter.intern_symbol_value("mouse-button-press");
-    let mouse_button_press = interpreter.vec_to_list(vec![
+    let mouse_button_press_list = interpreter.vec_to_list(vec![
         mouse_button_press_symbol_value,
         Value::Integer(key_code),
     ]);
 
     library::add_value_to_root_list(
         interpreter,
-        "--actions",
-        mouse_button_press,
+        PRIMITIVE_ACTIONS_VARIABLE_NAME,
+        mouse_button_press_list,
     )?;
 
     Ok(Value::Boolean(true))
@@ -60,13 +61,13 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("--actions", "'()"),
+            (PRIMITIVE_ACTIONS_VARIABLE_NAME, "'()"),
             (
-                "(action:send-mouse-button-press 2) --actions",
+                "(action:send-mouse-button-press 2) nia-primitive-actions",
                 "'((mouse-button-press 2))",
             ),
             (
-                "(action:send-mouse-button-press 3) --actions",
+                "(action:send-mouse-button-press 3) nia-primitive-actions",
                 "'((mouse-button-press 3) (mouse-button-press 2))",
             ),
         ];

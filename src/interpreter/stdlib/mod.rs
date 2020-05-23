@@ -19,6 +19,8 @@ pub fn infect_stdlib(interpreter: &mut Interpreter) -> Result<(), Error> {
     Ok(())
 }
 
-pub use builtin_variables::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
-pub use builtin_variables::DEFINED_DEVICES_ROOT_VARIABLE_NAME;
-pub use builtin_variables::DEFINED_MODIFIERS_ROOT_VARIABLE_NAME;
+pub use builtin_variables::{
+    DEFINED_ACTIONS_ROOT_VARIABLE_NAME, DEFINED_DEVICES_ROOT_VARIABLE_NAME,
+    DEFINED_MODIFIERS_ROOT_VARIABLE_NAME, GLOBAL_MAP_ROOT_VARIABLE_NAME,
+    PRIMITIVE_ACTIONS_VARIABLE_NAME,
+};

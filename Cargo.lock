@@ -421,6 +421,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "nia_event_codes"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+]
+
+[[package]]
 name = "nia_events"
 version = "0.1.0"
 dependencies = [
@@ -440,6 +447,7 @@ dependencies = [
  "dirs",
  "either",
  "nia_basic_assertions",
+ "nia_event_codes",
  "nia_events",
  "nia_state_machine",
  "nom",

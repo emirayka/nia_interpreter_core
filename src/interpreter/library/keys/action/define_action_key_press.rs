@@ -14,12 +14,11 @@ where
 {
     let action_name = action_name.as_ref();
 
-    let action_key_press_string_value =
-        interpreter.intern_string_value("key-press");
+    let action_key_press_value = interpreter.intern_symbol_value("key-press");
     let key_code_value = Value::Integer(key_code as i64);
 
-    let action_value = interpreter
-        .vec_to_list(vec![action_key_press_string_value, key_code_value]);
+    let action_value =
+        interpreter.vec_to_list(vec![action_key_press_value, key_code_value]);
 
     library::define_action(interpreter, action_name, action_value)
 }
@@ -42,17 +41,17 @@ mod tests {
             (
                 "press-q",
                 16,
-                r#"(list:new (cons:new "press-q" (list:new "key-press" 16)))"#,
+                r#"(list:new (cons:new "press-q" (list:new 'key-press 16)))"#,
             ),
             (
                 "press-w",
                 17,
-                r#"(list:new (cons:new "press-w" (list:new "key-press" 17)) (cons:new "press-q" (list:new "key-press" 16)))"#,
+                r#"(list:new (cons:new "press-w" (list:new 'key-press 17)) (cons:new "press-q" (list:new 'key-press 16)))"#,
             ),
             (
                 "press-f",
                 33,
-                r#"(list:new (cons:new "press-f" (list:new "key-press" 33)) (cons:new "press-w" (list:new "key-press" 17)) (cons:new "press-q" (list:new "key-press" 16)))"#,
+                r#"(list:new (cons:new "press-f" (list:new 'key-press 33)) (cons:new "press-w" (list:new 'key-press 17)) (cons:new "press-q" (list:new 'key-press 16)))"#,
             ),
         ];
 

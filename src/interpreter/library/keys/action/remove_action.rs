@@ -53,11 +53,11 @@ mod tests {
         let specs = vec![
             (
                 "wait-1-sec",
-                r#"(list:new (cons:new "wait-3-sec" (list:new "wait" 3000)) (cons:new "wait-2-sec" (list:new "wait" 2000)))"#,
+                r#"(list:new (cons:new "wait-3-sec" (list:new 'wait 3000)) (cons:new "wait-2-sec" (list:new 'wait 2000)))"#,
             ),
             (
                 "wait-3-sec",
-                r#"(list:new (cons:new "wait-2-sec" (list:new "wait" 2000)))"#,
+                r#"(list:new (cons:new "wait-2-sec" (list:new 'wait 2000)))"#,
             ),
             ("wait-2-sec", r#"(list:new)"#),
         ];

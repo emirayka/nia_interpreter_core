@@ -14,14 +14,12 @@ where
 {
     let action_name = action_name.as_ref();
 
-    let action_mouse_button_click_string_value =
-        interpreter.intern_string_value("mouse-button-click");
+    let action_mouse_button_click_value =
+        interpreter.intern_symbol_value("mouse-button-click");
     let button_code_value = Value::Integer(button_code as i64);
 
-    let action_value = interpreter.vec_to_list(vec![
-        action_mouse_button_click_string_value,
-        button_code_value,
-    ]);
+    let action_value = interpreter
+        .vec_to_list(vec![action_mouse_button_click_value, button_code_value]);
 
     library::define_action(interpreter, action_name, action_value)
 }
@@ -44,17 +42,17 @@ mod tests {
             (
                 "mouse-button-click-left",
                 1,
-                r#"(list:new (cons:new "mouse-button-click-left" (list:new "mouse-button-click" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-click-left" (list:new 'mouse-button-click 1)))"#,
             ),
             (
                 "mouse-button-click-right",
                 2,
-                r#"(list:new (cons:new "mouse-button-click-right" (list:new "mouse-button-click" 2)) (cons:new "mouse-button-click-left" (list:new "mouse-button-click" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-click-right" (list:new 'mouse-button-click 2)) (cons:new "mouse-button-click-left" (list:new 'mouse-button-click 1)))"#,
             ),
             (
                 "mouse-button-click-middle",
                 3,
-                r#"(list:new (cons:new "mouse-button-click-middle" (list:new "mouse-button-click" 3)) (cons:new "mouse-button-click-right" (list:new "mouse-button-click" 2)) (cons:new "mouse-button-click-left" (list:new "mouse-button-click" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-click-middle" (list:new 'mouse-button-click 3)) (cons:new "mouse-button-click-right" (list:new 'mouse-button-click 2)) (cons:new "mouse-button-click-left" (list:new 'mouse-button-click 1)))"#,
             ),
         ];
 

@@ -105,7 +105,7 @@ mod tests {
         interpreter: &mut Interpreter,
         spec_code: &str,
     ) {
-        let result = library::get_defined_keyboards(interpreter).unwrap();
+        let result = library::get_defined_devices_list(interpreter).unwrap();
         let expected =
             interpreter.execute_in_main_environment(spec_code).unwrap();
 

@@ -15,7 +15,7 @@ where
     let action_function_name = function_name.as_ref();
 
     let action_type_execute_function_value =
-        interpreter.intern_string_value("execute-function");
+        interpreter.intern_symbol_value("execute-function");
     let action_function_name_value =
         interpreter.intern_string_value(action_function_name);
 
@@ -45,17 +45,17 @@ mod tests {
             (
                 "execute-eh",
                 r#"eh"#,
-                r#"(list:new (cons:new "execute-eh" (list:new "execute-function" "eh")))"#,
+                r#"(list:new (cons:new "execute-eh" (list:new 'execute-function "eh")))"#,
             ),
             (
                 "execute-nya",
                 r#"nya"#,
-                r#"(list:new (cons:new "execute-nya" (list:new "execute-function" "nya")) (cons:new "execute-eh" (list:new "execute-function" "eh")))"#,
+                r#"(list:new (cons:new "execute-nya" (list:new 'execute-function "nya")) (cons:new "execute-eh" (list:new 'execute-function "eh")))"#,
             ),
             (
                 "execute-nia",
                 r#"nia"#,
-                r#"(list:new (cons:new "execute-nia" (list:new "execute-function" "nia")) (cons:new "execute-nya" (list:new "execute-function" "nya")) (cons:new "execute-eh" (list:new "execute-function" "eh")))"#,
+                r#"(list:new (cons:new "execute-nia" (list:new 'execute-function "nia")) (cons:new "execute-nya" (list:new 'execute-function "nya")) (cons:new "execute-eh" (list:new 'execute-function "eh")))"#,
             ),
         ];
 

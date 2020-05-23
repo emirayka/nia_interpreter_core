@@ -7,8 +7,8 @@ use crate::library;
 fn find_index(
     interpreter: &mut Interpreter,
     modifiers_vector: &Vec<Value>,
-    keyboard_path: Value,
-    key_code: Value,
+    device_id_value: Option<Value>,
+    key_code_value: Value,
 ) -> Result<usize, Error> {
     let mut index = 0;
 
@@ -16,14 +16,19 @@ fn find_index(
         let modifier_vector =
             library::read_as_vector(interpreter, *modifier_list)?;
 
-        if modifier_vector.len() != 3 {
-            return Error::generic_execution_error(
-                "Invariant violation: `nia-defined-modifiers' must be a list of three-element lists."
-            ).into();
-        }
+        let (modifier_device_id_value, modifier_key_code_value) =
+            match modifier_vector.len() {
+                2 => (None, modifier_vector[0]),
+                3 => (Some(modifier_vector[0]), modifier_vector[1]),
+                _ => {
+                    return Error::generic_execution_error(
+                    "Invariant violation: `nia-defined-modifiers' must be a list of two or three element lists."
+                ).into();
+                }
+            };
 
-        if library::deep_equal(interpreter, keyboard_path, modifier_vector[0])?
-            && library::deep_equal(interpreter, key_code, modifier_vector[1])?
+        if modifier_device_id_value == device_id_value
+            && modifier_key_code_value == key_code_value
         {
             break;
         }
@@ -36,30 +41,36 @@ fn find_index(
 
 pub fn remove_modifier_with_values(
     interpreter: &mut Interpreter,
-    keyboard_path: Value,
-    key_code: Value,
+    device_id_value: Option<Value>,
+    key_code_value: Value,
 ) -> Result<(), Error> {
-    library::check_value_is_integer(keyboard_path)?;
-    library::check_value_is_integer(key_code)?;
+    if let Some(device_id) = device_id_value {
+        library::check_value_is_integer(device_id)?;
+    }
+    library::check_value_is_integer(key_code_value)?;
 
-    let root_environment_id = interpreter.get_root_environment_id();
-    let symbol_id_defined_modifiers =
-        interpreter.intern_symbol_id(DEFINED_MODIFIERS_ROOT_VARIABLE_NAME);
-    let modifiers_list = library::get_defined_modifiers_as_values(interpreter)?;
+    let modifiers_list = library::get_root_variable(
+        interpreter,
+        DEFINED_MODIFIERS_ROOT_VARIABLE_NAME,
+    )?;
     let mut modifiers_vector =
         library::read_as_vector(interpreter, modifiers_list)?;
 
-    let index =
-        find_index(interpreter, &modifiers_vector, keyboard_path, key_code)?;
+    let index = find_index(
+        interpreter,
+        &modifiers_vector,
+        device_id_value,
+        key_code_value,
+    )?;
 
     if index < modifiers_vector.len() {
         modifiers_vector.remove(index);
 
         let new_list = interpreter.vec_to_list(modifiers_vector);
 
-        interpreter.set_variable(
-            root_environment_id,
-            symbol_id_defined_modifiers,
+        library::set_root_variable(
+            interpreter,
+            DEFINED_MODIFIERS_ROOT_VARIABLE_NAME,
             new_list,
         )?;
 
@@ -81,49 +92,47 @@ mod tests {
     fn removes_defined_modifiers() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec![(3, 1), (2, 2), (1, 3)];
+        let specs = vec![
+            (Some(Value::Integer(3)), Value::Integer(1)),
+            (None, Value::Integer(2)),
+            (Some(Value::Integer(1)), Value::Integer(3)),
+        ];
+        let modifier_alias_value = interpreter.intern_nil_symbol_value();
 
-        for spec in specs {
-            let keyboard_path = Value::Integer(spec.0);
-            let key_code = Value::Integer(spec.1);
-            let modifier_alias = interpreter.intern_nil_symbol_value();
-
+        for (device_id_value, key_code_value) in specs {
             nia_assert_is_ok(&library::define_modifier_with_values(
                 &mut interpreter,
-                keyboard_path,
-                key_code,
-                modifier_alias,
+                device_id_value,
+                key_code_value,
+                modifier_alias_value,
             ));
         }
 
         let expected = interpreter
-            .execute_in_main_environment(r#"'((1 3 ()) (2 2 ()) (3 1 ()))"#)
+            .execute_in_main_environment(r#"'((1 3 ()) (2 ()) (3 1 ()))"#)
             .unwrap();
         let result =
-            library::get_defined_modifiers_as_values(&mut interpreter).unwrap();
+            library::get_defined_modifiers_as_value(&mut interpreter).unwrap();
 
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
         let specs = vec![
-            (2, 2, r#"'((1 3 ()) (3 1 ()))"#),
-            (1, 3, r#"'((3 1 ()))"#),
-            (3, 1, r#"'()"#),
+            (None, Value::Integer(2), r#"'((1 3 ()) (3 1 ()))"#),
+            (Some(Value::Integer(1)), Value::Integer(3), r#"'((3 1 ()))"#),
+            (Some(Value::Integer(3)), Value::Integer(1), r#"'()"#),
         ];
 
-        for spec in specs {
-            let keyboard_path = Value::Integer(spec.0);
-            let key_code = Value::Integer(spec.1);
-
+        for (device_id_value, key_code_value, code) in specs {
             nia_assert_is_ok(&remove_modifier_with_values(
                 &mut interpreter,
-                keyboard_path,
-                key_code,
+                device_id_value,
+                key_code_value,
             ));
 
             let expected =
-                interpreter.execute_in_main_environment(spec.2).unwrap();
+                interpreter.execute_in_main_environment(code).unwrap();
             let result =
-                library::get_defined_modifiers_as_values(&mut interpreter)
+                library::get_defined_modifiers_as_value(&mut interpreter)
                     .unwrap();
 
             crate::utils::assert_deep_equal(&mut interpreter, expected, result);
@@ -134,18 +143,7 @@ mod tests {
     fn returns_generic_execution_error_when_there_is_no_modifier() {
         let mut interpreter = Interpreter::new();
 
-        let device_id = Value::Integer(3);
-        let key_code = Value::Integer(23);
-        let modifier_alias = interpreter.intern_string_value("mod");
-
-        nia_assert_is_ok(&library::define_modifier_with_values(
-            &mut interpreter,
-            device_id,
-            key_code,
-            modifier_alias,
-        ));
-
-        let device_id = Value::Integer(3);
+        let device_id = Some(Value::Integer(3));
         let key_code = Value::Integer(24);
 
         let result =

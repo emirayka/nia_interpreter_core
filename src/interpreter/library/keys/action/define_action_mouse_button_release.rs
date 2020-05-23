@@ -14,12 +14,12 @@ where
 {
     let action_name = action_name.as_ref();
 
-    let action_mouse_button_release_string_value =
-        interpreter.intern_string_value("mouse-button-release");
+    let action_mouse_button_release_value =
+        interpreter.intern_symbol_value("mouse-button-release");
     let button_code_value = Value::Integer(button_code as i64);
 
     let action_value = interpreter.vec_to_list(vec![
-        action_mouse_button_release_string_value,
+        action_mouse_button_release_value,
         button_code_value,
     ]);
 
@@ -44,17 +44,17 @@ mod tests {
             (
                 "mouse-button-release-left",
                 1,
-                r#"(list:new (cons:new "mouse-button-release-left" (list:new "mouse-button-release" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-release-left" (list:new 'mouse-button-release 1)))"#,
             ),
             (
                 "mouse-button-release-right",
                 2,
-                r#"(list:new (cons:new "mouse-button-release-right" (list:new "mouse-button-release" 2)) (cons:new "mouse-button-release-left" (list:new "mouse-button-release" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-release-right" (list:new 'mouse-button-release 2)) (cons:new "mouse-button-release-left" (list:new 'mouse-button-release 1)))"#,
             ),
             (
                 "mouse-button-release-middle",
                 3,
-                r#"(list:new (cons:new "mouse-button-release-middle" (list:new "mouse-button-release" 3)) (cons:new "mouse-button-release-right" (list:new "mouse-button-release" 2)) (cons:new "mouse-button-release-left" (list:new "mouse-button-release" 1)))"#,
+                r#"(list:new (cons:new "mouse-button-release-middle" (list:new 'mouse-button-release 3)) (cons:new "mouse-button-release-right" (list:new 'mouse-button-release 2)) (cons:new "mouse-button-release-left" (list:new 'mouse-button-release 1)))"#,
             ),
         ];
 

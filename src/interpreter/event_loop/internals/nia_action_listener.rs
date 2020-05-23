@@ -1,12 +1,10 @@
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::thread;
+use std::time::Duration;
 
 use nia_events::Command;
 use nia_events::Event;
-use nia_events::KeyChord;
-use nia_events::KeyChordPart;
-use nia_events::KeyboardId;
 use nia_events::Listener;
 use nia_events::ListenerSettings;
 use nia_events::ListenerSettingsBuilder;
@@ -16,24 +14,26 @@ use nia_events::WorkerHandle;
 use nia_state_machine::StateMachine;
 use nia_state_machine::StateMachineResult;
 
-use crate::Error;
 use crate::Interpreter;
+use crate::Key;
+use crate::KeyChord;
 use crate::NiaActionListenerHandle;
 use crate::StateMachineAction;
+use crate::{Convertable, Error};
+use crate::{DeviceInfo, Mapping, ModifierDescription};
 
 use crate::library;
-use std::time::Duration;
 
 pub struct NiaActionListener {
-    keyboards: Vec<(String, String)>,
-    modifiers: Vec<KeyChordPart>,
-    mappings: Vec<(Vec<KeyChord>, StateMachineAction)>,
+    devices: Vec<DeviceInfo>,
+    modifiers: Vec<ModifierDescription>,
+    mappings: Vec<Mapping>,
 }
 
 impl NiaActionListener {
     pub fn new() -> NiaActionListener {
         NiaActionListener {
-            keyboards: Vec::new(),
+            devices: Vec::new(),
             modifiers: Vec::new(),
             mappings: Vec::new(),
         }
@@ -42,59 +42,42 @@ impl NiaActionListener {
     pub fn from_interpreter(
         interpreter: &mut Interpreter,
     ) -> Result<NiaActionListener, Error> {
-        let mut event_listener = NiaActionListener::new();
+        let devices_info = library::get_defined_devices_info(interpreter)?;
+        let modifiers = library::get_defined_modifiers(interpreter)?;
+        let mappings = library::get_defined_mappings(interpreter)?;
 
-        let keyboards = library::read_keyboards(interpreter)?;
-        let modifiers = library::read_modifiers(interpreter)?;
-        let mappings = library::read_mappings(interpreter)?;
+        let nia_action_listener = NiaActionListener {
+            devices: devices_info,
+            modifiers,
+            mappings,
+        };
 
-        for keyboard in keyboards {
-            event_listener.add_keyboard(&keyboard.0, &keyboard.1);
-        }
-
-        for modifier in modifiers {
-            event_listener.add_modifier(modifier);
-        }
-
-        for mapping in mappings {
-            let action = StateMachineAction::from(mapping.1);
-
-            event_listener.add_mapping(mapping.0, action);
-        }
-
-        Ok(event_listener)
-    }
-
-    pub fn add_keyboard(&mut self, path: &str, name: &str) {
-        self.keyboards
-            .push((String::from(path), String::from(name)))
-    }
-
-    pub fn add_modifier(&mut self, modifier: KeyChordPart) {
-        self.modifiers.push(modifier)
-    }
-
-    pub fn add_mapping(
-        &mut self,
-        key_chords: Vec<KeyChord>,
-        action: StateMachineAction,
-    ) {
-        self.mappings.push((key_chords, action))
+        Ok(nia_action_listener)
     }
 
     fn build_settings(&self) -> ListenerSettings {
         let mut settings_builder = ListenerSettingsBuilder::new();
-        let mut map = HashMap::new();
-        let iterator = self.keyboards.iter().enumerate();
 
-        for (index, (keyboard_path, keyboard_name)) in iterator {
-            settings_builder =
-                settings_builder.add_keyboard(keyboard_path.clone());
-            map.insert(keyboard_name.clone(), KeyboardId::new(index as u16));
+        for device_info in &self.devices {
+            settings_builder = settings_builder.add_device(
+                device_info.get_path().clone(),
+                device_info.get_id() as u16,
+            );
         }
 
-        for modifier in self.modifiers.iter() {
-            settings_builder = settings_builder.add_modifier(*modifier);
+        for modifier in &self.modifiers {
+            match modifier.get_key() {
+                Key::LoneKey(lone_key) => {
+                    settings_builder = settings_builder
+                        .add_modifier_1(lone_key.get_key_id() as u16);
+                }
+                Key::DeviceKey(device_key) => {
+                    settings_builder = settings_builder.add_modifier_2(
+                        device_key.get_device_id() as u16,
+                        device_key.get_key_id() as u16,
+                    );
+                }
+            }
         }
 
         settings_builder.build()
@@ -105,10 +88,16 @@ impl NiaActionListener {
     ) -> Result<StateMachine<KeyChord, StateMachineAction>, Error> {
         let mut state_machine = nia_state_machine::StateMachine::new();
 
-        for (path, action) in self.mappings.iter() {
+        for mapping in &self.mappings {
+            let key_chords = mapping.get_key_chords().clone();
+            let state_machine_action =
+                StateMachineAction::Execute(mapping.get_action().clone());
+
             state_machine
-                .add(path.clone(), action.clone())
-                .map_err(|_| Error::failure(String::from("")))?;
+                .add(key_chords, state_machine_action)
+                .map_err(|_| {
+                    Error::generic_execution_error("Cannot add mapping")
+                })?;
         }
 
         Ok(state_machine)
@@ -124,11 +113,12 @@ impl NiaActionListener {
 
         let mut state_machine = self.construct_state_machine()?;
 
-        let (action_sender, action_receiver) = mpsc::channel();
+        let (state_machine_action_sender, state_machine_action_receiver) =
+            mpsc::channel();
         let (stop_sender, stop_receiver) = mpsc::channel();
 
         {
-            let action_sender = action_sender;
+            let action_sender = state_machine_action_sender;
             let worker_handle = worker_handle;
 
             thread::spawn(move || {
@@ -142,7 +132,12 @@ impl NiaActionListener {
                     };
 
                     match event {
-                        Some(Event::KeyChordEvent(key_chord)) => {
+                        Some(Event::KeyChordEvent(key_chord_et)) => {
+                            let key_chord =
+                                KeyChord::from_nia_events_representation(
+                                    &key_chord_et,
+                                );
+
                             match state_machine.excite(key_chord) {
                                 StateMachineResult::Excited(action) => {
                                     action_sender.send(action);
@@ -152,7 +147,7 @@ impl NiaActionListener {
                                         let command =
                                             Command::UInput(
                                                 UInputWorkerCommand::ForwardKeyChord(
-                                                    key_chord,
+                                                    key_chord.to_nia_events_representation(),
                                                 ),
                                             );
 
@@ -190,8 +185,10 @@ impl NiaActionListener {
             });
         }
 
-        let nia_action_listener_handle =
-            NiaActionListenerHandle::new(action_receiver, stop_sender);
+        let nia_action_listener_handle = NiaActionListenerHandle::new(
+            state_machine_action_receiver,
+            stop_sender,
+        );
 
         Ok(nia_action_listener_handle)
     }

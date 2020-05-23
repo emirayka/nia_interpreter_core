@@ -4,6 +4,7 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::interpreter::library;
+use crate::PRIMITIVE_ACTIONS_VARIABLE_NAME;
 
 pub fn send_wait(
     interpreter: &mut Interpreter,
@@ -27,7 +28,11 @@ pub fn send_wait(
         Value::Integer(milliseconds),
     ]);
 
-    library::add_value_to_root_list(interpreter, "--actions", text_type)?;
+    library::add_value_to_root_list(
+        interpreter,
+        PRIMITIVE_ACTIONS_VARIABLE_NAME,
+        text_type,
+    )?;
 
     Ok(Value::Boolean(true))
 }
@@ -47,10 +52,13 @@ mod tests {
         let mut interpreter = Interpreter::new();
 
         let pairs = vec![
-            ("--actions", "'()"),
-            ("(action:send-wait 100) --actions", "'((wait 100))"),
+            (PRIMITIVE_ACTIONS_VARIABLE_NAME, "'()"),
             (
-                "(action:send-wait 200) --actions",
+                "(action:send-wait 100) nia-primitive-actions",
+                "'((wait 100))",
+            ),
+            (
+                "(action:send-wait 200) nia-primitive-actions",
                 "'((wait 200) (wait 100))",
             ),
         ];

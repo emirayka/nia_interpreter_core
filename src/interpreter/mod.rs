@@ -1,3 +1,6 @@
+#[macro_use]
+mod domain;
+
 mod evaluator;
 mod parser;
 mod reader;
@@ -16,6 +19,7 @@ mod special_variables;
 mod stdlib;
 mod value;
 
+pub use domain::*;
 pub use evaluator::*;
 pub use parser::*;
 pub use reader::*;

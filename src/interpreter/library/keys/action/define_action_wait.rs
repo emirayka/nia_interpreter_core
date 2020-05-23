@@ -14,11 +14,11 @@ where
 {
     let action_name = action_name.as_ref();
 
-    let action_type_wait_string_value = interpreter.intern_string_value("wait");
+    let action_type_wait_value = interpreter.intern_symbol_value("wait");
     let ms_amount_value = Value::Integer(ms_amount as i64);
 
-    let action_value = interpreter
-        .vec_to_list(vec![action_type_wait_string_value, ms_amount_value]);
+    let action_value =
+        interpreter.vec_to_list(vec![action_type_wait_value, ms_amount_value]);
 
     library::define_action(interpreter, action_name, action_value)
 }
@@ -41,17 +41,17 @@ mod tests {
             (
                 "wait-1-sec",
                 1000,
-                r#"(list:new (cons:new "wait-1-sec" (list:new "wait" 1000)))"#,
+                r#"(list:new (cons:new "wait-1-sec" (list:new 'wait 1000)))"#,
             ),
             (
                 "wait-2-sec",
                 2000,
-                r#"(list:new (cons:new "wait-2-sec" (list:new "wait" 2000)) (cons:new "wait-1-sec" (list:new "wait" 1000)))"#,
+                r#"(list:new (cons:new "wait-2-sec" (list:new 'wait 2000)) (cons:new "wait-1-sec" (list:new 'wait 1000)))"#,
             ),
             (
                 "wait-3-sec",
                 3000,
-                r#"(list:new (cons:new "wait-3-sec" (list:new "wait" 3000)) (cons:new "wait-2-sec" (list:new "wait" 2000)) (cons:new "wait-1-sec" (list:new "wait" 1000)))"#,
+                r#"(list:new (cons:new "wait-3-sec" (list:new 'wait 3000)) (cons:new "wait-2-sec" (list:new 'wait 2000)) (cons:new "wait-1-sec" (list:new 'wait 1000)))"#,
             ),
         ];
 
