@@ -1,6 +1,7 @@
 use crate::Action;
 use crate::Error;
 use crate::Interpreter;
+use crate::NamedAction;
 use crate::Value;
 use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
 
@@ -138,7 +139,7 @@ fn parse_action(
 
 pub fn get_defined_actions(
     interpreter: &mut Interpreter,
-) -> Result<Vec<(String, Action)>, Error> {
+) -> Result<Vec<NamedAction>, Error> {
     let actions = library::get_root_variable(
         interpreter,
         DEFINED_ACTIONS_ROOT_VARIABLE_NAME,
@@ -161,7 +162,7 @@ pub fn get_defined_actions(
 
         let action = parse_action(interpreter, action_vector)?;
 
-        result.push((action_name, action));
+        result.push(NamedAction::new(action, action_name));
     }
 
     Ok(result)
@@ -252,47 +253,44 @@ mod tests {
         library::define_action_wait(&mut interpreter, "wait", 1000).unwrap();
 
         let expected = vec![
-            (String::from("wait"), Action::Wait(1000)),
-            (
-                String::from("text-type"),
+            NamedAction::new(Action::Wait(1000), "wait"),
+            NamedAction::new(
                 Action::TextType(String::from("cat")),
+                "text-type",
             ),
-            (
-                String::from("mouse-relative-move"),
+            NamedAction::new(
                 Action::MouseRelativeMove(100, 100),
+                "mouse-relative-move",
             ),
-            (
-                String::from("mouse-absolute-move"),
+            NamedAction::new(
                 Action::MouseAbsoluteMove(100, 100),
+                "mouse-absolute-move",
             ),
-            (
-                String::from("mouse-button-release"),
+            NamedAction::new(
                 Action::MouseButtonRelease(1),
+                "mouse-button-release",
             ),
-            (
-                String::from("mouse-button-press"),
-                Action::MouseButtonPress(1),
+            NamedAction::new(Action::MouseButtonPress(1), "mouse-button-press"),
+            NamedAction::new(Action::MouseButtonClick(1), "mouse-button-click"),
+            NamedAction::new(
+                Action::KeyRelease(33),
+                String::from("key-release"),
             ),
-            (
-                String::from("mouse-button-click"),
-                Action::MouseButtonClick(1),
-            ),
-            (String::from("key-release"), Action::KeyRelease(33)),
-            (String::from("key-press"), Action::KeyPress(33)),
-            (String::from("key-click"), Action::KeyClick(33)),
-            (
-                String::from("execute-os-command"),
+            NamedAction::new(Action::KeyPress(33), "key-press"),
+            NamedAction::new(Action::KeyClick(33), "key-click"),
+            NamedAction::new(
                 Action::ExecuteOSCommand(String::from("echo \"cat\"")),
+                "execute-os-command",
             ),
-            (
-                String::from("execute-function"),
+            NamedAction::new(
                 Action::ExecuteFunction(String::from("function")),
+                "execute-function",
             ),
-            (
-                String::from("execute-code"),
+            NamedAction::new(
                 Action::ExecuteCode(String::from(
                     "(println \"lambert, lambert\")",
                 )),
+                "execute-code",
             ),
         ];
 
@@ -301,8 +299,6 @@ mod tests {
         nia_assert_equal(expected.len(), result.len());
 
         for (expected, result) in expected.into_iter().zip(result.into_iter()) {
-            println!("{:?}", expected);
-            println!("{:?}", result);
             nia_assert_equal(expected, result);
         }
     }

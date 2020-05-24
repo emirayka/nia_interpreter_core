@@ -1,4 +1,4 @@
-use crate::Value;
+use crate::{NamedAction, Value};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Action {
@@ -20,4 +20,13 @@ pub enum Action {
     ExecuteFunction(String),
     ExecuteOSCommand(String),
     ExecuteFunctionValue(Value), // specified only for interpreter
+}
+
+impl Action {
+    pub fn into_named<S>(self, name: S) -> NamedAction
+    where
+        S: Into<String>,
+    {
+        NamedAction::new(self, name.into())
+    }
 }

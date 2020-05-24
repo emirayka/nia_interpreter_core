@@ -74,3 +74,47 @@ pub fn resolve_path_with_current_module_path(
 
     Ok(resolved_path)
 }
+
+fn get_available_configuration_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+
+    if let Some(home_dir) = dirs::home_dir() {
+        let mut path = home_dir.clone();
+        path.push(".nia");
+        paths.push(path);
+
+        let mut path = home_dir.clone();
+        path.push(".nia.nl");
+        paths.push(path);
+
+        let mut path = home_dir.clone();
+        path.push(".nia.d");
+        path.push("init.nia");
+        paths.push(path);
+
+        let mut path = home_dir.clone();
+        path.push(".nia.d");
+        path.push("init.nl");
+        paths.push(path);
+    }
+
+    if let Some(config_dir) = dirs::config_dir() {
+        let mut path = config_dir.clone();
+        path.push("nia.d");
+        path.push("init.nia");
+        paths.push(path);
+
+        let mut path = config_dir.clone();
+        path.push("nia.d");
+        path.push("init.nia");
+        paths.push(path);
+    }
+
+    paths.into_iter().filter(|path| path.exists()).collect()
+}
+
+pub fn get_default_configuration_file_path() -> Option<PathBuf> {
+    get_available_configuration_paths()
+        .first()
+        .map(|p| p.clone())
+}

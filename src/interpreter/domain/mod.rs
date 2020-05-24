@@ -12,6 +12,7 @@ mod device_key;
 mod key_chord;
 mod lone_key;
 mod mapping;
+mod named_action;
 
 pub use action::*;
 pub use convertable::*;
@@ -22,3 +23,4 @@ pub use key_chord::*;
 pub use lone_key::*;
 pub use mapping::*;
 pub use modifier_description::*;
+pub use named_action::*;

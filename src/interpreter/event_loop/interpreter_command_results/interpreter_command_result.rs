@@ -17,6 +17,9 @@ pub enum NiaInterpreterCommandResult {
     DefineMapping(NiaDefineMappingCommandResult),
     ChangeMapping(NiaChangeMappingCommandResult),
     RemoveMapping(NiaRemoveMappingCommandResult),
+    IsListening(NiaIsListeningCommandResult),
+    StartListening(NiaStartListeningCommandResult),
+    StopListening(NiaStopListeningCommandResult),
 }
 
 macro_rules! make_from_impl {
@@ -84,6 +87,18 @@ make_from_impl!(
 make_from_impl!(
     NiaRemoveMappingCommandResult,
     NiaInterpreterCommandResult::RemoveMapping
+);
+make_from_impl!(
+    NiaIsListeningCommandResult,
+    NiaInterpreterCommandResult::IsListening
+);
+make_from_impl!(
+    NiaStartListeningCommandResult,
+    NiaInterpreterCommandResult::StartListening
+);
+make_from_impl!(
+    NiaStopListeningCommandResult,
+    NiaInterpreterCommandResult::StopListening
 );
 
 impl std::fmt::Display for NiaInterpreterCommandResult {

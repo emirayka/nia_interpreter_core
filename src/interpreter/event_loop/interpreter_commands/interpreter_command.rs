@@ -19,6 +19,9 @@ pub enum NiaInterpreterCommand {
     DefineMapping(NiaDefineMappingCommand),
     ChangeMapping(NiaChangeMappingCommand),
     RemoveMapping(NiaRemoveMappingCommand),
+    IsListening(NiaIsListeningCommand),
+    StartListening(NiaStartListeningCommand),
+    StopListening(NiaStopListeningCommand),
 }
 
 impl NiaInterpreterCommand {
@@ -134,6 +137,24 @@ impl NiaInterpreterCommand {
 
         NiaInterpreterCommand::RemoveMapping(remove_mapping_command)
     }
+
+    pub fn make_is_listening_command() -> NiaInterpreterCommand {
+        let is_listening_command = NiaIsListeningCommand::new();
+
+        NiaInterpreterCommand::IsListening(is_listening_command)
+    }
+
+    pub fn make_start_listening_command() -> NiaInterpreterCommand {
+        let start_listening_command = NiaStartListeningCommand::new();
+
+        NiaInterpreterCommand::StartListening(start_listening_command)
+    }
+
+    pub fn make_stop_listening_command() -> NiaInterpreterCommand {
+        let stop_listening_command = NiaStopListeningCommand::new();
+
+        NiaInterpreterCommand::StopListening(stop_listening_command)
+    }
 }
 
 // define action commands
@@ -145,10 +166,9 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::KeyPress(key_code);
+        let named_action = Action::KeyPress(key_code).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -160,10 +180,9 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::KeyClick(key_code);
+        let named_action = Action::KeyClick(key_code).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -175,10 +194,9 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::KeyRelease(key_code);
+        let named_action = Action::KeyRelease(key_code).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -190,10 +208,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::MouseButtonPress(mouse_button_code);
+        let named_action =
+            Action::MouseButtonPress(mouse_button_code).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -205,10 +223,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::MouseButtonClick(mouse_button_code);
+        let named_action =
+            Action::MouseButtonClick(mouse_button_code).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -220,10 +238,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::MouseButtonRelease(mouse_button_code);
+        let named_action = Action::MouseButtonRelease(mouse_button_code)
+            .into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -236,10 +254,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::MouseAbsoluteMove(x, y);
+        let named_action =
+            Action::MouseAbsoluteMove(x, y).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -252,10 +270,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::MouseRelativeMove(dx, dy);
+        let named_action =
+            Action::MouseRelativeMove(dx, dy).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -267,10 +285,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::TextType(text_to_type.into());
+        let named_action =
+            Action::TextType(text_to_type.into()).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -282,10 +300,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::Wait(ms_amount.into());
+        let named_action =
+            Action::Wait(ms_amount.into()).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -297,10 +315,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::ExecuteCode(code_to_execute.into());
+        let named_action =
+            Action::ExecuteCode(code_to_execute.into()).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -312,10 +330,11 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::ExecuteFunction(function_name_to_execute.into());
+        let named_action =
+            Action::ExecuteFunction(function_name_to_execute.into())
+                .into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }
@@ -327,10 +346,10 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        let action = Action::ExecuteOSCommand(os_command.into());
+        let named_action =
+            Action::ExecuteOSCommand(os_command.into()).into_named(action_name);
 
-        let define_action_command =
-            NiaDefineActionCommand::new(action_name, action);
+        let define_action_command = NiaDefineActionCommand::new(named_action);
 
         NiaInterpreterCommand::DefineAction(define_action_command)
     }

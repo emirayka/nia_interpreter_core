@@ -35,6 +35,7 @@ use crate::NiaGetDefinedModifiersCommand;
 use crate::NiaGetDefinedModifiersCommandResult;
 use crate::NiaInterpreterCommand;
 use crate::NiaInterpreterCommandResult;
+use crate::NiaIsListeningCommandResult;
 use crate::NiaRemoveActionCommand;
 use crate::NiaRemoveActionCommandResult;
 use crate::NiaRemoveDeviceByNameCommand;
@@ -63,6 +64,11 @@ const GARBAGE_COLLECTOR_PERIOD: u64 = 120000;
 
 mod do_command {
     pub use super::*;
+    use crate::{
+        NiaIsListeningCommand, NiaStartListeningCommand,
+        NiaStartListeningCommandResult, NiaStopListeningCommand,
+        NiaStopListeningCommandResult,
+    };
 
     fn do_command_define_keyboard(
         interpreter: &mut Interpreter,
@@ -164,9 +170,11 @@ mod do_command {
         interpreter: &mut Interpreter,
         command: NiaDefineActionCommand,
     ) -> NiaInterpreterCommandResult {
-        let action_name = command.get_action_name();
+        let mut command = command;
+        let action = command.take_action();
+        let action_name = action.get_action_name();
 
-        let result = match command.get_action() {
+        let result = match action.get_action() {
             Action::KeyPress(key_code) => library::define_action_key_press(
                 interpreter,
                 action_name,
@@ -318,6 +326,35 @@ mod do_command {
         NiaRemoveMappingCommandResult::from(result).into()
     }
 
+    fn do_command_is_listening(
+        interpreter: &mut Interpreter,
+        command: NiaIsListeningCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = Ok(interpreter.is_listening());
+
+        NiaIsListeningCommandResult::from(result).into()
+    }
+
+    fn do_command_start_listening(
+        interpreter: &mut Interpreter,
+        command: NiaStartListeningCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = interpreter.start_listening();
+        let result = result.map(|_| String::from("Success"));
+
+        NiaStartListeningCommandResult::from(result).into()
+    }
+
+    fn do_command_stop_listening(
+        interpreter: &mut Interpreter,
+        command: NiaStopListeningCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = interpreter.stop_listening();
+        let result = result.map(|_| String::from("Success"));
+
+        NiaStopListeningCommandResult::from(result).into()
+    }
+
     pub fn do_command(
         interpreter: &mut Interpreter,
         command: NiaInterpreterCommand,
@@ -364,6 +401,15 @@ mod do_command {
             }
             NiaInterpreterCommand::RemoveMapping(command) => {
                 do_command_remove_mapping(interpreter, command)
+            }
+            NiaInterpreterCommand::IsListening(command) => {
+                do_command_is_listening(interpreter, command)
+            }
+            NiaInterpreterCommand::StartListening(command) => {
+                do_command_start_listening(interpreter, command)
+            }
+            NiaInterpreterCommand::StopListening(command) => {
+                do_command_stop_listening(interpreter, command)
             }
         }
     }

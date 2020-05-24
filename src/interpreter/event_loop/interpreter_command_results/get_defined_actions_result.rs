@@ -1,8 +1,10 @@
-use crate::{Action, Error};
+use crate::Action;
+use crate::Error;
+use crate::NamedAction;
 
 #[derive(Clone, Debug)]
 pub enum NiaGetDefinedActionsCommandResult {
-    Success(Vec<(String, Action)>),
+    Success(Vec<NamedAction>),
     Error(String),
     Failure(String),
 }
@@ -19,10 +21,10 @@ impl From<Error> for NiaGetDefinedActionsCommandResult {
     }
 }
 
-impl From<Result<Vec<(String, Action)>, Error>>
+impl From<Result<Vec<NamedAction>, Error>>
     for NiaGetDefinedActionsCommandResult
 {
-    fn from(result: Result<Vec<(String, Action)>, Error>) -> Self {
+    fn from(result: Result<Vec<NamedAction>, Error>) -> Self {
         match result {
             Ok(result) => NiaGetDefinedActionsCommandResult::Success(result),
             Err(error) => NiaGetDefinedActionsCommandResult::from(error),

@@ -21,7 +21,7 @@ fn get_history_file_path() -> Option<String> {
 }
 
 pub fn run() -> Result<(), std::io::Error> {
-    let interpreter = Interpreter::new();
+    let interpreter = Interpreter::with_default_config();
     let history_file = get_history_file_path();
 
     let event_loop_handle = EventLoop::run_event_loop(interpreter);

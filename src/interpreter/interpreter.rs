@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::interpreter::evaluate_value;
 use crate::interpreter::evaluate_values;
@@ -193,6 +193,39 @@ impl Interpreter {
         interpreter
     }
 
+    pub fn with_config(config_path: PathBuf) -> Interpreter {
+        let mut interpreter = Interpreter::new();
+
+        match config_path.to_str() {
+            Some(path_string) => match interpreter.load_module(path_string) {
+                Ok(result) => {
+                    println!(
+                        "Successfully loaded configuration: {:?}.",
+                        config_path
+                    );
+                }
+                Err(error) => {
+                    println!("Error during configuration: {}.", error);
+                }
+            },
+            None => {
+                println!("Error resolving path: {:?}.", config_path);
+            }
+        }
+
+        interpreter
+    }
+
+    pub fn with_default_config() -> Interpreter {
+        if let Some(default_config_path) =
+            crate::utils::get_default_configuration_file_path()
+        {
+            Interpreter::with_config(default_config_path)
+        } else {
+            Interpreter::new()
+        }
+    }
+
     pub fn get_ignored_symbols(&self) -> Vec<SymbolId> {
         let mut vector = Vec::new();
 
@@ -241,12 +274,30 @@ impl Interpreter {
         self.is_listening
     }
 
-    pub fn start_listening(&mut self) {
+    pub fn start_listening(&mut self) -> Result<(), Error> {
+        if self.is_listening {
+            return Error::generic_execution_error(
+                "Interpreter is already listening events.",
+            )
+            .into();
+        }
+
         self.is_listening = true;
+
+        Ok(())
     }
 
-    pub fn stop_listening(&mut self) {
+    pub fn stop_listening(&mut self) -> Result<(), Error> {
+        if !self.is_listening {
+            return Error::generic_execution_error(
+                "Interpreter is already not listening events.",
+            )
+            .into();
+        }
+
         self.is_listening = false;
+
+        Ok(())
     }
 }
 
@@ -1045,10 +1096,12 @@ impl Interpreter {
         let current_module_path =
             self.get_module(self.current_module)?.get_path().clone();
 
-        crate::utils::resolve_path_with_current_module_path(
+        let resolved_path = crate::utils::resolve_path_with_current_module_path(
             current_module_path,
             path,
-        )
+        );
+
+        resolved_path
     }
 }
 
