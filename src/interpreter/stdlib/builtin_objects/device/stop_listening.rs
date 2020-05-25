@@ -35,7 +35,7 @@ mod tests {
         nia_assert(!interpreter.is_listening());
 
         interpreter
-            .execute_in_main_environment(r#"(device:start-listening)"#)
+            .execute_in_main_environment(r#"(device:define 0 "/dev/input/event6" "first") (device:start-listening)"#)
             .unwrap();
 
         nia_assert(interpreter.is_listening());
