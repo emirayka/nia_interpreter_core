@@ -11,6 +11,8 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         _if::infect,
         when::infect,
         unless::infect,
+        inc_mark::infect,
+        dec_mark::infect,
         // cr::infect,
         empty::infect,
     ];
@@ -23,6 +25,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
 }
 
 mod defv {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -35,6 +38,7 @@ mod defv {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
         #[allow(unused_imports)]
         use crate::utils;
@@ -51,6 +55,7 @@ mod defv {
 }
 
 mod defc {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -87,6 +92,7 @@ mod defc {
 }
 
 mod defn {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -99,7 +105,9 @@ mod defn {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -123,6 +131,7 @@ mod defn {
 }
 
 mod defm {
+    #[allow(unused_imports)]
     use super::*;
 
     use crate::library;
@@ -151,7 +160,9 @@ mod defm {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -191,6 +202,7 @@ mod defm {
 }
 
 mod _fn {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -203,7 +215,9 @@ mod _fn {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -234,6 +248,7 @@ mod _fn {
 }
 
 mod _if {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -247,7 +262,9 @@ mod _if {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -272,6 +289,7 @@ mod _if {
 }
 
 mod when {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -285,7 +303,9 @@ mod when {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -304,6 +324,7 @@ mod when {
 }
 
 mod unless {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -317,7 +338,9 @@ mod unless {
 
     #[cfg(test)]
     mod tests {
+        #[allow(unused_imports)]
         use super::*;
+
         #[allow(unused_imports)]
         use crate::utils;
 
@@ -335,7 +358,86 @@ mod unless {
     }
 }
 
+mod inc_mark {
+    #[allow(unused_imports)]
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute_in_root_environment(
+            r#"
+            (defm inc! (symbol)
+              (let ((symbol symbol))
+                (list:new 'set! symbol (list:new 'inc symbol))))
+            "#,
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[allow(unused_imports)]
+        use super::*;
+
+        #[allow(unused_imports)]
+        use crate::utils;
+
+        #[test]
+        fn increments_value_by_place() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec![
+                ("(let ((a 0)) a)", "0"),
+                ("(let ((a 0)) (inc! a) a)", "1"),
+                ("(let ((a 0)) (inc! a) (inc! a) a)", "2"),
+            ];
+
+            utils::assert_results_are_equal(&mut interpreter, pairs);
+        }
+    }
+}
+
+mod dec_mark {
+    #[allow(unused_imports)]
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute_in_root_environment(
+            r#"
+            (defm dec! (symbol)
+              (let ((symbol symbol))
+                (list:new 'set! symbol (list:new 'dec symbol))))
+            "#,
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[allow(unused_imports)]
+        use super::*;
+
+        #[allow(unused_imports)]
+        use crate::utils;
+
+        #[test]
+        fn increments_value_by_place() {
+            let mut interpreter = Interpreter::new();
+
+            let pairs = vec![
+                ("(let ((a 0)) a)", "0"),
+                ("(let ((a 0)) (dec! a) a)", "-1"),
+                ("(let ((a 0)) (dec! a) (dec! a) a)", "-2"),
+            ];
+
+            utils::assert_results_are_equal(&mut interpreter, pairs);
+        }
+    }
+}
+
 mod cr {
+    #[allow(unused_imports)]
     use super::*;
 
     #[allow(dead_code)]
@@ -477,6 +579,7 @@ mod cr {
 }
 
 mod empty {
+    #[allow(unused_imports)]
     use super::*;
 
     pub fn infect(_interpreter: &mut Interpreter) -> Result<(), Error> {
@@ -485,7 +588,6 @@ mod empty {
 
     #[cfg(test)]
     mod tests {
-
         #[test]
         fn does_nothing() {}
     }
