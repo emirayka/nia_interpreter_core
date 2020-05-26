@@ -695,6 +695,13 @@ impl Interpreter {
         Ok(())
     }
 
+    pub fn get_object_enumerable_keys(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Vec<SymbolId>, Error> {
+        self.object_arena.get_object_enumerable_keys(object_id)
+    }
+
     pub fn get_object_items(
         &self,
         object_id: ObjectId,

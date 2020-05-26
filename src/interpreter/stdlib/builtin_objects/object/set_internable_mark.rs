@@ -12,7 +12,7 @@ pub fn set_internable_mark(
 ) -> Result<Value, Error> {
     if values.len() != 3 {
         return Error::invalid_argument_count_error(
-            "Built-in function `object:set-internable?' takes three arguments exactly.",
+            "Built-in function `object:set-internable!' takes three arguments exactly.",
         )
         .into();
     }

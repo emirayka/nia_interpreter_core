@@ -14,6 +14,7 @@ mod call_with_this;
 mod cond;
 mod define_function;
 mod define_variable;
+mod doitems;
 mod dolist;
 mod dotimes;
 mod export;
@@ -40,6 +41,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("quote", quote::quote),
         ("define-variable", define_variable::define_variable),
         ("define-function", define_function::define_function),
+        ("doitems", doitems::doitems),
         ("dolist", dolist::dolist),
         ("dotimes", dotimes::dotimes),
         ("export", export::export),

@@ -310,6 +310,24 @@ impl ObjectArena {
         object.set_property_configurable(property_symbol_id, value)
     }
 
+    pub fn get_object_enumerable_keys(
+        &self,
+        object_id: ObjectId,
+    ) -> Result<Vec<SymbolId>, Error> {
+        let object = self.get_object(object_id)?;
+
+        let result = object
+            .get_properties()
+            .iter()
+            .filter(|(key, value)| {
+                value.is_internable() && value.is_enumerable()
+            })
+            .map(|(key, value)| *key)
+            .collect();
+
+        Ok(result)
+    }
+
     pub fn get_all_object_identifiers(&self) -> Vec<ObjectId> {
         let mut result = Vec::new();
 
@@ -429,6 +447,129 @@ mod tests {
             nia_assert_equal(false, arena.has_object(object_id));
             nia_assert_is_err(&arena.get_object(object_id));
             nia_assert_is_err(&arena.get_object_mut(object_id));
+        }
+    }
+
+    #[cfg(test)]
+    mod get_object_enumerable_keys {
+        #[allow(unused_imports)]
+        use super::*;
+
+        #[test]
+        fn returns_object_enumerable_keys() {
+            let mut arena = ObjectArena::new();
+
+            let symbol_id_1 = SymbolId::new(0);
+            let symbol_id_2 = SymbolId::new(1);
+            let symbol_id_3 = SymbolId::new(2);
+            let symbol_id_4 = SymbolId::new(3);
+
+            let value_1 = Value::Symbol(SymbolId::new(0));
+            let value_2 = Value::Symbol(SymbolId::new(1));
+            let value_3 = Value::Symbol(SymbolId::new(2));
+            let value_4 = Value::Symbol(SymbolId::new(3));
+
+            let object_id = arena.make();
+
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_1,
+                value_1,
+            ));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_2,
+                value_2,
+            ));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_3,
+                value_3,
+            ));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_4,
+                value_4,
+            ));
+
+            nia_assert_is_ok(&arena.set_property_internable(
+                object_id,
+                symbol_id_1,
+                false,
+            ));
+            nia_assert_is_ok(&arena.set_property_writable(
+                object_id,
+                symbol_id_2,
+                false,
+            ));
+            nia_assert_is_ok(&arena.set_property_enumerable(
+                object_id,
+                symbol_id_3,
+                false,
+            ));
+            nia_assert_is_ok(&arena.set_property_configurable(
+                object_id,
+                symbol_id_4,
+                false,
+            ));
+
+            let expected = vec![symbol_id_2, symbol_id_4];
+            let mut result =
+                arena.get_object_enumerable_keys(object_id).unwrap();
+
+            result.sort();
+
+            nia_assert_equal(expected, result);
+        }
+
+        #[test]
+        fn returns_no_values_when_there_are_no_enumerable_keys() {
+            let mut arena = ObjectArena::new();
+
+            let symbol_id_1 = SymbolId::new(0);
+            let symbol_id_2 = SymbolId::new(1);
+
+            let value_1 = Value::Symbol(SymbolId::new(0));
+            let value_2 = Value::Symbol(SymbolId::new(1));
+
+            let object_id = arena.make();
+
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_1,
+                value_1,
+            ));
+            nia_assert_is_ok(&arena.set_property(
+                object_id,
+                symbol_id_2,
+                value_2,
+            ));
+
+            nia_assert_is_ok(&arena.set_property_internable(
+                object_id,
+                symbol_id_1,
+                false,
+            ));
+            nia_assert_is_ok(&arena.set_property_enumerable(
+                object_id,
+                symbol_id_2,
+                false,
+            ));
+
+            let result = arena.get_object_enumerable_keys(object_id).unwrap();
+
+            nia_assert_equal(0, result.len());
+        }
+
+        #[test]
+        fn returns_no_values_when_there_are_no_keys_at_all() {
+            let mut arena = ObjectArena::new();
+
+            let object_id = arena.make();
+
+            let result = arena.get_object_enumerable_keys(object_id).unwrap();
+
+            nia_assert_equal(0, result.len());
         }
     }
 
