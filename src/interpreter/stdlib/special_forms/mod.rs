@@ -15,8 +15,10 @@ mod cond;
 mod define_function;
 mod define_variable;
 mod doitems;
+mod dokeys;
 mod dolist;
 mod dotimes;
+mod dovalues;
 mod export;
 mod flet;
 mod flet_star;
@@ -42,8 +44,10 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         ("define-variable", define_variable::define_variable),
         ("define-function", define_function::define_function),
         ("doitems", doitems::doitems),
+        ("dokeys", dokeys::dokeys),
         ("dolist", dolist::dolist),
         ("dotimes", dotimes::dotimes),
+        ("dovalues", dovalues::dovalues),
         ("export", export::export),
         ("function", function::function),
         ("fset!", fset::fset),
