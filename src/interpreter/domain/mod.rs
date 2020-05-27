@@ -15,6 +15,7 @@ mod mapping;
 mod named_action;
 
 pub use action::*;
+pub use action_key_category::*;
 pub use convertable::*;
 pub use device_info::*;
 pub use device_key::*;

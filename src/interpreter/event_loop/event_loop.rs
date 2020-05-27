@@ -190,27 +190,6 @@ mod do_command {
                 action_name,
                 *key_code,
             ),
-            Action::MouseButtonPress(mouse_button_code) => {
-                library::define_action_mouse_button_press(
-                    interpreter,
-                    action_name,
-                    *mouse_button_code,
-                )
-            }
-            Action::MouseButtonClick(mouse_button_code) => {
-                library::define_action_mouse_button_click(
-                    interpreter,
-                    action_name,
-                    *mouse_button_code,
-                )
-            }
-            Action::MouseButtonRelease(mouse_button_code) => {
-                library::define_action_mouse_button_release(
-                    interpreter,
-                    action_name,
-                    *mouse_button_code,
-                )
-            }
             Action::MouseAbsoluteMove(x, y) => {
                 library::define_action_mouse_absolute_move(
                     interpreter,
