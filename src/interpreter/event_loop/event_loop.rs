@@ -175,71 +175,22 @@ mod do_command {
         let action_name = action.get_action_name();
 
         let result = match action.get_action() {
-            Action::KeyPress(key_code) => library::define_action_key_press(
+            Action::ExecuteFunctionValue(_) => Error::failure(
+                "Invariant violation Action::ExecuteFunctionValue must not be able to be defined from server request."
+            ).into(),
+
+            action => {
+                library::action_to_list(interpreter, action)
+            }
+        };
+
+        let result = match result {
+            Ok(action_value) => library::define_action_with_value(
                 interpreter,
                 action_name,
-                *key_code,
+                action_value,
             ),
-            Action::KeyClick(key_code) => library::define_action_key_click(
-                interpreter,
-                action_name,
-                *key_code,
-            ),
-            Action::KeyRelease(key_code) => library::define_action_key_release(
-                interpreter,
-                action_name,
-                *key_code,
-            ),
-            Action::MouseAbsoluteMove(x, y) => {
-                library::define_action_mouse_absolute_move(
-                    interpreter,
-                    action_name,
-                    *x,
-                    *y,
-                )
-            }
-            Action::MouseRelativeMove(dx, dy) => {
-                library::define_action_mouse_relative_move(
-                    interpreter,
-                    action_name,
-                    *dx,
-                    *dy,
-                )
-            }
-            Action::TextType(text_to_type) => library::define_action_text_type(
-                interpreter,
-                action_name,
-                text_to_type,
-            ),
-            Action::Wait(ms_amount) => library::define_action_wait(
-                interpreter,
-                action_name,
-                *ms_amount,
-            ),
-            Action::ExecuteCode(code_to_execute) => {
-                library::define_action_execute_code(
-                    interpreter,
-                    action_name,
-                    code_to_execute,
-                )
-            }
-            Action::ExecuteFunction(function_name) => {
-                library::define_action_execute_function(
-                    interpreter,
-                    action_name,
-                    function_name,
-                )
-            }
-            Action::ExecuteOSCommand(os_command) => {
-                library::define_action_execute_os_command(
-                    interpreter,
-                    action_name,
-                    os_command,
-                )
-            }
-            Action::ExecuteFunctionValue(_) => panic!(
-                "Invariant violation Action::ExecuteFunctionValue must not be able to be defined."
-            ),
+            Err(error) => Err(error),
         };
 
         let result = result.map(|_| String::from("Success"));
@@ -438,6 +389,7 @@ impl EventLoop {
             Action::KeyRelease(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyUp(KeyId::new(key_code as u16)),
             ),
+
             Action::MouseButtonPress(button_code) => {
                 Command::UInput(UInputWorkerCommand::MouseButtonDown(
                     ButtonId::new(button_code as u16),
@@ -453,6 +405,29 @@ impl EventLoop {
                     ButtonId::new(button_code as u16),
                 ))
             }
+
+            Action::TextKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::NumberKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::FunctionKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::ControlKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::KPKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::MultimediaKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+            Action::MouseButtonKeyClick(key_code) => Command::UInput(
+                UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
+            ),
+
             Action::MouseAbsoluteMove(x, y) => Command::Xorg(
                 XorgWorkerCommand::MouseMoveTo(x as i16, y as i16),
             ),

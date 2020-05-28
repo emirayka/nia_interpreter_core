@@ -1,4 +1,4 @@
-use crate::{Error, DEFINED_ACTIONS_ROOT_VARIABLE_NAME};
+use crate::{Action, Error, DEFINED_ACTIONS_ROOT_VARIABLE_NAME};
 use crate::{Interpreter, Value};
 
 use crate::library;
@@ -6,32 +6,15 @@ use crate::library;
 pub fn define_action<S>(
     interpreter: &mut Interpreter,
     action_name: S,
-    action_value: Value,
+    action: &Action,
 ) -> Result<(), Error>
 where
     S: AsRef<str>,
 {
     let action_name = action_name.as_ref();
-    let action_name_string_value = interpreter.intern_string_value(action_name);
+    let action_value = library::action_to_list(interpreter, action)?;
 
-    if library::is_root_alist_has_key(
-        interpreter,
-        action_name_string_value,
-        DEFINED_ACTIONS_ROOT_VARIABLE_NAME,
-    )? {
-        return Error::generic_execution_error(format!(
-            "Action {} already defined.",
-            action_name
-        ))
-        .into();
-    }
-
-    library::add_item_to_root_alist(
-        interpreter,
-        action_name_string_value,
-        action_value,
-        DEFINED_ACTIONS_ROOT_VARIABLE_NAME,
-    )
+    library::define_action_with_value(interpreter, action_name, action_value)
 }
 
 #[cfg(test)]
@@ -49,29 +32,29 @@ mod tests {
         let specs = vec![
             (
                 "stub-1",
-                interpreter.intern_symbol_value("do-nothing"),
-                r#"(list:new (cons:new "stub-1" 'do-nothing))"#,
+                Action::KeyClick(1),
+                r#"(list:new (list:new "stub-1" 'key-click 1))"#,
             ),
             (
                 "stub-2",
-                interpreter.intern_symbol_value("do-nothing-2"),
-                r#"(list:new (cons:new "stub-2" 'do-nothing-2) (cons:new "stub-1" 'do-nothing))"#,
+                Action::KeyClick(2),
+                r#"(list:new (list:new "stub-2" 'key-click 2) (list:new "stub-1" 'key-click 1))"#,
             ),
             (
                 "stub-3",
-                interpreter.intern_symbol_value("do-nothing-3"),
-                r#"(list:new (cons:new "stub-3" 'do-nothing-3) (cons:new "stub-2" 'do-nothing-2) (cons:new "stub-1" 'do-nothing))"#,
+                Action::KeyClick(3),
+                r#"(list:new (list:new "stub-3" 'key-click 3) (list:new "stub-2" 'key-click 2) (list:new "stub-1" 'key-click 1))"#,
             ),
         ];
 
-        for (action_name, action_value, expected) in specs {
+        for (action_name, action, expected) in specs {
             let expected =
                 interpreter.execute_in_root_environment(expected).unwrap();
 
             nia_assert_is_ok(&define_action(
                 &mut interpreter,
                 action_name,
-                action_value,
+                &action,
             ));
 
             let result = library::get_root_variable(
@@ -91,13 +74,13 @@ mod tests {
         nia_assert_is_ok(&define_action(
             &mut interpreter,
             "print-kek",
-            Value::Integer(1),
+            &Action::Wait(1000),
         ));
 
         crate::utils::assert_generic_execution_error(&define_action(
             &mut interpreter,
             "print-kek",
-            Value::Integer(1),
+            &Action::Wait(1000),
         ));
     }
 }

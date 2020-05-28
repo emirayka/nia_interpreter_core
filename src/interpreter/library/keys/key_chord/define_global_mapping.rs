@@ -14,6 +14,11 @@ pub fn define_global_mapping(
     let key_chord_sequence = mapping.get_key_chords();
     let action = mapping.get_action();
 
+    if library::is_mapping_defined(interpreter, key_chord_sequence)? {
+        return Error::generic_execution_error("Mapping already defined.")
+            .into();
+    }
+
     let key_chords_sequence_value =
         library::key_chords_to_list(interpreter, key_chord_sequence);
     let action = library::action_to_list(interpreter, action)?;
@@ -49,10 +54,7 @@ mod tests {
         let specs = vec![(
             r#"(list:new (cons:new '((1 2 3) ((1 4) (1 5) (2 6))) '(execute-code "(println \"Hello :3\")")))"#,
             vec![
-                KeyChord::new(
-                    vec![nia_key!(1), nia_key!(2)],
-                    nia_key!(3),
-                ),
+                KeyChord::new(vec![nia_key!(1), nia_key!(2)], nia_key!(3)),
                 KeyChord::new(
                     vec![nia_key!(1, 4), nia_key!(1, 5)],
                     nia_key!(2, 6),

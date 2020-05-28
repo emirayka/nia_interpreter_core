@@ -1,6 +1,6 @@
 use crate::interpreter::event_loop::interpreter_commands::*;
 
-use crate::{Action, Key, Mapping};
+use crate::{Action, Key, Mapping, NamedAction};
 use crate::{KeyChord, ModifierDescription};
 
 #[derive(Clone, Debug)]
@@ -95,6 +95,14 @@ impl NiaInterpreterCommand {
         NiaInterpreterCommand::GetDefinedActions(get_defined_actions_command)
     }
 
+    pub fn make_define_action_command(
+        named_action: NamedAction,
+    ) -> NiaInterpreterCommand {
+        let define_action_command = NiaDefineActionCommand::new(named_action);
+
+        NiaInterpreterCommand::DefineAction(define_action_command)
+    }
+
     pub fn make_remove_action_command<S>(
         action_name: S,
     ) -> NiaInterpreterCommand
@@ -154,203 +162,5 @@ impl NiaInterpreterCommand {
         let stop_listening_command = NiaStopListeningCommand::new();
 
         NiaInterpreterCommand::StopListening(stop_listening_command)
-    }
-}
-
-// define action commands
-impl NiaInterpreterCommand {
-    pub fn make_define_key_press_action_command<S>(
-        action_name: S,
-        key_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action = Action::KeyPress(key_code).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_key_click_action_command<S>(
-        action_name: S,
-        key_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action = Action::KeyClick(key_code).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_key_release_action_command<S>(
-        action_name: S,
-        key_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action = Action::KeyRelease(key_code).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_mouse_button_press_action_command<S>(
-        action_name: S,
-        mouse_button_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::MouseButtonPress(mouse_button_code).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_mouse_button_click_action_command<S>(
-        action_name: S,
-        mouse_button_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::MouseButtonClick(mouse_button_code).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_mouse_button_release_action_command<S>(
-        action_name: S,
-        mouse_button_code: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action = Action::MouseButtonRelease(mouse_button_code)
-            .into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_mouse_absolute_move_action_command<S>(
-        action_name: S,
-        x: i32,
-        y: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::MouseAbsoluteMove(x, y).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_mouse_relative_move_action_command<S>(
-        action_name: S,
-        dx: i32,
-        dy: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::MouseRelativeMove(dx, dy).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_text_type_action_command<S>(
-        action_name: S,
-        text_to_type: S,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::TextType(text_to_type.into()).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_wait_action_command<S>(
-        action_name: S,
-        ms_amount: i32,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::Wait(ms_amount.into()).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_execute_code_action_command<S>(
-        action_name: S,
-        code_to_execute: S,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::ExecuteCode(code_to_execute.into()).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_execute_function_action_command<S>(
-        action_name: S,
-        function_name_to_execute: S,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::ExecuteFunction(function_name_to_execute.into())
-                .into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
-    }
-
-    pub fn make_define_execute_os_command_action_command<S>(
-        action_name: S,
-        os_command: S,
-    ) -> NiaInterpreterCommand
-    where
-        S: Into<String>,
-    {
-        let named_action =
-            Action::ExecuteOSCommand(os_command.into()).into_named(action_name);
-
-        let define_action_command = NiaDefineActionCommand::new(named_action);
-
-        NiaInterpreterCommand::DefineAction(define_action_command)
     }
 }

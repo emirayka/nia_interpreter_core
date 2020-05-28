@@ -7,10 +7,13 @@ use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
 
 use crate::library;
 
-fn try_remove_first_item(
+fn try_remove_first_item<S>(
     list: &mut Vec<Value>,
-    msg: &str,
-) -> Result<Value, Error> {
+    msg: S,
+) -> Result<Value, Error>
+where
+    S: Into<String>,
+{
     if list.len() == 0 {
         return Error::invalid_argument_error(msg).into();
     }
@@ -18,10 +21,13 @@ fn try_remove_first_item(
     return Ok(list.remove(0));
 }
 
-fn check_list_has_no_items_left(
+fn check_list_has_no_items_left<S>(
     list: &Vec<Value>,
-    msg: &str,
-) -> Result<(), Error> {
+    msg: S,
+) -> Result<(), Error>
+where
+    S: Into<String>,
+{
     if list.len() != 0 {
         return Error::invalid_argument_error(msg).into();
     }
@@ -29,257 +35,123 @@ fn check_list_has_no_items_left(
     Ok(())
 }
 
-fn parse_key_press_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let key_code_value = try_remove_first_item(
-        &mut action_vector,
-        "Key press action list must have two items exactly to be considered as action.",
-    )?;
+macro_rules! make_one_integer_item_action_parser {
+    ($parser_name:ident, $action_name:expr, $action_variant:path) => {
+        fn $parser_name(
+            mut action_vector: Vec<Value>,
+        ) -> Result<Action, Error> {
+            let value = try_remove_first_item(
+                &mut action_vector,
+                format!("{} list must have two items exactly to be considered as action.", $action_name),
+            )?;
 
-    check_list_has_no_items_left(
-        &action_vector,
-        "Key press action list must have two items exactly to be considered as action.",
-    )?;
+            check_list_has_no_items_left(
+                &action_vector,
+                format!("{} list must have two items exactly to be considered as action.", $action_name),
+            )?;
 
-    let key_code = library::read_as_i64(key_code_value)? as i32;
+            let value = library::read_as_i64(value)? as i32;
 
-    Ok(Action::KeyPress(key_code))
+            Ok($action_variant(value))
+        }
+    }
 }
 
-fn parse_key_click_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let key_code_value = try_remove_first_item(
-        &mut action_vector,
-        "Key click action list must have at least one item, to be considered as action.",
-    )?;
+macro_rules! make_one_string_item_action_parser {
+    ($parser_name:ident, $action_name:expr, $action_variant:path) => {
+        fn $parser_name(
+            interpreter: &mut Interpreter,
+            mut action_vector: Vec<Value>,
+        ) -> Result<Action, Error> {
+            let value = try_remove_first_item(
+                &mut action_vector,
+                format!("{} list must have two items exactly to be considered as action.", $action_name),
+            )?;
 
-    check_list_has_no_items_left(
-        &action_vector,
-        "Key click action list must have at least one item, to be considered as action.",
-    )?;
+            check_list_has_no_items_left(
+                &action_vector,
+                format!("{} list must have two items exactly to be considered as action.", $action_name),
+            )?;
 
-    let key_code = library::read_as_i64(key_code_value)? as i32;
+            let value = library::read_as_string(interpreter, value)?.clone();
 
-    Ok(Action::KeyClick(key_code))
+            Ok($action_variant(value))
+        }
+    }
 }
 
-fn parse_key_release_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let key_code_value = try_remove_first_item(
-        &mut action_vector,
-        "List must take at least one item, to be considered as action.",
-    )?;
+macro_rules! make_two_integers_item_action_parser {
+    ($parser_name:ident, $action_name:expr, $action_variant:path) => {
+        fn $parser_name(
+            mut action_vector: Vec<Value>,
+        ) -> Result<Action, Error> {
+            let value1 = try_remove_first_item(
+                &mut action_vector,
+                format!("{} list must have three items exactly to be considered as action.", $action_name),
+            )?;
 
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must take at least one item, to be considered as action.",
-    )?;
+            let value2 = try_remove_first_item(
+                &mut action_vector,
+                format!("{} list must have three items exactly to be considered as action.", $action_name),
+            )?;
 
-    let key_code = library::read_as_i64(key_code_value)? as i32;
+            check_list_has_no_items_left(
+                &action_vector,
+                format!("{} list must have three items exactly to be considered as action.", $action_name),
+            )?;
 
-    Ok(Action::KeyRelease(key_code))
+            let value1 = library::read_as_i64(value1)? as i32;
+            let value2 = library::read_as_i64(value2)? as i32;
+
+            Ok($action_variant(value1, value2))
+        }
+    }
 }
 
-fn parse_mouse_button_press_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let button_code_value = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as action.",
-    )?;
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_key_press_action, "Key press action", Action::KeyPress);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_key_click_action, "Key click action", Action::KeyClick );
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_key_release_action, "Key release action", Action::KeyRelease );
 
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as action.",
-    )?;
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_mouse_button_press_action, "Key press action", Action::MouseButtonPress);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_mouse_button_click_action, "Mouse button click action", Action::MouseButtonClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_mouse_button_release_action, "Mouse button release action", Action::MouseButtonRelease);
 
-    let key_code = library::read_as_i64(button_code_value)? as i32;
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_text_key_click_action, "Text key click action", Action::TextKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_number_key_click_action, "Number key click action", Action::NumberKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_function_key_click_action, "Function key click action", Action::FunctionKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_control_key_click_action, "Control key click action", Action::ControlKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_kp_key_click_action, "KP key click action", Action::KPKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_multimedia_key_click_action, "Multimedia key click action", Action::MultimediaKeyClick);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_mouse_button_key_click_action, "Mouse button key click action", Action::MouseButtonKeyClick);
 
-    Ok(Action::MouseButtonPress(key_code))
-}
+#[rustfmt::skip]
+make_two_integers_item_action_parser!(parse_mouse_absolute_move_action, "Mouse absolute move action", Action::MouseAbsoluteMove);
+#[rustfmt::skip]
+make_two_integers_item_action_parser!(parse_mouse_relative_move_action, "Mouse relative move action", Action::MouseRelativeMove);
 
-fn parse_mouse_button_click_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let button_code_value = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items, to be considered as action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items, to be considered as action.",
-    )?;
-
-    let button_code = library::read_as_i64(button_code_value)? as i32;
-
-    Ok(Action::MouseButtonClick(button_code))
-}
-
-fn parse_mouse_button_release_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let button_code_value = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as action.",
-    )?;
-
-    let key_code = library::read_as_i64(button_code_value)? as i32;
-
-    Ok(Action::MouseButtonRelease(key_code))
-}
-
-fn parse_mouse_absolute_move_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let x = try_remove_first_item(
-        &mut action_vector,
-        "List must have three items exactly, to be considered as mouse absolute move action.",
-    )?;
-
-    let y = try_remove_first_item(
-        &mut action_vector,
-        "List must have three items exactly, to be considered as mouse absolute move action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have three items exactly, to be considered as mouse absolute move action.",
-    )?;
-
-    let x = library::read_as_i64(x)? as i32;
-    let y = library::read_as_i64(y)? as i32;
-
-    Ok(Action::MouseAbsoluteMove(x, y))
-}
-
-fn parse_mouse_relative_move_action(
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let dx = try_remove_first_item(
-        &mut action_vector,
-        "List must have three items exactly, to be considered as mouse relative move action.",
-    )?;
-
-    let dy = try_remove_first_item(
-        &mut action_vector,
-        "List must have three items exactly, to be considered as mouse relative move action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have three items exactly, to be considered as mouse relative move action.",
-    )?;
-
-    let dx = library::read_as_i64(dx)? as i32;
-    let dy = library::read_as_i64(dy)? as i32;
-
-    Ok(Action::MouseRelativeMove(dx, dy))
-}
-
-fn parse_text_type_action(
-    interpreter: &mut Interpreter,
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let text = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as text type action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as text type action.",
-    )?;
-
-    let text = library::read_as_string(interpreter, text)?.clone();
-
-    Ok(Action::TextType(text))
-}
-
-fn parse_execute_code_action(
-    interpreter: &mut Interpreter,
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let code = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as execute code action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as execute code action.",
-    )?;
-
-    let code = library::read_as_string(interpreter, code)?.clone();
-
-    Ok(Action::ExecuteCode(code))
-}
-
-fn parse_execute_function_action(
-    interpreter: &mut Interpreter,
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let function_name = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as execute function action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as execute function action.",
-    )?;
-
-    let function_name =
-        library::read_as_string(interpreter, function_name)?.clone();
-
-    Ok(Action::ExecuteFunction(function_name))
-}
-
-fn parse_execute_os_command_action(
-    interpreter: &mut Interpreter,
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let os_command = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as execute os command action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as execute os command action.",
-    )?;
-
-    let os_command = library::read_as_string(interpreter, os_command)?.clone();
-
-    Ok(Action::ExecuteOSCommand(os_command))
-}
-
-fn parse_wait_action(
-    interpreter: &mut Interpreter,
-    mut action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let ms_amount = try_remove_first_item(
-        &mut action_vector,
-        "List must have two items exactly, to be considered as wait action.",
-    )?;
-
-    check_list_has_no_items_left(
-        &action_vector,
-        "List must have two items exactly, to be considered as wait action.",
-    )?;
-
-    let ms_amount = library::read_as_i64(ms_amount)?.clone() as i32;
-
-    Ok(Action::Wait(ms_amount))
-}
+#[rustfmt::skip]
+make_one_string_item_action_parser!(parse_text_type_action, "Text type action", Action::TextType);
+#[rustfmt::skip]
+make_one_string_item_action_parser!(parse_execute_function_action, "Execute function action", Action::ExecuteFunction);
+#[rustfmt::skip]
+make_one_string_item_action_parser!(parse_execute_os_command_action, "Execute OS command action", Action::ExecuteOSCommand);
+#[rustfmt::skip]
+make_one_string_item_action_parser!(parse_execute_code_action, "Execute code action", Action::ExecuteCode);
+#[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_wait_action, "Wait action", Action::Wait);
 
 fn parse_execute_function_value_action(
     interpreter: &mut Interpreter,
@@ -310,6 +182,7 @@ pub fn list_to_action(
     let action_type_symbol_name =
         interpreter.get_symbol_name(action_type_symbol_id)?.as_str();
 
+    #[rustfmt::skip]
     let action = match action_type_symbol_name {
         "key-press" => parse_key_press_action(action_vector)?,
         "key-click" => parse_key_click_action(action_vector)?,
@@ -317,31 +190,26 @@ pub fn list_to_action(
 
         "mouse-button-press" => parse_mouse_button_press_action(action_vector)?,
         "mouse-button-click" => parse_mouse_button_click_action(action_vector)?,
-        "mouse-button-release" => {
-            parse_mouse_button_release_action(action_vector)?
-        }
+        "mouse-button-release" => parse_mouse_button_release_action(action_vector)?,
+        
+        "text-key-click" => parse_text_key_click_action(action_vector)?,
+        "number-key-click" => parse_number_key_click_action(action_vector)?,
+        "function-key-click" => parse_function_key_click_action(action_vector)?,
+        "control-key-click" => parse_control_key_click_action(action_vector)?,
+        "kp-key-click" => parse_kp_key_click_action(action_vector)?,
+        "multimedia-key-click" => parse_multimedia_key_click_action(action_vector)?,
+        "mouse-button-key-click" => parse_mouse_button_key_click_action(action_vector)?,
 
-        "mouse-absolute-move" => {
-            parse_mouse_absolute_move_action(action_vector)?
-        }
-        "mouse-relative-move" => {
-            parse_mouse_relative_move_action(action_vector)?
-        }
+        "mouse-absolute-move" => parse_mouse_absolute_move_action(action_vector)?,
+        "mouse-relative-move" => parse_mouse_relative_move_action(action_vector)?,
 
         "text-type" => parse_text_type_action(interpreter, action_vector)?,
-        "execute-code" => {
-            parse_execute_code_action(interpreter, action_vector)?
-        }
-        "execute-function" => {
-            parse_execute_function_action(interpreter, action_vector)?
-        }
-        "execute-os-command" => {
-            parse_execute_os_command_action(interpreter, action_vector)?
-        }
-        "execute-function-value" => {
-            parse_execute_function_value_action(interpreter, action_vector)?
-        }
-        "wait" => parse_wait_action(interpreter, action_vector)?,
+        "execute-code" => parse_execute_code_action(interpreter, action_vector)?,
+        "execute-function" => parse_execute_function_action(interpreter, action_vector)?,
+        "execute-os-command" => parse_execute_os_command_action(interpreter, action_vector)?,
+        "execute-function-value" => parse_execute_function_value_action(interpreter, action_vector)?,
+        
+        "wait" => parse_wait_action(action_vector)?,
 
         _ => {
             return Error::invalid_argument_error(format!(
@@ -369,40 +237,31 @@ mod tests {
     fn converts_to_action_correctly() {
         let mut interpreter = Interpreter::new();
 
+        #[rustfmt::skip]
         let specs = vec![
             (Action::KeyPress(1), r#"'(key-press 1)"#),
             (Action::KeyClick(2), r#"'(key-click 2)"#),
             (Action::KeyRelease(3), r#"'(key-release 3)"#),
+            
             (Action::MouseButtonPress(4), r#"'(mouse-button-press 4)"#),
             (Action::MouseButtonClick(5), r#"'(mouse-button-click 5)"#),
-            (
-                Action::MouseButtonRelease(6),
-                r#"'(mouse-button-release 6)"#,
-            ),
-            (
-                Action::MouseAbsoluteMove(100, 100),
-                r#"'(mouse-absolute-move 100 100)"#,
-            ),
-            (
-                Action::MouseRelativeMove(100, 100),
-                r#"'(mouse-relative-move 100 100)"#,
-            ),
-            (
-                Action::TextType(String::from("nya")),
-                r#"'(text-type "nya")"#,
-            ),
-            (
-                Action::ExecuteCode(String::from("(println \"kek\")")),
-                r#"'(execute-code "(println \"kek\")")"#,
-            ),
-            (
-                Action::ExecuteFunction(String::from("test")),
-                r#"'(execute-function "test")"#,
-            ),
-            (
-                Action::ExecuteOSCommand(String::from("echo nya")),
-                r#"'(execute-os-command "echo nya")"#,
-            ),
+            (Action::MouseButtonRelease(6), r#"'(mouse-button-release 6)"#),
+            
+            (Action::TextKeyClick(7), r#"'(text-key-click 7)"#),
+            (Action::NumberKeyClick(7), r#"'(number-key-click 7)"#),
+            (Action::FunctionKeyClick(7), r#"'(function-key-click 7)"#),
+            (Action::ControlKeyClick(7), r#"'(control-key-click 7)"#),
+            (Action::KPKeyClick(7), r#"'(kp-key-click 7)"#),
+            (Action::MultimediaKeyClick(7), r#"'(multimedia-key-click 7)"#),
+            (Action::MouseButtonKeyClick(7), r#"'(mouse-button-key-click 7)"#),
+            
+            (Action::MouseAbsoluteMove(100, 100), r#"'(mouse-absolute-move 100 100)"#),
+            (Action::MouseRelativeMove(100, 100), r#"'(mouse-relative-move 100 100)"#),
+            
+            (Action::TextType(String::from("nya")), r#"'(text-type "nya")"#),
+            (Action::ExecuteCode(String::from("(println \"kek\")")), r#"'(execute-code "(println \"kek\")")"#),
+            (Action::ExecuteFunction(String::from("test")), r#"'(execute-function "test")"#),
+            (Action::ExecuteOSCommand(String::from("echo nya")), r#"'(execute-os-command "echo nya")"#),
             (Action::Wait(1000), r#"'(wait 1000)"#),
         ];
 
@@ -435,25 +294,45 @@ mod tests {
     fn returns_invalid_argument_error_when_invalid_argument_were_passed() {
         let mut interpreter = Interpreter::new();
 
+        #[rustfmt::skip]
         let specs = vec![
             r#"'(unknown-action 1)"#,
+            
             r#"'(key-press)"#,
             r#"'(key-press 1 2)"#,
             r#"'(key-click)"#,
             r#"'(key-click 1 2)"#,
             r#"'(key-release)"#,
-            r#"'(key-release 1 3)"#,
+            r#"'(key-release 1 2)"#,
+            
             r#"'(mouse-button-press)"#,
-            r#"'(mouse-button-press 3 4)"#,
+            r#"'(mouse-button-press 1 2)"#,
             r#"'(mouse-button-click)"#,
-            r#"'(mouse-button-click 5 6)"#,
+            r#"'(mouse-button-click 1 2)"#,
             r#"'(mouse-button-release)"#,
-            r#"'(mouse-button-release 6 7)"#,
+            r#"'(mouse-button-release 1 2)"#,
+            
+            r#"'(text-key-click)"#,
+            r#"'(text-key-click 1 2)"#,
+            r#"'(number-key-click)"#,
+            r#"'(number-key-click 1 2)"#,
+            r#"'(function-key-click)"#,
+            r#"'(function-key-click 1 2)"#,
+            r#"'(control-key-click)"#,
+            r#"'(control-key-click 1 2)"#,
+            r#"'(kp-key-click)"#,
+            r#"'(kp-key-click 1 2)"#,
+            r#"'(multimedia-key-click)"#,
+            r#"'(multimedia-key-click 1 2)"#,
+            r#"'(mouse-button-key-click)"#,
+            r#"'(mouse-button-key-click 1 2)"#,
+            
             r#"'(mouse-absolute-move)"#,
             r#"'(mouse-absolute-move 100)"#,
-            r#"'(mouse-absolute-move 100 100 100 )"#,
+            r#"'(mouse-absolute-move 100 100 100)"#,
             r#"'(mouse-relative-move)"#,
             r#"'(mouse-relative-move 100)"#,
+            
             r#"'(mouse-relative-move 100 100 100)"#,
             r#"'(text-type)"#,
             r#"'(text-type "nya" "nya")"#,
@@ -463,7 +342,6 @@ mod tests {
             r#"'(execute-os-command "echo-nya" "echo-nya")"#,
             r#"'(wait)"#,
             r#"'(wait 1000 1000)"#,
-            // todo: add argument tests ???
         ];
 
         for spec in specs {

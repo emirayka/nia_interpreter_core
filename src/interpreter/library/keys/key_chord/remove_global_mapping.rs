@@ -76,9 +76,9 @@ mod tests {
         let key_chord_sequence_2 = vec![key_chord_1, key_chord_3.clone()];
         let key_chord_sequence_3 = vec![key_chord_2, key_chord_3];
 
-        let action_1 = nia_key_click_action!(1);
-        let action_2 = nia_key_click_action!(2);
-        let action_3 = nia_key_click_action!(3);
+        let action_1 = Action::KeyClick(1);
+        let action_2 = Action::KeyClick(2);
+        let action_3 = Action::KeyClick(3);
 
         let mapping_1 =
             Mapping::new(key_chord_sequence_1.clone(), action_1.clone());

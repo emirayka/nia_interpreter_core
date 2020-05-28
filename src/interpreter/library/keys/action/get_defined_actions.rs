@@ -180,122 +180,52 @@ mod tests {
     fn returns_defined_actions() {
         let mut interpreter = Interpreter::new();
 
-        library::define_action_execute_code(
-            &mut interpreter,
-            "execute-code",
-            "(println \"lambert, lambert\")",
-        )
-        .unwrap();
+        #[rustfmt::skip]
+        let actions = vec![
+            ("key-click", Action::KeyClick(33)),
+            ("key-press", Action::KeyPress(33)),
+            ("key-release", Action::KeyRelease(33)),
+            
+            ("mouse-button-click", Action::MouseButtonClick(1)),
+            ("mouse-button-press", Action::MouseButtonPress(1)),
+            ("mouse-button-release", Action::MouseButtonRelease(1)),
+            
+            ("mouse-absolute-move", Action::MouseAbsoluteMove(100, 100)),
+            ("mouse-relative-move", Action::MouseRelativeMove(100, 100)),
+            
+            ("text-type", Action::TextType(String::from("cat"))),
+            ("execute-code", Action::ExecuteCode(String::from(r#"(println "lambert, lambert")"#))),
+            ("execute-function", Action::ExecuteFunction(String::from("function"))),
+            ("execute-os-command", Action::ExecuteOSCommand(String::from(r#"echo "cat""#))),
+            ("wait", Action::Wait(1000)),
+        ];
 
-        library::define_action_execute_function(
-            &mut interpreter,
-            "execute-function",
-            "function",
-        )
-        .unwrap();
+        for (action_name, action) in actions {
+            library::define_action(&mut interpreter, action_name, &action)
+                .unwrap();
+        }
 
-        library::define_action_execute_os_command(
-            &mut interpreter,
-            "execute-os-command",
-            "echo \"cat\"",
-        )
-        .unwrap();
-
-        library::define_action_key_click(&mut interpreter, "key-click", 33)
-            .unwrap();
-
-        library::define_action_key_press(&mut interpreter, "key-press", 33)
-            .unwrap();
-
-        library::define_action_key_release(&mut interpreter, "key-release", 33)
-            .unwrap();
-
-        library::define_action_mouse_button_click(
-            &mut interpreter,
-            "mouse-button-click",
-            1,
-        )
-        .unwrap();
-
-        library::define_action_mouse_button_press(
-            &mut interpreter,
-            "mouse-button-press",
-            1,
-        )
-        .unwrap();
-
-        library::define_action_mouse_button_release(
-            &mut interpreter,
-            "mouse-button-release",
-            1,
-        )
-        .unwrap();
-
-        library::define_action_mouse_absolute_move(
-            &mut interpreter,
-            "mouse-absolute-move",
-            100,
-            100,
-        )
-        .unwrap();
-
-        library::define_action_mouse_relative_move(
-            &mut interpreter,
-            "mouse-relative-move",
-            100,
-            100,
-        )
-        .unwrap();
-
-        library::define_action_text_type(&mut interpreter, "text-type", "cat")
-            .unwrap();
-
-        library::define_action_wait(&mut interpreter, "wait", 1000).unwrap();
-
+        #[rustfmt::skip]
         let expected = vec![
             NamedAction::new(Action::Wait(1000), "wait"),
-            NamedAction::new(
-                Action::TextType(String::from("cat")),
-                "text-type",
-            ),
-            NamedAction::new(
-                Action::MouseRelativeMove(100, 100),
-                "mouse-relative-move",
-            ),
-            NamedAction::new(
-                Action::MouseAbsoluteMove(100, 100),
-                "mouse-absolute-move",
-            ),
-            NamedAction::new(
-                Action::MouseButtonRelease(1),
-                "mouse-button-release",
-            ),
+            NamedAction::new(Action::ExecuteOSCommand(String::from("echo \"cat\"")), "execute-os-command"),
+            NamedAction::new(Action::ExecuteFunction(String::from("function")), "execute-function"),
+            NamedAction::new(Action::ExecuteCode(String::from( "(println \"lambert, lambert\")")), "execute-code"),
+            NamedAction::new(Action::TextType(String::from("cat")), "text-type"),
+            
+            NamedAction::new(Action::MouseRelativeMove(100, 100), "mouse-relative-move"),
+            NamedAction::new(Action::MouseAbsoluteMove(100, 100), "mouse-absolute-move"),
+            
+            NamedAction::new(Action::MouseButtonRelease(1), "mouse-button-release"),
             NamedAction::new(Action::MouseButtonPress(1), "mouse-button-press"),
             NamedAction::new(Action::MouseButtonClick(1), "mouse-button-click"),
-            NamedAction::new(
-                Action::KeyRelease(33),
-                String::from("key-release"),
-            ),
+            
+            NamedAction::new(Action::KeyRelease(33), String::from("key-release")),
             NamedAction::new(Action::KeyPress(33), "key-press"),
             NamedAction::new(Action::KeyClick(33), "key-click"),
-            NamedAction::new(
-                Action::ExecuteOSCommand(String::from("echo \"cat\"")),
-                "execute-os-command",
-            ),
-            NamedAction::new(
-                Action::ExecuteFunction(String::from("function")),
-                "execute-function",
-            ),
-            NamedAction::new(
-                Action::ExecuteCode(String::from(
-                    "(println \"lambert, lambert\")",
-                )),
-                "execute-code",
-            ),
         ];
 
         let result = get_defined_actions(&mut interpreter).unwrap();
-
         nia_assert_equal(expected.len(), result.len());
 
         for (expected, result) in expected.into_iter().zip(result.into_iter()) {

@@ -24,6 +24,7 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("key-release"),
             Value::Integer(key_code as i64),
         ],
+
         &Action::MouseButtonPress(mouse_button_code) => vec![
             interpreter.intern_symbol_value("mouse-button-press"),
             Value::Integer(mouse_button_code as i64),
@@ -36,6 +37,36 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("mouse-button-release"),
             Value::Integer(mouse_button_code as i64),
         ],
+
+        &Action::TextKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("text-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::NumberKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("number-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::FunctionKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("function-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::ControlKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("control-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::KPKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("kp-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::MultimediaKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("multimedia-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+        &Action::MouseButtonKeyClick(key_code) => vec![
+            interpreter.intern_symbol_value("mouse-button-key-click"),
+            Value::Integer(key_code as i64),
+        ],
+
         &Action::MouseAbsoluteMove(x, y) => vec![
             interpreter.intern_symbol_value("mouse-absolute-move"),
             Value::Integer(x as i64),
@@ -46,6 +77,7 @@ pub fn action_to_list(
             Value::Integer(dx as i64),
             Value::Integer(dy as i64),
         ],
+
         Action::TextType(text_to_type) => vec![
             interpreter.intern_symbol_value("text-type"),
             interpreter.intern_string_value(text_to_type),
@@ -54,6 +86,7 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("execute-code"),
             interpreter.intern_string_value(code),
         ],
+
         Action::ExecuteFunction(function_name) => vec![
             interpreter.intern_symbol_value("execute-function"),
             interpreter.intern_string_value(function_name),
@@ -62,6 +95,7 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("execute-os-command"),
             interpreter.intern_string_value(os_command),
         ],
+
         &Action::Wait(ms_amount) => vec![
             interpreter.intern_symbol_value("wait"),
             Value::Integer(ms_amount as i64),
@@ -100,6 +134,19 @@ mod tests {
             (
                 r#"'(mouse-button-release 1)"#,
                 Action::MouseButtonRelease(1),
+            ),
+            (r#"'(text-key-click 1)"#, Action::TextKeyClick(1)),
+            (r#"'(number-key-click 1)"#, Action::NumberKeyClick(1)),
+            (r#"'(function-key-click 1)"#, Action::FunctionKeyClick(1)),
+            (r#"'(control-key-click 1)"#, Action::ControlKeyClick(1)),
+            (r#"'(kp-key-click 1)"#, Action::KPKeyClick(1)),
+            (
+                r#"'(multimedia-key-click 1)"#,
+                Action::MultimediaKeyClick(1),
+            ),
+            (
+                r#"'(mouse-button-key-click 1)"#,
+                Action::MouseButtonKeyClick(1),
             ),
             (
                 r#"'(mouse-absolute-move 100 100)"#,

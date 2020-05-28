@@ -26,6 +26,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::Action;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
@@ -33,14 +34,26 @@ mod tests {
     fn removes_defined_action() {
         let mut interpreter = Interpreter::new();
 
-        library::define_action_wait(&mut interpreter, "wait-1-sec", 1000)
-            .unwrap();
+        library::define_action(
+            &mut interpreter,
+            "wait-1-sec",
+            &Action::Wait(1000),
+        )
+        .unwrap();
 
-        library::define_action_wait(&mut interpreter, "wait-2-sec", 2000)
-            .unwrap();
+        library::define_action(
+            &mut interpreter,
+            "wait-2-sec",
+            &Action::Wait(2000),
+        )
+        .unwrap();
 
-        library::define_action_wait(&mut interpreter, "wait-3-sec", 3000)
-            .unwrap();
+        library::define_action(
+            &mut interpreter,
+            "wait-3-sec",
+            &Action::Wait(3000),
+        )
+        .unwrap();
 
         let specs = vec![
             (false, "wait-0-sec"),
