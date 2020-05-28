@@ -156,11 +156,8 @@ pub fn get_defined_actions(
         let action_name =
             library::read_as_string(interpreter, action_name)?.clone();
 
-        let action_vector = interpreter.get_cdr(action_value_cons_id)?;
-        let action_vector =
-            library::read_as_vector(interpreter, action_vector)?;
-
-        let action = parse_action(interpreter, action_vector)?;
+        let action_list = interpreter.get_cdr(action_value_cons_id)?;
+        let action = library::list_to_action(interpreter, action_list)?;
 
         result.push(NamedAction::new(action, action_name));
     }

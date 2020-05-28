@@ -10,7 +10,7 @@ use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 use nia_events::{ButtonId, Command, KeyId};
 
-use crate::{Action, ActionDeque, GarbageCollectorWrapper};
+use crate::{Action, ActionDeque, ActionResult, GarbageCollectorWrapper};
 
 use crate::EventLoopHandle;
 use crate::NiaActionListener;
@@ -378,70 +378,93 @@ impl EventLoop {
     fn handle_action(
         interpreter: &mut Interpreter,
         action: Action,
-    ) -> Result<Option<Command>, Error> {
-        let command = match action {
+    ) -> Result<ActionResult, Error> {
+        let result = match action {
             Action::KeyPress(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyDown(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::KeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::KeyRelease(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyUp(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
 
             Action::MouseButtonPress(button_code) => {
                 Command::UInput(UInputWorkerCommand::MouseButtonDown(
                     ButtonId::new(button_code as u16),
                 ))
+                .into()
             }
             Action::MouseButtonClick(button_code) => {
                 Command::UInput(UInputWorkerCommand::MouseButtonPress(
                     ButtonId::new(button_code as u16),
                 ))
+                .into()
             }
             Action::MouseButtonRelease(button_code) => {
                 Command::UInput(UInputWorkerCommand::MouseButtonUp(
                     ButtonId::new(button_code as u16),
                 ))
+                .into()
             }
 
             Action::TextKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::NumberKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::FunctionKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::ControlKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::KPKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::MultimediaKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
             Action::MouseButtonKeyClick(key_code) => Command::UInput(
                 UInputWorkerCommand::KeyPress(KeyId::new(key_code as u16)),
-            ),
+            )
+            .into(),
 
             Action::MouseAbsoluteMove(x, y) => Command::Xorg(
                 XorgWorkerCommand::MouseMoveTo(x as i16, y as i16),
-            ),
+            )
+            .into(),
             Action::MouseRelativeMove(dx, dy) => Command::Xorg(
                 XorgWorkerCommand::MouseMoveBy(dx as i16, dy as i16),
-            ),
+            )
+            .into(),
             Action::TextType(text) => {
-                Command::Xorg(XorgWorkerCommand::TextType(text))
+                Command::Xorg(XorgWorkerCommand::TextType(text)).into()
             }
-            Action::ExecuteOSCommand(os_command) => Command::Spawn(os_command),
+            Action::ExecuteOSCommand(os_command) => {
+                Command::Spawn(os_command).into()
+            }
             Action::ExecuteCode(code) => {
                 interpreter.execute_in_main_environment(&code)?;
 
-                return Ok(None);
+                ActionResult::Nothing
+            }
+            Action::ExecuteNamedAction(action_name) => {
+                let action =
+                    library::get_action_by_name(interpreter, action_name)?;
+
+                ActionResult::PushAction(action)
             }
             Action::ExecuteFunction(function_name) => {
                 let main_environment_id = interpreter.get_main_environment_id();
@@ -462,7 +485,7 @@ impl EventLoop {
                     }
                 }
 
-                return Ok(None);
+                ActionResult::Nothing
             }
             Action::ExecuteFunctionValue(function_value) => {
                 interpreter
@@ -470,12 +493,12 @@ impl EventLoop {
                         function_value,
                     )?;
 
-                return Ok(None);
+                ActionResult::Nothing
             }
-            Action::Wait(_) => return Ok(None),
+            Action::Wait(_) => ActionResult::Nothing,
         };
 
-        Ok(Some(command))
+        Ok(result)
     }
 
     pub fn run_event_loop(interpreter: Interpreter) -> EventLoopHandle {
@@ -587,7 +610,7 @@ impl EventLoop {
                 // handle actions from queue
                 while let Some(action) = action_deque.take_action() {
                     match EventLoop::handle_action(&mut interpreter, action) {
-                        Ok(Some(command)) => {
+                        Ok(ActionResult::SendCommand(command)) => {
                             match worker_handle.send_command(command) {
                                 Ok(_) => {}
                                 Err(error) => {
@@ -595,7 +618,10 @@ impl EventLoop {
                                 }
                             }
                         }
-                        Ok(None) => {}
+                        Ok(ActionResult::PushAction(action)) => {
+                            action_deque.push_action_front(action);
+                        }
+                        Ok(ActionResult::Nothing) => {}
                         Err(error) => {
                             println!("{:?}", error);
 

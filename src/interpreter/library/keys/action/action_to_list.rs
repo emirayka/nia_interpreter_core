@@ -78,6 +78,10 @@ pub fn action_to_list(
             Value::Integer(dy as i64),
         ],
 
+        &Action::Wait(ms_amount) => vec![
+            interpreter.intern_symbol_value("wait"),
+            Value::Integer(ms_amount as i64),
+        ],
         Action::TextType(text_to_type) => vec![
             interpreter.intern_symbol_value("text-type"),
             interpreter.intern_string_value(text_to_type),
@@ -86,7 +90,6 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("execute-code"),
             interpreter.intern_string_value(code),
         ],
-
         Action::ExecuteFunction(function_name) => vec![
             interpreter.intern_symbol_value("execute-function"),
             interpreter.intern_string_value(function_name),
@@ -95,11 +98,11 @@ pub fn action_to_list(
             interpreter.intern_symbol_value("execute-os-command"),
             interpreter.intern_string_value(os_command),
         ],
-
-        &Action::Wait(ms_amount) => vec![
-            interpreter.intern_symbol_value("wait"),
-            Value::Integer(ms_amount as i64),
+        Action::ExecuteNamedAction(action_name) => vec![
+            interpreter.intern_symbol_value("execute-named-action"),
+            interpreter.intern_string_value(action_name),
         ],
+
         &Action::ExecuteFunctionValue(function_value) => vec![
             interpreter.intern_symbol_value("execute-function-value"),
             function_value,

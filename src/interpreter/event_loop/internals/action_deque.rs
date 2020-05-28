@@ -39,6 +39,16 @@ impl ActionDeque {
         }
     }
 
+    pub fn push_action_front(&mut self, action: Action) {
+        self.actions.push_front(action);
+    }
+
+    pub fn push_actions_front(&mut self, actions: Vec<Action>) {
+        for action in actions {
+            self.actions.push_front(action);
+        }
+    }
+
     pub fn take_action(&mut self) -> Option<Action> {
         let current_time = get_current_time();
         let diff = current_time - self.last_checked_time;
@@ -67,3 +77,5 @@ impl ActionDeque {
         }
     }
 }
+
+// todo: tests here

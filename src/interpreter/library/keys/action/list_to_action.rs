@@ -143,6 +143,8 @@ make_two_integers_item_action_parser!(parse_mouse_absolute_move_action, "Mouse a
 make_two_integers_item_action_parser!(parse_mouse_relative_move_action, "Mouse relative move action", Action::MouseRelativeMove);
 
 #[rustfmt::skip]
+make_one_integer_item_action_parser!(parse_wait_action, "Wait action", Action::Wait);
+#[rustfmt::skip]
 make_one_string_item_action_parser!(parse_text_type_action, "Text type action", Action::TextType);
 #[rustfmt::skip]
 make_one_string_item_action_parser!(parse_execute_function_action, "Execute function action", Action::ExecuteFunction);
@@ -151,7 +153,7 @@ make_one_string_item_action_parser!(parse_execute_os_command_action, "Execute OS
 #[rustfmt::skip]
 make_one_string_item_action_parser!(parse_execute_code_action, "Execute code action", Action::ExecuteCode);
 #[rustfmt::skip]
-make_one_integer_item_action_parser!(parse_wait_action, "Wait action", Action::Wait);
+make_one_string_item_action_parser!(parse_execute_named_action_action, "Execute named action", Action::ExecuteNamedAction);
 
 fn parse_execute_function_value_action(
     interpreter: &mut Interpreter,
@@ -203,13 +205,15 @@ pub fn list_to_action(
         "mouse-absolute-move" => parse_mouse_absolute_move_action(action_vector)?,
         "mouse-relative-move" => parse_mouse_relative_move_action(action_vector)?,
 
+        "wait" => parse_wait_action(action_vector)?,
         "text-type" => parse_text_type_action(interpreter, action_vector)?,
+        
         "execute-code" => parse_execute_code_action(interpreter, action_vector)?,
         "execute-function" => parse_execute_function_action(interpreter, action_vector)?,
         "execute-os-command" => parse_execute_os_command_action(interpreter, action_vector)?,
-        "execute-function-value" => parse_execute_function_value_action(interpreter, action_vector)?,
+        "execute-named-action" => parse_execute_named_action_action(interpreter, action_vector)?,
         
-        "wait" => parse_wait_action(action_vector)?,
+        "execute-function-value" => parse_execute_function_value_action(interpreter, action_vector)?,
 
         _ => {
             return Error::invalid_argument_error(format!(
@@ -257,12 +261,13 @@ mod tests {
             
             (Action::MouseAbsoluteMove(100, 100), r#"'(mouse-absolute-move 100 100)"#),
             (Action::MouseRelativeMove(100, 100), r#"'(mouse-relative-move 100 100)"#),
-            
+
+            (Action::Wait(1000), r#"'(wait 1000)"#),
             (Action::TextType(String::from("nya")), r#"'(text-type "nya")"#),
             (Action::ExecuteCode(String::from("(println \"kek\")")), r#"'(execute-code "(println \"kek\")")"#),
             (Action::ExecuteFunction(String::from("test")), r#"'(execute-function "test")"#),
             (Action::ExecuteOSCommand(String::from("echo nya")), r#"'(execute-os-command "echo nya")"#),
-            (Action::Wait(1000), r#"'(wait 1000)"#),
+            (Action::ExecuteNamedAction(String::from("print-nya")), r#"'(execute-named-action "print-nya")"#),
         ];
 
         for (expected, code) in specs {
@@ -340,6 +345,8 @@ mod tests {
             r#"'(execute-code "(println \"kek\")" "(println \"kek\")")"#,
             r#"'(execute-os-command)"#,
             r#"'(execute-os-command "echo-nya" "echo-nya")"#,
+            r#"'(execute-named-action)"#,
+            r#"'(execute-named-action "print-nya" "print-nya")"#,
             r#"'(wait)"#,
             r#"'(wait 1000 1000)"#,
         ];

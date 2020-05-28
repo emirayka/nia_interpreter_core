@@ -21,6 +21,10 @@ impl NamedAction {
         &self.action
     }
 
+    pub fn take_action(self) -> Action {
+        self.action
+    }
+
     pub fn get_action_name(&self) -> &String {
         &self.action_name
     }

@@ -26,6 +26,7 @@ pub enum Action {
     ExecuteCode(String),
     ExecuteFunction(String),
     ExecuteOSCommand(String),
+    ExecuteNamedAction(String),
     Wait(i32),
 
     ExecuteFunctionValue(Value), // specified only for interpreter
