@@ -2,7 +2,6 @@ use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 use crate::Error;
-use crate::KeyChord;
 use crate::Mapping;
 
 use crate::library;
@@ -35,7 +34,9 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::{Action, Key};
+
+    use crate::Action;
+    use crate::KeyChord;
 
     #[test]
     fn reads_mappings_correctly() {
@@ -52,10 +53,7 @@ mod tests {
             (
                 Mapping::new(
                     vec![KeyChord::new(
-                        vec![
-                            nia_key!(1, 2),
-                            nia_key!(1, 3),
-                        ],
+                        vec![nia_key!(1, 2), nia_key!(1, 3)],
                         nia_key!(1, 4),
                     )],
                     Action::KeyClick(21),

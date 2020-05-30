@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
 use crate::Error;
 use crate::Interpreter;
 use crate::KeyChord;
-use crate::Mapping;
 
 use crate::library;
 
@@ -33,7 +30,8 @@ mod tests {
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 
-    use crate::{utils, Action};
+    use crate::Action;
+    use crate::Mapping;
 
     #[test]
     fn works_correctly() {
@@ -53,7 +51,10 @@ mod tests {
         .unwrap();
         nia_assert(!result);
 
-        library::define_global_mapping(&mut interpreter, &mapping);
+        nia_assert_is_ok(&library::define_global_mapping(
+            &mut interpreter,
+            &mapping,
+        ));
 
         let result = library::is_mapping_defined(
             &mut interpreter,

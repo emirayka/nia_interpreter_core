@@ -1,141 +1,9 @@
-use crate::Action;
 use crate::Error;
 use crate::Interpreter;
 use crate::NamedAction;
-use crate::Value;
 use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
 
 use crate::library;
-
-fn read_string_from_vector(
-    interpreter: &mut Interpreter,
-    values: &mut Vec<Value>,
-) -> Result<String, Error> {
-    if values.len() == 0 {
-        return Error::generic_execution_error(
-            "Action vector has invalid length.",
-        )
-        .into();
-    }
-
-    let string =
-        library::read_as_string(interpreter, values.remove(0))?.clone();
-
-    Ok(string)
-}
-
-fn read_i32_from_vector(values: &mut Vec<Value>) -> Result<i32, Error> {
-    if values.len() == 0 {
-        return Error::generic_execution_error(
-            "Action vector has invalid length.",
-        )
-        .into();
-    }
-
-    let value = library::read_as_i64(values.remove(0))?.clone();
-
-    Ok(value as i32)
-}
-
-fn parse_action(
-    interpreter: &mut Interpreter,
-    action_vector: Vec<Value>,
-) -> Result<Action, Error> {
-    let mut action_vector = action_vector;
-
-    if action_vector.len() == 0 {
-        return Error::generic_execution_error(
-            "Invariant violation: action vector must have length > 1",
-        )
-        .into();
-    }
-
-    let action_type_value = action_vector.remove(0);
-    let action_type_symbol_id = library::read_as_symbol_id(action_type_value)?;
-    let action_type_symbol_name =
-        interpreter.get_symbol_name(action_type_symbol_id)?.clone();
-
-    match action_type_symbol_name.as_str() {
-        "execute-code" => {
-            let code =
-                read_string_from_vector(interpreter, &mut action_vector)?;
-
-            Ok(Action::ExecuteCode(code))
-        }
-        "execute-function" => {
-            let function_name =
-                read_string_from_vector(interpreter, &mut action_vector)?;
-
-            Ok(Action::ExecuteFunction(function_name))
-        }
-        "execute-os-command" => {
-            let os_command =
-                read_string_from_vector(interpreter, &mut action_vector)?;
-
-            Ok(Action::ExecuteOSCommand(os_command))
-        }
-        "key-click" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::KeyClick(key_code))
-        }
-        "key-press" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::KeyPress(key_code))
-        }
-        "key-release" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::KeyRelease(key_code))
-        }
-        "mouse-button-press" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::MouseButtonPress(key_code))
-        }
-        "mouse-button-click" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::MouseButtonClick(key_code))
-        }
-        "mouse-button-release" => {
-            let key_code = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::MouseButtonRelease(key_code))
-        }
-        "mouse-absolute-move" => {
-            let x = read_i32_from_vector(&mut action_vector)?;
-
-            let y = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::MouseAbsoluteMove(x, y))
-        }
-        "mouse-relative-move" => {
-            let dx = read_i32_from_vector(&mut action_vector)?;
-
-            let dy = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::MouseRelativeMove(dx, dy))
-        }
-        "text-type" => {
-            let text_to_type =
-                read_string_from_vector(interpreter, &mut action_vector)?;
-
-            Ok(Action::TextType(text_to_type))
-        }
-        "wait" => {
-            let ms_amount = read_i32_from_vector(&mut action_vector)?;
-
-            Ok(Action::Wait(ms_amount))
-        }
-        _ => Error::generic_execution_error(format!(
-            "Invalid action type: {}.",
-            action_type_symbol_name
-        ))
-        .into(),
-    }
-}
 
 pub fn get_defined_actions(
     interpreter: &mut Interpreter,
@@ -170,6 +38,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::Action;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 

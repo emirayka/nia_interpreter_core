@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use crate::Error;
 use crate::Interpreter;
-use crate::{KeyChord, Mapping};
+use crate::KeyChord;
 
 use crate::library;
 use crate::GLOBAL_MAP_ROOT_VARIABLE_NAME;
@@ -51,10 +49,8 @@ mod tests {
     use nia_basic_assertions::*;
 
     use crate::Action;
-    use crate::Key;
     use crate::KeyChord;
-
-    use crate::utils;
+    use crate::Mapping;
 
     #[test]
     fn removes_mapping_correctly() {

@@ -34,7 +34,6 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::{FunctionId, KeywordId, ObjectId, StringId};
 
     #[test]
     fn returns_true_if_key_value_pair_exists() {
@@ -67,8 +66,6 @@ mod tests {
     #[test]
     fn returns_invalid_argument_error_when_not_an_alist_was_passed() {
         let mut interpreter = Interpreter::new();
-
-        let alist = nia_alist!(interpreter);
 
         let specs = vec![
             Value::Integer(1),

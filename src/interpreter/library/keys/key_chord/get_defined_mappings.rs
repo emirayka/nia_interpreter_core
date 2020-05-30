@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-
-use crate::{Error, GLOBAL_MAP_ROOT_VARIABLE_NAME};
-use crate::{Interpreter, Mapping};
+use crate::Error;
+use crate::Interpreter;
+use crate::Mapping;
+use crate::GLOBAL_MAP_ROOT_VARIABLE_NAME;
 
 use crate::library;
 
@@ -28,7 +28,6 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use crate::Action;
-    use crate::Key;
     use crate::KeyChord;
     use nia_basic_assertions::nia_assert_equal;
 
@@ -40,17 +39,11 @@ mod tests {
             Mapping::new(
                 vec![
                     KeyChord::new(
-                        vec![
-                            nia_key!(1, 2),
-                            nia_key!(1, 3),
-                        ],
+                        vec![nia_key!(1, 2), nia_key!(1, 3)],
                         nia_key!(1, 4),
                     ),
                     KeyChord::new(
-                        vec![
-                            nia_key!(2, 2),
-                            nia_key!(2, 3),
-                        ],
+                        vec![nia_key!(2, 2), nia_key!(2, 3)],
                         nia_key!(2, 4),
                     ),
                 ],

@@ -1,4 +1,5 @@
-use crate::{Convertable, Key, ModifierDescription};
+use crate::Convertable;
+use crate::Key;
 
 #[derive(Clone, Debug, Eq, Hash)]
 pub struct KeyChord {
@@ -128,8 +129,7 @@ impl KeyChord {
             return false;
         }
 
-        let mut iterator =
-            key_chord_vector_1.iter().zip(key_chord_vector_2.iter());
+        let iterator = key_chord_vector_1.iter().zip(key_chord_vector_2.iter());
 
         for (key_chord_1, key_chord_2) in iterator {
             if !KeyChord::key_chords_are_same(key_chord_1, key_chord_2) {

@@ -34,7 +34,6 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::Key;
 
     #[test]
     fn parses_key_chord_correctly() {

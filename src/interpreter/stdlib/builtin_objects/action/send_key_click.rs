@@ -1,5 +1,3 @@
-use nia_events::KeyId;
-
 use crate::interpreter::environment::EnvironmentId;
 use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;

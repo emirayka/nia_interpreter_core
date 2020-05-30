@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
@@ -140,7 +139,10 @@ impl NiaActionListener {
 
                             match state_machine.excite(key_chord) {
                                 StateMachineResult::Excited(action) => {
-                                    action_sender.send(action);
+                                    match action_sender.send(action) {
+                                        Ok(_) => {}
+                                        Err(_) => {}
+                                    }
                                 }
                                 StateMachineResult::Fallback(previous) => {
                                     for key_chord in previous {

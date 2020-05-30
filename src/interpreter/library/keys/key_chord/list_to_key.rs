@@ -1,11 +1,12 @@
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
-use crate::Key;
 use crate::Error;
+use crate::Key;
 
-use crate::library;
-
-pub fn list_to_key(interpreter: &mut Interpreter, key_list: Value) -> Result<Key, Error> {
+pub fn list_to_key(
+    interpreter: &mut Interpreter,
+    key_list: Value,
+) -> Result<Key, Error> {
     let key = match key_list {
         Value::Integer(key_code) => nia_key!(key_code as i32),
         Value::Cons(cons_id) => {
@@ -48,31 +49,23 @@ mod tests {
     fn parses_correctly_lists() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
+        let specs = vec![
             (nia_key!(1), "1"),
             (nia_key!(2), "2"),
             (nia_key!(1, 1), "'(1 1)"),
             (nia_key!(1, 2), "'(1 2)"),
             (nia_key!(2, 1), "'(2 1)"),
             (nia_key!(2, 2), "'(2 2)"),
-        );
+        ];
 
         for (expected, value) in specs {
-            let result = interpreter.execute_in_main_environment(value).unwrap();
-            let result = list_to_key(
-                &mut interpreter,
-                result
-            ).unwrap();
+            let result =
+                interpreter.execute_in_main_environment(value).unwrap();
+            let result = list_to_key(&mut interpreter, result).unwrap();
 
-            nia_assert_equal(
-                expected.get_device_id(),
-                result.get_device_id()
-            );
+            nia_assert_equal(expected.get_device_id(), result.get_device_id());
 
-            nia_assert_equal(
-                expected.get_key_id(),
-                result.get_key_id()
-            );
+            nia_assert_equal(expected.get_key_id(), result.get_key_id());
         }
     }
 
@@ -80,7 +73,7 @@ mod tests {
     fn returns_invalid_argument_errors_when_invalid_argument_were_passed() {
         let mut interpreter = Interpreter::new();
 
-        let specs = vec!(
+        let specs = vec![
             "1.1",
             "#t",
             "#f",
@@ -92,7 +85,7 @@ mod tests {
             "'(1 2 3)",
             "{}",
             "#()",
-        );
+        ];
 
         for spec in specs {
             let result = interpreter.execute_in_main_environment(spec).unwrap();

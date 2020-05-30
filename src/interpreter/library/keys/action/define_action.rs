@@ -1,5 +1,6 @@
-use crate::{Action, Error, DEFINED_ACTIONS_ROOT_VARIABLE_NAME};
-use crate::{Interpreter, Value};
+use crate::Action;
+use crate::Error;
+use crate::Interpreter;
 
 use crate::library;
 
@@ -22,6 +23,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 

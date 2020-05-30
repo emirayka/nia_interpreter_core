@@ -11,8 +11,6 @@ pub fn define_modifier(
 ) -> Result<(), Error> {
     let modifier_alias_str = modifier.get_alias();
 
-    let key = modifier.get_key();
-
     let device_id_value = modifier
         .get_key()
         .get_device_id()

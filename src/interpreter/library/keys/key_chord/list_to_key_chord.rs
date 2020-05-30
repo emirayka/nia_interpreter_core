@@ -43,7 +43,6 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::Key;
 
     #[test]
     fn parses_key_chord_correctly() {
@@ -52,29 +51,17 @@ mod tests {
         let specs = vec![
             (KeyChord::new(vec![], nia_key!(1)), "'(1)"),
             (KeyChord::new(vec![], nia_key!(1, 2)), "'((1 2))"),
+            (KeyChord::new(vec![nia_key!(1)], nia_key!(3)), "'(1 3)"),
             (
-                KeyChord::new(vec![nia_key!(1)], nia_key!(3)),
-                "'(1 3)",
-            ),
-            (
-                KeyChord::new(
-                    vec![nia_key!(1)],
-                    nia_key!(3, 4),
-                ),
+                KeyChord::new(vec![nia_key!(1)], nia_key!(3, 4)),
                 "'(1 (3 4))",
             ),
             (
-                KeyChord::new(
-                    vec![nia_key!(1, 2)],
-                    nia_key!(3),
-                ),
+                KeyChord::new(vec![nia_key!(1, 2)], nia_key!(3)),
                 "'((1 2) 3)",
             ),
             (
-                KeyChord::new(
-                    vec![nia_key!(1, 2)],
-                    nia_key!(3, 4),
-                ),
+                KeyChord::new(vec![nia_key!(1, 2)], nia_key!(3, 4)),
                 "'((1 2) (3 4))",
             ),
         ];

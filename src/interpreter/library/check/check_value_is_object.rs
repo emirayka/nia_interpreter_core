@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
 pub fn check_value_is_object(value: Value) -> Result<(), Error> {
@@ -19,7 +18,7 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
-    use crate::ObjectId;
+    use crate::Interpreter;
 
     #[test]
     fn returns_nothing_when_a_cons_was_passed() {

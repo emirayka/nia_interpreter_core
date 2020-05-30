@@ -146,7 +146,6 @@ mod tests {
     fn reads_delimited_symbols_element_object_method_invocation_correctly() {
         let mut interpreter = Interpreter::new();
 
-        let nil_symbol_value = interpreter.intern_nil_symbol_value();
         let call_with_this = interpreter.intern_symbol_value("call-with-this");
         let object_symbol_value = interpreter.intern_symbol_value("object");
         let value1_keyword_value = interpreter.intern_keyword_value("value1");

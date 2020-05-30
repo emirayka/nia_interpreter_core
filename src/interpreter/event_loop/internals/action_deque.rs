@@ -4,7 +4,6 @@ use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
 use crate::Action;
-use std::env::current_dir;
 
 fn get_current_time() -> Duration {
     let current_time = SystemTime::now();

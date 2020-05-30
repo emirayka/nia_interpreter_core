@@ -15,7 +15,11 @@ pub use assertion::*;
 #[cfg(test)]
 pub use file_helpers::*;
 
-use crate::{EnvironmentId, Error, Interpreter, Value};
+use crate::EnvironmentId;
+use crate::Error;
+use crate::Interpreter;
+use crate::Value;
+
 pub use stack::*;
 
 pub fn expand<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
@@ -119,7 +123,6 @@ pub fn get_default_configuration_file_path() -> Option<PathBuf> {
         .map(|p| p.clone())
 }
 
-#[cfg(test)]
 pub fn stub_function(
     _interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,

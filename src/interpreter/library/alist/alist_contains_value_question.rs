@@ -34,7 +34,6 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::{FunctionId, KeywordId, ObjectId, StringId};
 
     #[test]
     fn returns_true_if_() {

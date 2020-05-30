@@ -3,10 +3,6 @@ use crate::Error;
 use crate::Interpreter;
 use crate::Value;
 
-use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
-
-use crate::library;
-
 pub fn action_to_list(
     interpreter: &mut Interpreter,
     action: &Action,

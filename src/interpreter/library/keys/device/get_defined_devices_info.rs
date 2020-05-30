@@ -1,7 +1,6 @@
 use crate::DeviceInfo;
+use crate::Error;
 use crate::Interpreter;
-use crate::Value;
-use crate::{Error, DEFINED_DEVICES_ROOT_VARIABLE_NAME};
 
 use crate::library;
 

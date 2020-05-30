@@ -86,9 +86,6 @@ mod tests {
             )
             .unwrap();
 
-            library::print_value(&mut interpreter, expected);
-            library::print_value(&mut interpreter, result);
-
             utils::assert_deep_equal(&mut interpreter, expected, result)
         }
     }

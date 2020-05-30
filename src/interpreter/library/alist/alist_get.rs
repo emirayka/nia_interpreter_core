@@ -35,7 +35,6 @@ mod tests {
 
     #[allow(unused_imports)]
     use crate::utils;
-    use crate::{FunctionId, KeywordId, ObjectId, StringId};
 
     #[test]
     fn returns_value_associated_with_key_or_none_if_there_are_no_such_key() {

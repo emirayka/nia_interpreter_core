@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::Error;
 use crate::Interpreter;
 use crate::Mapping;
@@ -42,7 +40,6 @@ mod tests {
     use nia_basic_assertions::*;
 
     use crate::Action;
-    use crate::Key;
     use crate::KeyChord;
 
     use crate::utils;

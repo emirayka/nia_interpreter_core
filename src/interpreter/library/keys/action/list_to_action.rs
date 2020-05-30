@@ -3,8 +3,6 @@ use crate::Error;
 use crate::Interpreter;
 use crate::Value;
 
-use crate::DEFINED_ACTIONS_ROOT_VARIABLE_NAME;
-
 use crate::library;
 
 fn try_remove_first_item<S>(
@@ -156,7 +154,7 @@ make_one_string_item_action_parser!(parse_execute_code_action, "Execute code act
 make_one_string_item_action_parser!(parse_execute_named_action_action, "Execute named action", Action::ExecuteNamedAction);
 
 fn parse_execute_function_value_action(
-    interpreter: &mut Interpreter,
+    _interpreter: &mut Interpreter,
     mut action_vector: Vec<Value>,
 ) -> Result<Action, Error> {
     let function_value = try_remove_first_item(
@@ -164,7 +162,7 @@ fn parse_execute_function_value_action(
         "List must have two items exactly, to be considered as execute-function-value action.",
     )?;
 
-    library::check_value_is_function(function_value);
+    library::check_value_is_function(function_value)?;
 
     Ok(Action::ExecuteFunctionValue(function_value))
 }

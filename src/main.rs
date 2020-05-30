@@ -5,14 +5,6 @@ pub mod repl;
 
 pub use interpreter::*;
 
-use chrono::Local;
-use env_logger::Builder;
-use log::debug;
-use log::info;
-use log::warn;
-use log::LevelFilter;
-use std::io::Write;
-
 // todo: Add better error handling
 // todo: binary plugins
 // todo: file system

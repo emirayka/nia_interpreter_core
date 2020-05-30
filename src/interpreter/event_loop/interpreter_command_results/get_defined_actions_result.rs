@@ -1,4 +1,3 @@
-use crate::Action;
 use crate::Error;
 use crate::NamedAction;
 

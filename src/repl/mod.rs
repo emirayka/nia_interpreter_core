@@ -42,11 +42,14 @@ pub fn run() -> Result<(), std::io::Error> {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
 
-                event_loop_handle.send_command(
+                match event_loop_handle.send_command(
                     NiaInterpreterCommand::ExecuteCode(
                         NiaExecuteCodeCommand::new(line),
                     ),
-                );
+                ) {
+                    Ok(_) => {}
+                    Err(_) => println!("Error sending command"),
+                }
 
                 let result = match event_loop_handle.receive_result() {
                     Ok(result) => result,

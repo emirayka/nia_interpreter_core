@@ -31,7 +31,6 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
-    use crate::Key;
     use crate::KeyChord;
 
     fn assert_returns_correct_list(s: &str, key_chord: KeyChord) {
@@ -49,24 +48,15 @@ mod tests {
         let specs = vec![
             (
                 "'(0 2 4)",
-                KeyChord::new(
-                    vec![nia_key!(0), nia_key!(2)],
-                    nia_key!(4),
-                ),
+                KeyChord::new(vec![nia_key!(0), nia_key!(2)], nia_key!(4)),
             ),
             (
                 "'(0 2 (4 5))",
-                KeyChord::new(
-                    vec![nia_key!(0), nia_key!(2)],
-                    nia_key!(4, 5),
-                ),
+                KeyChord::new(vec![nia_key!(0), nia_key!(2)], nia_key!(4, 5)),
             ),
             (
                 "'(0 (2 3) 4)",
-                KeyChord::new(
-                    vec![nia_key!(0), nia_key!(2, 3)],
-                    nia_key!(4),
-                ),
+                KeyChord::new(vec![nia_key!(0), nia_key!(2, 3)], nia_key!(4)),
             ),
             (
                 "'(0 (2 3) (4 5))",
@@ -77,10 +67,7 @@ mod tests {
             ),
             (
                 "'((0 1) 2 4)",
-                KeyChord::new(
-                    vec![nia_key!(0, 1), nia_key!(2)],
-                    nia_key!(4),
-                ),
+                KeyChord::new(vec![nia_key!(0, 1), nia_key!(2)], nia_key!(4)),
             ),
             (
                 "'((0 1) 2 (4 5))",

@@ -18,8 +18,8 @@ mod tests {
     #[allow(unused_imports)]
     use crate::utils;
 
+    use crate::FunctionId;
     use crate::Interpreter;
-    use crate::{ConsId, FunctionId};
 
     #[test]
     fn returns_nothing_when_a_function_was_passed() {

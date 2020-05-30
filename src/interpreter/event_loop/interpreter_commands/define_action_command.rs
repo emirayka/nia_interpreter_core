@@ -1,4 +1,4 @@
-use crate::{Action, NamedAction};
+use crate::NamedAction;
 
 #[derive(Clone, Debug)]
 pub struct NiaDefineActionCommand {

@@ -319,10 +319,8 @@ impl ObjectArena {
         let result = object
             .get_properties()
             .iter()
-            .filter(|(key, value)| {
-                value.is_internable() && value.is_enumerable()
-            })
-            .map(|(key, value)| *key)
+            .filter(|(_, value)| value.is_internable() && value.is_enumerable())
+            .map(|(key, _)| *key)
             .collect();
 
         Ok(result)

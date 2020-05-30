@@ -198,7 +198,7 @@ impl Interpreter {
 
         match config_path.to_str() {
             Some(path_string) => match interpreter.load_module(path_string) {
-                Ok(result) => {
+                Ok(_) => {
                     println!(
                         "Successfully loaded configuration: {:?}.",
                         config_path

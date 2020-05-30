@@ -1,11 +1,7 @@
-use std::collections::HashMap;
-
 use crate::Action;
 use crate::Error;
 use crate::Interpreter;
-use crate::Key;
 use crate::KeyChord;
-use crate::Mapping;
 
 use crate::library;
 use crate::GLOBAL_MAP_ROOT_VARIABLE_NAME;
@@ -30,7 +26,7 @@ pub fn change_global_mapping(
         ) {
             let action_list = library::action_to_list(interpreter, action)?;
 
-            interpreter.set_cdr(mapping_cons_id, action_list);
+            interpreter.set_cdr(mapping_cons_id, action_list)?;
 
             return Ok(());
         }
@@ -44,6 +40,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::Mapping;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 

@@ -15,7 +15,7 @@ pub fn stop_listening(
         .into();
     }
 
-    interpreter.stop_listening();
+    interpreter.stop_listening()?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }

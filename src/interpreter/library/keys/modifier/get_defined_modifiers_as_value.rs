@@ -1,6 +1,7 @@
+use crate::Error;
 use crate::Interpreter;
 use crate::Value;
-use crate::{Error, DEFINED_MODIFIERS_ROOT_VARIABLE_NAME};
+use crate::DEFINED_MODIFIERS_ROOT_VARIABLE_NAME;
 
 use crate::library;
 
@@ -26,7 +27,6 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
 
-    use crate::ModifierDescription;
     #[allow(unused_imports)]
     use nia_basic_assertions::*;
 

@@ -2,11 +2,8 @@ use std::sync::mpsc;
 use std::thread;
 
 use std::time::Duration;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 
 use nia_events::UInputWorkerCommand;
-use nia_events::WorkerHandle;
 use nia_events::XorgWorkerCommand;
 use nia_events::{ButtonId, Command, KeyId};
 
@@ -51,9 +48,7 @@ use crate::StateMachineAction;
 
 use crate::Error;
 use crate::Interpreter;
-use crate::Value;
 
-use crate::interpreter::garbage_collector::collect_garbage;
 use crate::interpreter::PRIMITIVE_ACTIONS_VARIABLE_NAME;
 
 use crate::library;
@@ -170,7 +165,7 @@ mod do_command {
         interpreter: &mut Interpreter,
         command: NiaDefineActionCommand,
     ) -> NiaInterpreterCommandResult {
-        let mut command = command;
+        let command = command;
         let action = command.take_action();
         let action_name = action.get_action_name();
 
@@ -211,7 +206,7 @@ mod do_command {
 
     fn do_command_get_defined_mappings(
         interpreter: &mut Interpreter,
-        command: NiaGetDefinedMappingsCommand,
+        _command: NiaGetDefinedMappingsCommand,
     ) -> NiaInterpreterCommandResult {
         let result = library::get_defined_mappings(interpreter);
 
@@ -258,7 +253,7 @@ mod do_command {
 
     fn do_command_is_listening(
         interpreter: &mut Interpreter,
-        command: NiaIsListeningCommand,
+        _command: NiaIsListeningCommand,
     ) -> NiaInterpreterCommandResult {
         let result = Ok(interpreter.is_listening());
 
@@ -267,7 +262,7 @@ mod do_command {
 
     fn do_command_start_listening(
         interpreter: &mut Interpreter,
-        command: NiaStartListeningCommand,
+        _command: NiaStartListeningCommand,
     ) -> NiaInterpreterCommandResult {
         let result = interpreter.start_listening();
         let result = result.map(|_| String::from("Success"));
@@ -277,7 +272,7 @@ mod do_command {
 
     fn do_command_stop_listening(
         interpreter: &mut Interpreter,
-        command: NiaStopListeningCommand,
+        _command: NiaStopListeningCommand,
     ) -> NiaInterpreterCommandResult {
         let result = interpreter.stop_listening();
         let result = result.map(|_| String::from("Success"));
@@ -568,9 +563,10 @@ impl EventLoop {
                     && action_listener_handle.is_some()
                 {
                     match &action_listener_handle {
-                        Some(handle) => {
-                            handle.stop();
-                        }
+                        Some(handle) => match handle.stop() {
+                            Ok(_) => {}
+                            Err(_) => {}
+                        },
                         None => {}
                     }
 
@@ -613,7 +609,7 @@ impl EventLoop {
                         Ok(ActionResult::SendCommand(command)) => {
                             match worker_handle.send_command(command) {
                                 Ok(_) => {}
-                                Err(error) => {
+                                Err(_) => {
                                     // worker is dead
                                 }
                             }
@@ -652,9 +648,10 @@ impl EventLoop {
             }
 
             match action_listener_handle {
-                Some(handle) => {
-                    handle.stop();
-                }
+                Some(handle) => match handle.stop() {
+                    Ok(_) => {}
+                    Err(_) => {}
+                },
                 _ => {}
             }
 

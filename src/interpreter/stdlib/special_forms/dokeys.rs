@@ -50,7 +50,7 @@ pub fn dokeys(
     }
 
     let mut values = values;
-    let mut binding = library::read_as_vector(interpreter, values.remove(0))?;
+    let binding = library::read_as_vector(interpreter, values.remove(0))?;
 
     if binding.len() != 2 {
         return Error::invalid_argument_error(

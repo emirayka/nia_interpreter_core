@@ -22,8 +22,8 @@ pub fn assert_deep_equal(
     value1: Value,
     value2: Value,
 ) {
-    library::print_value(interpreter, value1);
-    library::print_value(interpreter, value2);
+    nia_assert_is_ok(&library::print_value(interpreter, value1));
+    nia_assert_is_ok(&library::print_value(interpreter, value2));
     nia_assert(library::deep_equal(interpreter, value1, value2).unwrap());
 }
 
@@ -142,8 +142,8 @@ pub fn assert_results_are_equal(
         let result = interpreter.execute_in_main_environment(code).unwrap();
 
         println!("{}", code_expected);
-        crate::library::print_value(interpreter, expected);
-        crate::library::print_value(interpreter, result);
+        nia_assert_is_ok(&crate::library::print_value(interpreter, expected));
+        nia_assert_is_ok(&crate::library::print_value(interpreter, result));
 
         assert_deep_equal(interpreter, expected, result);
     }
@@ -157,9 +157,9 @@ pub fn assert_results_are_correct(
         let result = interpreter.execute_in_main_environment(code).unwrap();
 
         println!("{}", code);
-        crate::library::print_value(interpreter, expected);
+        nia_assert_is_ok(&crate::library::print_value(interpreter, expected));
         println!();
-        crate::library::print_value(interpreter, result);
+        nia_assert_is_ok(&crate::library::print_value(interpreter, result));
         println!();
 
         assert_deep_equal(interpreter, expected, result);

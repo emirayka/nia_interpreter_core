@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-
+use crate::Action;
+use crate::EnvironmentId;
 use crate::Error;
 use crate::Interpreter;
 use crate::Key;
+use crate::KeyChord;
+use crate::Mapping;
 use crate::Value;
-use crate::{Action, Mapping};
-use crate::{EnvironmentId, KeyChord};
 
 use crate::library;
 
@@ -66,7 +66,7 @@ pub fn define_global_mapping(
             .into();
     }
 
-    let mut values = values;
+    let values = values;
 
     let key_chord_part = library::read_as_string(interpreter, values[0])?;
     let action_part = values[1];
@@ -88,7 +88,7 @@ pub fn define_global_mapping(
     let mapping = Mapping::new(key_chords, action);
 
     // todo: optimize
-    library::define_global_mapping(interpreter, &mapping);
+    library::define_global_mapping(interpreter, &mapping)?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }

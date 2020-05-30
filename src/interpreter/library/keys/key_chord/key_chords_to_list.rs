@@ -22,7 +22,6 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use crate::utils;
-    use crate::Key;
 
     fn assert_returns_correct_list(s: &str, key_chords: Vec<KeyChord>) {
         let mut interpreter = Interpreter::new();
@@ -35,8 +34,6 @@ mod tests {
 
     #[test]
     fn returns_correct_list_of_key_chords() {
-        let mut interpreter = Interpreter::new();
-
         let specs = vec![
             (
                 "'((0 1 2))",
@@ -48,32 +45,17 @@ mod tests {
             (
                 "'((0 1 2) (3 4 5))",
                 vec![
-                    KeyChord::new(
-                        vec![nia_key!(0), nia_key!(1)],
-                        nia_key!(2),
-                    ),
-                    KeyChord::new(
-                        vec![nia_key!(3), nia_key!(4)],
-                        nia_key!(5),
-                    ),
+                    KeyChord::new(vec![nia_key!(0), nia_key!(1)], nia_key!(2)),
+                    KeyChord::new(vec![nia_key!(3), nia_key!(4)], nia_key!(5)),
                 ],
             ),
             (
                 "'((0 1 2) (3 4 5) ((0 1) (1 1) (1 2)))",
                 vec![
+                    KeyChord::new(vec![nia_key!(0), nia_key!(1)], nia_key!(2)),
+                    KeyChord::new(vec![nia_key!(3), nia_key!(4)], nia_key!(5)),
                     KeyChord::new(
-                        vec![nia_key!(0), nia_key!(1)],
-                        nia_key!(2),
-                    ),
-                    KeyChord::new(
-                        vec![nia_key!(3), nia_key!(4)],
-                        nia_key!(5),
-                    ),
-                    KeyChord::new(
-                        vec![
-                            nia_key!(0, 1),
-                            nia_key!(1, 1),
-                        ],
+                        vec![nia_key!(0, 1), nia_key!(1, 1)],
                         nia_key!(1, 2),
                     ),
                 ],

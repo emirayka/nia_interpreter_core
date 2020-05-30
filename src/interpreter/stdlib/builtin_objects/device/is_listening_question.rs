@@ -38,7 +38,7 @@ mod tests {
         let expected = Value::Boolean(false);
         crate::utils::assert_deep_equal(&mut interpreter, expected, result);
 
-        interpreter.start_listening();
+        nia_assert_is_ok(&interpreter.start_listening());
 
         let result = interpreter
             .execute_in_main_environment(r#"(device:is-listening?)"#)

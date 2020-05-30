@@ -29,7 +29,7 @@ pub fn start_listening(
             .into();
     }
 
-    interpreter.start_listening();
+    interpreter.start_listening()?;
 
     Ok(interpreter.intern_nil_symbol_value())
 }

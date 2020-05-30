@@ -1,5 +1,4 @@
 use crate::interpreter::error::Error;
-use crate::interpreter::value::SymbolId;
 use crate::interpreter::value::Value;
 use crate::Interpreter;
 

@@ -1,5 +1,3 @@
-use crate::Action;
-use crate::KeyChord;
 use crate::Mapping;
 
 #[derive(Clone, Debug)]

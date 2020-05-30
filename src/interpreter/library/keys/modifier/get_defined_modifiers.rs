@@ -1,6 +1,5 @@
 use crate::Error;
 use crate::Interpreter;
-use crate::Key;
 use crate::ModifierDescription;
 use crate::Value;
 
