@@ -12,8 +12,8 @@ pub fn define_global_mapping(
     let key_chord_sequence = mapping.get_key_chords();
     let action = mapping.get_action();
 
-    if library::is_mapping_defined(interpreter, key_chord_sequence)? {
-        return Error::generic_execution_error("Mapping already defined.")
+    if !library::is_mapping_can_be_defined(interpreter, key_chord_sequence)? {
+        return Error::generic_execution_error("Mapping cannot be defined.")
             .into();
     }
 

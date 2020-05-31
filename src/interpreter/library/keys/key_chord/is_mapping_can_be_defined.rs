@@ -4,22 +4,49 @@ use crate::KeyChord;
 
 use crate::library;
 
-pub fn is_mapping_defined(
+fn is_prefix_of_another(
+    key_chords: &Vec<KeyChord>,
+    another: &Vec<KeyChord>,
+) -> bool {
+    if key_chords.len() > another.len() {
+        return false;
+    }
+
+    let mut key_chords_iter = key_chords.iter();
+    let mut another_iter = another.iter();
+
+    while let Some(another_key_chord) = another_iter.next() {
+        match key_chords_iter.next() {
+            Some(key_chord) => {
+                if !KeyChord::key_chords_are_same(key_chord, another_key_chord)
+                {
+                    return false;
+                }
+            }
+            None => break,
+        };
+    }
+
+    true
+}
+
+pub fn is_mapping_can_be_defined(
     interpreter: &mut Interpreter,
     key_chords: &Vec<KeyChord>,
 ) -> Result<bool, Error> {
     let defined_mappings = library::get_defined_mappings(interpreter)?;
 
     for defined_mapping in defined_mappings {
-        if KeyChord::key_chord_vectors_are_same(
-            defined_mapping.get_key_chords(),
-            key_chords,
-        ) {
-            return Ok(true);
+        if is_prefix_of_another(defined_mapping.get_key_chords(), key_chords) {
+            return Ok(false);
+        }
+
+        if is_prefix_of_another(key_chords, defined_mapping.get_key_chords()) {
+            return Ok(false);
         }
     }
 
-    Ok(false)
+    Ok(true)
 }
 
 #[cfg(test)]
@@ -44,23 +71,23 @@ mod tests {
 
         let mapping = Mapping::new(key_chords, Action::KeyClick(1));
 
-        let result = library::is_mapping_defined(
+        let result = library::is_mapping_can_be_defined(
             &mut interpreter,
             mapping.get_key_chords(),
         )
         .unwrap();
-        nia_assert(!result);
+        nia_assert(result);
 
         nia_assert_is_ok(&library::define_global_mapping(
             &mut interpreter,
             &mapping,
         ));
 
-        let result = library::is_mapping_defined(
+        let result = library::is_mapping_can_be_defined(
             &mut interpreter,
             mapping.get_key_chords(),
         )
         .unwrap();
-        nia_assert(result);
+        nia_assert(!result);
     }
 }

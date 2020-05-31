@@ -87,8 +87,6 @@ mod tests {
     fn returns_invalid_argument_error_when_not_an_alist_was_passed() {
         let mut interpreter = Interpreter::new();
 
-        let alist = library::alist_new(&mut interpreter).unwrap();
-
         let specs = vec![
             Value::Integer(1),
             Value::Float(1.1),
