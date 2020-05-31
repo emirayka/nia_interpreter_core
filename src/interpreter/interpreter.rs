@@ -1333,23 +1333,23 @@ mod tests {
         }
 
         #[test]
-        pub fn executes_integer_correctly() {
+        fn executes_integer_correctly() {
             assert_execution_result_eq!(Value::Integer(1), "1");
         }
 
         #[test]
-        pub fn executes_float_correctly() {
+        fn executes_float_correctly() {
             assert_execution_result_eq!(Value::Float(1.2), "1.2");
         }
 
         #[test]
-        pub fn executes_boolean_correctly() {
+        fn executes_boolean_correctly() {
             assert_execution_result_eq!(Value::Boolean(true), "#t");
             assert_execution_result_eq!(Value::Boolean(false), "#f");
         }
 
         #[test]
-        pub fn executes_string_correctly() {
+        fn executes_string_correctly() {
             let mut interpreter = Interpreter::new();
 
             let expected = interpreter.intern_string_value("tas");
@@ -1360,7 +1360,7 @@ mod tests {
         }
 
         #[test]
-        pub fn executes_symbol_correctly() {
+        fn executes_symbol_correctly() {
             let mut interpreter = Interpreter::new();
             let name = interpreter.intern_symbol_id("test");
             let root_environment_id = interpreter.get_main_environment_id();
@@ -1376,7 +1376,7 @@ mod tests {
         }
 
         #[test]
-        pub fn returns_error_during_execution_of_special_symbols() {
+        fn returns_error_during_execution_of_special_symbols() {
             let special_symbol_names = vec!["#opt", "#rest", "#keys"];
 
             for special_symbol_name in special_symbol_names {
@@ -1402,7 +1402,7 @@ mod tests {
         }
 
         #[test]
-        pub fn executes_keyword_correctly() {
+        fn executes_keyword_correctly() {
             let mut interpreter = Interpreter::new();
 
             let specs = vec![":a", ":b", ":c"];
@@ -1421,12 +1421,42 @@ mod tests {
         }
 
         #[test]
-        pub fn executes_keyword_s_expression_correctly() {
+        fn executes_keyword_s_expression_correctly_lookup() {
             let mut interpreter = Interpreter::new();
 
-            let result = interpreter.execute_in_main_environment("(:a {:a 1})");
+            let result = interpreter
+                .execute_in_main_environment("(:a {:a 1})")
+                .unwrap();
 
-            nia_assert_equal(Value::Integer(1), result.unwrap());
+            nia_assert_equal(Value::Integer(1), result);
+        }
+
+        #[test]
+        fn executes_keyword_s_expression_correctly_set_1() {
+            let mut interpreter = Interpreter::new();
+
+            interpreter
+                .execute_in_main_environment("(defv a {:a 1}) (:a a 2)")
+                .unwrap();
+            let result =
+                interpreter.execute_in_main_environment("(:a a)").unwrap();
+
+            nia_assert_equal(Value::Integer(2), result);
+        }
+
+        #[test]
+        fn executes_keyword_s_expression_correctly_set_2() {
+            let mut interpreter = Interpreter::new();
+
+            interpreter
+                .execute_in_main_environment("(defv a {:b 1}) (:b a '(1 2 3))")
+                .unwrap();
+            let result =
+                interpreter.execute_in_main_environment("(:b a)").unwrap();
+            let expected =
+                interpreter.execute_in_main_environment("'(1 2 3)").unwrap();
+
+            utils::assert_deep_equal(&mut interpreter, expected, result);
         }
 
         #[test]
@@ -1661,7 +1691,7 @@ mod tests {
         }
 
         #[test]
-        pub fn builtin_function_works_correctly() {
+        fn builtin_function_works_correctly() {
             let mut interpreter = Interpreter::new();
 
             let result = interpreter.execute_in_main_environment("(+ 1 2)");
@@ -1679,7 +1709,7 @@ mod tests {
         }
 
         #[test]
-        pub fn interpreted_function_works_correctly() {
+        fn interpreted_function_works_correctly() {
             let mut interpreter = Interpreter::new();
             let root_environment_id = interpreter.get_main_environment_id();
 
@@ -1865,7 +1895,7 @@ mod tests {
         }
 
         #[test]
-        pub fn special_form_invocation_evaluates_correctly() {
+        fn special_form_invocation_evaluates_correctly() {
             let mut interpreter = Interpreter::new();
             let root_environment_id = interpreter.get_main_environment_id();
 
@@ -1919,7 +1949,7 @@ mod tests {
         }
 
         #[test]
-        pub fn macro_invocation_evaluates_correctly() {
+        fn macro_invocation_evaluates_correctly() {
             let mut interpreter = Interpreter::new();
 
             let pairs = vec![(

@@ -51,11 +51,14 @@ fn evaluate_s_expression_keyword_set(
     let evaluated_object_value =
         evaluate_value(interpreter, environment_id, object_value)?;
 
+    let evaluated_new_value =
+        evaluate_value(interpreter, environment_id, property_new_value)?;
+
     match evaluated_object_value {
         Value::Object(object_id) => interpreter.set_object_property(
             object_id,
             property_symbol_id,
-            property_new_value,
+            evaluated_new_value,
         )?,
         _ => {
             return Error::generic_execution_error(
@@ -65,7 +68,7 @@ fn evaluate_s_expression_keyword_set(
         }
     };
 
-    Ok(property_new_value)
+    Ok(evaluated_new_value)
 }
 
 pub fn evaluate_s_expression_keyword(
