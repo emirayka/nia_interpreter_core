@@ -2,6 +2,7 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 
 mod action;
+mod alist;
 mod bit;
 mod cons;
 mod device;
@@ -18,6 +19,7 @@ mod to;
 mod nia; // :3
 
 pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+    alist::infect(interpreter)?;
     action::infect(interpreter)?;
     bit::infect(interpreter)?;
     cons::infect(interpreter)?;
