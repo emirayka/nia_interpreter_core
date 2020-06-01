@@ -35,6 +35,8 @@ use crate::NiaInterpreterCommandResult;
 use crate::NiaIsListeningCommandResult;
 use crate::NiaRemoveActionCommand;
 use crate::NiaRemoveActionCommandResult;
+use crate::NiaRemoveDeviceByIdCommand;
+use crate::NiaRemoveDeviceByIdCommandResult;
 use crate::NiaRemoveDeviceByNameCommand;
 use crate::NiaRemoveDeviceByNameCommandResult;
 use crate::NiaRemoveDeviceByPathCommand;
@@ -60,9 +62,9 @@ const GARBAGE_COLLECTOR_PERIOD: u64 = 120000;
 mod do_command {
     pub use super::*;
     use crate::{
-        NiaIsListeningCommand, NiaStartListeningCommand,
-        NiaStartListeningCommandResult, NiaStopListeningCommand,
-        NiaStopListeningCommandResult,
+        NiaIsListeningCommand, NiaRemoveDeviceByIdCommand,
+        NiaStartListeningCommand, NiaStartListeningCommandResult,
+        NiaStopListeningCommand, NiaStopListeningCommandResult,
     };
 
     fn do_command_define_keyboard(
@@ -140,6 +142,19 @@ mod do_command {
         let result = result.map(|_| String::from("Success"));
 
         NiaRemoveDeviceByNameCommandResult::from(result).into()
+    }
+
+    fn do_command_remove_keyboard_by_id(
+        interpreter: &mut Interpreter,
+        command: NiaRemoveDeviceByIdCommand,
+    ) -> NiaInterpreterCommandResult {
+        let result = library::remove_keyboard_by_id(
+            interpreter,
+            command.get_device_id(),
+        );
+        let result = result.map(|_| String::from("Success"));
+
+        NiaRemoveDeviceByIdCommandResult::from(result).into()
     }
 
     fn do_command_remove_modifier(
@@ -300,8 +315,11 @@ mod do_command {
             NiaInterpreterCommand::RemoveDeviceByPath(command) => {
                 do_command_remove_keyboard_by_path(interpreter, command)
             }
-            NiaInterpreterCommand::RemoveDefineDeviceByName(command) => {
+            NiaInterpreterCommand::RemoveDeviceByName(command) => {
                 do_command_remove_keyboard_by_name(interpreter, command)
+            }
+            NiaInterpreterCommand::RemoveDeviceById(command) => {
+                do_command_remove_keyboard_by_id(interpreter, command)
             }
             NiaInterpreterCommand::RemoveModifier(command) => {
                 do_command_remove_modifier(interpreter, command)

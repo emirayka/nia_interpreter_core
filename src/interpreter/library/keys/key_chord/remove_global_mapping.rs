@@ -13,6 +13,7 @@ pub fn remove_global_mapping(
         library::get_root_variable(interpreter, GLOBAL_MAP_ROOT_VARIABLE_NAME)?;
 
     let mappings_vector = library::read_as_vector(interpreter, mappings_value)?;
+    let length_before = mappings_vector.len();
 
     let mut result = Vec::new();
 
@@ -27,6 +28,12 @@ pub fn remove_global_mapping(
         }
 
         result.push(mapping_value)
+    }
+
+    let length_after = result.len();
+
+    if length_after == length_before {
+        return Error::generic_execution_error("Cannot find mapping.").into();
     }
 
     let result = interpreter.vec_to_list(result);
@@ -114,5 +121,26 @@ mod tests {
                 ));
             }
         }
+    }
+
+    #[test]
+    fn returns_generic_execution_error_when_mapping_was_not_found() {
+        let mut interpreter = Interpreter::new();
+
+        let key_1 = nia_key!(1);
+        let key_2 = nia_key!(2);
+        let key_3 = nia_key!(3);
+        let key_4 = nia_key!(4);
+
+        let key_chord_1 = KeyChord::new(vec![key_1, key_2], key_4);
+        let key_chord_2 = KeyChord::new(vec![key_1, key_3], key_4);
+
+        let key_chord_sequence_1 =
+            vec![key_chord_1.clone(), key_chord_2.clone()];
+
+        let result =
+            remove_global_mapping(&mut interpreter, &key_chord_sequence_1);
+
+        crate::utils::assert_generic_execution_error(&result)
     }
 }

@@ -3,8 +3,6 @@ use crate::interpreter::error::Error;
 use crate::interpreter::interpreter::Interpreter;
 use crate::interpreter::value::Value;
 
-use crate::interpreter::library;
-
 pub fn new(
     interpreter: &mut Interpreter,
     _environment_id: EnvironmentId,

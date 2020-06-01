@@ -9,6 +9,7 @@ pub enum NiaInterpreterCommandResult {
     GetDefinedModifiers(NiaGetDefinedModifiersCommandResult),
     RemoveDeviceByName(NiaRemoveDeviceByNameCommandResult),
     RemoveDeviceByPath(NiaRemoveDeviceByPathCommandResult),
+    RemoveDeviceById(NiaRemoveDeviceByIdCommandResult),
     RemoveModifier(NiaRemoveModifierCommandResult),
     GetDefinedActions(NiaGetDefinedActionsCommandResult),
     DefineAction(NiaDefineActionCommandResult),
@@ -51,6 +52,10 @@ make_from_impl!(
 make_from_impl!(
     NiaRemoveDeviceByNameCommandResult,
     NiaInterpreterCommandResult::RemoveDeviceByName
+);
+make_from_impl!(
+    NiaRemoveDeviceByIdCommandResult,
+    NiaInterpreterCommandResult::RemoveDeviceById
 );
 make_from_impl!(
     NiaRemoveDeviceByPathCommandResult,

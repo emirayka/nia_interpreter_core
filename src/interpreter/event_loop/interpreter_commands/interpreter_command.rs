@@ -9,8 +9,9 @@ pub enum NiaInterpreterCommand {
     DefineModifier(NiaDefineModifierCommand),
     ExecuteCode(NiaExecuteCodeCommand),
     GetDefinedModifiers(NiaGetDefinedModifiersCommand),
-    RemoveDefineDeviceByName(NiaRemoveDeviceByNameCommand),
+    RemoveDeviceByName(NiaRemoveDeviceByNameCommand),
     RemoveDeviceByPath(NiaRemoveDeviceByPathCommand),
+    RemoveDeviceById(NiaRemoveDeviceByIdCommand),
     RemoveModifier(NiaRemoveModifierCommand),
     GetDefinedActions(NiaGetDefinedActionsCommand),
     DefineAction(NiaDefineActionCommand),
@@ -67,8 +68,16 @@ impl NiaInterpreterCommand {
     where
         S: Into<String>,
     {
-        NiaInterpreterCommand::RemoveDefineDeviceByName(
+        NiaInterpreterCommand::RemoveDeviceByName(
             NiaRemoveDeviceByNameCommand::new(device_name),
+        )
+    }
+
+    pub fn make_remove_device_by_id_command(
+        device_id: i32,
+    ) -> NiaInterpreterCommand {
+        NiaInterpreterCommand::RemoveDeviceById(
+            NiaRemoveDeviceByIdCommand::new(device_id),
         )
     }
 

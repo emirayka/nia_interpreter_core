@@ -25,12 +25,15 @@ fn check_modifier_can_be_defined(
             3 => (Some(modifier_vector[0]), modifier_vector[1]),
             _ => {
                 return Error::generic_execution_error(
-                    "Invariant violation: `nia-defined-modifiers' must be a list of three-element lists."
+                    "Invariant violation: `nia-defined-modifiers' must be a list of two or three element lists."
                 ).into();
             }
         };
 
-        if modifier_device_id != device_id {
+        if modifier_device_id.is_some()
+            && device_id.is_some()
+            && modifier_device_id != device_id
+        {
             continue;
         }
 
@@ -152,6 +155,15 @@ mod tests {
         let result = &define_modifier_with_values(
             &mut interpreter,
             device_id,
+            key_code,
+            modifier_alias,
+        );
+
+        crate::utils::assert_generic_execution_error(&result);
+
+        let result = &define_modifier_with_values(
+            &mut interpreter,
+            None,
             key_code,
             modifier_alias,
         );
