@@ -46,11 +46,11 @@ impl GarbageCollectorWrapper {
 
             let diff = time_after_collection - time_before_collection;
 
-            println!(
-                "Collected garbage in {}.{} ms.",
-                diff.as_millis(),
-                diff.as_micros() % 1000
-            );
+            // println!(
+            //     "Collected garbage in {}.{} ms.",
+            //     diff.as_millis(),
+            //     diff.as_micros() % 1000
+            // );
 
             Ok(true)
         } else {
