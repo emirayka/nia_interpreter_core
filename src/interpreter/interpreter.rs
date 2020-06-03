@@ -196,21 +196,45 @@ impl Interpreter {
     pub fn with_config(config_path: PathBuf) -> Interpreter {
         let mut interpreter = Interpreter::new();
 
-        match config_path.to_str() {
+        let module_id = match config_path.to_str() {
             Some(path_string) => match interpreter.load_module(path_string) {
-                Ok(_) => {
+                Ok(module_id) => {
                     println!(
                         "Successfully loaded configuration: {:?}.",
                         config_path
                     );
+
+                    Some(module_id)
                 }
                 Err(error) => {
                     println!("Error during configuration: {}.", error);
+                    None
                 }
             },
             None => {
                 println!("Error resolving path: {:?}.", config_path);
+                None
             }
+        };
+
+        // if loaded with config, then config module becomes main module
+        match module_id {
+            Some(module_id) => {
+                let current_module_id = interpreter.current_module;
+                let current_module_path = interpreter
+                    .get_module(current_module_id)
+                    .map(|module| module.get_path().clone());
+
+                if let Ok(current_module_path) = current_module_path {
+                    interpreter.main_module_id = module_id;
+                    interpreter.current_module = module_id;
+
+                    if let Ok(module) = interpreter.get_module_mut(module_id) {
+                        module.set_path(current_module_path)
+                    }
+                }
+            }
+            None => {}
         }
 
         interpreter

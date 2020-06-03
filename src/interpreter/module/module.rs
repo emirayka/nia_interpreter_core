@@ -30,6 +30,10 @@ impl Module {
         &self.path
     }
 
+    pub fn set_path(&mut self, path: String) {
+        self.path = path
+    }
+
     pub fn get_environment_id(&self) -> EnvironmentId {
         self.environment_id
     }
