@@ -22,4 +22,8 @@ impl NiaChangeMappingCommand {
     pub fn get_action(&self) -> &Action {
         &self.action
     }
+
+    pub fn take(self) -> (Vec<KeyChord>, Action) {
+        (self.key_chords, self.action)
+    }
 }

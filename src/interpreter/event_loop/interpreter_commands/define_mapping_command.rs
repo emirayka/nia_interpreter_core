@@ -13,4 +13,8 @@ impl NiaDefineMappingCommand {
     pub fn get_mapping(&self) -> &Mapping {
         &self.mapping
     }
+
+    pub fn take_mapping(self) -> Mapping {
+        self.mapping
+    }
 }

@@ -1,7 +1,7 @@
 use crate::Convertable;
 use crate::Key;
 
-#[derive(Clone, Debug, Eq, Hash)]
+#[derive(Clone, Debug, Eq)]
 pub struct KeyChord {
     modifiers: Vec<Key>,
     key: Key,
@@ -152,13 +152,25 @@ impl PartialEq for KeyChord {
         }
 
         for key in &self.modifiers {
-            if !other.modifiers.contains(key) {
+            let mut flag = true;
+            for other_key in &other.modifiers {
+                if key == other_key {
+                    flag = false;
+                }
+            }
+            if flag {
                 return false;
             }
         }
 
-        for key in &other.modifiers {
-            if !self.modifiers.contains(key) {
+        for other_key in &other.modifiers {
+            let mut flag = true;
+            for key in &self.modifiers {
+                if key == other_key {
+                    flag = false;
+                }
+            }
+            if flag {
                 return false;
             }
         }

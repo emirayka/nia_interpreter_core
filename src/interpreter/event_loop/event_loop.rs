@@ -62,7 +62,7 @@ const GARBAGE_COLLECTOR_PERIOD: u64 = 120000;
 mod do_command {
     pub use super::*;
     use crate::{
-        NiaIsListeningCommand, NiaRemoveDeviceByIdCommand,
+        Mapping, NiaIsListeningCommand, NiaRemoveDeviceByIdCommand,
         NiaStartListeningCommand, NiaStartListeningCommandResult,
         NiaStopListeningCommand, NiaStopListeningCommandResult,
     };
@@ -232,8 +232,20 @@ mod do_command {
         interpreter: &mut Interpreter,
         command: NiaDefineMappingCommand,
     ) -> NiaInterpreterCommandResult {
-        let result =
-            library::define_global_mapping(interpreter, command.get_mapping());
+        let mapping = command.take_mapping();
+
+        let (key_chords, action) = mapping.take();
+
+        let action = match action {
+            Action::ExecuteFunctionValue(_) => Action::ExecuteFunctionValue(
+                interpreter.intern_nil_symbol_value(),
+            ),
+            action => action,
+        };
+
+        let mapping = Mapping::new(key_chords, action);
+
+        let result = library::define_global_mapping(interpreter, &mapping);
         let result = result.map(|_| String::from("Success"));
 
         NiaDefineMappingCommandResult::from(result).into()
@@ -243,11 +255,17 @@ mod do_command {
         interpreter: &mut Interpreter,
         command: NiaChangeMappingCommand,
     ) -> NiaInterpreterCommandResult {
-        let result = library::change_global_mapping(
-            interpreter,
-            command.get_key_chords(),
-            command.get_action(),
-        );
+        let (key_chords, action) = command.take();
+
+        let action = match action {
+            Action::ExecuteFunctionValue(_) => Action::ExecuteFunctionValue(
+                interpreter.intern_nil_symbol_value(),
+            ),
+            action => action,
+        };
+
+        let result =
+            library::change_global_mapping(interpreter, &key_chords, &action);
         let result = result.map(|_| String::from("Success"));
 
         NiaChangeMappingCommandResult::from(result).into()

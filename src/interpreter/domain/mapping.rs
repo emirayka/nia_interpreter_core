@@ -20,6 +20,10 @@ impl Mapping {
         &self.action
     }
 
+    pub fn take(self) -> (Vec<KeyChord>, Action) {
+        (self.key_chords, self.action)
+    }
+
     pub fn mappings_are_same(mapping_1: &Mapping, mapping_2: &Mapping) -> bool {
         if !KeyChord::key_chord_vectors_are_same(
             mapping_1.get_key_chords(),

@@ -2,18 +2,10 @@ use crate::Convertable;
 use crate::DeviceKey;
 use crate::LoneKey;
 
-use std::hash::{Hash, Hasher};
-
 #[derive(Debug, Clone, Copy, Eq)]
 pub enum Key {
     DeviceKey(DeviceKey),
     LoneKey(LoneKey),
-}
-
-impl Hash for Key {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.get_key_id().hash(state);
-    }
 }
 
 impl Key {

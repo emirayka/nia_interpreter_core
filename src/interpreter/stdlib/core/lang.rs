@@ -7,6 +7,7 @@ pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
         defc::infect,
         defn::infect,
         defm::infect,
+        defon::infect,
         _fn::infect,
         _if::infect,
         when::infect,
@@ -130,6 +131,50 @@ mod defn {
     }
 }
 
+mod defon {
+    #[allow(unused_imports)]
+    use super::*;
+
+    pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
+        interpreter.execute_in_root_environment(
+            r#"
+(define-function defon (function (macro (object-name name #rest params) (list:new 'object:set! object-name (list:new 'quote name) (list:new 'function (cons:new 'lambda params))))))"#
+        )?;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    mod tests {
+        #[allow(unused_imports)]
+        use super::*;
+
+        #[allow(unused_imports)]
+        use crate::utils;
+
+        #[test]
+        fn defines_function() {
+            let mut interpreter = Interpreter::new();
+
+            interpreter
+                .execute_in_root_environment("(defv o {})")
+                .unwrap();
+
+            let pairs = vec![
+                ("(defon o a () 1) (o:a)", "1"),
+                ("(defon o b (a) a) (o:b 2)", "2"),
+                ("(defon o c (#opt b c) (list:new b c)) (o:c)", "'(nil nil)"),
+                ("(defon o d (#opt b c) (list:new b c)) (o:d 2)", "'(2 nil)"),
+                ("(defon o e (#opt b c) (list:new b c)) (o:e 2 3)", "'(2 3)"),
+                ("(defon o f (#rest b) b) (o:f 2 3 4)", "'(2 3 4)"),
+                ("(defon o g (#keys b) b) (o:g :b 1)", "1"),
+            ];
+
+            utils::assert_results_are_equal(&mut interpreter, pairs);
+        }
+    }
+}
+
 mod defm {
     #[allow(unused_imports)]
     use super::*;
@@ -137,20 +182,6 @@ mod defm {
     use crate::library;
 
     pub fn infect(interpreter: &mut Interpreter) -> Result<(), Error> {
-        let value = interpreter
-            .execute_in_root_environment(
-                "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
-            )
-            .unwrap();
-        library::print_value(interpreter, value).unwrap();
-
-        let value = interpreter
-            .execute_in_root_environment(
-                "(let ((name 'her) (args (list:new 1 2 3))) (eval (list:new 'define-function name (list:new 'function (cons:new 'macro (cons:new () args))))))",
-            )
-            .unwrap();
-        library::print_value(interpreter, value).unwrap();
-
         interpreter.execute_in_root_environment(
             "(define-function defm (function (macro (name #rest params) (list:new 'define-function name (list:new 'function (cons:new 'macro params))))))"
         )?;
